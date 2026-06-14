@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@import "@heroui/react/styles";
+
+/* Dice a Tailwind v4 di scansionare le classi CSS dei componenti e degli stili di HeroUI v3 */
+@source "../../node_modules/@heroui/react/dist/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@heroui/styles/dist/**/*.js";
+
+/* Abilita la variante dark quando è presente la classe .dark o quando una classe tema è impostata sull'elemento html root */
+@custom-variant dark (&:where(.dark, .dark *, html.theme-amethyst, html.theme-amethyst *, html.theme-emerald, html.theme-emerald *, html.theme-ocean, html.theme-ocean *, html.theme-obsidian, html.theme-obsidian *));
+
+@theme inline {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-outfit), system-ui, sans-serif;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+.dark {
+  --background: #030712;
+  --foreground: #f9fafb;
+}
+
+/* Set dark mode background and foreground when custom themes are active on the html element */
+html.theme-amethyst,
+html.theme-emerald,
+html.theme-ocean {
+  --background: #030712;
+  --foreground: #f9fafb;
+}
+
+html.theme-obsidian {
+  --background: #000000;
+  --foreground: #f9fafb;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+
+/* CSS Classes per i Temi di Default di KALEX SSO */
+.theme-amethyst {
+  --accent-glow-primary: rgba(168, 85, 247, 0.07);
+  --accent-glow-secondary: rgba(236, 72, 153, 0.05);
+  --accent-gradient: from-purple-500 to-pink-500;
+  --accent-color: #a855f7;
+  --accent-text: text-purple-400;
+}
+
+.theme-emerald {
+  --accent-glow-primary: rgba(16, 185, 129, 0.07);
+  --accent-glow-secondary: rgba(20, 184, 166, 0.05);
+  --accent-gradient: from-emerald-400 to-teal-500;
+  --accent-color: #10b981;
+  --accent-text: text-emerald-400;
+}
+
+.theme-ocean {
+  --accent-glow-primary: rgba(6, 182, 212, 0.07);
+  --accent-glow-secondary: rgba(59, 130, 246, 0.05);
+  --accent-gradient: from-cyan-400 to-blue-500;
+  --accent-color: #06b6d4;
+  --accent-text: text-cyan-400;
+}
+
+.theme-obsidian {
+  --accent-glow-primary: rgba(255, 255, 255, 0.04);
+  --accent-glow-secondary: rgba(63, 63, 70, 0.02);
+  --accent-gradient: from-zinc-300 to-zinc-600;
+  --accent-color: #e4e4e7;
+  --accent-text: text-zinc-300;
+}

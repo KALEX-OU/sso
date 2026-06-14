@@ -1,0 +1,6 @@
+{
+  "apphosting": {
+    "backendId": "sso",
+    "rootDir": "./"
+  }
+}

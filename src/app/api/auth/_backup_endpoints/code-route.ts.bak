@@ -1,0 +1,51 @@
+import { NextRequest, NextResponse } from "next/server";
+import { adminAuth, adminDataConnect } from "@/lib/firebase/admin";
+import { createAuthCode } from "@/lib/dataconnect-admin";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { idToken, clientId, redirectUri } = await req.json();
+
+    if (!idToken || !clientId || !redirectUri) {
+      return NextResponse.json(
+        { error: "Parametri mancanti: idToken, clientId, e redirectUri sono richiesti." },
+        { status: 400 }
+      );
+    }
+
+    // 1. Valida l'ID Token dell'utente loggato su sso.kalex.cloud
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch {
+      return NextResponse.json({ error: "Token non valido o scaduto." }, { status: 401 });
+    }
+
+    if (!decodedToken.email_verified) {
+      return NextResponse.json(
+        { error: "L'indirizzo email deve essere verificato prima di poter accedere alle applicazioni." },
+        { status: 403 }
+      );
+    }
+
+    const uid = decodedToken.uid;
+
+    // 2. Genera un codice di scambio temporaneo monouso
+    const code = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 30000).toISOString(); // Scade in 30 secondi
+
+    // 3. Salva il codice temporaneo nel database PostgreSQL tramite l'Admin SDK di SQL Connect
+    await createAuthCode(adminDataConnect, {
+      code,
+      userUid: uid,
+      clientId,
+      redirectUri,
+      expiresAt
+    });
+
+    return NextResponse.json({ code });
+  } catch (error) {
+    console.error("Errore durante generazione auth code:", error);
+    return NextResponse.json({ error: "Errore interno del server." }, { status: 500 });
+  }
+}

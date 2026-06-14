@@ -1,0 +1,116 @@
+import { NextRequest, NextResponse } from "next/server";
+import { adminDataConnect } from "@/lib/firebase/admin";
+import { upsertPreRegistration } from "@/lib/dataconnect-admin";
+
+async function validateVies(vatNumber: string, countryCode: string): Promise<{ isValid: boolean; name?: string; address?: string }> {
+  // Rimuovi spazi e trattini
+  const cleanVat = vatNumber.replace(/[\s-]/g, "").toUpperCase();
+  
+  // Se l'utente non ha digitato il prefisso nazione, lo ricaviamo da countryCode
+  const prefix = cleanVat.substring(0, 2);
+  let number = cleanVat;
+  let targetCountry = countryCode;
+
+  if (prefix === countryCode || (countryCode === "EL" && prefix === "GR")) {
+    number = cleanVat.substring(2);
+  } else if (/^[A-Z]{2}$/.test(prefix)) {
+    targetCountry = prefix === "GR" ? "EL" : prefix;
+    number = cleanVat.substring(2);
+  }
+
+  if (!/^[A-Z]{2}$/.test(targetCountry) || !/^[0-9A-Za-z]+$/.test(number)) {
+    return { isValid: false };
+  }
+
+  try {
+    const url = `https://ec.europa.eu/taxation_customs/vies/rest-api/ms/${targetCountry}/vat/${number}`;
+    const res = await fetch(url, { method: "GET", headers: { "Accept": "application/json" } });
+    if (!res.ok) {
+      console.warn("VIES API returned status:", res.status);
+      return { isValid: true }; // Fallback permissivo in caso di manutenzione server UE
+    }
+    const data = (await res.json()) as { isValid?: boolean; name?: string; address?: string };
+    return {
+      isValid: data.isValid === true,
+      name: data.name || undefined,
+      address: data.address || undefined
+    };
+  } catch (err) {
+    console.error("Errore chiamata VIES API:", err);
+    return { isValid: true }; // Fallback permissivo in caso di offline del server UE
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const {
+      email,
+      type,
+      companyName,
+      country,
+      vatNumber,
+      sdiCode,
+      officeCode,
+      cigCode,
+      cupCode,
+      metadata
+    } = (await req.json()) as {
+      email?: string;
+      type?: string;
+      companyName?: string;
+      country?: string;
+      vatNumber?: string;
+      sdiCode?: string;
+      officeCode?: string;
+      cigCode?: string;
+      cupCode?: string;
+      metadata?: Record<string, unknown>;
+    };
+
+    if (!email || !type || !companyName) {
+      return NextResponse.json(
+        { error: "Parametri mancanti: email, type e companyName sono richiesti." },
+        { status: 400 }
+      );
+    }
+
+    if (type !== "business" && type !== "government" && type !== "education") {
+      return NextResponse.json(
+        { error: "Tipo di account non supportato per la pre-registrazione." },
+        { status: 400 }
+      );
+    }
+
+    const countryCode = country || "IT";
+
+    // Valida la partita IVA comunitaria tramite VIES se fornita
+    if (vatNumber) {
+      const viesRes = await validateVies(vatNumber, countryCode);
+      if (!viesRes.isValid) {
+        return NextResponse.json(
+          { error: "La Partita IVA inserita non è valida secondo il sistema europeo VIES." },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Salva i dettagli di pre-registrazione nel database PostgreSQL
+    await upsertPreRegistration(adminDataConnect, {
+      email,
+      type,
+      companyName,
+      country: countryCode,
+      vatNumber: vatNumber || null,
+      sdiCode: sdiCode || null,
+      officeCode: officeCode || null,
+      cigCode: cigCode || null,
+      cupCode: cupCode || null,
+      metadata: metadata || null
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Errore durante pre-registrazione:", error);
+    return NextResponse.json({ error: "Errore interno durante la convalida fiscale." }, { status: 500 });
+  }
+}
