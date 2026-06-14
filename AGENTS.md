@@ -4,14 +4,15 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Regola di Validazione del Codice (Mandatoria)
+# Regola di Validazione del Codice (Mandatoria & Restrittiva)
 
-Prima di rispondere all'utente o considerare completata qualsiasi attività, l'agente DEVE assolutamente eseguire il comando `npm run validate` nella root del progetto. Il codebase deve essere sempre immacolato: **100% privo di errori di compilazione, TypeScript, linter o warning**.
+Prima di rispondere all'utente o considerare completata qualsiasi attività, l'agente ha l'obbligo di eseguire il comando `npm run validate` nella root del progetto. Il codebase deve essere sempre immacolato: **100% privo di errori di compilazione, TypeScript, linter o warning**.
 
 ## Regole di Qualità Rigide:
-1. **Tipizzazione Forte**: Ogni singola variabile, parametro, e ritorno di funzione deve essere tipizzato correttamente. È severamente vietato l'uso del tipo generico `any` (implicitamente o esplicitamente) o di scorciatoie.
-2. **Nessun Bypass**: È vietato silenziare gli avvertimenti o gli errori tramite commenti del tipo `// @ts-ignore`, `// @ts-nocheck`, `/* eslint-disable */`, `eslint-disable-next-line`, o qualsiasi altro meccanismo di bypass dei controlli automatici.
-3. **Autocorrezione**: Se il comando `npm run validate` restituisce errori o avvertimenti, l'agente ha l'obbligo di analizzarli, risolverli scrivendo codice corretto, e rieseguire la verifica fino ad ottenere un esito pulito (exit code 0) prima di formulare la risposta per l'utente.
+1. **Verifica Obbligatoria**: Il comando `npm run validate` (che esegue il linter in modalità restrittiva `--max-warnings=0`, il type-checking e la compilazione completa) **DEVE essere superato con successo (exit code 0) prima di rispondere all'utente o inviare modifiche**.
+2. **Tipizzazione Forte**: Ogni singola variabile, parametro, e ritorno di funzione deve essere tipizzato correttamente. È severamente vietato l'uso del tipo generico `any` (implicitamente o esplicitamente) o di scorciatoie.
+3. **Nessun Bypass**: È vietato silenziare gli avvertimenti o gli errori tramite commenti del tipo `// @ts-ignore`, `// @ts-nocheck`, `/* eslint-disable */`, `eslint-disable-next-line`, o qualsiasi altro meccanismo di bypass dei controlli automatici.
+4. **Autocorrezione come un Ingegnere Responsabile**: Se il comando `npm run validate` restituisce errori, warning o vulnerabilità, l'agente ha l'obbligo di analizzarli, risolverli scrivendo codice pulito, sicuro e tipizzato correttamente (senza trucchi o scorciatoie), e rieseguire la verifica fino ad ottenere un esito pulito prima di concludere il proprio turno.
 
 ## Linee Guida per Evitare Errori Comuni (Anti-patterns):
 

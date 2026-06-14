@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "validate": "tsc --noEmit && eslint ."
+    "validate": "eslint . --max-warnings=0 && tsc --noEmit && npm run build"
   },
   "dependencies": {
     "@heroui/react": "^3.1.0",
