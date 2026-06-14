@@ -580,7 +580,7 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {activeOrg && (
+                {activeOrg && activeOrg.type !== "personal" && (
                   <div className="mt-6 space-y-4">
                     <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 flex items-center justify-between gap-4">
                       <div className="flex gap-3 items-center">
@@ -614,7 +614,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {activeOrg && (activeRole === "owner" || activeRole === "admin") && !activeOrg.stripeConnectOnboarded && (
+              {activeOrg && activeOrg.type !== "personal" && (activeRole === "owner" || activeRole === "admin") && !activeOrg.stripeConnectOnboarded && (
                 <Button
                   isDisabled={stripeLoading || activeOrg.confirmed === false}
                   onClick={() => handleStripeOnboarding(activeOrg.orgId)}
