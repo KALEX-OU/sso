@@ -5,15 +5,5 @@ runConfig:
   cpu: 1
   memoryMiB: 512
   minInstances: 1
-  maxInstances: 50
+  maxInstances: 10
   concurrency: 80
-
-env:
-  - variable: NEXT_PUBLIC_SSO_URL
-    value: https://sso.kalex.cloud
-  - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-    secret: stripe_publishable_key
-  - variable: STRIPE_SECRET_KEY
-    secret: stripe_secret_key
-  - variable: STRIPE_WEBHOOK_SECRET
-    secret: stripe_webhook_secret
