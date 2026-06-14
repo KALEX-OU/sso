@@ -269,7 +269,7 @@ function AuthPortal() {
   // Automatismo Geo-IP per il paese di default e la lingua locale iniziale (attivo sia per login che per registrazione)
   useEffect(() => {
     if (mounted && !geoFetchingRef.current) {
-      console.log("[Locale Trace] Avvio rilevamento Geo-IP all'accesso della pagina auth. Locale corrente:", currentLocale);
+      console.log("[Locale Trace] Avvio rilevamento Geo-IP all'accesso della pagina auth.");
       geoFetchingRef.current = true;
       fetch("/api/geolocation/ip")
         .then((res) => res.json())
@@ -279,24 +279,13 @@ function AuthPortal() {
             console.log("[Locale Trace] Paese rilevato via Geo-IP:", detectedCountry);
             const isEU = EU_COUNTRIES.includes(detectedCountry as typeof EU_COUNTRIES[number]);
             if (isEU) {
-              console.log("[Locale Trace] Impostata nazione di default nel form:", detectedCountry);
-              setValueReg("country", detectedCountry as typeof EU_COUNTRIES[number]);
-              
               const geoInitialized = sessionStorage.getItem("sso_geo_initialized");
-              console.log("[Locale Trace] Stato inizializzazione Geo-IP in sessione:", geoInitialized);
               if (!geoInitialized) {
+                console.log("[Locale Trace] Impostata nazione di default nel form via Geo-IP:", detectedCountry);
+                setValueReg("country", detectedCountry as typeof EU_COUNTRIES[number]);
                 sessionStorage.setItem("sso_geo_initialized", "true");
-                if (detectedCountry === "IT" && currentLocale !== "it") {
-                  console.log("[Locale Trace] Rilevato IT, forzo cambio locale a: it");
-                  changeLocale("it");
-                } else if (detectedCountry === "ES" && currentLocale !== "es") {
-                  console.log("[Locale Trace] Rilevato ES, forzo cambio locale a: es");
-                  changeLocale("es");
-                } else {
-                  console.log("[Locale Trace] Il locale corrente corrisponde già al paese rilevato o non è supportato per il cambio automatico.");
-                }
               } else {
-                console.log("[Locale Trace] Geo-IP già inizializzato per questa sessione. Rispettata la preferenza utente locale.");
+                console.log("[Locale Trace] Geo-IP già inizializzato per questa sessione. Rispettata la scelta dell'utente.");
               }
             }
           }
@@ -307,7 +296,7 @@ function AuthPortal() {
           geoFetchingRef.current = false;
         });
     }
-  }, [mounted, setValueReg, currentLocale, changeLocale]);
+  }, [mounted, setValueReg]);
 
   // Caricamento dei dati salvati nel form da sessionStorage
   useEffect(() => {
