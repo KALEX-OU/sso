@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import "../globals.css";
 import Providers from "@/components/Providers";
+import Script from "next/script";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -25,6 +26,7 @@ interface LayoutProps {
 
 export default async function RootLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
+  const gaId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
 
   return (
     <html
@@ -33,6 +35,22 @@ export default async function RootLayout({ children, params }: LayoutProps) {
       suppressHydrationWarning // Richiesto da next-themes per evitare warning lato server
     >
       <body className="min-h-full flex flex-col">
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
         <Providers locale={locale}>
           {children}
         </Providers>
