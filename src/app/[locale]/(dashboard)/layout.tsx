@@ -238,10 +238,12 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   }, [currentLocale, changeLocale, theme, setTheme, setDbData, setError]);
 
 
-  const syncRefs = useRef({ currentLocale, changeLocale, theme, setTheme });
+  const syncRefs = useRef({ currentLocale, changeLocale, theme, setTheme, refreshClaims });
   useEffect(() => {
-    syncRefs.current = { currentLocale, changeLocale, theme, setTheme };
+    syncRefs.current = { currentLocale, changeLocale, theme, setTheme, refreshClaims };
   });
+
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!mounted) return;
@@ -253,6 +255,10 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         setDbData(null);
         setLoading(false);
         setOnboardingPending(false);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
         // Rimuove il cookie di sessione per il middleware
         document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         router.push(`/${localeParam}/auth`);
@@ -276,6 +282,10 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
             setOnboardingPending(true);
             setOnboardingMessage("Configurazione iniziale dell'account in corso. Questa operazione richiede pochi istanti...");
             
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+            }
+
             const intervalId = setInterval(async () => {
               try {
                 const stillPending = await fetchAndSyncUserData(
@@ -288,17 +298,25 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
                 );
                 
                 if (!stillPending) {
-                  clearInterval(intervalId);
+                  if (pollingIntervalRef.current) {
+                    clearInterval(pollingIntervalRef.current);
+                    pollingIntervalRef.current = null;
+                  }
                   setOnboardingPending(false);
                   refreshAttemptsRef.current = 0; // Reset tentativi
-                  await refreshClaims();
+                  await syncRefs.current.refreshClaims();
                 }
               } catch (pollErr) {
                 console.error("Polling error in layout:", pollErr);
-                clearInterval(intervalId);
+                if (pollingIntervalRef.current) {
+                  clearInterval(pollingIntervalRef.current);
+                  pollingIntervalRef.current = null;
+                }
                 setOnboardingPending(false);
               }
             }, 3000);
+            
+            pollingIntervalRef.current = intervalId;
           }
         } catch (err) {
           console.error("Errore decodifica token:", err);
@@ -308,8 +326,14 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       }
     });
 
-    return () => unsubscribe();
-  }, [mounted, localeParam, router, refreshClaims]);
+    return () => {
+      unsubscribe();
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [mounted, localeParam, router]);
 
 
   // Effetto per innescare un refresh automatico dei claims se l'utente è loggato ma non ha ancora l'associazione dell'organizzazione
@@ -317,11 +341,11 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     if (user && claims && !claims.orgId && !onboardingPending) {
       console.log("[Layout] Custom claims non pronti o mancanti orgId. Inizio refresh automatico...");
       const timer = setTimeout(() => {
-        void refreshClaims();
+        void syncRefs.current.refreshClaims();
       }, 1000); // 1 secondo di debouncing
       return () => clearTimeout(timer);
     }
-  }, [user, claims, refreshClaims, onboardingPending]);
+  }, [user, claims, onboardingPending]);
 
 
 
