@@ -14,38 +14,38 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertUser, createOrganization, addUserToOrganization, updateSubscriptionStatus, updateOrganizationStripeConnect, createAuthCode, deleteAuthCode, updateUserPreferences, updateOrganizationBilling, upsertPreRegistration } from '@kalex/dataconnect';
+import { getUserClaimsContext, getOrganizationDetails, getAuthCode, getPreRegistration, listAllPreRegistrations, listAllUsers, listAllOrganizations, listAllUserOrganizations, listAllServiceSubscriptions, listAllAuthCodes } from '@kalex/dataconnect';
 
 
-// Operation UpsertUser:  For variables, look at type UpsertUserVars in ../index.d.ts
-const { data } = await UpsertUser(dataConnect, upsertUserVars);
+// Operation GetUserClaimsContext:  For variables, look at type GetUserClaimsContextVars in ../index.d.ts
+const { data } = await GetUserClaimsContext(dataConnect, getUserClaimsContextVars);
 
-// Operation CreateOrganization:  For variables, look at type CreateOrganizationVars in ../index.d.ts
-const { data } = await CreateOrganization(dataConnect, createOrganizationVars);
+// Operation GetOrganizationDetails:  For variables, look at type GetOrganizationDetailsVars in ../index.d.ts
+const { data } = await GetOrganizationDetails(dataConnect, getOrganizationDetailsVars);
 
-// Operation AddUserToOrganization:  For variables, look at type AddUserToOrganizationVars in ../index.d.ts
-const { data } = await AddUserToOrganization(dataConnect, addUserToOrganizationVars);
+// Operation GetAuthCode:  For variables, look at type GetAuthCodeVars in ../index.d.ts
+const { data } = await GetAuthCode(dataConnect, getAuthCodeVars);
 
-// Operation UpdateSubscriptionStatus:  For variables, look at type UpdateSubscriptionStatusVars in ../index.d.ts
-const { data } = await UpdateSubscriptionStatus(dataConnect, updateSubscriptionStatusVars);
+// Operation GetPreRegistration:  For variables, look at type GetPreRegistrationVars in ../index.d.ts
+const { data } = await GetPreRegistration(dataConnect, getPreRegistrationVars);
 
-// Operation UpdateOrganizationStripeConnect:  For variables, look at type UpdateOrganizationStripeConnectVars in ../index.d.ts
-const { data } = await UpdateOrganizationStripeConnect(dataConnect, updateOrganizationStripeConnectVars);
+// Operation ListAllPreRegistrations: 
+const { data } = await ListAllPreRegistrations(dataConnect);
 
-// Operation CreateAuthCode:  For variables, look at type CreateAuthCodeVars in ../index.d.ts
-const { data } = await CreateAuthCode(dataConnect, createAuthCodeVars);
+// Operation ListAllUsers: 
+const { data } = await ListAllUsers(dataConnect);
 
-// Operation DeleteAuthCode:  For variables, look at type DeleteAuthCodeVars in ../index.d.ts
-const { data } = await DeleteAuthCode(dataConnect, deleteAuthCodeVars);
+// Operation ListAllOrganizations: 
+const { data } = await ListAllOrganizations(dataConnect);
 
-// Operation UpdateUserPreferences:  For variables, look at type UpdateUserPreferencesVars in ../index.d.ts
-const { data } = await UpdateUserPreferences(dataConnect, updateUserPreferencesVars);
+// Operation ListAllUserOrganizations: 
+const { data } = await ListAllUserOrganizations(dataConnect);
 
-// Operation UpdateOrganizationBilling:  For variables, look at type UpdateOrganizationBillingVars in ../index.d.ts
-const { data } = await UpdateOrganizationBilling(dataConnect, updateOrganizationBillingVars);
+// Operation ListAllServiceSubscriptions: 
+const { data } = await ListAllServiceSubscriptions(dataConnect);
 
-// Operation UpsertPreRegistration:  For variables, look at type UpsertPreRegistrationVars in ../index.d.ts
-const { data } = await UpsertPreRegistration(dataConnect, upsertPreRegistrationVars);
+// Operation ListAllAuthCodes: 
+const { data } = await ListAllAuthCodes(dataConnect);
 
 
 ```

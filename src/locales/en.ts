@@ -94,5 +94,20 @@ export default {
   "auth.typeBusiness": "Business",
   "auth.typeGovernment": "Public Admin",
   "auth.typeEducation": "Edu",
-  "auth.rememberMe": "Remember me"
+  "auth.rememberMe": "Remember me",
+  "auth.forgotPassword": "Forgot password?",
+  "auth.resetPasswordTitle": "Reset Password",
+  "auth.resetPasswordEmailSent": "We have sent you an email to reset your password. Please check your inbox.",
+  "auth.newPassword": "New Password",
+  "auth.confirmPassword": "Confirm Password",
+  "auth.passwordResetSuccess": "Password updated successfully. You can now log in!",
+  "auth.sendResetLink": "Send reset link",
+  "auth.verifySuccess": "Email verified successfully! Initializing account...",
+  "auth.verifyError": "The verification link has expired, is invalid, or has already been used.",
+  "auth.verifyLoading": "Verifying email and activating account...",
+  "auth.mfaTitle": "Two-Factor Authentication",
+  "auth.mfaSmsSent": "We have sent a 6-digit verification code via SMS to your number {phone}.",
+  "auth.mfaCode": "SMS Verification Code",
+  "auth.mfaSubmit": "Verify code",
+  "auth.verifyEmailSubDesc": "Once verification is complete, this tab will unlock automatically."
 } as const;

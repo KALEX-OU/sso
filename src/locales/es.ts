@@ -94,5 +94,20 @@ export default {
   "auth.typeBusiness": "Empresa",
   "auth.typeGovernment": "Adm. Pública",
   "auth.typeEducation": "Edu",
-  "auth.rememberMe": "Recordarme"
+  "auth.rememberMe": "Recordarme",
+  "auth.forgotPassword": "¿Olvidaste tu contraseña?",
+  "auth.resetPasswordTitle": "Restablecer Contraseña",
+  "auth.resetPasswordEmailSent": "Le hemos enviado un correo electrónico para restablecer su contraseña. Por favor, revise su bandeja de entrada.",
+  "auth.newPassword": "Nueva Contraseña",
+  "auth.confirmPassword": "Confirmar Contraseña",
+  "auth.passwordResetSuccess": "Contraseña actualizada correctamente. ¡Ya puede iniciar sesión!",
+  "auth.sendResetLink": "Enviar enlace de restablecimiento",
+  "auth.verifySuccess": "¡Correo verificado con éxito! Inicializando cuenta...",
+  "auth.verifyError": "El enlace de verificación ha expirado, no es válido o ya ha sido utilizado.",
+  "auth.verifyLoading": "Verificando correo electrónico y activando cuenta...",
+  "auth.mfaTitle": "Autenticación de Dos Factores",
+  "auth.mfaSmsSent": "Hemos enviado un código de verificación de 6 dígitos por SMS a su número {phone}.",
+  "auth.mfaCode": "Código de verificación SMS",
+  "auth.mfaSubmit": "Verificar código",
+  "auth.verifyEmailSubDesc": "Una vez completada la verificación, esta pestaña se desbloqueará automáticamente."
 } as const;

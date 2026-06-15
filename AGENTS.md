@@ -86,3 +86,16 @@ Per evitare di reintrodurre errori sistematici nel codebase, attieniti scrupolos
 * **Come fare**:
   - Prima di integrare o modificare una chiamata ad Hono dal client React/Next.js, consultare `/openapi.json` o la dashboard Swagger dell'API Gateway locale (porta 3001).
   - Assicurarsi che le strutture dei payload inviati e le risposte ricevute siano completamente tipizzate e allineate con gli schemi definiti nell'API.
+
+### 13. Gestione degli Stati di Creazione Asincrona (202 Accepted & Pending)
+* **Perché**: Il backend adotta il pattern asincrono *Self-Triggering Route* via Cloud Tasks per tutte le operazioni di creazione (`/auth/create`, `/organization/create`, `/organization/member/create`). L'endpoint risponde immediatamente con codice `202 Accepted` e stato `pending` prima che la risorsa sia pronta in cloud.
+* **Come fare**:
+  - Il frontend non deve aspettare in modo sincrono che l'intera risorsa complessa (es. setup Stripe, invio email, utente su Firebase Auth) sia conclusa all'invio del form.
+  - Mostrare all'utente una notifica di successo o un messaggio chiaro che indica che l'operazione è stata presa in carico (es. *"L'invito è in corso di invio, apparirà a breve nel pannello"* o *"Organizzazione registrata, configurazione dei servizi di pagamento in corso..."*).
+  - Gestire la navigazione di conseguenza (es. reindirizzamento alla dashboard principale dell'SSO) ed eventualmente aggiornare i dati tramite WebSocket, polling leggero o ricaricamento di stato una volta che la risorsa passa a `"ACTIVE"`.
+
+### 14. Nomenclatura Moduli Singolari e Proxy Catch-All
+* **Perché**: Per consistenza architetturale del gateway, tutti i nuovi moduli del sistema devono essere nominati al singolare (es. `thing`, `apikey` anziché `things`, `apikeys`).
+* **Come fare**:
+  - Per instradare le chiamate del client verso il backend API centralizzato, creare una cartella di routing proxy catch-all: `sso/src/app/api/[module]/[...path]/route.ts`.
+  - Tale file deve fungere da proxy, inoltrando le richieste preservando credenziali, cookie di sessione, header ed IP client originario.

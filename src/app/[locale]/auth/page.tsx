@@ -6,8 +6,13 @@ import { auth, getAppCheckToken } from "@/lib/firebase/client";
 import {
   onAuthStateChanged,
   User,
-  sendEmailVerification,
-  signOut
+  signOut,
+  signInWithEmailAndPassword,
+  getMultiFactorResolver,
+  PhoneAuthProvider,
+  PhoneMultiFactorGenerator,
+  RecaptchaVerifier,
+  MultiFactorResolver
 } from "firebase/auth";
 
 interface GoogleAccountsIdInitializeOptions {
@@ -147,7 +152,14 @@ function AuthPortal() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState("");
-  const [isAlreadyLoggedIn, setIsAlreadyLoggedIn] = useState(false);
+
+  // Stati per Multi-Factor Authentication (MFA)
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
+  const [mfaVerificationId, setMfaVerificationId] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaPhoneHint, setMfaPhoneHint] = useState("");
+  const [mfaLoading, setMfaLoading] = useState(false);
 
   const [isVatValidating, setIsVatValidating] = useState(false);
   const [viesAddress, setViesAddress] = useState("");
@@ -517,33 +529,29 @@ function AuthPortal() {
 
         if (currentUser.emailVerified) {
           setNeedsVerification(false);
+          // Imposta il cookie di sessione per il middleware
+          document.cookie = "sso_session=active; path=/; max-age=31536000; SameSite=Lax";
           if (redirectUri && !redirecting) {
             handleSSORedirect(currentUser);
           } else {
-            console.log("[Auth State Change] User verified but no redirectUri. Setting isAlreadyLoggedIn to true.");
-            setIsAlreadyLoggedIn(true);
+            console.log("[Auth State Change] User verified but no redirectUri. Redirecting immediately to dashboard.");
+            router.push(`/${currentLocale}`);
           }
         } else {
           setNeedsVerification(true);
-          setIsAlreadyLoggedIn(false);
+          // Rimuove il cookie se l'email non è verificata
+          document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
       } else {
         setNeedsVerification(false);
-        setIsAlreadyLoggedIn(false);
+        // Rimuove il cookie se non loggato
+        document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       }
     });
     return () => unsubscribe();
-  }, [redirectUri, redirecting, handleSSORedirect]);
+  }, [redirectUri, redirecting, handleSSORedirect, router, currentLocale]);
 
-  // Redirect automatico alla dashboard dopo 3 secondi se già autenticato e senza redirectUri (accesso diretto)
-  useEffect(() => {
-    if (isAlreadyLoggedIn) {
-      const timer = setTimeout(() => {
-        router.push(`/${currentLocale}`);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isAlreadyLoggedIn, currentLocale, router]);
+
 
   const handleCheckVerification = async () => {
     setError("");
@@ -569,27 +577,37 @@ function AuthPortal() {
     }
   };
 
-  const getActionCodeSettings = () => {
-    return {
-      url: `${window.location.origin}/${currentLocale}/auth${window.location.search}`,
-      handleCodeInApp: false
-    };
-  };
 
   const handleResendVerification = async () => {
     setError("");
     setResendLoading(true);
     try {
       if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser, getActionCodeSettings());
-        setResendSuccess("Email di verifica inviata con successo!");
-        setTimeout(() => setResendSuccess(""), 5000);
+        const idToken = await auth.currentUser.getIdToken();
+        const response = await fetch("/api/auth/send-verification", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          setResendSuccess("Email di verifica inviata con successo!");
+          setTimeout(() => setResendSuccess(""), 5000);
+        } else {
+          const errCode = (resData.error && typeof resData.error === "object" && "message" in resData.error && typeof resData.error.message === "string")
+            ? resData.error.message
+            : "Errore durante il rinvio dell'email.";
+          throw new Error(errCode);
+        }
       } else {
-        setError("Nessuna sessione attiva rilevata. Per favore, clicca su 'Volver al inicio de sesión' ed esegui l'accesso per poter richiedere l'email di verifica.");
+        setError("Nessuna sessione attiva rilevata. Per favore, clicca su 'Torna al login' ed esegui l'accesso per poter richiedere l'email di verifica.");
       }
     } catch (err) {
       console.error("Error resending verification:", err);
-      setError("Errore durante l'invio dell'email di verifica.");
+      const errMsg = err instanceof Error ? err.message : "Errore durante l'invio dell'email di verifica.";
+      setError(errMsg);
     } finally {
       setResendLoading(false);
     }
@@ -600,41 +618,95 @@ function AuthPortal() {
     setError("");
     setLoading(true);
     try {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      const appCheckToken = await getAppCheckToken();
-      if (appCheckToken) {
-        headers["X-Firebase-App-Check"] = appCheckToken;
-      }
-
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ email: data.email, password: data.password })
-      });
-      
-      const resData = (await response.json()) as {
-        success: boolean;
-        customToken?: string;
-        error?: { message: string; code?: string };
-      };
-
-      if (!response.ok || !resData.success || !resData.customToken) {
-        const errMsg = resData.error?.message || "Credenziali non valide.";
-        throw new Error(errMsg);
-      }
-
-      const { signInWithCustomToken, setPersistence, browserLocalPersistence, browserSessionPersistence } = await import("firebase/auth");
+      const { setPersistence, browserLocalPersistence, browserSessionPersistence } = await import("firebase/auth");
       await setPersistence(auth, data.rememberMe ? browserLocalPersistence : browserSessionPersistence);
-      const userCredential = await signInWithCustomToken(auth, resData.customToken);
+      
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
       
       if (!userCredential.user.emailVerified) {
         setNeedsVerification(true);
       }
     } catch (err) {
       console.error("Login error:", err);
-      const message = err instanceof Error ? err.message : "Errore durante l'accesso.";
-      setError(message);
+      const errCode = (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string")
+        ? (err as { code: string }).code
+        : "unknown";
+      
+      // Gestione del secondo fattore (MFA) richiesto
+      if (errCode === "auth/multi-factor-auth-required") {
+        try {
+          const resolver = getMultiFactorResolver(auth, err as Parameters<typeof getMultiFactorResolver>[1]);
+          setMfaResolver(resolver);
+          setMfaRequired(true);
+          
+          const phoneInfoOptions = resolver.hints[0];
+          if (phoneInfoOptions && phoneInfoOptions.displayName) {
+            setMfaPhoneHint(phoneInfoOptions.displayName);
+          } else {
+            setMfaPhoneHint("il tuo numero registrato");
+          }
+          
+          // Inizializza reCAPTCHA invisibile per inviare l'SMS
+          const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+            size: "invisible"
+          });
+          
+          const phoneAuthProvider = new PhoneAuthProvider(auth);
+          const verificationId = await phoneAuthProvider.verifyPhoneNumber(
+            {
+              multiFactorHint: phoneInfoOptions,
+              session: resolver.session
+            },
+            recaptchaVerifier
+          );
+          setMfaVerificationId(verificationId);
+          setLoading(false);
+          return;
+        } catch (mfaErr) {
+          console.error("Error initializing MFA SMS:", mfaErr);
+          setError("Errore durante l'inizializzazione del secondo fattore di autenticazione.");
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Gestione errori di credenziali errate
+      let errMsg = "Errore durante l'accesso.";
+      if (errCode === "auth/wrong-password" || errCode === "auth/user-not-found" || errCode === "auth/invalid-credential") {
+        errMsg = "Credenziali non valide.";
+      } else if (err instanceof Error && err.message) {
+        errMsg = err.message;
+      }
+      setError(errMsg);
       setLoading(false);
+    }
+  };
+
+  const handleVerifyMfaCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaResolver || !mfaVerificationId || !mfaCode) return;
+    setError("");
+    setMfaLoading(true);
+    try {
+      const cred = PhoneAuthProvider.credential(mfaVerificationId, mfaCode);
+      const multiFactorAssertion = PhoneMultiFactorGenerator.assertion(cred);
+      const userCredential = await mfaResolver.resolveSignIn(multiFactorAssertion);
+      
+      setMfaRequired(false);
+      setMfaResolver(null);
+      
+      if (!userCredential.user.emailVerified) {
+        setNeedsVerification(true);
+      }
+    } catch (err) {
+      console.error("MFA verification error:", err);
+      let errMsg = "Codice di verifica non valido.";
+      if (err instanceof Error && err.message) {
+        errMsg = err.message;
+      }
+      setError(errMsg);
+    } finally {
+      setMfaLoading(false);
     }
   };
 
@@ -680,7 +752,7 @@ function AuthPortal() {
         headers["X-Firebase-App-Check"] = appCheckToken;
       }
 
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/auth/create", {
         method: "POST",
         headers,
         body: JSON.stringify(registerPayload)
@@ -695,29 +767,33 @@ function AuthPortal() {
         throw new Error(resData.error?.message || "Errore durante la registrazione.");
       }
 
+      // Attendi 3 secondi per permettere al task in background di completare la creazione dell'account
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
       // Esegui login automatico post-registrazione per ottenere la sessione e inviare la mail di verifica
       const loginHeaders: Record<string, string> = { "Content-Type": "application/json" };
       if (appCheckToken) {
         loginHeaders["X-Firebase-App-Check"] = appCheckToken;
       }
 
-      const loginResponse = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: loginHeaders,
-        body: JSON.stringify({ email: data.email, password: data.password })
-      });
-      
-      const loginResData = (await loginResponse.json()) as {
-        success: boolean;
-        customToken?: string;
-      };
-
-      if (loginResponse.ok && loginResData.success && loginResData.customToken) {
-        const { signInWithCustomToken } = await import("firebase/auth");
-        const userCredential = await signInWithCustomToken(auth, loginResData.customToken);
+      try {
+        const loginResponse = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: loginHeaders,
+          body: JSON.stringify({ email: data.email, password: data.password })
+        });
         
-        // Invia email di verifica
-        await sendEmailVerification(userCredential.user, getActionCodeSettings());
+        const loginResData = (await loginResponse.json()) as {
+          success: boolean;
+          customToken?: string;
+        };
+
+        if (loginResponse.ok && loginResData.success && loginResData.customToken) {
+          const { signInWithCustomToken } = await import("firebase/auth");
+          await signInWithCustomToken(auth, loginResData.customToken);
+        }
+      } catch (loginErr) {
+        console.warn("Rilevato ritardo nella creazione dell'account in background. L'utente eseguirà il login manuale:", loginErr);
       }
 
       setNeedsVerification(true);
@@ -750,59 +826,7 @@ function AuthPortal() {
     );
   }
 
-  if (isAlreadyLoggedIn && auth.currentUser) {
-    return (
-      <div className={`flex flex-col items-center justify-center min-h-screen bg-gradient-to-br ${activeBgGradient} transition-all duration-700 text-foreground px-4`}>
-        <div className="absolute top-6 right-6 flex items-center gap-2 z-50">
-          <Button
-            isIconOnly
-            variant="ghost"
-            size="sm"
-            className="border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-800 dark:text-white cursor-pointer rounded-full transition-all"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          >
-            {resolvedTheme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-          </Button>
-        </div>
 
-        <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/35 dark:bg-slate-950/25 backdrop-blur-2xl shadow-2xl p-6 relative z-10 rounded-3xl text-center">
-          <Card.Content className="p-4 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center mb-6">
-              <span className="text-2xl">✨</span>
-            </div>
-
-            <h2 className="text-2xl font-bold mb-3 tracking-tight text-slate-900 dark:text-white">Sei già autenticato!</h2>
-            <p className="text-slate-600 dark:text-gray-300 text-sm mb-6 leading-relaxed">
-              Il tuo indirizzo email <strong>{auth.currentUser.email}</strong> è stato verificato con successo ed il tuo account è ora attivo.
-            </p>
-
-            <div className="space-y-3 w-full">
-              <Button
-                onClick={() => {
-                  window.location.href = "https://kalex.cloud";
-                }}
-                className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2`}
-              >
-                Vai alla Home
-              </Button>
-
-              <Button
-                onClick={async () => {
-                  setError("");
-                  await signOut(auth);
-                  setIsAlreadyLoggedIn(false);
-                }}
-                variant="outline"
-                className="w-full py-6 border-slate-200 dark:border-white/10 hover:bg-red-50 dark:hover:bg-red-950/10 text-red-600 dark:text-red-400 text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                Disconnettiti
-              </Button>
-            </div>
-          </Card.Content>
-        </Card>
-      </div>
-    );
-  }
 
   if (needsVerification) {
     return (
@@ -1064,7 +1088,57 @@ function AuthPortal() {
               </div>
             )}
 
-            {isLogin ? (
+            {mfaRequired ? (
+              /* FORM DI VERIFICA CODICE MFA SMS */
+              <form onSubmit={handleVerifyMfaCode} className="space-y-5">
+                <div className="text-center mb-4">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1">
+                    {t("auth.mfaTitle")}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">
+                    {t("auth.mfaSmsSent", { phone: mfaPhoneHint })}
+                  </p>
+                </div>
+
+                <TextField className="flex flex-col gap-1.5 w-full">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
+                    {t("auth.mfaCode")}
+                  </Label>
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                    <Input
+                      type="text"
+                      maxLength={6}
+                      placeholder="123456"
+                      className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 text-center tracking-widest font-mono text-lg"
+                      value={mfaCode}
+                      onChange={(e) => setMfaCode(e.target.value)}
+                      required
+                    />
+                  </InputGroup>
+                </TextField>
+
+                <Button
+                  type="submit"
+                  isDisabled={mfaLoading}
+                  className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
+                >
+                  {mfaLoading && <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>}
+                  {t("auth.mfaSubmit")}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMfaRequired(false);
+                    setMfaResolver(null);
+                    setError("");
+                  }}
+                  className="w-full text-center text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
+                >
+                  {t("auth.backToLogin")}
+                </button>
+              </form>
+            ) : isLogin ? (
               /* FORM DI LOGIN CON HEROUI V3 */
               <form ref={loginFormRef} onSubmit={handleSubmitLogin(onSubmitLogin)} className="space-y-5">
                 <TextField isInvalid={!!errorsLogin.email} className="flex flex-col gap-1.5 w-full">
@@ -1125,6 +1199,13 @@ function AuthPortal() {
                       </Checkbox>
                     )}
                   />
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/${currentLocale}/auth/reset-password`)}
+                    className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer bg-transparent border-0 outline-none"
+                  >
+                    {t("auth.forgotPassword")}
+                  </button>
                 </div>
 
                 <Button
@@ -1702,6 +1783,7 @@ function AuthPortal() {
 
       {/* Right Column (Marketing panel) */}
       {renderMarketingPanel(brand, t, isDark)}
+      <div id="recaptcha-container"></div>
     </div>
   );
 }

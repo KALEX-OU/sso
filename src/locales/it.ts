@@ -94,5 +94,20 @@ export default {
   "auth.typeBusiness": "Azienda",
   "auth.typeGovernment": "P.A.",
   "auth.typeEducation": "Edu",
-  "auth.rememberMe": "Ricordami"
+  "auth.rememberMe": "Ricordami",
+  "auth.forgotPassword": "Dimenticato la password?",
+  "auth.resetPasswordTitle": "Reimposta Password",
+  "auth.resetPasswordEmailSent": "Ti abbiamo inviato un'email per reimpostare la tua password. Controlla la tua casella di posta.",
+  "auth.newPassword": "Nuova Password",
+  "auth.confirmPassword": "Conferma Password",
+  "auth.passwordResetSuccess": "Password modificata con successo. Ora puoi accedere!",
+  "auth.sendResetLink": "Invia link di reset",
+  "auth.verifySuccess": "Email verificata con successo! Inizializzazione account in corso...",
+  "auth.verifyError": "Il link di verifica è scaduto, non è valido o è già stato utilizzato.",
+  "auth.verifyLoading": "Verifica dell'email e attivazione account in corso...",
+  "auth.mfaTitle": "Autenticazione a Due Fattori",
+  "auth.mfaSmsSent": "Abbiamo inviato un codice di verifica a 6 cifre via SMS sul tuo numero {phone}.",
+  "auth.mfaCode": "Codice di verifica SMS",
+  "auth.mfaSubmit": "Verifica codice",
+  "auth.verifyEmailSubDesc": "Una volta completata la verifica, questa scheda si sbloccherà automaticamente."
 } as const;
