@@ -215,7 +215,7 @@ function AuthPortal() {
     mode: "onChange",
     defaultValues: {
       regType: "personal",
-      country: "IT",
+      country: currentLocale === "es" ? "ES" : "IT",
       acceptTerms: false as unknown as true,
       fullName: "",
       email: "",
