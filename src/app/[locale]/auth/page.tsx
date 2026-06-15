@@ -283,7 +283,13 @@ function AuthPortal() {
     if (mounted && !geoFetchingRef.current) {
       console.log("[Locale Trace] Avvio rilevamento Geo-IP all'accesso della pagina auth.");
       geoFetchingRef.current = true;
-      fetch("/api/geolocation/ip")
+      getAppCheckToken().then((token) => {
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["X-Firebase-App-Check"] = token;
+        }
+        return fetch("/api/geolocation/ip", { headers });
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data && typeof data === "object" && "country_code" in data && typeof data.country_code === "string") {
@@ -380,7 +386,12 @@ function AuthPortal() {
     setIsViesOffline(false);
     setVatCoordinates(null);
     try {
-      const response = await fetch(`/api/auth/vies?vat=${encodeURIComponent(vat)}&country=${cCode}`);
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {};
+      if (appCheckToken) {
+        headers["X-Firebase-App-Check"] = appCheckToken;
+      }
+      const response = await fetch(`/api/auth/vies?vat=${encodeURIComponent(vat)}&country=${cCode}`, { headers });
       if (response.ok) {
         const data = (await response.json()) as { 
           isValid: boolean; 
@@ -421,9 +432,14 @@ function AuthPortal() {
       return;
     }
     try {
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (appCheckToken) {
+        headers["X-Firebase-App-Check"] = appCheckToken;
+      }
       const response = await fetch("/api/geolocation/autocomplete", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ input: query, country: cCode })
       });
       if (response.ok) {
@@ -441,7 +457,12 @@ function AuthPortal() {
     setAddressPredictions([]);
     setIsAddressValidating(true);
     try {
-      const response = await fetch(`/api/geolocation/geocode?address=${encodeURIComponent(addressText)}&country=${cCode}`);
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {};
+      if (appCheckToken) {
+        headers["X-Firebase-App-Check"] = appCheckToken;
+      }
+      const response = await fetch(`/api/geolocation/geocode?address=${encodeURIComponent(addressText)}&country=${cCode}`, { headers });
       if (response.ok) {
         const data = (await response.json()) as {
           success: boolean;
