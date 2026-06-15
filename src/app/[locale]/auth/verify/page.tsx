@@ -137,6 +137,8 @@ export default function VerifyEmailPage() {
 
       if (!isPending) {
         setSsoCookie("sso_session=active; path=/; max-age=31536000; SameSite=Lax");
+        console.log("[Verification Page] Onboarding già completato, forzo il refresh del token per caricare i claims...");
+        await user.getIdToken(true);
         await handleFinalRedirect(user);
         return;
       }
@@ -159,6 +161,8 @@ export default function VerifyEmailPage() {
               setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
               setStatusMessage("Configurazione completata con successo!");
               setSsoCookie("sso_session=active; path=/; max-age=31536000; SameSite=Lax");
+              console.log("[Verification Page] Onboarding completato con successo, forzo il refresh del token...");
+              await user.getIdToken(true);
               await handleFinalRedirect(user);
             }
           } else if (res.status === 202) {
