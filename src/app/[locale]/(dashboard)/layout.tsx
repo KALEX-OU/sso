@@ -162,6 +162,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const [localeParam, setLocaleParam] = useState("en");
   const [onboardingPending, setOnboardingPending] = useState(false);
   const [onboardingMessage, setOnboardingMessage] = useState("Configurazione iniziale in corso...");
+  const isRefreshingRef = useRef(false);
+  const refreshAttemptsRef = useRef(0);
+
 
 
   // Forza il rendering client-side per evitare hydration mismatches
@@ -188,7 +191,18 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
 
   // Funzione per ricaricare le claims e sincronizzare con il backend
   const refreshClaims = useCallback(async (targetOrgId?: string) => {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser || isRefreshingRef.current) return;
+    
+    // Controlliamo se abbiamo superato i tentativi massimi (evita loop infiniti in caso di errore)
+    if (refreshAttemptsRef.current >= 3) {
+      console.warn("[Layout Refresh Claims] Raggiunto il limite massimo di tentativi di refresh. Onboarding incompleto.");
+      setError("Impossibile caricare l'organizzazione del profilo. Contatta l'assistenza.");
+      return;
+    }
+    
+    isRefreshingRef.current = true;
+    refreshAttemptsRef.current++;
+    
     try {
       const idToken = await auth.currentUser.getIdToken(true);
       const res = await fetchWithAppCheck("/api/auth/claims/refresh", {
@@ -204,6 +218,8 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         // Forza il refresh del token Firebase a livello client per recepire i nuovi claims
         const tokenResult = await auth.currentUser.getIdTokenResult(true);
         setClaims(tokenResult.claims);
+        // Resettiamo il contatore dei tentativi in caso di successo
+        refreshAttemptsRef.current = 0;
         // Ricarica i dati anagrafici dal backend
         await fetchAndSyncUserData(
           auth.currentUser,
@@ -216,8 +232,11 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       }
     } catch (err) {
       console.error("[Layout Refresh Claims] Errore:", err);
+    } finally {
+      isRefreshingRef.current = false;
     }
-  }, [currentLocale, changeLocale, theme, setTheme, setDbData]);
+  }, [currentLocale, changeLocale, theme, setTheme, setDbData, setError]);
+
 
   const syncRefs = useRef({ currentLocale, changeLocale, theme, setTheme });
   useEffect(() => {
@@ -271,6 +290,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
                 if (!stillPending) {
                   clearInterval(intervalId);
                   setOnboardingPending(false);
+                  refreshAttemptsRef.current = 0; // Reset tentativi
                   await refreshClaims();
                 }
               } catch (pollErr) {
@@ -294,14 +314,15 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
 
   // Effetto per innescare un refresh automatico dei claims se l'utente è loggato ma non ha ancora l'associazione dell'organizzazione
   useEffect(() => {
-    if (user && claims && !claims.orgId) {
+    if (user && claims && !claims.orgId && !onboardingPending) {
       console.log("[Layout] Custom claims non pronti o mancanti orgId. Inizio refresh automatico...");
       const timer = setTimeout(() => {
         void refreshClaims();
-      }, 0);
+      }, 1000); // 1 secondo di debouncing
       return () => clearTimeout(timer);
     }
-  }, [user, claims, refreshClaims]);
+  }, [user, claims, refreshClaims, onboardingPending]);
+
 
 
 
