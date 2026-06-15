@@ -4,6 +4,18 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Stato dello Sviluppo & Traguardi Raggiunti (Milestones)
+
+> [!NOTE]
+> **15 Giugno 2026 - Successo Onboarding E2E in Cloud**:
+> Raggiunta la stabilità assoluta del flusso di Registrazione ed Onboarding E2E in produzione (Staging/Production Cloud).
+> * Il flusso completo di autenticazione e convalida email su [sso.kalex.cloud](https://sso.kalex.cloud) e il backend di Hono su [api.kalex.cloud](https://api.kalex.cloud) è stato testato con successo dall'utente.
+> * Integrazione e provisioning dei domini custom completati e propagati a livello globale su Google Front End (GFE).
+> * Risolti i bug di concurrency loop e rate limiting legati al refresh dei custom claims e all'onboarding Stripe/PostgreSQL.
+> * I dati utente e organizzazione vengono cifrati correttamente a riposo (AES-256-GCM) in PostgreSQL ed associati a livello di metadati su Stripe Customer.
+> * Entrambi i progetti (`sso` e `api`) superano la validazione locale e di sicurezza (`npm run validate` con 0 vulnerabilità ed 0 errori).
+> * **Configurazione di test attiva**: Lo stato dei dati del test E2E di successo è conservato a livello di database cloud (Postgres, Firebase Auth, Stripe) per consentire la continuazione dello sviluppo su base dati reale e stabile (senza ulteriori pulizie coatte).
+
 # Regola di Validazione del Codice (Mandatoria & Restrittiva)
 
 Prima di rispondere all'utente o considerare completata qualsiasi attività, l'agente ha l'obbligo assoluto di eseguire il comando `npm run validate` nella root del progetto. Il codebase deve essere sempre immacolato: **100% privo di errori di compilazione, TypeScript, linter, warning o vulnerabilità**.
