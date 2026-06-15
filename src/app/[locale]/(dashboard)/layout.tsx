@@ -160,6 +160,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const [toast, setToast] = useState<ToastNotification | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [localeParam, setLocaleParam] = useState("en");
+  const [onboardingPending, setOnboardingPending] = useState(false);
+  const [onboardingMessage, setOnboardingMessage] = useState("Configurazione iniziale in corso...");
+
 
   // Forza il rendering client-side per evitare hydration mismatches
   useEffect(() => {
@@ -230,6 +233,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         setClaims(null);
         setDbData(null);
         setLoading(false);
+        setOnboardingPending(false);
         // Rimuove il cookie di sessione per il middleware
         document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         router.push(`/${localeParam}/auth`);
@@ -240,7 +244,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         try {
           const tokenResult = await currentUser.getIdTokenResult();
           setClaims(tokenResult.claims);
-          await fetchAndSyncUserData(
+          const isPending = await fetchAndSyncUserData(
             currentUser,
             syncRefs.current.currentLocale || "en",
             syncRefs.current.changeLocale,
@@ -248,6 +252,34 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
             syncRefs.current.setTheme,
             setDbData
           );
+
+          if (isPending) {
+            setOnboardingPending(true);
+            setOnboardingMessage("Configurazione iniziale dell'account in corso. Questa operazione richiede pochi istanti...");
+            
+            const intervalId = setInterval(async () => {
+              try {
+                const stillPending = await fetchAndSyncUserData(
+                  currentUser,
+                  syncRefs.current.currentLocale || "en",
+                  syncRefs.current.changeLocale,
+                  syncRefs.current.theme,
+                  syncRefs.current.setTheme,
+                  setDbData
+                );
+                
+                if (!stillPending) {
+                  clearInterval(intervalId);
+                  setOnboardingPending(false);
+                  await refreshClaims();
+                }
+              } catch (pollErr) {
+                console.error("Polling error in layout:", pollErr);
+                clearInterval(intervalId);
+                setOnboardingPending(false);
+              }
+            }, 3000);
+          }
         } catch (err) {
           console.error("Errore decodifica token:", err);
         } finally {
@@ -257,7 +289,8 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     });
 
     return () => unsubscribe();
-  }, [mounted, localeParam, router]);
+  }, [mounted, localeParam, router, refreshClaims]);
+
 
   // Effetto per innescare un refresh automatico dei claims se l'utente è loggato ma non ha ancora l'associazione dell'organizzazione
   useEffect(() => {
@@ -328,6 +361,17 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       </div>
     );
   }
+
+  if (onboardingPending) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center">
+        <span className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-6"></span>
+        <h2 className="text-lg font-bold mb-2">Configurazione in corso</h2>
+        <p className="text-slate-400 text-sm max-w-sm leading-relaxed">{onboardingMessage}</p>
+      </div>
+    );
+  }
+
 
 
 

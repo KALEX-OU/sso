@@ -200,46 +200,48 @@ export default function VerifyEmailPage() {
 
     verifiedRef.current = true;
     Promise.resolve().then(() => {
-      setStatusMessage(t("auth.verifyLoading") || "Verifica dell'email in corso...");
+      setStatusMessage(t("auth.verifyLoading") || "Inizializzazione sessione e verifica email...");
     });
 
-    const verifyAndSetup = async () => {
+    // Registriamo subito onAuthStateChanged per determinare lo stato di autenticazione effettivo del browser
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      unsubscribe(); // Eseguiamo l'unsubscribe immediatamente dopo la prima notifica di stato risolto
+      
       try {
         // 1. Convalida il codice di verifica email su Firebase Auth
         await applyActionCode(auth, oobCode);
         console.log("[Verification Page] applyActionCode completata con successo!");
 
-        // 2. Ascolta lo stato di autenticazione dell'utente
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-          unsubscribe();
-          if (user) {
-            // Se loggato nel browser corrente, avvia l'onboarding in PostgreSQL/Stripe
-            await handleOnboarding(user);
-          } else {
-            // Se non loggato, email verificata con successo ma reindirizziamo al login per completare
-            setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
-            setStatusMessage("Reindirizzamento al login per accedere ed attivare l'account...");
-            setLoading(false);
-            setTimeout(() => {
-              const loginUrl = new URL(`${window.location.origin}/${currentLocale}/auth`);
-              searchParams.forEach((value, key) => {
-                if (key !== "oobCode") {
-                  loginUrl.searchParams.set(key, value);
-                }
-              });
-              router.push(loginUrl.pathname + loginUrl.search);
-            }, 3000);
-          }
-        });
+        if (user) {
+          console.log("[Verification Page] Utente loggato rilevato:", user.email);
+          // Ricarichiamo l'utente per aggiornare lo stato di verifica email locale su Firebase Auth
+          await user.reload();
+          // Avvia l'onboarding in PostgreSQL/Stripe con polling
+          await handleOnboarding(user);
+        } else {
+          console.log("[Verification Page] Nessun utente loggato in questa scheda. Rimando al login.");
+          // Se non loggato, email verificata con successo ma reindirizziamo al login per completare
+          setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
+          setStatusMessage("Reindirizzamento al login per accedere ed attivare l'account...");
+          setLoading(false);
+          setTimeout(() => {
+            const loginUrl = new URL(`${window.location.origin}/${currentLocale}/auth`);
+            searchParams.forEach((value, key) => {
+              if (key !== "oobCode") {
+                loginUrl.searchParams.set(key, value);
+              }
+            });
+            router.push(loginUrl.pathname + loginUrl.search);
+          }, 3000);
+        }
       } catch (err) {
-        console.error("[Verification Page] Error applying action code:", err);
+        console.error("[Verification Page] Errore durante la verifica/onboarding:", err);
         setError(t("auth.verifyError") || "Il codice di verifica è scaduto o non è valido.");
         setLoading(false);
       }
-    };
-
-    verifyAndSetup();
+    });
   }, [oobCode, currentLocale, router, searchParams, t, handleOnboarding]);
+
 
   return (
     <div className={`min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans p-6 bg-gradient-to-br ${activeBgGradient}`}>
