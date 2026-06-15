@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useDashboard } from "../layout";
+import { fetchWithAppCheck } from "@/lib/firebase/client";
 import { Card, Button, Input, Chip, Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem, Label, TextField } from "@heroui/react";
 import { Cpu, Play, Terminal, AlertTriangle, Zap, CheckCircle2 } from "lucide-react";
 
@@ -52,7 +53,7 @@ export default function ComputePage() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error("Non autenticato.");
 
-      const response = await fetch("/api/compute/simulate", {
+      const response = await fetchWithAppCheck("/api/compute/simulate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

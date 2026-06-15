@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { auth, getAppCheckToken } from "@/lib/firebase/client";
+import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import {
   onAuthStateChanged,
   User,
@@ -283,13 +283,7 @@ function AuthPortal() {
     if (mounted && !geoFetchingRef.current) {
       console.log("[Locale Trace] Avvio rilevamento Geo-IP all'accesso della pagina auth.");
       geoFetchingRef.current = true;
-      getAppCheckToken().then((token) => {
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers["X-Firebase-App-Check"] = token;
-        }
-        return fetch("/api/geolocation/ip", { headers });
-      })
+      fetchWithAppCheck("/api/geolocation/ip")
         .then((res) => res.json())
         .then((data) => {
           if (data && typeof data === "object" && "country_code" in data && typeof data.country_code === "string") {
@@ -386,12 +380,7 @@ function AuthPortal() {
     setIsViesOffline(false);
     setVatCoordinates(null);
     try {
-      const appCheckToken = await getAppCheckToken();
-      const headers: Record<string, string> = {};
-      if (appCheckToken) {
-        headers["X-Firebase-App-Check"] = appCheckToken;
-      }
-      const response = await fetch(`/api/auth/vies?vat=${encodeURIComponent(vat)}&country=${cCode}`, { headers });
+      const response = await fetchWithAppCheck(`/api/auth/vies?vat=${encodeURIComponent(vat)}&country=${cCode}`);
       if (response.ok) {
         const data = (await response.json()) as { 
           isValid: boolean; 
@@ -425,21 +414,15 @@ function AuthPortal() {
     }
   }, [setValueReg, setVatCoordinates]);
 
-  // Funzioni per l'autocompletamento di Google Places (New)
   const fetchAddressPredictions = useCallback(async (query: string, cCode: string) => {
     if (!query || query.trim().length < 3) {
       setAddressPredictions([]);
       return;
     }
     try {
-      const appCheckToken = await getAppCheckToken();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (appCheckToken) {
-        headers["X-Firebase-App-Check"] = appCheckToken;
-      }
-      const response = await fetch("/api/geolocation/autocomplete", {
+      const response = await fetchWithAppCheck("/api/geolocation/autocomplete", {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input: query, country: cCode })
       });
       if (response.ok) {
@@ -457,12 +440,7 @@ function AuthPortal() {
     setAddressPredictions([]);
     setIsAddressValidating(true);
     try {
-      const appCheckToken = await getAppCheckToken();
-      const headers: Record<string, string> = {};
-      if (appCheckToken) {
-        headers["X-Firebase-App-Check"] = appCheckToken;
-      }
-      const response = await fetch(`/api/geolocation/geocode?address=${encodeURIComponent(addressText)}&country=${cCode}`, { headers });
+      const response = await fetchWithAppCheck(`/api/geolocation/geocode?address=${encodeURIComponent(addressText)}&country=${cCode}`);
       if (response.ok) {
         const data = (await response.json()) as {
           success: boolean;
@@ -506,7 +484,7 @@ function AuthPortal() {
     setRedirecting(true);
     try {
       const idToken = await currentUser.getIdToken();
-      const response = await fetch("/api/auth/code", {
+      const response = await fetchWithAppCheck("/api/auth/code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken, clientId, redirectUri })
@@ -605,7 +583,7 @@ function AuthPortal() {
     try {
       if (auth.currentUser) {
         const idToken = await auth.currentUser.getIdToken();
-        const response = await fetch("/api/auth/send-verification", {
+        const response = await fetchWithAppCheck("/api/auth/send-verification", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -767,15 +745,9 @@ function AuthPortal() {
         metadata: clientMetadata
       };
 
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      const appCheckToken = await getAppCheckToken();
-      if (appCheckToken) {
-        headers["X-Firebase-App-Check"] = appCheckToken;
-      }
-
-      const response = await fetch("/api/auth/create", {
+      const response = await fetchWithAppCheck("/api/auth/create", {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registerPayload)
       });
 
@@ -791,16 +763,10 @@ function AuthPortal() {
       // Attendi 3 secondi per permettere al task in background di completare la creazione dell'account
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Esegui login automatico post-registrazione per ottenere la sessione e inviare la mail di verifica
-      const loginHeaders: Record<string, string> = { "Content-Type": "application/json" };
-      if (appCheckToken) {
-        loginHeaders["X-Firebase-App-Check"] = appCheckToken;
-      }
-
       try {
-        const loginResponse = await fetch("/api/auth/login", {
+        const loginResponse = await fetchWithAppCheck("/api/auth/login", {
           method: "POST",
-          headers: loginHeaders,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: data.email, password: data.password })
         });
         

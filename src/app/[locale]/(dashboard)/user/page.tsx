@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layout";
-import { dataConnect } from "@/lib/firebase/client";
+import { dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { listMembersByOrg } from "@/lib/dataconnect-client";
 import {
   Button,
@@ -81,7 +81,7 @@ export default function UserManagementPage() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error("Non autenticato.");
 
-      const response = await fetch("/api/organization/member/create", {
+      const response = await fetchWithAppCheck("/api/organization/member/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -133,7 +133,7 @@ export default function UserManagementPage() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error("Non autenticato.");
 
-      await fetch("/api/organization/member/create", {
+      await fetchWithAppCheck("/api/organization/member/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

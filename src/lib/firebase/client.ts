@@ -63,5 +63,17 @@ export async function getAppCheckToken(): Promise<string | null> {
   }
 }
 
+export async function fetchWithAppCheck(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const token = await getAppCheckToken();
+  const headers = new Headers(init?.headers);
+  if (token) {
+    headers.set("X-Firebase-App-Check", token);
+  }
+  return fetch(input, {
+    ...init,
+    headers
+  });
+}
+
 export { app, auth, dataConnect, db, rtdb, storage };
 

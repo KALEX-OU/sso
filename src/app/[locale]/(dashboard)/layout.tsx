@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { auth, dataConnect } from "@/lib/firebase/client";
+import { auth, dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { Button, Avatar, Chip } from "@heroui/react";
 import { useTheme } from "next-themes";
@@ -78,7 +78,7 @@ async function fetchAndSyncUserData(
 ): Promise<boolean> {
   try {
     const idToken = await currentUser.getIdToken();
-    const response = await fetch("/api/auth/dashboard", {
+    const response = await fetchWithAppCheck("/api/auth/dashboard", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     if (!auth.currentUser) return;
     try {
       const idToken = await auth.currentUser.getIdToken(true);
-      const res = await fetch("/api/auth/claims/refresh", {
+      const res = await fetchWithAppCheck("/api/auth/claims/refresh", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -258,6 +258,17 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
 
     return () => unsubscribe();
   }, [mounted, localeParam, router]);
+
+  // Effetto per innescare un refresh automatico dei claims se l'utente è loggato ma non ha ancora l'associazione dell'organizzazione
+  useEffect(() => {
+    if (user && claims && !claims.orgId) {
+      console.log("[Layout] Custom claims non pronti o mancanti orgId. Inizio refresh automatico...");
+      const timer = setTimeout(() => {
+        void refreshClaims();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [user, claims, refreshClaims]);
 
 
 

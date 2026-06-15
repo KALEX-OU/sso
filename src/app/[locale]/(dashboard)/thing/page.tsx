@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layout";
-import { dataConnect } from "@/lib/firebase/client";
+import { dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { listThingsByOrg } from "@/lib/dataconnect-client";
 import {
   Button,
@@ -87,7 +87,7 @@ export default function ThingManagementPage() {
         throw new Error("I metadati hardware non sono in un formato JSON valido.");
       }
 
-      const response = await fetch("/api/thing/create", {
+      const response = await fetchWithAppCheck("/api/thing/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,7 +132,7 @@ export default function ThingManagementPage() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error("Non autenticato.");
 
-      const response = await fetch(`/api/thing/${thingId}`, {
+      const response = await fetchWithAppCheck(`/api/thing/${thingId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${idToken}`

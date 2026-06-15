@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { applyActionCode, onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
+import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import { useI18n, useCurrentLocale } from "@/locales/client";
 import { Card, Button } from "@heroui/react";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
       setStatusMessage("Reindirizzamento all'applicazione in corso...");
       try {
         const idToken = await user.getIdToken();
-        const response = await fetch("/api/auth/code", {
+        const response = await fetchWithAppCheck("/api/auth/code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idToken, clientId, redirectUri })
@@ -107,7 +107,7 @@ export default function VerifyEmailPage() {
       const idToken = await user.getIdToken(true);
 
       const triggerOnboarding = async (): Promise<boolean> => {
-        const res = await fetch("/api/auth/dashboard", {
+        const res = await fetchWithAppCheck("/api/auth/dashboard", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -146,7 +146,7 @@ export default function VerifyEmailPage() {
       // Avvia il polling ogni 3 secondi
       const intervalId = setInterval(async () => {
         try {
-          const res = await fetch("/api/auth/dashboard", {
+          const res = await fetchWithAppCheck("/api/auth/dashboard", {
             method: "GET",
             headers: {
               "Content-Type": "application/json",

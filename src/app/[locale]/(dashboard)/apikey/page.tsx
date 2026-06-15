@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layout";
-import { dataConnect } from "@/lib/firebase/client";
+import { dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { listApiKeysByOrg } from "@/lib/dataconnect-client";
 import {
   Button,
@@ -115,7 +115,7 @@ export default function ApiKeyManagementPage() {
         allowedFields: policy.allowedFields
       }));
 
-      const response = await fetch("/api/apikey/create", {
+      const response = await fetchWithAppCheck("/api/apikey/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -169,7 +169,7 @@ export default function ApiKeyManagementPage() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error("Non autenticato.");
 
-      const response = await fetch(`/api/apikey/${keyHash}`, {
+      const response = await fetchWithAppCheck(`/api/apikey/${keyHash}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${idToken}`
