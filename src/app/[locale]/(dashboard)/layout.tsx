@@ -161,7 +161,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [localeParam, setLocaleParam] = useState("en");
   const [onboardingPending, setOnboardingPending] = useState(false);
-  const [onboardingMessage, setOnboardingMessage] = useState("Configurazione iniziale in corso...");
+  const [onboardingMessage, setOnboardingMessage] = useState("");
   const isRefreshingRef = useRef(false);
   const refreshAttemptsRef = useRef(0);
 
@@ -280,7 +280,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
 
           if (isPending) {
             setOnboardingPending(true);
-            setOnboardingMessage("Configurazione iniziale dell'account in corso. Questa operazione richiede pochi istanti...");
+            setOnboardingMessage(t("onboarding.message"));
             
             if (pollingIntervalRef.current) {
               clearInterval(pollingIntervalRef.current);
@@ -333,7 +333,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         pollingIntervalRef.current = null;
       }
     };
-  }, [mounted, localeParam, router]);
+  }, [mounted, localeParam, router, t]);
 
 
   // Effetto per innescare un refresh automatico dei claims se l'utente è loggato ma non ha ancora l'associazione dell'organizzazione
@@ -411,8 +411,8 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center">
         <span className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-6"></span>
-        <h2 className="text-lg font-bold mb-2">Configurazione in corso</h2>
-        <p className="text-slate-400 text-sm max-w-sm leading-relaxed">{onboardingMessage}</p>
+        <h2 className="text-lg font-bold mb-2">{t("onboarding.title")}</h2>
+        <p className="text-slate-400 text-sm max-w-sm leading-relaxed">{onboardingMessage || t("onboarding.message.initial")}</p>
       </div>
     );
   }

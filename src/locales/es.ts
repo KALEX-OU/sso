@@ -109,5 +109,17 @@ export default {
   "auth.mfaSmsSent": "Hemos enviado un código de verificación de 6 dígitos por SMS a su número {phone}.",
   "auth.mfaCode": "Código de verificación SMS",
   "auth.mfaSubmit": "Verificar código",
-  "auth.verifyEmailSubDesc": "Una vez completada la verificación, esta pestaña se desbloqueará automáticamente."
+  "auth.verifyEmailSubDesc": "Una vez completada la verificación, esta pestaña se desbloqueará automáticamente.",
+  "auth.verifyRedirecting": "Redirigiendo a la aplicación...",
+  "auth.verifyStarting": "Iniciando la inicialización de la cuenta...",
+  "auth.verifyConfiguringOrg": "Configuración de la organización en curso...",
+  "auth.verifyAccountReady": "Cuenta lista. Configuración completada.",
+  "auth.verifySuccessMessage": "¡Configuración completada con éxito!",
+  "auth.verifyInitError": "Error durante la inicialización de la cuenta.",
+  "auth.verifyDatabaseError": "Error de inicialización de PostgreSQL y Stripe.",
+  "auth.verifyRedirectToLogin": "Redirigiendo al inicio de sesión para acceder y activar la cuenta...",
+  "auth.verifyFailedTitle": "Verificación Fallida",
+  "onboarding.title": "Configuración en curso",
+  "onboarding.message": "Configuración inicial de la cuenta en curso. Esta operación requiere unos instantes...",
+  "onboarding.message.initial": "Configuración inicial en curso..."
 } as const;

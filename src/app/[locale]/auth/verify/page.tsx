@@ -78,7 +78,7 @@ export default function VerifyEmailPage() {
   // Reindirizzamento finale all'applicazione client o alla dashboard locale
   const handleFinalRedirect = useCallback(async (user: User) => {
     if (redirectUri) {
-      setStatusMessage("Reindirizzamento all'applicazione in corso...");
+      setStatusMessage(t("auth.verifyRedirecting"));
       try {
         const idToken = await user.getIdToken();
         const response = await fetchWithAppCheck("/api/auth/code", {
@@ -97,12 +97,12 @@ export default function VerifyEmailPage() {
     }
     // Se non c'è un redirectUri, rimanda alla dashboard locale di SSO
     router.push(`/${currentLocale}`);
-  }, [clientId, currentLocale, redirectUri, router, state]);
+  }, [clientId, currentLocale, redirectUri, router, state, t]);
 
   // Avvio dell'onboarding in PostgreSQL e Stripe
   const handleOnboarding = useCallback(async (user: User) => {
     try {
-      setStatusMessage("Avvio inizializzazione dell'account...");
+      setStatusMessage(t("auth.verifyStarting"));
       // Forza il refresh del token JWT per aggiornare email_verified: true
       const idToken = await user.getIdToken(true);
 
@@ -117,7 +117,7 @@ export default function VerifyEmailPage() {
 
         if (res.status === 202) {
           const data = await res.json();
-          setStatusMessage(data.message || "Configurazione dell'organizzazione in corso...");
+          setStatusMessage(data.message || t("auth.verifyConfiguringOrg"));
           return true; // Polling necessario
         }
 
@@ -125,7 +125,7 @@ export default function VerifyEmailPage() {
           const data = await res.json();
           if (data.success) {
             setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
-            setStatusMessage("Account pronto. Configurazione completata.");
+            setStatusMessage(t("auth.verifyAccountReady"));
             return false; // Completato, no polling
           }
         }
@@ -159,7 +159,7 @@ export default function VerifyEmailPage() {
             if (data.success) {
               clearInterval(intervalId);
               setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
-              setStatusMessage("Configurazione completata con successo!");
+              setStatusMessage(t("auth.verifySuccessMessage"));
               setSsoCookie("sso_session=active; path=/; max-age=31536000; SameSite=Lax");
               console.log("[Verification Page] Onboarding completato con successo, forzo il refresh del token...");
               await user.getIdToken(true);
@@ -167,7 +167,7 @@ export default function VerifyEmailPage() {
             }
           } else if (res.status === 202) {
             const data = await res.json();
-            setStatusMessage(data.message || "Configurazione dell'organizzazione in corso...");
+            setStatusMessage(data.message || t("auth.verifyConfiguringOrg"));
           } else {
             clearInterval(intervalId);
             throw new Error("Errore nel polling dell'onboarding.");
@@ -175,13 +175,13 @@ export default function VerifyEmailPage() {
         } catch (pollErr) {
           console.error("Polling error on verify page:", pollErr);
           clearInterval(intervalId);
-          setError("Errore durante l'inizializzazione dell'account.");
+          setError(t("auth.verifyInitError"));
           setLoading(false);
         }
       }, 3000);
     } catch (err) {
       console.error("Onboarding error on verify page:", err);
-      setError("Errore di inizializzazione PostgreSQL e Stripe.");
+      setError(t("auth.verifyDatabaseError"));
       setLoading(false);
     }
   }, [t, handleFinalRedirect]);
@@ -200,7 +200,7 @@ export default function VerifyEmailPage() {
 
     verifiedRef.current = true;
     Promise.resolve().then(() => {
-      setStatusMessage(t("auth.verifyLoading") || "Inizializzazione sessione e verifica email...");
+      setStatusMessage(t("auth.verifyLoading"));
     });
 
     // Registriamo subito onAuthStateChanged per determinare lo stato di autenticazione effettivo del browser
@@ -222,7 +222,7 @@ export default function VerifyEmailPage() {
           console.log("[Verification Page] Nessun utente loggato in questa scheda. Rimando al login.");
           // Se non loggato, email verificata con successo ma reindirizziamo al login per completare
           setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
-          setStatusMessage("Reindirizzamento al login per accedere ed attivare l'account...");
+          setStatusMessage(t("auth.verifyRedirectToLogin"));
           setLoading(false);
           setTimeout(() => {
             const loginUrl = new URL(`${window.location.origin}/${currentLocale}/auth`);
@@ -274,7 +274,7 @@ export default function VerifyEmailPage() {
               <div className="w-12 h-12 bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500">
                 <AlertTriangle className="w-6 h-6" />
               </div>
-              <h3 className="text-md font-bold text-red-500">Verifica Fallita</h3>
+              <h3 className="text-md font-bold text-red-500">{t("auth.verifyFailedTitle")}</h3>
               <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">{error}</p>
               <Button
                 onClick={() => router.push(`/${currentLocale}/auth${window.location.search}`)}
