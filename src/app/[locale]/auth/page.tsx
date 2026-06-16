@@ -284,23 +284,18 @@ function AuthPortal() {
   // Automatismo Geo-IP per il paese di default e la lingua locale iniziale (attivo sia per login che per registrazione)
   useEffect(() => {
     if (mounted && !geoFetchingRef.current) {
-      console.log("[Locale Trace] Avvio rilevamento Geo-IP all'accesso della pagina auth.");
       geoFetchingRef.current = true;
       fetchWithAppCheck("/api/geolocation/ip")
         .then((res) => res.json())
         .then((data) => {
           if (data && typeof data === "object" && "country_code" in data && typeof data.country_code === "string") {
             const detectedCountry = data.country_code.toUpperCase();
-            console.log("[Locale Trace] Paese rilevato via Geo-IP:", detectedCountry);
             const isEU = EU_COUNTRIES.includes(detectedCountry as typeof EU_COUNTRIES[number]);
             if (isEU) {
               const geoInitialized = sessionStorage.getItem("sso_geo_initialized");
               if (!geoInitialized) {
-                console.log("[Locale Trace] Impostata nazione di default nel form via Geo-IP:", detectedCountry);
                 setValueReg("country", detectedCountry as typeof EU_COUNTRIES[number]);
                 sessionStorage.setItem("sso_geo_initialized", "true");
-              } else {
-                console.log("[Locale Trace] Geo-IP già inizializzato per questa sessione. Rispettata la scelta dell'utente.");
               }
             }
           }
@@ -536,7 +531,6 @@ function AuthPortal() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      console.log("[Auth State Change] User:", currentUser ? currentUser.email : "null", "Verified:", currentUser ? currentUser.emailVerified : "N/A");
       if (currentUser) {
         // Se non è verificato localmente, ricarica lo stato per sincronizzarlo con il server
         if (!currentUser.emailVerified) {
