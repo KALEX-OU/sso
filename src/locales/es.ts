@@ -122,7 +122,7 @@ export default {
   "onboarding.title": "Configuración en curso",
   "onboarding.message": "Configuración inicial de la cuenta en curso. Esta operación requiere unos instantes...",
   "onboarding.message.initial": "Configuración inicial en curso...",
-  "auth.vatRequiredAndViesValid": "El NIF/IVA introducido no es válido en el sistema VIES. Para proceder, asegúrese de que está habilitado para operaciones intracomunitarias.",
-  "auth.viesOfflineError": "El servicio de validación VIES está temporalmente fuera de línea. Por favor, inténtelo de nuevo en unos minutos.",
+  "auth.vatWarningInfo": "Información Fiscal (Directiva 2006/112/CE): El número de IVA introducido no figura como registrado o habilitado en el sistema VIES para operaciones intracomunitarias. Se permite el registro; sin embargo, las facturas estarán sujetas al tipo general del IVA del Estado miembro de establecimiento (IVA incluido), excluyendo el régimen de inversión del sujeto pasivo (Reverse Charge).",
+  "auth.viesOfflineWarning": "El servicio de validación VIES está temporalmente fuera de línea. Se permite el registro, pero la aplicación del régimen de exención del IVA intracomunitario se verificará posteriormente.",
   "auth.duplicateVatError": "Este NIF/IVA ya está asociado a otra organización registrada."
 } as const;

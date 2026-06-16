@@ -122,7 +122,7 @@ export default {
   "onboarding.title": "Setup in progress",
   "onboarding.message": "Initial account setup in progress. This will take just a moment...",
   "onboarding.message.initial": "Initial setup in progress...",
-  "auth.vatRequiredAndViesValid": "The VAT number entered is not valid in the VIES system. To proceed, make sure it is enabled for cross-border transactions.",
-  "auth.viesOfflineError": "The VIES validation service is temporarily offline. Please try again in a few minutes.",
+  "auth.vatWarningInfo": "Tax Information (Directive 2006/112/EC): The VAT number entered is not registered or enabled in the VIES system for intra-Community transactions. Registration is permitted; however, invoices will be subject to the standard VAT rate of the member State of establishment (VAT inclusive), excluding the reverse charge mechanism.",
+  "auth.viesOfflineWarning": "The VIES validation service is temporarily offline. Registration is permitted, but the eligibility for the intra-Community VAT exemption will be verified later.",
   "auth.duplicateVatError": "This VAT number is already associated with another registered organization."
 } as const;

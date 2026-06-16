@@ -165,7 +165,7 @@ function AuthPortal() {
   const [viesAddress, setViesAddress] = useState("");
   const [isVatVerified, setIsVatVerified] = useState(false);
   const [isViesOffline, setIsViesOffline] = useState(false);
-  const [isVatInvalid, setIsVatInvalid] = useState(false);
+  const [isVatWarning, setIsVatWarning] = useState(false);
   const [isNameFromVies, setIsNameFromVies] = useState(false);
   const [isAddressFromVies, setIsAddressFromVies] = useState(false);
   const [vatCoordinates, setVatCoordinates] = useState<{ latitude: number; longitude: number; altitude: number | null } | null>(null);
@@ -211,6 +211,7 @@ function AuthPortal() {
     register: registerReg,
     handleSubmit: handleSubmitReg,
     setValue: setValueReg,
+    setError: setErrorReg,
     control: controlReg,
     formState: { errors: errorsReg, isValid: isValidReg }
   } = useForm<RegisterInput>({
@@ -377,7 +378,7 @@ function AuthPortal() {
     const cleanVat = vat.replace(/[\s-]/g, "").toUpperCase();
     setIsVatValidating(true);
     setIsVatVerified(false);
-    setIsVatInvalid(false);
+    setIsVatWarning(false);
     setIsViesOffline(false);
     setIsNameFromVies(false);
     setIsAddressFromVies(false);
@@ -416,7 +417,7 @@ function AuthPortal() {
           }
         } else {
           setIsVatVerified(false);
-          setIsVatInvalid(true);
+          setIsVatWarning(true);
           setViesAddress("");
           setVatCoordinates(null);
         }
@@ -479,7 +480,7 @@ function AuthPortal() {
     const delayDebounce = setTimeout(() => {
       if (!vatNumberValue || vatNumberValue.trim() === "") {
         setIsVatVerified(false);
-        setIsVatInvalid(false);
+        setIsVatWarning(false);
         setIsViesOffline(false);
         setIsNameFromVies(false);
         setIsAddressFromVies(false);
@@ -491,7 +492,7 @@ function AuthPortal() {
         handleVatAutoFill(vatNumberValue, country);
       } else {
         setIsVatVerified(false);
-        setIsVatInvalid(false);
+        setIsVatWarning(false);
         setIsViesOffline(false);
         setIsNameFromVies(false);
         setIsAddressFromVies(false);
@@ -741,23 +742,6 @@ function AuthPortal() {
         return;
       }
 
-      const isVatFieldPopulated = data.vatNumber && data.vatNumber.trim() !== "";
-      const isVatRequired = data.regType === "business" || data.regType === "government";
-      
-      if (data.regType !== "personal" && (isVatRequired || isVatFieldPopulated)) {
-        if (isViesOffline) {
-          setError(t("auth.viesOfflineError"));
-          setLoading(false);
-          return;
-        }
-        if (!isVatVerified) {
-          setError(t("auth.vatRequiredAndViesValid"));
-          setIsVatInvalid(true);
-          setLoading(false);
-          return;
-        }
-      }
-
       const clientMetadata = {
         signupIp: "", // Sarà popolato lato server tramite l'IP della richiesta
         signupCountry: data.country,
@@ -840,8 +824,7 @@ function AuthPortal() {
         : "unknown";
 
       if (errCode === "auth/duplicate-vat") {
-        setError(t("auth.duplicateVatError"));
-        setIsVatInvalid(true);
+        setErrorReg("vatNumber", { type: "manual", message: t("auth.duplicateVatError") });
       } else {
         const message = err instanceof Error ? err.message : "Errore durante la registrazione.";
         setError(message);
@@ -1517,8 +1500,8 @@ function AuthPortal() {
                           <InputGroup className={`bg-white/50 dark:bg-slate-950/40 border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
                             isVatVerified
                               ? "border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)] focus-within:!border-emerald-500"
-                              : isVatInvalid
-                              ? "border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.15)] focus-within:!border-red-500"
+                              : isVatWarning
+                              ? "border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.15)] focus-within:!border-amber-500"
                               : "border-slate-200 dark:border-white/10 focus-within:!border-purple-500"
                           }`}>
                             <Input
@@ -1527,7 +1510,7 @@ function AuthPortal() {
                               className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                               {...registerReg("vatNumber")}
                             />
-                            {(isVatValidating || isVatVerified || isVatInvalid) && (
+                            {(isVatValidating || isVatVerified || isVatWarning) && (
                               <InputGroupSuffix className="flex items-center justify-center ml-2">
                                 {isVatValidating ? (
                                   <span className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></span>
@@ -1542,9 +1525,9 @@ function AuthPortal() {
                                     </svg>
                                   </div>
                                 ) : (
-                                  <div className="flex items-center justify-center text-red-500">
+                                  <div className="flex items-center justify-center text-amber-500">
                                     <svg className="h-4 w-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                   </div>
                                 )}
@@ -1563,28 +1546,28 @@ function AuthPortal() {
                       </div>
                     )}
 
-                    {isVatInvalid && (
-                      <div className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase tracking-wider mt-1 flex items-center gap-1.5 animate-in fade-in duration-300">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                        {t("auth.vatRequiredAndViesValid")}
+                    {isVatWarning && !isViesOffline && (
+                      <div className="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider mt-1 flex items-start gap-1.5 animate-in fade-in duration-300 leading-normal max-w-xl">
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0 mt-1"></span>
+                        <span>{t("auth.vatWarningInfo")}</span>
                       </div>
                     )}
 
                     {/* VIES Offline Alert */}
                     {isViesOffline && (
-                      <div className="bg-red-100 dark:bg-red-950/30 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-300 rounded-xl p-3 text-xs flex items-start gap-2">
-                        <svg className="h-4 w-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="bg-amber-100 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-3 text-xs flex items-start gap-2">
+                        <svg className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <div>
-                          <p className="font-bold">{t("auth.viesOfflineError")}</p>
+                          <p className="font-bold">{t("auth.viesOfflineWarning")}</p>
                         </div>
                       </div>
                     )}
 
                     {/* Campi denominazione ed indirizzo visibili solo se validati o in caso di offline del VIES */}
                     <div className={`space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300 ${
-                      (isVatVerified || isViesOffline) ? "block" : "hidden"
+                      (isVatVerified || isVatWarning || isViesOffline) ? "block" : "hidden"
                     }`}>
                       {/* Ragione Sociale */}
                       <TextField isInvalid={!!errorsReg.companyName} className="flex flex-col gap-1.5 w-full">

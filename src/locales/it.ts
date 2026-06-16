@@ -122,7 +122,7 @@ export default {
   "onboarding.title": "Configurazione in corso",
   "onboarding.message": "Configurazione iniziale dell'account in corso. Questa operazione richiede pochi istanti...",
   "onboarding.message.initial": "Configurazione iniziale in corso...",
-  "auth.vatRequiredAndViesValid": "La Partita IVA inserita non è valida nel sistema VIES. Per procedere, assicurati che sia abilitata per le operazioni transfrontaliere.",
-  "auth.viesOfflineError": "Il servizio di convalida VIES è temporaneamente offline. Per favore, riprova tra qualche minuto.",
+  "auth.vatWarningInfo": "Informativa Fiscale (Direttiva 2006/112/CE): L'identificativo IVA inserito non risulta registrato o abilitato nel sistema VIES per le operazioni intracomunitarie. La registrazione è consentita, tuttavia le fatture saranno assoggettate all'aliquota IVA ordinaria stabilita nello Stato membro di stabilimento (VAT inclusive), escludendo l'inversione contabile (Reverse Charge).",
+  "auth.viesOfflineWarning": "Il servizio di convalida VIES è temporaneamente offline. La registrazione è consentita, ma l'abilitazione al regime di esenzione IVA intracomunitaria verrà verificata successivamente.",
   "auth.duplicateVatError": "Questa Partita IVA è già associata ad un'altra organizzazione registrata."
 } as const;
