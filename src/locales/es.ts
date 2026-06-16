@@ -121,5 +121,8 @@ export default {
   "auth.verifyFailedTitle": "Verificación Fallida",
   "onboarding.title": "Configuración en curso",
   "onboarding.message": "Configuración inicial de la cuenta en curso. Esta operación requiere unos instantes...",
-  "onboarding.message.initial": "Configuración inicial en curso..."
+  "onboarding.message.initial": "Configuración inicial en curso...",
+  "auth.vatRequiredAndViesValid": "El NIF/IVA introducido no es válido en el sistema VIES. Para proceder, asegúrese de que está habilitado para operaciones intracomunitarias.",
+  "auth.viesOfflineError": "El servicio de validación VIES está temporalmente fuera de línea. Por favor, inténtelo de nuevo en unos minutos.",
+  "auth.duplicateVatError": "Este NIF/IVA ya está asociado a otra organización registrada."
 } as const;

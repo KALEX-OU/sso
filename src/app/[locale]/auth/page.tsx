@@ -165,6 +165,9 @@ function AuthPortal() {
   const [viesAddress, setViesAddress] = useState("");
   const [isVatVerified, setIsVatVerified] = useState(false);
   const [isViesOffline, setIsViesOffline] = useState(false);
+  const [isVatInvalid, setIsVatInvalid] = useState(false);
+  const [isNameFromVies, setIsNameFromVies] = useState(false);
+  const [isAddressFromVies, setIsAddressFromVies] = useState(false);
   const [vatCoordinates, setVatCoordinates] = useState<{ latitude: number; longitude: number; altitude: number | null } | null>(null);
   const geoFetchingRef = useRef(false);
 
@@ -334,6 +337,7 @@ function AuthPortal() {
       const savedViesAddress = sessionStorage.getItem("sso_vies_address");
       const savedManualAddress = sessionStorage.getItem("sso_manual_address");
       const savedCoordinates = sessionStorage.getItem("sso_vat_coordinates");
+
       setTimeout(() => {
         if (savedViesAddress) setViesAddress(savedViesAddress);
         if (savedManualAddress) setManualAddressInput(savedManualAddress);
@@ -375,12 +379,16 @@ function AuthPortal() {
 
   const handleVatAutoFill = useCallback(async (vat: string, cCode: typeof EU_COUNTRIES[number]) => {
     if (!vat || vat.length < 5) return;
+    const cleanVat = vat.replace(/[\s-]/g, "").toUpperCase();
     setIsVatValidating(true);
     setIsVatVerified(false);
+    setIsVatInvalid(false);
     setIsViesOffline(false);
+    setIsNameFromVies(false);
+    setIsAddressFromVies(false);
     setVatCoordinates(null);
     try {
-      const response = await fetchWithAppCheck(`/api/auth/vies?vat=${encodeURIComponent(vat)}&country=${cCode}`);
+      const response = await fetchWithAppCheck(`/api/auth/vies?vat=${encodeURIComponent(cleanVat)}&country=${cCode}`);
       if (response.ok) {
         const data = (await response.json()) as { 
           isValid: boolean; 
@@ -394,13 +402,26 @@ function AuthPortal() {
           setValueReg("companyName", "");
           setViesAddress("");
           setVatCoordinates(null);
-        } else if (data.isValid && data.name && data.name !== "---") {
-          setValueReg("companyName", data.name, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
-          setViesAddress(data.address || "");
+        } else if (data.isValid) {
           setIsVatVerified(true);
           setVatCoordinates(data.coordinates || null);
+
+          if (data.name && data.name !== "---") {
+            setValueReg("companyName", data.name, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+            setIsNameFromVies(true);
+          } else {
+            setIsNameFromVies(false);
+          }
+
+          if (data.address && data.address !== "---") {
+            setViesAddress(data.address);
+            setIsAddressFromVies(true);
+          } else {
+            setIsAddressFromVies(false);
+          }
         } else {
           setIsVatVerified(false);
+          setIsVatInvalid(true);
           setViesAddress("");
           setVatCoordinates(null);
         }
@@ -463,7 +484,10 @@ function AuthPortal() {
     const delayDebounce = setTimeout(() => {
       if (!vatNumberValue || vatNumberValue.trim() === "") {
         setIsVatVerified(false);
+        setIsVatInvalid(false);
         setIsViesOffline(false);
+        setIsNameFromVies(false);
+        setIsAddressFromVies(false);
         setViesAddress("");
         return;
       }
@@ -472,7 +496,10 @@ function AuthPortal() {
         handleVatAutoFill(vatNumberValue, country);
       } else {
         setIsVatVerified(false);
+        setIsVatInvalid(false);
         setIsViesOffline(false);
+        setIsNameFromVies(false);
+        setIsAddressFromVies(false);
         setViesAddress("");
       }
     }, 1000);
@@ -714,6 +741,29 @@ function AuthPortal() {
     setError("");
     setLoading(true);
     try {
+      if (isVatValidating) {
+        setError("Convalida della Partita IVA in corso... Attendi un istante.");
+        setLoading(false);
+        return;
+      }
+
+      const isVatFieldPopulated = data.vatNumber && data.vatNumber.trim() !== "";
+      const isVatRequired = data.regType === "business" || data.regType === "government";
+      
+      if (data.regType !== "personal" && (isVatRequired || isVatFieldPopulated)) {
+        if (isViesOffline) {
+          setError(t("auth.viesOfflineError"));
+          setLoading(false);
+          return;
+        }
+        if (!isVatVerified) {
+          setError(t("auth.vatRequiredAndViesValid"));
+          setIsVatInvalid(true);
+          setLoading(false);
+          return;
+        }
+      }
+
       const clientMetadata = {
         signupIp: "", // Sarà popolato lato server tramite l'IP della richiesta
         signupCountry: data.country,
@@ -753,11 +803,15 @@ function AuthPortal() {
 
       const resData = (await response.json()) as {
         success: boolean;
-        error?: { message: string };
+        error?: { message: string; code?: string };
       };
 
       if (!response.ok || !resData.success) {
-        throw new Error(resData.error?.message || "Errore durante la registrazione.");
+        const errObj = new Error(resData.error?.message || "Errore durante la registrazione.") as Error & { code?: string };
+        if (resData.error?.code) {
+          errObj.code = resData.error.code;
+        }
+        throw errObj;
       }
 
       // Attendi 3 secondi per permettere al task in background di completare la creazione dell'account
@@ -787,8 +841,17 @@ function AuthPortal() {
       sessionStorage.removeItem("sso_register_form"); // Rimuovi dati salvati
     } catch (err) {
       console.error("Registration error:", err);
-      const message = err instanceof Error ? err.message : "Errore durante la registrazione.";
-      setError(message);
+      const errCode = (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string")
+        ? (err as { code: string }).code
+        : "unknown";
+
+      if (errCode === "auth/duplicate-vat") {
+        setError(t("auth.duplicateVatError"));
+        setIsVatInvalid(true);
+      } else {
+        const message = err instanceof Error ? err.message : "Errore durante la registrazione.";
+        setError(message);
+      }
       setLoading(false);
     }
   };
@@ -1139,6 +1202,7 @@ function AuthPortal() {
                     <Input
                       type="email"
                       placeholder="name@example.com"
+                      autoComplete="username"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerLogin("email")}
                     />
@@ -1157,6 +1221,7 @@ function AuthPortal() {
                     <Input
                       type="password"
                       placeholder="••••••••"
+                      autoComplete="current-password"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerLogin("password")}
                     />
@@ -1237,6 +1302,7 @@ function AuthPortal() {
                     <Input
                       type="text"
                       placeholder="Mario Rossi"
+                      autoComplete="name"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerReg("fullName")}
                     />
@@ -1256,6 +1322,7 @@ function AuthPortal() {
                     <Input
                       type="email"
                       placeholder="name@example.com"
+                      autoComplete="username"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerReg("email")}
                     />
@@ -1276,6 +1343,7 @@ function AuthPortal() {
                       <Input
                         type="password"
                         placeholder="••••••••"
+                        autoComplete="new-password"
                         className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                         {...registerReg("password")}
                       />
@@ -1455,6 +1523,8 @@ function AuthPortal() {
                           <InputGroup className={`bg-white/50 dark:bg-slate-950/40 border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
                             isVatVerified
                               ? "border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)] focus-within:!border-emerald-500"
+                              : isVatInvalid
+                              ? "border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.15)] focus-within:!border-red-500"
                               : "border-slate-200 dark:border-white/10 focus-within:!border-purple-500"
                           }`}>
                             <Input
@@ -1463,11 +1533,11 @@ function AuthPortal() {
                               className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                               {...registerReg("vatNumber")}
                             />
-                            {(isVatValidating || isVatVerified) && (
+                            {(isVatValidating || isVatVerified || isVatInvalid) && (
                               <InputGroupSuffix className="flex items-center justify-center ml-2">
                                 {isVatValidating ? (
                                   <span className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></span>
-                                ) : (
+                                ) : isVatVerified ? (
                                   <div className="flex items-center justify-center">
                                     <span className="flex h-2 w-2 relative mr-1">
                                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -1475,6 +1545,12 @@ function AuthPortal() {
                                     </span>
                                     <svg className="h-4 w-4 text-emerald-500 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center text-red-500">
+                                    <svg className="h-4 w-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                   </div>
                                 )}
@@ -1493,15 +1569,21 @@ function AuthPortal() {
                       </div>
                     )}
 
+                    {isVatInvalid && (
+                      <div className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase tracking-wider mt-1 flex items-center gap-1.5 animate-in fade-in duration-300">
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                        {t("auth.vatRequiredAndViesValid")}
+                      </div>
+                    )}
+
                     {/* VIES Offline Alert */}
                     {isViesOffline && (
-                      <div className="bg-amber-100 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-3 text-xs flex items-start gap-2">
-                        <svg className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="bg-red-100 dark:bg-red-950/30 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-300 rounded-xl p-3 text-xs flex items-start gap-2">
+                        <svg className="h-4 w-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <div>
-                          <p className="font-bold">Servizio VIES temporaneamente offline</p>
-                          <p className="text-[10px] opacity-90 mt-0.5">Procedi compilando manualmente i dati ufficiali dell&apos;ente.</p>
+                          <p className="font-bold">{t("auth.viesOfflineError")}</p>
                         </div>
                       </div>
                     )}
@@ -1520,7 +1602,7 @@ function AuthPortal() {
                             : t("auth.companyNameEducation")}
                         </Label>
                         <InputGroup className={`border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
-                          isVatVerified
+                          (isVatVerified && isNameFromVies)
                             ? "bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/5 text-slate-500 cursor-not-allowed"
                             : "bg-white/50 dark:bg-slate-950/40 border-slate-200 dark:border-white/10 focus-within:!border-purple-500"
                         }`}>
@@ -1530,7 +1612,7 @@ function AuthPortal() {
                             render={({ field }) => (
                               <Input
                                 type="text"
-                                readOnly={isVatVerified}
+                                readOnly={isVatVerified && isNameFromVies}
                                 placeholder={
                                   regType === "business"
                                     ? t("auth.companyNamePlaceholderBusiness")
@@ -1539,7 +1621,7 @@ function AuthPortal() {
                                     : t("auth.companyNamePlaceholderEducation")
                                 }
                                 className={`bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 ${
-                                  isVatVerified ? "cursor-not-allowed opacity-75" : ""
+                                  (isVatVerified && isNameFromVies) ? "cursor-not-allowed opacity-75" : ""
                                 }`}
                                 value={field.value || ""}
                                 onChange={field.onChange}
@@ -1557,7 +1639,7 @@ function AuthPortal() {
                         <label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-1">
                           {t("auth.legalAddress")}
                         </label>
-                        {isVatVerified ? (
+                        {(isVatVerified && isAddressFromVies) ? (
                           <textarea
                             rows={2}
                             readOnly={true}

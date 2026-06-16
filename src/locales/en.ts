@@ -121,5 +121,8 @@ export default {
   "auth.verifyFailedTitle": "Verification Failed",
   "onboarding.title": "Setup in progress",
   "onboarding.message": "Initial account setup in progress. This will take just a moment...",
-  "onboarding.message.initial": "Initial setup in progress..."
+  "onboarding.message.initial": "Initial setup in progress...",
+  "auth.vatRequiredAndViesValid": "The VAT number entered is not valid in the VIES system. To proceed, make sure it is enabled for cross-border transactions.",
+  "auth.viesOfflineError": "The VIES validation service is temporarily offline. Please try again in a few minutes.",
+  "auth.duplicateVatError": "This VAT number is already associated with another registered organization."
 } as const;

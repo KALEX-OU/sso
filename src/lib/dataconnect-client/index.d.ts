@@ -40,6 +40,16 @@ export interface ApiKey_Key {
   __typename?: 'ApiKey_Key';
 }
 
+export interface AssignServiceSeatData {
+  serviceSeat_insert: ServiceSeat_Key;
+}
+
+export interface AssignServiceSeatVariables {
+  orgId: string;
+  serviceId: string;
+  uid: string;
+}
+
 export interface AuditLog_Key {
   logId: string;
   __typename?: 'AuditLog_Key';
@@ -115,6 +125,9 @@ export interface CreateInvoiceVariables {
   amount: number;
   status: string;
   pdfUrl?: string | null;
+  taxPercent?: number | null;
+  taxAmount?: number | null;
+  subtotal?: number | null;
   products?: unknown | null;
   services?: unknown | null;
   isTest?: boolean | null;
@@ -142,6 +155,7 @@ export interface CreateOrganizationVariables {
   longitude?: number | null;
   altitude?: number | null;
   confirmed?: boolean | null;
+  viesValidated?: boolean | null;
   metadata?: unknown | null;
 }
 
@@ -156,6 +170,11 @@ export interface CreateProductVariables {
   type: string;
   sku?: string | null;
   price: number;
+  stripeProductId?: string | null;
+  stripePricePersonalId?: string | null;
+  stripePriceBusinessId?: string | null;
+  stripePriceGovernmentId?: string | null;
+  stripePriceEducationId?: string | null;
   isActive?: boolean | null;
   isTest?: boolean | null;
 }
@@ -171,6 +190,11 @@ export interface CreateServiceVariables {
   type: string;
   priceModel?: string | null;
   priceText?: string | null;
+  stripeProductId?: string | null;
+  stripePricePersonalId?: string | null;
+  stripePriceBusinessId?: string | null;
+  stripePriceGovernmentId?: string | null;
+  stripePriceEducationId?: string | null;
   isActive?: boolean | null;
   isTest?: boolean | null;
 }
@@ -386,6 +410,9 @@ export interface GetInvoiceDetailsData {
         amount: number;
         status: string;
         pdfUrl?: string | null;
+        taxPercent?: number | null;
+        taxAmount?: number | null;
+        subtotal?: number | null;
         products?: unknown | null;
         services?: unknown | null;
         createdAt: TimestampString;
@@ -394,6 +421,22 @@ export interface GetInvoiceDetailsData {
 
 export interface GetInvoiceDetailsVariables {
   invoiceId: string;
+}
+
+export interface GetOrganizationByStripeCustomerData {
+  organizations: ({
+    orgId: string;
+    name: string;
+    type: string;
+    country: string;
+    stripeCustomerId?: string | null;
+    stripeConnectAccountId?: string | null;
+    stripeConnectOnboarded?: boolean | null;
+  } & Organization_Key)[];
+}
+
+export interface GetOrganizationByStripeCustomerVariables {
+  stripeCustomerId: string;
 }
 
 export interface GetOrganizationDetailsData {
@@ -446,6 +489,11 @@ export interface GetProductDetailsData {
     type: string;
     sku?: string | null;
     price: number;
+    stripeProductId?: string | null;
+    stripePricePersonalId?: string | null;
+    stripePriceBusinessId?: string | null;
+    stripePriceGovernmentId?: string | null;
+    stripePriceEducationId?: string | null;
     isActive: boolean;
     isTest: boolean;
     createdAt: TimestampString;
@@ -464,6 +512,11 @@ export interface GetServiceDetailsData {
     type: string;
     priceModel?: string | null;
     priceText?: string | null;
+    stripeProductId?: string | null;
+    stripePricePersonalId?: string | null;
+    stripePriceBusinessId?: string | null;
+    stripePriceGovernmentId?: string | null;
+    stripePriceEducationId?: string | null;
     isActive: boolean;
     isTest: boolean;
     createdAt: TimestampString;
@@ -519,39 +572,56 @@ export interface GetUserClaimsContextData {
     locale?: string | null;
     theme?: string | null;
     metadata?: unknown | null;
-    userOrganizations_on_user: ({
-      role: string;
-      organization: {
-        orgId: string;
-        name: string;
-        type: string;
-        confirmed: boolean;
-        isTest: boolean;
-        viesValidated: boolean;
-        country: string;
-        vatNumber?: string | null;
-        sdiCode?: string | null;
-        officeCode?: string | null;
-        cigCode?: string | null;
-        cupCode?: string | null;
-        stripeCustomerId?: string | null;
-        stripeConnectAccountId?: string | null;
-        stripeConnectOnboarded?: boolean | null;
-        address?: string | null;
-        latitude?: number | null;
-        longitude?: number | null;
-        altitude?: number | null;
-        metadata?: unknown | null;
-        serviceSubscriptions_on_organization: ({
-          service: {
-            serviceId: string;
-          } & Service_Key;
-            status: string;
-            tier?: string | null;
-            expiresAt?: TimestampString | null;
-        })[];
-      } & Organization_Key;
+    serviceSeats_on_user: ({
+      service: {
+        serviceId: string;
+      } & Service_Key;
+        organization: {
+          orgId: string;
+        } & Organization_Key;
     })[];
+      userOrganizations_on_user: ({
+        role: string;
+        organization: {
+          orgId: string;
+          name: string;
+          type: string;
+          confirmed: boolean;
+          isTest: boolean;
+          viesValidated: boolean;
+          country: string;
+          vatNumber?: string | null;
+          sdiCode?: string | null;
+          officeCode?: string | null;
+          cigCode?: string | null;
+          cupCode?: string | null;
+          stripeCustomerId?: string | null;
+          stripeConnectAccountId?: string | null;
+          stripeConnectOnboarded?: boolean | null;
+          address?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          altitude?: number | null;
+          metadata?: unknown | null;
+          serviceSubscriptions_on_organization: ({
+            service: {
+              serviceId: string;
+            } & Service_Key;
+              status: string;
+              tier?: string | null;
+              seats: number;
+              expiresAt?: TimestampString | null;
+          })[];
+            serviceSeats_on_organization: ({
+              service: {
+                serviceId: string;
+              } & Service_Key;
+                user: {
+                  uid: string;
+                } & User_Key;
+            })[];
+        } & Organization_Key;
+      })[];
   } & User_Key;
 }
 
@@ -580,6 +650,8 @@ export interface ListAllApiKeysData {
 export interface ListAllAuditLogsData {
   auditLogs: ({
     logId: string;
+    orgId: string;
+    uid: string;
   } & AuditLog_Key)[];
 }
 
@@ -618,6 +690,11 @@ export interface ListAllProductsData {
     sku?: string | null;
     price: number;
     isActive: boolean;
+    stripeProductId?: string | null;
+    stripePricePersonalId?: string | null;
+    stripePriceBusinessId?: string | null;
+    stripePriceGovernmentId?: string | null;
+    stripePriceEducationId?: string | null;
   } & Product_Key)[];
 }
 
@@ -638,6 +715,11 @@ export interface ListAllServicesData {
     name: string;
     type: string;
     isActive: boolean;
+    stripeProductId?: string | null;
+    stripePricePersonalId?: string | null;
+    stripePriceBusinessId?: string | null;
+    stripePriceGovernmentId?: string | null;
+    stripePriceEducationId?: string | null;
   } & Service_Key)[];
 }
 
@@ -717,11 +799,47 @@ export interface ListInvoicesByOrgData {
     amount: number;
     status: string;
     pdfUrl?: string | null;
+    taxPercent?: number | null;
+    taxAmount?: number | null;
+    subtotal?: number | null;
     createdAt: TimestampString;
+    buyer: {
+      orgId: string;
+      name: string;
+    } & Organization_Key;
+      seller: {
+        orgId: string;
+        name: string;
+      } & Organization_Key;
   } & Invoice_Key)[];
 }
 
 export interface ListInvoicesByOrgVariables {
+  orgId: string;
+}
+
+export interface ListInvoicesBySellerData {
+  invoices: ({
+    invoiceId: string;
+    amount: number;
+    status: string;
+    pdfUrl?: string | null;
+    taxPercent?: number | null;
+    taxAmount?: number | null;
+    subtotal?: number | null;
+    createdAt: TimestampString;
+    buyer: {
+      orgId: string;
+      name: string;
+    } & Organization_Key;
+      seller: {
+        orgId: string;
+        name: string;
+      } & Organization_Key;
+  } & Invoice_Key)[];
+}
+
+export interface ListInvoicesBySellerVariables {
   orgId: string;
 }
 
@@ -810,6 +928,23 @@ export interface RemoveUserFromTeamVariables {
   teamId: string;
 }
 
+export interface RevokeServiceSeatData {
+  serviceSeat_delete?: ServiceSeat_Key | null;
+}
+
+export interface RevokeServiceSeatVariables {
+  orgId: string;
+  serviceId: string;
+  uid: string;
+}
+
+export interface ServiceSeat_Key {
+  organizationOrgId: string;
+  serviceServiceId: string;
+  userUid: string;
+  __typename?: 'ServiceSeat_Key';
+}
+
 export interface ServiceSubscription_Key {
   organizationOrgId: string;
   serviceServiceId: string;
@@ -863,6 +998,15 @@ export interface UpdateOrganizationStripeConnectVariables {
   stripeConnectOnboarded: boolean;
 }
 
+export interface UpdateOrganizationStripeCustomerData {
+  organization_update?: Organization_Key | null;
+}
+
+export interface UpdateOrganizationStripeCustomerVariables {
+  orgId: string;
+  stripeCustomerId: string;
+}
+
 export interface UpdateSubscriptionStatusData {
   serviceSubscription_upsert: ServiceSubscription_Key;
 }
@@ -872,6 +1016,7 @@ export interface UpdateSubscriptionStatusVariables {
   serviceId: string;
   status: string;
   tier?: string | null;
+  seats?: number | null;
   expiresAt?: TimestampString | null;
 }
 
@@ -958,402 +1103,6 @@ export interface User_Key {
   __typename?: 'User_Key';
 }
 
-interface GetUserClaimsContextRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-  operationName: string;
-}
-export const getUserClaimsContextRef: GetUserClaimsContextRef;
-
-export function getUserClaimsContext(vars: GetUserClaimsContextVariables): QueryPromise<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-export function getUserClaimsContext(dc: DataConnect, vars: GetUserClaimsContextVariables): QueryPromise<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-
-interface GetOrganizationDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetOrganizationDetailsVariables): QueryRef<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetOrganizationDetailsVariables): QueryRef<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-  operationName: string;
-}
-export const getOrganizationDetailsRef: GetOrganizationDetailsRef;
-
-export function getOrganizationDetails(vars: GetOrganizationDetailsVariables): QueryPromise<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-export function getOrganizationDetails(dc: DataConnect, vars: GetOrganizationDetailsVariables): QueryPromise<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-
-interface GetAuthCodeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetAuthCodeVariables): QueryRef<GetAuthCodeData, GetAuthCodeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetAuthCodeVariables): QueryRef<GetAuthCodeData, GetAuthCodeVariables>;
-  operationName: string;
-}
-export const getAuthCodeRef: GetAuthCodeRef;
-
-export function getAuthCode(vars: GetAuthCodeVariables): QueryPromise<GetAuthCodeData, GetAuthCodeVariables>;
-export function getAuthCode(dc: DataConnect, vars: GetAuthCodeVariables): QueryPromise<GetAuthCodeData, GetAuthCodeVariables>;
-
-interface GetPreRegistrationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetPreRegistrationVariables): QueryRef<GetPreRegistrationData, GetPreRegistrationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetPreRegistrationVariables): QueryRef<GetPreRegistrationData, GetPreRegistrationVariables>;
-  operationName: string;
-}
-export const getPreRegistrationRef: GetPreRegistrationRef;
-
-export function getPreRegistration(vars: GetPreRegistrationVariables): QueryPromise<GetPreRegistrationData, GetPreRegistrationVariables>;
-export function getPreRegistration(dc: DataConnect, vars: GetPreRegistrationVariables): QueryPromise<GetPreRegistrationData, GetPreRegistrationVariables>;
-
-interface ListAllPreRegistrationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllPreRegistrationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllPreRegistrationsData, undefined>;
-  operationName: string;
-}
-export const listAllPreRegistrationsRef: ListAllPreRegistrationsRef;
-
-export function listAllPreRegistrations(): QueryPromise<ListAllPreRegistrationsData, undefined>;
-export function listAllPreRegistrations(dc: DataConnect): QueryPromise<ListAllPreRegistrationsData, undefined>;
-
-interface ListAllUsersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllUsersData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllUsersData, undefined>;
-  operationName: string;
-}
-export const listAllUsersRef: ListAllUsersRef;
-
-export function listAllUsers(): QueryPromise<ListAllUsersData, undefined>;
-export function listAllUsers(dc: DataConnect): QueryPromise<ListAllUsersData, undefined>;
-
-interface ListAllOrganizationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllOrganizationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllOrganizationsData, undefined>;
-  operationName: string;
-}
-export const listAllOrganizationsRef: ListAllOrganizationsRef;
-
-export function listAllOrganizations(): QueryPromise<ListAllOrganizationsData, undefined>;
-export function listAllOrganizations(dc: DataConnect): QueryPromise<ListAllOrganizationsData, undefined>;
-
-interface ListAllUserOrganizationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllUserOrganizationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllUserOrganizationsData, undefined>;
-  operationName: string;
-}
-export const listAllUserOrganizationsRef: ListAllUserOrganizationsRef;
-
-export function listAllUserOrganizations(): QueryPromise<ListAllUserOrganizationsData, undefined>;
-export function listAllUserOrganizations(dc: DataConnect): QueryPromise<ListAllUserOrganizationsData, undefined>;
-
-interface ListAllServiceSubscriptionsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllServiceSubscriptionsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllServiceSubscriptionsData, undefined>;
-  operationName: string;
-}
-export const listAllServiceSubscriptionsRef: ListAllServiceSubscriptionsRef;
-
-export function listAllServiceSubscriptions(): QueryPromise<ListAllServiceSubscriptionsData, undefined>;
-export function listAllServiceSubscriptions(dc: DataConnect): QueryPromise<ListAllServiceSubscriptionsData, undefined>;
-
-interface ListAllAuthCodesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllAuthCodesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllAuthCodesData, undefined>;
-  operationName: string;
-}
-export const listAllAuthCodesRef: ListAllAuthCodesRef;
-
-export function listAllAuthCodes(): QueryPromise<ListAllAuthCodesData, undefined>;
-export function listAllAuthCodes(dc: DataConnect): QueryPromise<ListAllAuthCodesData, undefined>;
-
-interface GetApiKeyRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApiKeyVariables): QueryRef<GetApiKeyData, GetApiKeyVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetApiKeyVariables): QueryRef<GetApiKeyData, GetApiKeyVariables>;
-  operationName: string;
-}
-export const getApiKeyRef: GetApiKeyRef;
-
-export function getApiKey(vars: GetApiKeyVariables): QueryPromise<GetApiKeyData, GetApiKeyVariables>;
-export function getApiKey(dc: DataConnect, vars: GetApiKeyVariables): QueryPromise<GetApiKeyData, GetApiKeyVariables>;
-
-interface GetApiKeyPermissionsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApiKeyPermissionsVariables): QueryRef<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetApiKeyPermissionsVariables): QueryRef<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-  operationName: string;
-}
-export const getApiKeyPermissionsRef: GetApiKeyPermissionsRef;
-
-export function getApiKeyPermissions(vars: GetApiKeyPermissionsVariables): QueryPromise<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-export function getApiKeyPermissions(dc: DataConnect, vars: GetApiKeyPermissionsVariables): QueryPromise<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-
-interface GetThingRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetThingVariables): QueryRef<GetThingData, GetThingVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetThingVariables): QueryRef<GetThingData, GetThingVariables>;
-  operationName: string;
-}
-export const getThingRef: GetThingRef;
-
-export function getThing(vars: GetThingVariables): QueryPromise<GetThingData, GetThingVariables>;
-export function getThing(dc: DataConnect, vars: GetThingVariables): QueryPromise<GetThingData, GetThingVariables>;
-
-interface GetThingByTokenHashRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetThingByTokenHashVariables): QueryRef<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetThingByTokenHashVariables): QueryRef<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-  operationName: string;
-}
-export const getThingByTokenHashRef: GetThingByTokenHashRef;
-
-export function getThingByTokenHash(vars: GetThingByTokenHashVariables): QueryPromise<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-export function getThingByTokenHash(dc: DataConnect, vars: GetThingByTokenHashVariables): QueryPromise<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-
-interface ListThingsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListThingsByOrgVariables): QueryRef<ListThingsByOrgData, ListThingsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListThingsByOrgVariables): QueryRef<ListThingsByOrgData, ListThingsByOrgVariables>;
-  operationName: string;
-}
-export const listThingsByOrgRef: ListThingsByOrgRef;
-
-export function listThingsByOrg(vars: ListThingsByOrgVariables): QueryPromise<ListThingsByOrgData, ListThingsByOrgVariables>;
-export function listThingsByOrg(dc: DataConnect, vars: ListThingsByOrgVariables): QueryPromise<ListThingsByOrgData, ListThingsByOrgVariables>;
-
-interface ListApiKeysByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListApiKeysByOrgVariables): QueryRef<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListApiKeysByOrgVariables): QueryRef<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-  operationName: string;
-}
-export const listApiKeysByOrgRef: ListApiKeysByOrgRef;
-
-export function listApiKeysByOrg(vars: ListApiKeysByOrgVariables): QueryPromise<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-export function listApiKeysByOrg(dc: DataConnect, vars: ListApiKeysByOrgVariables): QueryPromise<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-
-interface ListMembersByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListMembersByOrgVariables): QueryRef<ListMembersByOrgData, ListMembersByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListMembersByOrgVariables): QueryRef<ListMembersByOrgData, ListMembersByOrgVariables>;
-  operationName: string;
-}
-export const listMembersByOrgRef: ListMembersByOrgRef;
-
-export function listMembersByOrg(vars: ListMembersByOrgVariables): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
-export function listMembersByOrg(dc: DataConnect, vars: ListMembersByOrgVariables): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
-
-interface ListAllThingsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllThingsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllThingsData, undefined>;
-  operationName: string;
-}
-export const listAllThingsRef: ListAllThingsRef;
-
-export function listAllThings(): QueryPromise<ListAllThingsData, undefined>;
-export function listAllThings(dc: DataConnect): QueryPromise<ListAllThingsData, undefined>;
-
-interface ListAllApiKeysRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApiKeysData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllApiKeysData, undefined>;
-  operationName: string;
-}
-export const listAllApiKeysRef: ListAllApiKeysRef;
-
-export function listAllApiKeys(): QueryPromise<ListAllApiKeysData, undefined>;
-export function listAllApiKeys(dc: DataConnect): QueryPromise<ListAllApiKeysData, undefined>;
-
-interface ListAllApiKeyPermissionsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApiKeyPermissionsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllApiKeyPermissionsData, undefined>;
-  operationName: string;
-}
-export const listAllApiKeyPermissionsRef: ListAllApiKeyPermissionsRef;
-
-export function listAllApiKeyPermissions(): QueryPromise<ListAllApiKeyPermissionsData, undefined>;
-export function listAllApiKeyPermissions(dc: DataConnect): QueryPromise<ListAllApiKeyPermissionsData, undefined>;
-
-interface ListAllAuditLogsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllAuditLogsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllAuditLogsData, undefined>;
-  operationName: string;
-}
-export const listAllAuditLogsRef: ListAllAuditLogsRef;
-
-export function listAllAuditLogs(): QueryPromise<ListAllAuditLogsData, undefined>;
-export function listAllAuditLogs(dc: DataConnect): QueryPromise<ListAllAuditLogsData, undefined>;
-
-interface ListAllServicesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllServicesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllServicesData, undefined>;
-  operationName: string;
-}
-export const listAllServicesRef: ListAllServicesRef;
-
-export function listAllServices(): QueryPromise<ListAllServicesData, undefined>;
-export function listAllServices(dc: DataConnect): QueryPromise<ListAllServicesData, undefined>;
-
-interface ListAllProductsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllProductsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllProductsData, undefined>;
-  operationName: string;
-}
-export const listAllProductsRef: ListAllProductsRef;
-
-export function listAllProducts(): QueryPromise<ListAllProductsData, undefined>;
-export function listAllProducts(dc: DataConnect): QueryPromise<ListAllProductsData, undefined>;
-
-interface ListAllInvoicesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllInvoicesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllInvoicesData, undefined>;
-  operationName: string;
-}
-export const listAllInvoicesRef: ListAllInvoicesRef;
-
-export function listAllInvoices(): QueryPromise<ListAllInvoicesData, undefined>;
-export function listAllInvoices(dc: DataConnect): QueryPromise<ListAllInvoicesData, undefined>;
-
-interface ListAllTeamsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllTeamsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllTeamsData, undefined>;
-  operationName: string;
-}
-export const listAllTeamsRef: ListAllTeamsRef;
-
-export function listAllTeams(): QueryPromise<ListAllTeamsData, undefined>;
-export function listAllTeams(dc: DataConnect): QueryPromise<ListAllTeamsData, undefined>;
-
-interface ListAllTeamMembersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllTeamMembersData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllTeamMembersData, undefined>;
-  operationName: string;
-}
-export const listAllTeamMembersRef: ListAllTeamMembersRef;
-
-export function listAllTeamMembers(): QueryPromise<ListAllTeamMembersData, undefined>;
-export function listAllTeamMembers(dc: DataConnect): QueryPromise<ListAllTeamMembersData, undefined>;
-
-interface ListInvoicesByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListInvoicesByOrgVariables): QueryRef<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListInvoicesByOrgVariables): QueryRef<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-  operationName: string;
-}
-export const listInvoicesByOrgRef: ListInvoicesByOrgRef;
-
-export function listInvoicesByOrg(vars: ListInvoicesByOrgVariables): QueryPromise<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-export function listInvoicesByOrg(dc: DataConnect, vars: ListInvoicesByOrgVariables): QueryPromise<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-
-interface GetInvoiceDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetInvoiceDetailsVariables): QueryRef<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetInvoiceDetailsVariables): QueryRef<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-  operationName: string;
-}
-export const getInvoiceDetailsRef: GetInvoiceDetailsRef;
-
-export function getInvoiceDetails(vars: GetInvoiceDetailsVariables): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-export function getInvoiceDetails(dc: DataConnect, vars: GetInvoiceDetailsVariables): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-
-interface GetServiceDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetServiceDetailsVariables): QueryRef<GetServiceDetailsData, GetServiceDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetServiceDetailsVariables): QueryRef<GetServiceDetailsData, GetServiceDetailsVariables>;
-  operationName: string;
-}
-export const getServiceDetailsRef: GetServiceDetailsRef;
-
-export function getServiceDetails(vars: GetServiceDetailsVariables): QueryPromise<GetServiceDetailsData, GetServiceDetailsVariables>;
-export function getServiceDetails(dc: DataConnect, vars: GetServiceDetailsVariables): QueryPromise<GetServiceDetailsData, GetServiceDetailsVariables>;
-
-interface GetProductDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
-  operationName: string;
-}
-export const getProductDetailsRef: GetProductDetailsRef;
-
-export function getProductDetails(vars: GetProductDetailsVariables): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
-export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
-
-interface ListTeamsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListTeamsByOrgVariables): QueryRef<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListTeamsByOrgVariables): QueryRef<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-  operationName: string;
-}
-export const listTeamsByOrgRef: ListTeamsByOrgRef;
-
-export function listTeamsByOrg(vars: ListTeamsByOrgVariables): QueryPromise<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-export function listTeamsByOrg(dc: DataConnect, vars: ListTeamsByOrgVariables): QueryPromise<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-
-interface ListTeamMembersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListTeamMembersVariables): QueryRef<ListTeamMembersData, ListTeamMembersVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListTeamMembersVariables): QueryRef<ListTeamMembersData, ListTeamMembersVariables>;
-  operationName: string;
-}
-export const listTeamMembersRef: ListTeamMembersRef;
-
-export function listTeamMembers(vars: ListTeamMembersVariables): QueryPromise<ListTeamMembersData, ListTeamMembersVariables>;
-export function listTeamMembers(dc: DataConnect, vars: ListTeamMembersVariables): QueryPromise<ListTeamMembersData, ListTeamMembersVariables>;
-
-interface ListAuditLogsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListAuditLogsByOrgVariables): QueryRef<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListAuditLogsByOrgVariables): QueryRef<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-  operationName: string;
-}
-export const listAuditLogsByOrgRef: ListAuditLogsByOrgRef;
-
-export function listAuditLogsByOrg(vars: ListAuditLogsByOrgVariables): QueryPromise<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-export function listAuditLogsByOrg(dc: DataConnect, vars: ListAuditLogsByOrgVariables): QueryPromise<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-
 interface UpsertUserRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: UpsertUserVariables): MutationRef<UpsertUserData, UpsertUserVariables>;
@@ -1402,6 +1151,30 @@ export const updateSubscriptionStatusRef: UpdateSubscriptionStatusRef;
 export function updateSubscriptionStatus(vars: UpdateSubscriptionStatusVariables): MutationPromise<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
 export function updateSubscriptionStatus(dc: DataConnect, vars: UpdateSubscriptionStatusVariables): MutationPromise<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
 
+interface AssignServiceSeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: AssignServiceSeatVariables): MutationRef<AssignServiceSeatData, AssignServiceSeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: AssignServiceSeatVariables): MutationRef<AssignServiceSeatData, AssignServiceSeatVariables>;
+  operationName: string;
+}
+export const assignServiceSeatRef: AssignServiceSeatRef;
+
+export function assignServiceSeat(vars: AssignServiceSeatVariables): MutationPromise<AssignServiceSeatData, AssignServiceSeatVariables>;
+export function assignServiceSeat(dc: DataConnect, vars: AssignServiceSeatVariables): MutationPromise<AssignServiceSeatData, AssignServiceSeatVariables>;
+
+interface RevokeServiceSeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RevokeServiceSeatVariables): MutationRef<RevokeServiceSeatData, RevokeServiceSeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RevokeServiceSeatVariables): MutationRef<RevokeServiceSeatData, RevokeServiceSeatVariables>;
+  operationName: string;
+}
+export const revokeServiceSeatRef: RevokeServiceSeatRef;
+
+export function revokeServiceSeat(vars: RevokeServiceSeatVariables): MutationPromise<RevokeServiceSeatData, RevokeServiceSeatVariables>;
+export function revokeServiceSeat(dc: DataConnect, vars: RevokeServiceSeatVariables): MutationPromise<RevokeServiceSeatData, RevokeServiceSeatVariables>;
+
 interface UpdateOrganizationStripeConnectRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: UpdateOrganizationStripeConnectVariables): MutationRef<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
@@ -1413,6 +1186,18 @@ export const updateOrganizationStripeConnectRef: UpdateOrganizationStripeConnect
 
 export function updateOrganizationStripeConnect(vars: UpdateOrganizationStripeConnectVariables): MutationPromise<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
 export function updateOrganizationStripeConnect(dc: DataConnect, vars: UpdateOrganizationStripeConnectVariables): MutationPromise<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
+
+interface UpdateOrganizationStripeCustomerRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationStripeCustomerVariables): MutationRef<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateOrganizationStripeCustomerVariables): MutationRef<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
+  operationName: string;
+}
+export const updateOrganizationStripeCustomerRef: UpdateOrganizationStripeCustomerRef;
+
+export function updateOrganizationStripeCustomer(vars: UpdateOrganizationStripeCustomerVariables): MutationPromise<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
+export function updateOrganizationStripeCustomer(dc: DataConnect, vars: UpdateOrganizationStripeCustomerVariables): MutationPromise<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
 
 interface CreateAuthCodeRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1773,4 +1558,424 @@ export const removeUserFromTeamRef: RemoveUserFromTeamRef;
 
 export function removeUserFromTeam(vars: RemoveUserFromTeamVariables): MutationPromise<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
 export function removeUserFromTeam(dc: DataConnect, vars: RemoveUserFromTeamVariables): MutationPromise<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
+
+interface GetUserClaimsContextRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
+  operationName: string;
+}
+export const getUserClaimsContextRef: GetUserClaimsContextRef;
+
+export function getUserClaimsContext(vars: GetUserClaimsContextVariables): QueryPromise<GetUserClaimsContextData, GetUserClaimsContextVariables>;
+export function getUserClaimsContext(dc: DataConnect, vars: GetUserClaimsContextVariables): QueryPromise<GetUserClaimsContextData, GetUserClaimsContextVariables>;
+
+interface GetOrganizationDetailsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationDetailsVariables): QueryRef<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrganizationDetailsVariables): QueryRef<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
+  operationName: string;
+}
+export const getOrganizationDetailsRef: GetOrganizationDetailsRef;
+
+export function getOrganizationDetails(vars: GetOrganizationDetailsVariables): QueryPromise<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
+export function getOrganizationDetails(dc: DataConnect, vars: GetOrganizationDetailsVariables): QueryPromise<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
+
+interface GetAuthCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetAuthCodeVariables): QueryRef<GetAuthCodeData, GetAuthCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetAuthCodeVariables): QueryRef<GetAuthCodeData, GetAuthCodeVariables>;
+  operationName: string;
+}
+export const getAuthCodeRef: GetAuthCodeRef;
+
+export function getAuthCode(vars: GetAuthCodeVariables): QueryPromise<GetAuthCodeData, GetAuthCodeVariables>;
+export function getAuthCode(dc: DataConnect, vars: GetAuthCodeVariables): QueryPromise<GetAuthCodeData, GetAuthCodeVariables>;
+
+interface GetPreRegistrationRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPreRegistrationVariables): QueryRef<GetPreRegistrationData, GetPreRegistrationVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPreRegistrationVariables): QueryRef<GetPreRegistrationData, GetPreRegistrationVariables>;
+  operationName: string;
+}
+export const getPreRegistrationRef: GetPreRegistrationRef;
+
+export function getPreRegistration(vars: GetPreRegistrationVariables): QueryPromise<GetPreRegistrationData, GetPreRegistrationVariables>;
+export function getPreRegistration(dc: DataConnect, vars: GetPreRegistrationVariables): QueryPromise<GetPreRegistrationData, GetPreRegistrationVariables>;
+
+interface ListAllPreRegistrationsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllPreRegistrationsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllPreRegistrationsData, undefined>;
+  operationName: string;
+}
+export const listAllPreRegistrationsRef: ListAllPreRegistrationsRef;
+
+export function listAllPreRegistrations(): QueryPromise<ListAllPreRegistrationsData, undefined>;
+export function listAllPreRegistrations(dc: DataConnect): QueryPromise<ListAllPreRegistrationsData, undefined>;
+
+interface ListAllUsersRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllUsersData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllUsersData, undefined>;
+  operationName: string;
+}
+export const listAllUsersRef: ListAllUsersRef;
+
+export function listAllUsers(): QueryPromise<ListAllUsersData, undefined>;
+export function listAllUsers(dc: DataConnect): QueryPromise<ListAllUsersData, undefined>;
+
+interface ListAllOrganizationsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllOrganizationsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllOrganizationsData, undefined>;
+  operationName: string;
+}
+export const listAllOrganizationsRef: ListAllOrganizationsRef;
+
+export function listAllOrganizations(): QueryPromise<ListAllOrganizationsData, undefined>;
+export function listAllOrganizations(dc: DataConnect): QueryPromise<ListAllOrganizationsData, undefined>;
+
+interface ListAllUserOrganizationsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllUserOrganizationsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllUserOrganizationsData, undefined>;
+  operationName: string;
+}
+export const listAllUserOrganizationsRef: ListAllUserOrganizationsRef;
+
+export function listAllUserOrganizations(): QueryPromise<ListAllUserOrganizationsData, undefined>;
+export function listAllUserOrganizations(dc: DataConnect): QueryPromise<ListAllUserOrganizationsData, undefined>;
+
+interface ListAllServiceSubscriptionsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllServiceSubscriptionsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllServiceSubscriptionsData, undefined>;
+  operationName: string;
+}
+export const listAllServiceSubscriptionsRef: ListAllServiceSubscriptionsRef;
+
+export function listAllServiceSubscriptions(): QueryPromise<ListAllServiceSubscriptionsData, undefined>;
+export function listAllServiceSubscriptions(dc: DataConnect): QueryPromise<ListAllServiceSubscriptionsData, undefined>;
+
+interface ListAllAuthCodesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllAuthCodesData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllAuthCodesData, undefined>;
+  operationName: string;
+}
+export const listAllAuthCodesRef: ListAllAuthCodesRef;
+
+export function listAllAuthCodes(): QueryPromise<ListAllAuthCodesData, undefined>;
+export function listAllAuthCodes(dc: DataConnect): QueryPromise<ListAllAuthCodesData, undefined>;
+
+interface GetApiKeyRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetApiKeyVariables): QueryRef<GetApiKeyData, GetApiKeyVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetApiKeyVariables): QueryRef<GetApiKeyData, GetApiKeyVariables>;
+  operationName: string;
+}
+export const getApiKeyRef: GetApiKeyRef;
+
+export function getApiKey(vars: GetApiKeyVariables): QueryPromise<GetApiKeyData, GetApiKeyVariables>;
+export function getApiKey(dc: DataConnect, vars: GetApiKeyVariables): QueryPromise<GetApiKeyData, GetApiKeyVariables>;
+
+interface GetApiKeyPermissionsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetApiKeyPermissionsVariables): QueryRef<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetApiKeyPermissionsVariables): QueryRef<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
+  operationName: string;
+}
+export const getApiKeyPermissionsRef: GetApiKeyPermissionsRef;
+
+export function getApiKeyPermissions(vars: GetApiKeyPermissionsVariables): QueryPromise<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
+export function getApiKeyPermissions(dc: DataConnect, vars: GetApiKeyPermissionsVariables): QueryPromise<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
+
+interface GetThingRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetThingVariables): QueryRef<GetThingData, GetThingVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetThingVariables): QueryRef<GetThingData, GetThingVariables>;
+  operationName: string;
+}
+export const getThingRef: GetThingRef;
+
+export function getThing(vars: GetThingVariables): QueryPromise<GetThingData, GetThingVariables>;
+export function getThing(dc: DataConnect, vars: GetThingVariables): QueryPromise<GetThingData, GetThingVariables>;
+
+interface GetThingByTokenHashRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetThingByTokenHashVariables): QueryRef<GetThingByTokenHashData, GetThingByTokenHashVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetThingByTokenHashVariables): QueryRef<GetThingByTokenHashData, GetThingByTokenHashVariables>;
+  operationName: string;
+}
+export const getThingByTokenHashRef: GetThingByTokenHashRef;
+
+export function getThingByTokenHash(vars: GetThingByTokenHashVariables): QueryPromise<GetThingByTokenHashData, GetThingByTokenHashVariables>;
+export function getThingByTokenHash(dc: DataConnect, vars: GetThingByTokenHashVariables): QueryPromise<GetThingByTokenHashData, GetThingByTokenHashVariables>;
+
+interface ListThingsByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListThingsByOrgVariables): QueryRef<ListThingsByOrgData, ListThingsByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListThingsByOrgVariables): QueryRef<ListThingsByOrgData, ListThingsByOrgVariables>;
+  operationName: string;
+}
+export const listThingsByOrgRef: ListThingsByOrgRef;
+
+export function listThingsByOrg(vars: ListThingsByOrgVariables): QueryPromise<ListThingsByOrgData, ListThingsByOrgVariables>;
+export function listThingsByOrg(dc: DataConnect, vars: ListThingsByOrgVariables): QueryPromise<ListThingsByOrgData, ListThingsByOrgVariables>;
+
+interface ListApiKeysByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListApiKeysByOrgVariables): QueryRef<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListApiKeysByOrgVariables): QueryRef<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
+  operationName: string;
+}
+export const listApiKeysByOrgRef: ListApiKeysByOrgRef;
+
+export function listApiKeysByOrg(vars: ListApiKeysByOrgVariables): QueryPromise<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
+export function listApiKeysByOrg(dc: DataConnect, vars: ListApiKeysByOrgVariables): QueryPromise<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
+
+interface ListMembersByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMembersByOrgVariables): QueryRef<ListMembersByOrgData, ListMembersByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListMembersByOrgVariables): QueryRef<ListMembersByOrgData, ListMembersByOrgVariables>;
+  operationName: string;
+}
+export const listMembersByOrgRef: ListMembersByOrgRef;
+
+export function listMembersByOrg(vars: ListMembersByOrgVariables): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
+export function listMembersByOrg(dc: DataConnect, vars: ListMembersByOrgVariables): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
+
+interface ListAllThingsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllThingsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllThingsData, undefined>;
+  operationName: string;
+}
+export const listAllThingsRef: ListAllThingsRef;
+
+export function listAllThings(): QueryPromise<ListAllThingsData, undefined>;
+export function listAllThings(dc: DataConnect): QueryPromise<ListAllThingsData, undefined>;
+
+interface ListAllApiKeysRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllApiKeysData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllApiKeysData, undefined>;
+  operationName: string;
+}
+export const listAllApiKeysRef: ListAllApiKeysRef;
+
+export function listAllApiKeys(): QueryPromise<ListAllApiKeysData, undefined>;
+export function listAllApiKeys(dc: DataConnect): QueryPromise<ListAllApiKeysData, undefined>;
+
+interface ListAllApiKeyPermissionsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllApiKeyPermissionsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllApiKeyPermissionsData, undefined>;
+  operationName: string;
+}
+export const listAllApiKeyPermissionsRef: ListAllApiKeyPermissionsRef;
+
+export function listAllApiKeyPermissions(): QueryPromise<ListAllApiKeyPermissionsData, undefined>;
+export function listAllApiKeyPermissions(dc: DataConnect): QueryPromise<ListAllApiKeyPermissionsData, undefined>;
+
+interface ListAllAuditLogsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllAuditLogsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllAuditLogsData, undefined>;
+  operationName: string;
+}
+export const listAllAuditLogsRef: ListAllAuditLogsRef;
+
+export function listAllAuditLogs(): QueryPromise<ListAllAuditLogsData, undefined>;
+export function listAllAuditLogs(dc: DataConnect): QueryPromise<ListAllAuditLogsData, undefined>;
+
+interface ListAllServicesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllServicesData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllServicesData, undefined>;
+  operationName: string;
+}
+export const listAllServicesRef: ListAllServicesRef;
+
+export function listAllServices(): QueryPromise<ListAllServicesData, undefined>;
+export function listAllServices(dc: DataConnect): QueryPromise<ListAllServicesData, undefined>;
+
+interface ListAllProductsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllProductsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllProductsData, undefined>;
+  operationName: string;
+}
+export const listAllProductsRef: ListAllProductsRef;
+
+export function listAllProducts(): QueryPromise<ListAllProductsData, undefined>;
+export function listAllProducts(dc: DataConnect): QueryPromise<ListAllProductsData, undefined>;
+
+interface ListAllInvoicesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllInvoicesData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllInvoicesData, undefined>;
+  operationName: string;
+}
+export const listAllInvoicesRef: ListAllInvoicesRef;
+
+export function listAllInvoices(): QueryPromise<ListAllInvoicesData, undefined>;
+export function listAllInvoices(dc: DataConnect): QueryPromise<ListAllInvoicesData, undefined>;
+
+interface ListAllTeamsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllTeamsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllTeamsData, undefined>;
+  operationName: string;
+}
+export const listAllTeamsRef: ListAllTeamsRef;
+
+export function listAllTeams(): QueryPromise<ListAllTeamsData, undefined>;
+export function listAllTeams(dc: DataConnect): QueryPromise<ListAllTeamsData, undefined>;
+
+interface ListAllTeamMembersRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllTeamMembersData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllTeamMembersData, undefined>;
+  operationName: string;
+}
+export const listAllTeamMembersRef: ListAllTeamMembersRef;
+
+export function listAllTeamMembers(): QueryPromise<ListAllTeamMembersData, undefined>;
+export function listAllTeamMembers(dc: DataConnect): QueryPromise<ListAllTeamMembersData, undefined>;
+
+interface ListInvoicesByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListInvoicesByOrgVariables): QueryRef<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListInvoicesByOrgVariables): QueryRef<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
+  operationName: string;
+}
+export const listInvoicesByOrgRef: ListInvoicesByOrgRef;
+
+export function listInvoicesByOrg(vars: ListInvoicesByOrgVariables): QueryPromise<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
+export function listInvoicesByOrg(dc: DataConnect, vars: ListInvoicesByOrgVariables): QueryPromise<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
+
+interface ListInvoicesBySellerRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListInvoicesBySellerVariables): QueryRef<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListInvoicesBySellerVariables): QueryRef<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
+  operationName: string;
+}
+export const listInvoicesBySellerRef: ListInvoicesBySellerRef;
+
+export function listInvoicesBySeller(vars: ListInvoicesBySellerVariables): QueryPromise<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
+export function listInvoicesBySeller(dc: DataConnect, vars: ListInvoicesBySellerVariables): QueryPromise<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
+
+interface GetInvoiceDetailsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetInvoiceDetailsVariables): QueryRef<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetInvoiceDetailsVariables): QueryRef<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
+  operationName: string;
+}
+export const getInvoiceDetailsRef: GetInvoiceDetailsRef;
+
+export function getInvoiceDetails(vars: GetInvoiceDetailsVariables): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
+export function getInvoiceDetails(dc: DataConnect, vars: GetInvoiceDetailsVariables): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
+
+interface GetServiceDetailsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetServiceDetailsVariables): QueryRef<GetServiceDetailsData, GetServiceDetailsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetServiceDetailsVariables): QueryRef<GetServiceDetailsData, GetServiceDetailsVariables>;
+  operationName: string;
+}
+export const getServiceDetailsRef: GetServiceDetailsRef;
+
+export function getServiceDetails(vars: GetServiceDetailsVariables): QueryPromise<GetServiceDetailsData, GetServiceDetailsVariables>;
+export function getServiceDetails(dc: DataConnect, vars: GetServiceDetailsVariables): QueryPromise<GetServiceDetailsData, GetServiceDetailsVariables>;
+
+interface GetProductDetailsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
+  operationName: string;
+}
+export const getProductDetailsRef: GetProductDetailsRef;
+
+export function getProductDetails(vars: GetProductDetailsVariables): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
+export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
+
+interface GetOrganizationByStripeCustomerRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationByStripeCustomerVariables): QueryRef<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrganizationByStripeCustomerVariables): QueryRef<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
+  operationName: string;
+}
+export const getOrganizationByStripeCustomerRef: GetOrganizationByStripeCustomerRef;
+
+export function getOrganizationByStripeCustomer(vars: GetOrganizationByStripeCustomerVariables): QueryPromise<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
+export function getOrganizationByStripeCustomer(dc: DataConnect, vars: GetOrganizationByStripeCustomerVariables): QueryPromise<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
+
+interface ListTeamsByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListTeamsByOrgVariables): QueryRef<ListTeamsByOrgData, ListTeamsByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListTeamsByOrgVariables): QueryRef<ListTeamsByOrgData, ListTeamsByOrgVariables>;
+  operationName: string;
+}
+export const listTeamsByOrgRef: ListTeamsByOrgRef;
+
+export function listTeamsByOrg(vars: ListTeamsByOrgVariables): QueryPromise<ListTeamsByOrgData, ListTeamsByOrgVariables>;
+export function listTeamsByOrg(dc: DataConnect, vars: ListTeamsByOrgVariables): QueryPromise<ListTeamsByOrgData, ListTeamsByOrgVariables>;
+
+interface ListTeamMembersRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListTeamMembersVariables): QueryRef<ListTeamMembersData, ListTeamMembersVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListTeamMembersVariables): QueryRef<ListTeamMembersData, ListTeamMembersVariables>;
+  operationName: string;
+}
+export const listTeamMembersRef: ListTeamMembersRef;
+
+export function listTeamMembers(vars: ListTeamMembersVariables): QueryPromise<ListTeamMembersData, ListTeamMembersVariables>;
+export function listTeamMembers(dc: DataConnect, vars: ListTeamMembersVariables): QueryPromise<ListTeamMembersData, ListTeamMembersVariables>;
+
+interface ListAuditLogsByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListAuditLogsByOrgVariables): QueryRef<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListAuditLogsByOrgVariables): QueryRef<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
+  operationName: string;
+}
+export const listAuditLogsByOrgRef: ListAuditLogsByOrgRef;
+
+export function listAuditLogsByOrg(vars: ListAuditLogsByOrgVariables): QueryPromise<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
+export function listAuditLogsByOrg(dc: DataConnect, vars: ListAuditLogsByOrgVariables): QueryPromise<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
 

@@ -1,0 +1,71 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.75rem;
+}
+
+.label {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background-color: rgba(168, 85, 247, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  color: #a855f7;
+  font-weight: 500;
+}
+
+.chipText strong {
+  font-weight: 700;
+}
+
+.chipButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.chipButton:hover {
+  opacity: 1;
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.clearButton:hover {
+  color: #0f172a;
+}
+
+:global(.dark) .clearButton:hover {
+  color: #f8fafc;
+}

@@ -121,11 +121,12 @@ async function fetchAndSyncUserData(
               stripeCustomerId: data.organization.stripeCustomerId,
               stripeConnectAccountId: data.organization.stripeConnectAccountId,
               stripeConnectOnboarded: data.organization.stripeConnectOnboarded,
-              serviceSubscriptions_on_organization: data.organization.serviceSubscriptions || []
+              serviceSubscriptions_on_organization: data.organization.serviceSubscriptions || [],
+              serviceSeats_on_organization: data.organization.serviceSeats || []
             }
           }] : []
         };
-        setDbData(userData as GetUserClaimsContextData["user"]);
+        setDbData(userData as unknown as GetUserClaimsContextData["user"]);
 
         if (data.user.locale && data.user.locale !== currentLocale) {
           changeLocale(data.user.locale as "it" | "en" | "es");

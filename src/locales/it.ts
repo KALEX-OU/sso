@@ -121,5 +121,8 @@ export default {
   "auth.verifyFailedTitle": "Verifica Fallita",
   "onboarding.title": "Configurazione in corso",
   "onboarding.message": "Configurazione iniziale dell'account in corso. Questa operazione richiede pochi istanti...",
-  "onboarding.message.initial": "Configurazione iniziale in corso..."
+  "onboarding.message.initial": "Configurazione iniziale in corso...",
+  "auth.vatRequiredAndViesValid": "La Partita IVA inserita non è valida nel sistema VIES. Per procedere, assicurati che sia abilitata per le operazioni transfrontaliere.",
+  "auth.viesOfflineError": "Il servizio di convalida VIES è temporaneamente offline. Per favore, riprova tra qualche minuto.",
+  "auth.duplicateVatError": "Questa Partita IVA è già associata ad un'altra organizzazione registrata."
 } as const;

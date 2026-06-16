@@ -7,237 +7,6 @@ const connectorConfig = {
 };
 exports.connectorConfig = connectorConfig;
 
-function getUserClaimsContext(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetUserClaimsContext', inputVars, inputOpts);
-}
-exports.getUserClaimsContext = getUserClaimsContext;
-
-function getOrganizationDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetOrganizationDetails', inputVars, inputOpts);
-}
-exports.getOrganizationDetails = getOrganizationDetails;
-
-function getAuthCode(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetAuthCode', inputVars, inputOpts);
-}
-exports.getAuthCode = getAuthCode;
-
-function getPreRegistration(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetPreRegistration', inputVars, inputOpts);
-}
-exports.getPreRegistration = getPreRegistration;
-
-function listAllPreRegistrations(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllPreRegistrations', undefined, inputOpts);
-}
-exports.listAllPreRegistrations = listAllPreRegistrations;
-
-function listAllUsers(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllUsers', undefined, inputOpts);
-}
-exports.listAllUsers = listAllUsers;
-
-function listAllOrganizations(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllOrganizations', undefined, inputOpts);
-}
-exports.listAllOrganizations = listAllOrganizations;
-
-function listAllUserOrganizations(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllUserOrganizations', undefined, inputOpts);
-}
-exports.listAllUserOrganizations = listAllUserOrganizations;
-
-function listAllServiceSubscriptions(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllServiceSubscriptions', undefined, inputOpts);
-}
-exports.listAllServiceSubscriptions = listAllServiceSubscriptions;
-
-function listAllAuthCodes(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllAuthCodes', undefined, inputOpts);
-}
-exports.listAllAuthCodes = listAllAuthCodes;
-
-function getApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetApiKey', inputVars, inputOpts);
-}
-exports.getApiKey = getApiKey;
-
-function getApiKeyPermissions(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetApiKeyPermissions', inputVars, inputOpts);
-}
-exports.getApiKeyPermissions = getApiKeyPermissions;
-
-function getThing(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetThing', inputVars, inputOpts);
-}
-exports.getThing = getThing;
-
-function getThingByTokenHash(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetThingByTokenHash', inputVars, inputOpts);
-}
-exports.getThingByTokenHash = getThingByTokenHash;
-
-function listThingsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListThingsByOrg', inputVars, inputOpts);
-}
-exports.listThingsByOrg = listThingsByOrg;
-
-function listApiKeysByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListApiKeysByOrg', inputVars, inputOpts);
-}
-exports.listApiKeysByOrg = listApiKeysByOrg;
-
-function listMembersByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListMembersByOrg', inputVars, inputOpts);
-}
-exports.listMembersByOrg = listMembersByOrg;
-
-function listAllThings(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllThings', undefined, inputOpts);
-}
-exports.listAllThings = listAllThings;
-
-function listAllApiKeys(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllApiKeys', undefined, inputOpts);
-}
-exports.listAllApiKeys = listAllApiKeys;
-
-function listAllApiKeyPermissions(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllApiKeyPermissions', undefined, inputOpts);
-}
-exports.listAllApiKeyPermissions = listAllApiKeyPermissions;
-
-function listAllAuditLogs(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllAuditLogs', undefined, inputOpts);
-}
-exports.listAllAuditLogs = listAllAuditLogs;
-
-function listAllServices(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllServices', undefined, inputOpts);
-}
-exports.listAllServices = listAllServices;
-
-function listAllProducts(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllProducts', undefined, inputOpts);
-}
-exports.listAllProducts = listAllProducts;
-
-function listAllInvoices(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllInvoices', undefined, inputOpts);
-}
-exports.listAllInvoices = listAllInvoices;
-
-function listAllTeams(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllTeams', undefined, inputOpts);
-}
-exports.listAllTeams = listAllTeams;
-
-function listAllTeamMembers(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllTeamMembers', undefined, inputOpts);
-}
-exports.listAllTeamMembers = listAllTeamMembers;
-
-function listInvoicesByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListInvoicesByOrg', inputVars, inputOpts);
-}
-exports.listInvoicesByOrg = listInvoicesByOrg;
-
-function getInvoiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetInvoiceDetails', inputVars, inputOpts);
-}
-exports.getInvoiceDetails = getInvoiceDetails;
-
-function getServiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetServiceDetails', inputVars, inputOpts);
-}
-exports.getServiceDetails = getServiceDetails;
-
-function getProductDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetProductDetails', inputVars, inputOpts);
-}
-exports.getProductDetails = getProductDetails;
-
-function listTeamsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListTeamsByOrg', inputVars, inputOpts);
-}
-exports.listTeamsByOrg = listTeamsByOrg;
-
-function listTeamMembers(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListTeamMembers', inputVars, inputOpts);
-}
-exports.listTeamMembers = listTeamMembers;
-
-function listAuditLogsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAuditLogsByOrg', inputVars, inputOpts);
-}
-exports.listAuditLogsByOrg = listAuditLogsByOrg;
-
 function upsertUser(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -266,12 +35,33 @@ function updateSubscriptionStatus(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.updateSubscriptionStatus = updateSubscriptionStatus;
 
+function assignServiceSeat(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('AssignServiceSeat', inputVars, inputOpts);
+}
+exports.assignServiceSeat = assignServiceSeat;
+
+function revokeServiceSeat(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('RevokeServiceSeat', inputVars, inputOpts);
+}
+exports.revokeServiceSeat = revokeServiceSeat;
+
 function updateOrganizationStripeConnect(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeMutation('UpdateOrganizationStripeConnect', inputVars, inputOpts);
 }
 exports.updateOrganizationStripeConnect = updateOrganizationStripeConnect;
+
+function updateOrganizationStripeCustomer(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateOrganizationStripeCustomer', inputVars, inputOpts);
+}
+exports.updateOrganizationStripeCustomer = updateOrganizationStripeCustomer;
 
 function createAuthCode(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
@@ -482,4 +272,249 @@ function removeUserFromTeam(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('RemoveUserFromTeam', inputVars, inputOpts);
 }
 exports.removeUserFromTeam = removeUserFromTeam;
+
+function getUserClaimsContext(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetUserClaimsContext', inputVars, inputOpts);
+}
+exports.getUserClaimsContext = getUserClaimsContext;
+
+function getOrganizationDetails(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrganizationDetails', inputVars, inputOpts);
+}
+exports.getOrganizationDetails = getOrganizationDetails;
+
+function getAuthCode(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetAuthCode', inputVars, inputOpts);
+}
+exports.getAuthCode = getAuthCode;
+
+function getPreRegistration(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetPreRegistration', inputVars, inputOpts);
+}
+exports.getPreRegistration = getPreRegistration;
+
+function listAllPreRegistrations(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllPreRegistrations', undefined, inputOpts);
+}
+exports.listAllPreRegistrations = listAllPreRegistrations;
+
+function listAllUsers(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllUsers', undefined, inputOpts);
+}
+exports.listAllUsers = listAllUsers;
+
+function listAllOrganizations(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllOrganizations', undefined, inputOpts);
+}
+exports.listAllOrganizations = listAllOrganizations;
+
+function listAllUserOrganizations(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllUserOrganizations', undefined, inputOpts);
+}
+exports.listAllUserOrganizations = listAllUserOrganizations;
+
+function listAllServiceSubscriptions(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllServiceSubscriptions', undefined, inputOpts);
+}
+exports.listAllServiceSubscriptions = listAllServiceSubscriptions;
+
+function listAllAuthCodes(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllAuthCodes', undefined, inputOpts);
+}
+exports.listAllAuthCodes = listAllAuthCodes;
+
+function getApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetApiKey', inputVars, inputOpts);
+}
+exports.getApiKey = getApiKey;
+
+function getApiKeyPermissions(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetApiKeyPermissions', inputVars, inputOpts);
+}
+exports.getApiKeyPermissions = getApiKeyPermissions;
+
+function getThing(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetThing', inputVars, inputOpts);
+}
+exports.getThing = getThing;
+
+function getThingByTokenHash(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetThingByTokenHash', inputVars, inputOpts);
+}
+exports.getThingByTokenHash = getThingByTokenHash;
+
+function listThingsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListThingsByOrg', inputVars, inputOpts);
+}
+exports.listThingsByOrg = listThingsByOrg;
+
+function listApiKeysByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListApiKeysByOrg', inputVars, inputOpts);
+}
+exports.listApiKeysByOrg = listApiKeysByOrg;
+
+function listMembersByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListMembersByOrg', inputVars, inputOpts);
+}
+exports.listMembersByOrg = listMembersByOrg;
+
+function listAllThings(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllThings', undefined, inputOpts);
+}
+exports.listAllThings = listAllThings;
+
+function listAllApiKeys(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllApiKeys', undefined, inputOpts);
+}
+exports.listAllApiKeys = listAllApiKeys;
+
+function listAllApiKeyPermissions(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllApiKeyPermissions', undefined, inputOpts);
+}
+exports.listAllApiKeyPermissions = listAllApiKeyPermissions;
+
+function listAllAuditLogs(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllAuditLogs', undefined, inputOpts);
+}
+exports.listAllAuditLogs = listAllAuditLogs;
+
+function listAllServices(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllServices', undefined, inputOpts);
+}
+exports.listAllServices = listAllServices;
+
+function listAllProducts(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllProducts', undefined, inputOpts);
+}
+exports.listAllProducts = listAllProducts;
+
+function listAllInvoices(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllInvoices', undefined, inputOpts);
+}
+exports.listAllInvoices = listAllInvoices;
+
+function listAllTeams(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllTeams', undefined, inputOpts);
+}
+exports.listAllTeams = listAllTeams;
+
+function listAllTeamMembers(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllTeamMembers', undefined, inputOpts);
+}
+exports.listAllTeamMembers = listAllTeamMembers;
+
+function listInvoicesByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListInvoicesByOrg', inputVars, inputOpts);
+}
+exports.listInvoicesByOrg = listInvoicesByOrg;
+
+function listInvoicesBySeller(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListInvoicesBySeller', inputVars, inputOpts);
+}
+exports.listInvoicesBySeller = listInvoicesBySeller;
+
+function getInvoiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetInvoiceDetails', inputVars, inputOpts);
+}
+exports.getInvoiceDetails = getInvoiceDetails;
+
+function getServiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetServiceDetails', inputVars, inputOpts);
+}
+exports.getServiceDetails = getServiceDetails;
+
+function getProductDetails(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetProductDetails', inputVars, inputOpts);
+}
+exports.getProductDetails = getProductDetails;
+
+function getOrganizationByStripeCustomer(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrganizationByStripeCustomer', inputVars, inputOpts);
+}
+exports.getOrganizationByStripeCustomer = getOrganizationByStripeCustomer;
+
+function listTeamsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListTeamsByOrg', inputVars, inputOpts);
+}
+exports.listTeamsByOrg = listTeamsByOrg;
+
+function listTeamMembers(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListTeamMembers', inputVars, inputOpts);
+}
+exports.listTeamMembers = listTeamMembers;
+
+function listAuditLogsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAuditLogsByOrg', inputVars, inputOpts);
+}
+exports.listAuditLogsByOrg = listAuditLogsByOrg;
 

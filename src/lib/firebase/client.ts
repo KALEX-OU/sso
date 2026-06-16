@@ -75,5 +75,28 @@ export async function fetchWithAppCheck(input: RequestInfo | URL, init?: Request
   });
 }
 
+export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const token = await getAppCheckToken();
+  const currentUser = auth.currentUser;
+  const idToken = currentUser ? await currentUser.getIdToken() : null;
+
+  const headers = new Headers(init?.headers);
+  if (token) {
+    headers.set("X-Firebase-App-Check", token);
+  }
+  if (idToken) {
+    headers.set("Authorization", `Bearer ${idToken}`);
+  }
+  if (!headers.has("Content-Type") && init?.method !== "GET") {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return fetch(input, {
+    ...init,
+    headers
+  });
+}
+
 export { app, auth, dataConnect, db, rtdb, storage };
+
 
