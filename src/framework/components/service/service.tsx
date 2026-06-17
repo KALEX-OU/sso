@@ -164,8 +164,8 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
             const isPastDue = app.subscriptionStatus === "past_due";
             const activeTier = app.subscriptionTier;
 
-            // Un servizio è attivo/abilitato se non è acquistabile (SSO, Web) o se c'è un abbonamento attivo
-            const isActive = !app.purchasable || isSubscribed;
+            // Un servizio è attivo/abilitato se non è acquistabile (SSO, Web) o se c'è un abbonamento attivo o past_due (Grace Period)
+            const isActive = !app.purchasable || isSubscribed || isPastDue;
             const IconComponent = getServiceIcon(app.appId);
 
             return (
@@ -175,17 +175,16 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
                     <IconComponent className={styles.icon} />
                   </div>
                   <div className="flex gap-2 items-center">
-                    {isActive && (
+                    {isPastDue ? (
+                      <span className={styles.statusPastDueBadge}>
+                        {t("application.past_due")}
+                      </span>
+                    ) : isActive ? (
                       <span className={styles.statusActiveBadge}>
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         {t("application.active")}
                       </span>
-                    )}
-                    {isPastDue && (
-                      <span className={styles.statusPastDueBadge}>
-                        {t("application.past_due")}
-                      </span>
-                    )}
+                    ) : null}
                     {isActive && activeTier && (
                       <span className="bg-purple-100 dark:bg-purple-950/45 text-purple-600 dark:text-purple-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-purple-200 dark:border-purple-800/30">
                         {activeTier}
@@ -210,11 +209,7 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
                 </div>
 
                 <div className={styles.cardFooter}>
-                  {isActive ? (
-                    <button disabled className={styles.btnActive}>
-                      {t("application.already_enabled")}
-                    </button>
-                  ) : isPastDue ? (
+                  {isPastDue ? (
                     <button
                       onClick={() => handleResolvePayment()}
                       disabled={activatingService !== null}
@@ -228,6 +223,10 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
+                    </button>
+                  ) : isActive ? (
+                    <button disabled className={styles.btnActive}>
+                      {t("application.already_enabled")}
                     </button>
                   ) : app.purchasable ? (
                     <button
