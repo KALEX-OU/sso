@@ -7,7 +7,7 @@ import { ServiceModule } from "@/framework/components/service/service";
 import { fetchAuthed } from "@/lib/firebase/client";
 
 export default function ApplicationPage() {
-  const { dbData, showToast, claims, refreshClaims } = useDashboard();
+  const { dbData, showToast, refreshClaims } = useDashboard();
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -21,13 +21,6 @@ export default function ApplicationPage() {
   const activeOrg = activeOrgRelation?.organization;
   const activeRole = activeOrgRelation?.role;
   const organizationId = activeOrg?.orgId;
-
-  // 1. Log dei claims della sessione attiva
-  useEffect(() => {
-    if (claims) {
-      console.log("Session Custom Claims:", claims);
-    }
-  }, [claims]);
 
   // 2. Intercettazione e polling per sincronizzare i claims post-checkout
   useEffect(() => {
