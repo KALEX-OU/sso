@@ -94,8 +94,8 @@ export default function DashboardPage() {
               Sottoscrizioni Suite
             </span>
             <div className="space-y-2">
-              {activeOrg?.serviceSubscriptions_on_organization && activeOrg.serviceSubscriptions_on_organization.length > 0 ? (
-                activeOrg.serviceSubscriptions_on_organization.map((sub: { service: { serviceId: string }; status: string; tier?: string | null }) => (
+              {activeOrg?.subscriptions_on_organization && activeOrg.subscriptions_on_organization.length > 0 ? (
+                activeOrg.subscriptions_on_organization.map((sub: { service: { serviceId: string }; status: string; tier?: string | null }) => (
                   <div key={sub.service.serviceId} className="flex justify-between items-center bg-slate-100/50 dark:bg-slate-950/20 p-3 rounded-2xl border border-slate-200/50 dark:border-white/5">
                     <span className="text-xs font-bold">{sub.service.serviceId}</span>
                     <Chip size="sm" color={sub.status === "active" ? "success" : "warning"} variant="soft">

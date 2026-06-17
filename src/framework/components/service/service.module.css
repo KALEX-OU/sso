@@ -217,3 +217,27 @@
   border-color: rgba(255, 255, 255, 0.08);
   color: #475569;
 }
+
+.btnPastDue {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 1rem;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnPastDue:hover:not(:disabled) {
+  background-color: #dc2626;
+  transform: scale(0.98);
+}

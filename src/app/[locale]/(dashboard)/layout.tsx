@@ -121,7 +121,7 @@ async function fetchAndSyncUserData(
               stripeCustomerId: data.organization.stripeCustomerId,
               stripeConnectAccountId: data.organization.stripeConnectAccountId,
               stripeConnectOnboarded: data.organization.stripeConnectOnboarded,
-              serviceSubscriptions_on_organization: data.organization.serviceSubscriptions || [],
+              subscriptions_on_organization: data.organization.subscriptions || [],
               serviceSeats_on_organization: data.organization.serviceSeats || []
             }
           }] : []
@@ -387,8 +387,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const hasPermission = (module: string, action: "read" | "create" | "update" | "delete"): boolean => {
     if (!claims) return false;
     
-    const perms = (claims.perms as Record<string, number> | undefined) || {};
-    const mask = perms[module];
+    const rbac = claims.rbac as { apps?: { sso?: Record<string, number> } } | undefined;
+    const ssoPerms = rbac?.apps?.sso || {};
+    const mask = ssoPerms[module];
     
     // Se il modulo è esplicitamente disattivato (pari a 0) nei claims, blocchiamo l'accesso
     if (mask === 0) return false;
@@ -440,7 +441,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     { id: "team", label: "Team", icon: Shield, path: "/team", requiredPermission: "team" },
     { id: "thing", label: "Dispositivi Thing", icon: Cpu, path: "/thing", requiredPermission: "thing" },
     { id: "apikey", label: "API Keys", icon: Key, path: "/apikey", requiredPermission: "apikey" },
-    { id: "service", label: "Servizi Cloud", icon: Globe, path: "/service", requiredPermission: "service" },
+    { id: "application", label: "Catalogo App", icon: Globe, path: "/application", requiredPermission: "application" },
     { id: "product", label: "Prodotti Fisici", icon: FileText, path: "/product", requiredPermission: "product" },
     { id: "subscription", label: "Abbonamenti", icon: CreditCard, path: "/subscription", requiredPermission: "subscription" },
     { id: "invoice", label: "Fatture", icon: FileText, path: "/invoice", requiredPermission: "invoice" },

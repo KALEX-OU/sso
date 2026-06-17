@@ -36,16 +36,10 @@ export function updateSubscriptionStatus(dcOrVarsOrOptions, varsOrOptions, optio
   return dcInstance.executeMutation('UpdateSubscriptionStatus', inputVars, inputOpts);
 }
 
-export function assignServiceSeat(dcOrVarsOrOptions, varsOrOptions, options) {
+export function updateSubscriptionSeatsList(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeMutation('AssignServiceSeat', inputVars, inputOpts);
-}
-
-export function revokeServiceSeat(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('RevokeServiceSeat', inputVars, inputOpts);
+  return dcInstance.executeMutation('UpdateSubscriptionSeatsList', inputVars, inputOpts);
 }
 
 export function updateOrganizationStripeConnect(dcOrVarsOrOptions, varsOrOptions, options) {
@@ -120,10 +114,10 @@ export function deleteUserOrganization(dcOrVarsOrOptions, varsOrOptions, options
   return dcInstance.executeMutation('DeleteUserOrganization', inputVars, inputOpts);
 }
 
-export function deleteServiceSubscription(dcOrVarsOrOptions, varsOrOptions, options) {
+export function deleteSubscription(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteServiceSubscription', inputVars, inputOpts);
+  return dcInstance.executeMutation('DeleteSubscription', inputVars, inputOpts);
 }
 
 export function createApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
@@ -138,10 +132,10 @@ export function deleteApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('DeleteApiKey', inputVars, inputOpts);
 }
 
-export function upsertApiKeyPermission(dcOrVarsOrOptions, varsOrOptions, options) {
+export function setApiKeyPermission(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpsertApiKeyPermission', inputVars, inputOpts);
+  return dcInstance.executeMutation('SetApiKeyPermission', inputVars, inputOpts);
 }
 
 export function createThing(dcOrVarsOrOptions, varsOrOptions, options) {
@@ -276,6 +270,24 @@ export function removeUserFromTeam(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('RemoveUserFromTeam', inputVars, inputOpts);
 }
 
+export function createApplication(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateApplication', inputVars, inputOpts);
+}
+
+export function updateApplication(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateApplication', inputVars, inputOpts);
+}
+
+export function deleteApplication(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('DeleteApplication', inputVars, inputOpts);
+}
+
 export function getUserClaimsContext(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -324,10 +336,16 @@ export function listAllUserOrganizations(dcOrOptions, options) {
   return dcInstance.executeQuery('ListAllUserOrganizations', undefined, inputOpts);
 }
 
-export function listAllServiceSubscriptions(dcOrOptions, options) {
+export function listAllSubscriptions(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllServiceSubscriptions', undefined, inputOpts);
+  return dcInstance.executeQuery('ListAllSubscriptions', undefined, inputOpts);
+}
+
+export function getSubscription(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetSubscription', inputVars, inputOpts);
 }
 
 export function listAllAuthCodes(dcOrOptions, options) {
@@ -408,10 +426,22 @@ export function listAllServices(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('ListAllServices', inputVars, inputOpts);
 }
 
+export function listAllServicesGlobal(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllServicesGlobal', undefined, inputOpts);
+}
+
 export function listAllProducts(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeQuery('ListAllProducts', inputVars, inputOpts);
+}
+
+export function listAllProductsGlobal(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllProductsGlobal', undefined, inputOpts);
 }
 
 export function listAllProductBatches(dcOrOptions, options) {
@@ -514,5 +544,17 @@ export function checkVatNumberExists(dcOrVarsOrOptions, varsOrOptions, options) 
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeQuery('CheckVatNumberExists', inputVars, inputOpts);
+}
+
+export function getApplication(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetApplication', inputVars, inputOpts);
+}
+
+export function listAllApplications(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllApplications', undefined, inputOpts);
 }
 

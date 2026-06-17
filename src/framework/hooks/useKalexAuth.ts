@@ -8,8 +8,12 @@ export interface CustomClaims {
   confirmed?: boolean;
   loc?: string;
   thm?: string;
-  seats?: string[];
-  perms?: Record<string, number>;
+  rbac?: {
+    apps?: {
+      sso?: Record<string, number>;
+      [appName: string]: Record<string, number> | undefined;
+    };
+  };
 }
 
 export function useKalexAuth() {
@@ -24,15 +28,14 @@ export function useKalexAuth() {
       if (currentUser) {
         try {
           const tokenResult = await currentUser.getIdTokenResult(true);
-          const customClaims = tokenResult.claims as CustomClaims;
+          const customClaims = tokenResult.claims as unknown as CustomClaims;
           setClaims({
             orgId: customClaims.orgId,
             role: customClaims.role,
             confirmed: customClaims.confirmed,
             loc: customClaims.loc,
             thm: customClaims.thm,
-            seats: customClaims.seats || [],
-            perms: customClaims.perms || {}
+            rbac: customClaims.rbac || {}
           });
         } catch (err) {
           console.error("[useKalexAuth] Errore caricamento claims:", err);
@@ -73,8 +76,7 @@ export function useKalexAuth() {
     confirmed: claims?.confirmed,
     locale: claims?.loc,
     theme: claims?.thm,
-    seats: claims?.seats || [],
-    perms: claims?.perms || {},
+    rbac: claims?.rbac || {},
     logout,
     loginRedirect,
     registerRedirect

@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ShieldCheck, Cpu, Cloud, CheckCircle2, ArrowRight } from "lucide-react";
 import { BaseModuleLayout } from "../layout/BaseModuleLayout";
+import { useI18n } from "@/locales/client";
 import styles from "./service.module.css";
 
-interface ServiceItem {
-  serviceId: string;
+interface ApplicationItem {
+  appId: string;
   name: string;
   description: string | null;
-  type: "subscription" | "usage";
-  priceModel: string | null;
+  isActive: boolean;
+  serviceId: string | null;
+  purchasable: boolean;
   priceText: string | null;
-  subscriptionStatus: "active" | "trialing" | "past_due" | "inactive";
+  priceModel: string | null;
+  subscriptionStatus: string;
   subscriptionTier: string | null;
 }
 
@@ -21,12 +24,10 @@ interface ServiceModuleProps {
   showToast: (msg: string, type?: "success" | "error" | "info") => void;
 }
 
-const getServiceIcon = (serviceId: string) => {
-  switch (serviceId) {
-    case "3c16260a-9d62-4b2a-89a1-8d2a58b68832":
+const getServiceIcon = (appId: string) => {
+  switch (appId) {
     case "safety":
       return ShieldCheck;
-    case "975e52be-df86-455b-9f6e-cd3bfd12f170":
     case "standlo":
       return Cpu;
     default:
@@ -40,15 +41,17 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
   fetchAuthed,
   showToast
 }) => {
-  const [services, setServices] = useState<ServiceItem[]>([]);
+  const t = useI18n();
+  const [services, setServices] = useState<ApplicationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [activatingService, setActivatingService] = useState<string | null>(null);
+
   const loadServices = useCallback(async () => {
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetchAuthed(`/api/service/list?appId=sso&orgId=${organizationId}`);
+      const res = await fetchAuthed("/api/application/list");
       const data = await res.json();
       if (data.success) {
         setServices(data.items || []);
@@ -57,17 +60,17 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
           ? String(data.error.message)
           : typeof data.error === "string"
             ? data.error
-            : "Impossibile caricare i servizi.";
+            : t("application.load_error");
         setError(errMsg);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error("[ServiceModule] Load Error:", message);
-      setError("Errore di connessione durante il recupero del catalogo dei servizi.");
+      setError(t("application.connection_error"));
     } finally {
       setLoading(false);
     }
-  }, [organizationId, fetchAuthed]);
+  }, [fetchAuthed, t]);
 
   useEffect(() => {
     if (organizationId) {
@@ -80,13 +83,13 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
 
   const handleActivateService = async (serviceId: string) => {
     if (activeRole !== "owner" && activeRole !== "admin") {
-      showToast("Solo l'Owner o gli Admin possono attivare i servizi.", "error");
+      showToast(t("application.only_owner_admin"), "error");
       return;
     }
 
     setActivatingService(serviceId);
     try {
-      showToast(`Reindirizzamento al checkout Stripe...`, "info");
+      showToast(t("application.checkout_redirect"), "info");
       
       const res = await fetchAuthed("/api/stripe/checkout-session", {
         method: "POST",
@@ -100,14 +103,47 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
       if (data.success && data.url) {
         window.location.assign(data.url);
       } else {
-        const errorMsg = data.error?.message || "Impossibile avviare il pagamento.";
+        const errorMsg = data.error?.message || t("application.payment_init_error");
         showToast(errorMsg, "error");
         setActivatingService(null);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(err);
-      showToast(`Errore durante l'attivazione del servizio: ${message}`, "error");
+      showToast(`${t("application.activation_error")}: ${message}`, "error");
+      setActivatingService(null);
+    }
+  };
+
+  const handleResolvePayment = async () => {
+    if (activeRole !== "owner" && activeRole !== "admin") {
+      showToast(t("application.only_owner_admin"), "error");
+      return;
+    }
+
+    setActivatingService("stripe_portal");
+    try {
+      showToast(t("application.portal_redirect"), "info");
+      
+      const res = await fetchAuthed("/api/stripe/portal-session", {
+        method: "POST",
+        body: JSON.stringify({
+          returnUrl: window.location.href
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        window.location.assign(data.url);
+      } else {
+        const errorMsg = data.error?.message || t("application.portal_init_error");
+        showToast(errorMsg, "error");
+        setActivatingService(null);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(err);
+      showToast(`${t("application.portal_error")}: ${message}`, "error");
       setActivatingService(null);
     }
   };
@@ -116,49 +152,59 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
     <BaseModuleLayout isLoading={loading} error={error}>
       <div className={styles.serviceModule}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Servizi Cloud KALEX</h2>
+          <h2 className={styles.title}>{t("application.title")}</h2>
           <p className={styles.description}>
-            Abilita e gestisci le applicazioni SaaS verticali e le API di integrazione in produzione per la tua organizzazione.
+            {t("application.description")}
           </p>
         </div>
 
         <div className={styles.grid}>
-          {services.map((service) => {
-            const status = service.subscriptionStatus;
-            const isActive = status === "active" || status === "trialing";
-            const isPastDue = status === "past_due";
-            const IconComponent = getServiceIcon(service.serviceId);
+          {services.map((app) => {
+            const isSubscribed = app.subscriptionStatus === "active" || app.subscriptionStatus === "trialing";
+            const isPastDue = app.subscriptionStatus === "past_due";
+            const activeTier = app.subscriptionTier;
+
+            // Un servizio è attivo/abilitato se non è acquistabile (SSO, Web) o se c'è un abbonamento attivo
+            const isActive = !app.purchasable || isSubscribed;
+            const IconComponent = getServiceIcon(app.appId);
 
             return (
-              <div key={service.serviceId} className={styles.card}>
+              <div key={app.appId} className={styles.card}>
                 <div className={styles.cardHeader}>
                   <div className={styles.iconContainer}>
                     <IconComponent className={styles.icon} />
                   </div>
-                  {isActive && (
-                    <span className={styles.statusActiveBadge}>
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Attivo
-                    </span>
-                  )}
-                  {isPastDue && (
-                    <span className={styles.statusPastDueBadge}>
-                      Insoluto
-                    </span>
-                  )}
+                  <div className="flex gap-2 items-center">
+                    {isActive && (
+                      <span className={styles.statusActiveBadge}>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        {t("application.active")}
+                      </span>
+                    )}
+                    {isPastDue && (
+                      <span className={styles.statusPastDueBadge}>
+                        {t("application.past_due")}
+                      </span>
+                    )}
+                    {isActive && activeTier && (
+                      <span className="bg-purple-100 dark:bg-purple-950/45 text-purple-600 dark:text-purple-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-purple-200 dark:border-purple-800/30">
+                        {activeTier}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className={styles.cardBody}>
-                  <h3 className={styles.serviceName}>{service.name}</h3>
+                  <h3 className={styles.serviceName}>{app.name}</h3>
                   <p className={styles.serviceDescription}>
-                    {service.description || "Nessuna descrizione disponibile per questo servizio."}
+                    {app.description || t("application.no_description")}
                   </p>
                   <div className={styles.pricing}>
                     <span className={styles.priceText}>
-                      {service.priceText || "Prezzo a consumo"}
+                      {app.priceText || t("application.price_included")}
                     </span>
                     <span className={styles.priceModel}>
-                      {service.priceModel || "Tariffazione basata sull'utilizzo effettivo."}
+                      {app.priceModel || t("application.base_plan_model")}
                     </span>
                   </div>
                 </div>
@@ -166,22 +212,41 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
                 <div className={styles.cardFooter}>
                   {isActive ? (
                     <button disabled className={styles.btnActive}>
-                      Già Abilitato
+                      {t("application.already_enabled")}
                     </button>
-                  ) : (
+                  ) : isPastDue ? (
                     <button
-                      onClick={() => handleActivateService(service.serviceId)}
+                      onClick={() => handleResolvePayment()}
                       disabled={activatingService !== null}
-                      className={styles.btnActivate}
+                      className={styles.btnPastDue}
                     >
-                      {activatingService === service.serviceId ? (
-                        "Attivazione..."
+                      {activatingService === "stripe_portal" ? (
+                        t("application.loading")
                       ) : (
                         <>
-                          Attiva Servizio
+                          {t("application.resolve_payment")}
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
+                    </button>
+                  ) : app.purchasable ? (
+                    <button
+                      onClick={() => handleActivateService(app.serviceId!)}
+                      disabled={activatingService !== null || !app.serviceId}
+                      className={styles.btnActivate}
+                    >
+                      {activatingService === app.serviceId ? (
+                        t("application.activating")
+                      ) : (
+                        <>
+                          {t("application.activate")}
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <button disabled className={styles.btnActive}>
+                      {t("application.base_plan")}
                     </button>
                   )}
                 </div>

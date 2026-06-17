@@ -14,11 +14,22 @@ export default function SubscriptionPage() {
   const organizationId = activeOrg?.orgId;
   const activeOrgName = activeOrg?.name;
 
-  // Estrae i seats dal dbData dell'organizzazione
-  const serviceSeatsOnOrg = activeOrg?.serviceSeats_on_organization?.map((seat) => ({
-    service: { serviceId: seat.service.serviceId },
-    user: { uid: seat.user.uid }
-  }));
+  // Estrae i seats dalle subscriptions attive dell'organizzazione
+  const serviceSeatsOnOrg: Array<{ service: { serviceId: string }; user: { uid: string } }> = [];
+  const subs = activeOrg?.subscriptions_on_organization || [];
+  for (const sub of subs) {
+    if ((sub.status === "active" || sub.status === "trialing") && sub.service) {
+      const assigned = Array.isArray(sub.assignedSeats) ? (sub.assignedSeats as Array<{ uid: string }>) : [];
+      for (const seat of assigned) {
+        if (seat && typeof seat === "object" && "uid" in seat) {
+          serviceSeatsOnOrg.push({
+            service: { serviceId: sub.service.serviceId },
+            user: { uid: seat.uid }
+          });
+        }
+      }
+    }
+  }
 
   const handleListMembersByOrg = useCallback(async (orgId: string) => {
     const { dataConnect } = await import("@/lib/firebase/client");
