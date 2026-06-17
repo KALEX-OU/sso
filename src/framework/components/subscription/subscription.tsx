@@ -23,6 +23,7 @@ interface SubscriptionItem {
   tier?: string | null;
   seats: number;
   expiresAt?: string | null;
+  assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
 }
 
 interface AssignedSeatsState {
@@ -37,6 +38,7 @@ interface SubscriptionModuleProps {
   fetchAuthed: (url: string, options?: RequestInit) => Promise<Response>;
   showToast: (msg: string, type?: "success" | "error" | "info") => void;
   listMembersByOrg: (orgId: string) => Promise<MemberItem[]>;
+  currentUid?: string;
 }
 
 export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
@@ -46,7 +48,8 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
   serviceSeatsOnOrg,
   fetchAuthed,
   showToast,
-  listMembersByOrg
+  listMembersByOrg,
+  currentUid
 }) => {
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
   const [members, setMembers] = useState<MemberItem[]>([]);
@@ -61,7 +64,22 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
       const res = await fetchAuthed("/api/subscription/list");
       const data = await res.json();
       if (data.success) {
-        setSubscriptions(data.items || data.subscriptions || []);
+        const subs = data.items || data.subscriptions || [];
+        setSubscriptions(subs);
+        
+        // Popola l'assegnazione dei seats dalle sottoscrizioni fresche dell'API
+        const initial: AssignedSeatsState = {};
+        for (const sub of subs) {
+          const sId = sub.service.serviceId;
+          const assigned = Array.isArray(sub.assignedSeats) ? sub.assignedSeats : [];
+          initial[sId] = assigned.map((seat: { uid: string } | string | unknown) => {
+            if (seat && typeof seat === "object" && "uid" in seat) {
+              return (seat as { uid: string }).uid;
+            }
+            return typeof seat === "string" ? seat : "";
+          });
+        }
+        setAssignedSeats(initial);
       } else {
         const errMsg = data.error && typeof data.error === "object" && "message" in data.error
           ? String(data.error.message)
@@ -110,9 +128,10 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
     }
   }, [organizationId, loadAllData]);
 
-  const [prevSeats, setPrevSeats] = useState(serviceSeatsOnOrg);
-  if (serviceSeatsOnOrg !== prevSeats) {
-    setPrevSeats(serviceSeatsOnOrg);
+  const [prevSeatsJson, setPrevSeatsJson] = useState("");
+  const currentSeatsJson = JSON.stringify(serviceSeatsOnOrg || []);
+  if (currentSeatsJson !== prevSeatsJson) {
+    setPrevSeatsJson(currentSeatsJson);
     const initial: AssignedSeatsState = {};
     if (serviceSeatsOnOrg) {
       for (const seat of serviceSeatsOnOrg) {
@@ -278,25 +297,42 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
                           return (
                             <div key={member.user.uid} className={styles.memberRow}>
                               <div className={styles.memberInfo}>
-                                <span className={styles.memberName}>{member.user.fullName || member.user.email}</span>
+                                <span className={styles.memberName}>
+                                  {member.user.fullName || member.user.email}
+                                  {member.user.uid === currentUid && (
+                                    <span style={{ fontSize: "0.8rem", opacity: 0.7, marginLeft: "0.25rem" }} className="text-slate-400 font-normal">
+                                      (Tu)
+                                    </span>
+                                  )}
+                                </span>
                                 <span className={styles.memberRole}>{member.role}</span>
                               </div>
-                              <button
-                                onClick={() => toggleSeat(sub.service.serviceId, member.user!.uid, maxSeats)}
-                                disabled={isUpdating}
-                                className={`${styles.seatBtn} ${isAssigned ? styles.seatBtnAssigned : styles.seatBtnUnassigned}`}
-                              >
-                                {isUpdating ? (
-                                  "Aggiornamento..."
-                                ) : isAssigned ? (
-                                  <>
-                                    <UserCheck className="w-3.5 h-3.5" />
-                                    Assegnato
-                                  </>
-                                ) : (
-                                  "Assegna"
-                                )}
-                              </button>
+                              {(() => {
+                                const isSubUpdating = updatingSeats !== null && updatingSeats.startsWith(`${sub.service.serviceId}_`);
+                                const isLimitReached = !isAssigned && assigned.length >= maxSeats;
+                                const isBtnDisabled = isUpdating || isSubUpdating || isLimitReached;
+
+                                return (
+                                  <button
+                                    onClick={() => toggleSeat(sub.service.serviceId, member.user!.uid, maxSeats)}
+                                    disabled={isBtnDisabled}
+                                    className={`${styles.seatBtn} ${isAssigned ? styles.seatBtnAssigned : styles.seatBtnUnassigned}`}
+                                  >
+                                    {isUpdating ? (
+                                      "Aggiornamento..."
+                                    ) : isAssigned ? (
+                                      <>
+                                        <UserCheck className="w-3.5 h-3.5" />
+                                        Assegnato
+                                      </>
+                                    ) : isLimitReached ? (
+                                      "Limite Raggiunto"
+                                    ) : (
+                                      "Assegna"
+                                    )}
+                                  </button>
+                                );
+                              })()}
                             </div>
                           );
                         })}

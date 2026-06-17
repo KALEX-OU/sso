@@ -7,7 +7,7 @@ import { SubscriptionModule } from "@/framework/components/subscription/subscrip
 import { fetchAuthed } from "@/lib/firebase/client";
 
 export default function SubscriptionPage() {
-  const { dbData, showToast, refreshClaims } = useDashboard();
+  const { user, dbData, showToast, refreshClaims } = useDashboard();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -253,6 +253,7 @@ export default function SubscriptionPage() {
         fetchAuthed={fetchAuthed}
         showToast={showToast}
         listMembersByOrg={handleListMembersByOrg}
+        currentUid={user?.uid}
       />
     </>
   );
