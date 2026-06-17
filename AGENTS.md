@@ -18,10 +18,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Regola di Validazione del Codice (Mandatoria & Restrittiva)
 
-Prima di rispondere all'utente o considerare completata qualsiasi attività, l'agente ha l'obbligo assoluto di eseguire il comando `npm run validate` nella root del progetto. Il codebase deve essere sempre immacolato: **100% privo di errori di compilazione, TypeScript, linter, warning o vulnerabilità**.
+Prima di rispondere all'utente o considerare completata qualsiasi attività, l'agente ha l'obbligo assoluto di eseguire il comando `npm run validate` nella root del workspace centralizzato `/Users/cristiankalexai/Development/KALEX`. Il codebase deve essere sempre immacolato: **100% privo di errori di compilazione, TypeScript, linter, warning o vulnerabilità**.
 
 ## Regole di Qualità Rigide:
-1. **Verifica Obbligatoria**: Il comando `npm run validate` (che esegue il linter in modalità restrittiva `--max-warnings=0`, il type-checking e la compilazione completa) **DEVE essere superato con successo (exit code 0) SEMPRE prima di rispondere all'utente o inviare modifiche**.
+1. **Verifica Obbligatoria**: Il comando `npm run validate` eseguito nella root del workspace centralizzato (che esegue in sequenza la validazione di tutti i sottoprogetti backend api, functions e frontend sso) **DEVE essere superato con successo (exit code 0) SEMPRE prima di rispondere all'utente o inviare modifiche**.
 2. **Tipizzazione Forte**: Ogni singola variabile, parametro, e ritorno di funzione deve essere tipizzato correttamente. È severamente vietato l'uso del tipo generico `any` (implicitamente o esplicitamente) o di scorciatoie.
 3. **Nessun Bypass o Trucchi**: È vietato silenziare gli avvertimenti o gli errori tramite commenti del tipo `// @ts-ignore`, `// @ts-nocheck`, `/* eslint-disable */`, `eslint-disable-next-line`, o qualsiasi altro meccanismo di bypass dei controlli automatici. Si corregge da veri professionisti (come un "pro").
 4. **Autocorrezione da Ingegnere Responsabile**: Se il comando `npm run validate` restituisce errori, warning o vulnerabilità, l'agente ha l'obbligo morale e tecnico di analizzarli, risolverli scrivendo codice pulito, sicuro e tipizzato correttamente, senza trucchi, e rieseguire la verifica fino ad ottenere un esito pulito prima di concludere il proprio turno e formulare la risposta.
