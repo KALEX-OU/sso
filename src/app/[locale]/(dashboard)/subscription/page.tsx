@@ -109,40 +109,72 @@ export default function SubscriptionPage() {
       }
     }, 5000);
 
-    const pollClaims = async () => {
-      if (!active) return;
+    const startSyncProcess = async () => {
       try {
-        console.log(`[Checkout Sync] Esecuzione refreshClaims (tentativo ${attemptsRef.current + 1}/${maxAttempts})...`);
-        await refreshClaims(organizationId);
-        attemptsRef.current++;
-
-        if (!active) return;
-
-        if (attemptsRef.current >= maxAttempts) {
-          setSyncingClaims(false);
-          setShowEmergencyUnlock(false);
-          showToast(
-            "L'attivazione sta richiedendo più tempo del previsto. L'operazione proseguirà in background. Ricarica la pagina tra un minuto.",
-            "info"
-          );
-          if (sessionId) {
-            sessionStorage.setItem(`processed_stripe_session_${sessionId}`, "true");
-          }
-          router.replace(window.location.pathname);
-        } else {
-          timerId = setTimeout(pollClaims, 2500);
+        console.log(`[Checkout Sync] Inizializzazione attivazione sessione Stripe: ${sessionId}`);
+        
+        // 3.1 Invoca l'attivazione della sessione sul backend
+        const res = await fetchAuthed("/api/stripe/activate-session", {
+          method: "POST",
+          body: JSON.stringify({ sessionId })
+        });
+        
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error?.message || "Impossibile attivare la sessione di pagamento.");
         }
+
+        console.log("[Checkout Sync] Sessione attivata su backend. Avvio polling dei claims...");
+        
+        // 3.2 Avvia il polling effettivo dei claims
+        const pollClaims = async () => {
+          if (!active) return;
+          try {
+            console.log(`[Checkout Sync] Esecuzione refreshClaims (tentativo ${attemptsRef.current + 1}/${maxAttempts})...`);
+            await refreshClaims(organizationId);
+            attemptsRef.current++;
+
+            if (!active) return;
+
+            if (attemptsRef.current >= maxAttempts) {
+              setSyncingClaims(false);
+              setShowEmergencyUnlock(false);
+              showToast(
+                "L'attivazione sta richiedendo più tempo del previsto. L'operazione proseguirà in background. Ricarica la pagina tra un minuto.",
+                "info"
+              );
+              if (sessionId) {
+                sessionStorage.setItem(`processed_stripe_session_${sessionId}`, "true");
+              }
+              router.replace(window.location.pathname);
+            } else {
+              timerId = setTimeout(pollClaims, 2500);
+            }
+          } catch (err) {
+            console.error("[Checkout Sync] Errore durante il refresh dei claims:", err);
+            if (active) {
+              setSyncingClaims(false);
+              setShowEmergencyUnlock(false);
+              showToast("Errore durante la sincronizzazione. Prova a ricaricare la pagina.", "error");
+            }
+          }
+        };
+
+        // Primo tentativo dopo 500ms
+        timerId = setTimeout(pollClaims, 500);
       } catch (err) {
-        console.error("[Checkout Sync] Errore durante il refresh dei claims:", err);
+        console.error("[Checkout Sync] Errore durante l'inizializzazione:", err);
+        const errMsg = err instanceof Error ? err.message : "Errore durante l'attivazione della sessione.";
         if (active) {
           setSyncingClaims(false);
           setShowEmergencyUnlock(false);
-          showToast("Errore durante la sincronizzazione. Prova a ricaricare la pagina.", "error");
+          showToast(errMsg, "error");
+          router.replace(window.location.pathname);
         }
       }
     };
 
-    timerId = setTimeout(pollClaims, 1000);
+    void startSyncProcess();
 
     return () => {
       active = false;
