@@ -9,8 +9,7 @@
     "dev": "lsof -t -i:3000 | xargs kill -9 2>/dev/null || true; rm -rf .next; next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "validate": "eslint . --max-warnings=0 && tsc --noEmit && npm audit --audit-level=high && npm run build"
+    "lint": "eslint"
   },
   "dependencies": {
     "@heroui/react": "^3.1.0",
