@@ -91,7 +91,7 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
     try {
       showToast(t("application.checkout_redirect"), "info");
       
-      const res = await fetchAuthed("/api/stripe/subscription/checkout-session", {
+      const res = await fetchAuthed("/api/stripe/subscription", {
         method: "POST",
         body: JSON.stringify({
           serviceId,
@@ -125,7 +125,7 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
     try {
       showToast(t("application.portal_redirect"), "info");
       
-      const res = await fetchAuthed("/api/stripe/subscription/portal-session", {
+      const res = await fetchAuthed("/api/stripe/subscription/portal", {
         method: "POST",
         body: JSON.stringify({
           returnUrl: window.location.href

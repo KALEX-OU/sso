@@ -114,7 +114,7 @@ export default function SubscriptionPage() {
         console.log(`[Checkout Sync] Inizializzazione attivazione sessione Stripe: ${sessionId}`);
         
         // 3.1 Invoca l'attivazione della sessione sul backend
-        const res = await fetchAuthed("/api/stripe/subscription/activate-session", {
+        const res = await fetchAuthed("/api/stripe/subscription/activate", {
           method: "POST",
           body: JSON.stringify({ sessionId })
         });
