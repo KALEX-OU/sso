@@ -87,6 +87,9 @@ export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit):
   if (idToken) {
     headers.set("Authorization", `Bearer ${idToken}`);
   }
+  if (!headers.has("x-app-id")) {
+    headers.set("x-app-id", "sso");
+  }
   if (!headers.has("Content-Type") && init?.method !== "GET") {
     headers.set("Content-Type", "application/json");
   }

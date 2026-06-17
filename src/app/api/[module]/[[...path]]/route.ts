@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:3001";
 
-async function handleProxy(request: NextRequest, context: { params: Promise<{ module: string; path: string[] }> }) {
+async function handleProxy(request: NextRequest, context: { params: Promise<{ module: string; path?: string[] }> }) {
   const resolvedParams = await context.params;
   const { module, path } = resolvedParams;
-  const pathString = path.join("/");
+  const pathString = path ? path.join("/") : "";
   
   // Costruisce l'URL di destinazione sul server API Hono (es. http://localhost:3001/service/...)
-  const targetUrl = new URL(`/${module}/${pathString}`, API_BASE_URL);
+  const targetUrl = pathString 
+    ? new URL(`/${module}/${pathString}`, API_BASE_URL)
+    : new URL(`/${module}`, API_BASE_URL);
   
   // Copia i query parameters dalla richiesta originale
   const { searchParams } = new URL(request.url);
@@ -18,6 +20,10 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ mo
 
   // Copia gli headers importanti
   const headers = new Headers();
+
+  // Inoltra l'applicazione proprietaria
+  const appIdHeader = request.headers.get("x-app-id") || "sso";
+  headers.set("x-app-id", appIdHeader);
   
   // Inoltra il token di autenticazione se presente
   const authHeader = request.headers.get("authorization");
@@ -101,18 +107,18 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ mo
   }
 }
 
-export async function GET(request: NextRequest, context: { params: Promise<{ module: string; path: string[] }> }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ module: string; path?: string[] }> }) {
   return handleProxy(request, context);
 }
 
-export async function POST(request: NextRequest, context: { params: Promise<{ module: string; path: string[] }> }) {
+export async function POST(request: NextRequest, context: { params: Promise<{ module: string; path?: string[] }> }) {
   return handleProxy(request, context);
 }
 
-export async function PUT(request: NextRequest, context: { params: Promise<{ module: string; path: string[] }> }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ module: string; path?: string[] }> }) {
   return handleProxy(request, context);
 }
 
-export async function DELETE(request: NextRequest, context: { params: Promise<{ module: string; path: string[] }> }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ module: string; path?: string[] }> }) {
   return handleProxy(request, context);
 }

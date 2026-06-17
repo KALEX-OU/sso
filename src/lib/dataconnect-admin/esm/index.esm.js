@@ -24,6 +24,12 @@ export function addUserToOrganization(dcOrVarsOrOptions, varsOrOptions, options)
   return dcInstance.executeMutation('AddUserToOrganization', inputVars, inputOpts);
 }
 
+export function updateUserOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateUserOrganization', inputVars, inputOpts);
+}
+
 export function updateSubscriptionStatus(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -198,10 +204,28 @@ export function deleteProduct(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('DeleteProduct', inputVars, inputOpts);
 }
 
+export function createProductBatch(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateProductBatch', inputVars, inputOpts);
+}
+
+export function deleteProductBatch(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('DeleteProductBatch', inputVars, inputOpts);
+}
+
 export function createInvoice(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeMutation('CreateInvoice', inputVars, inputOpts);
+}
+
+export function updateInvoiceStatus(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateInvoiceStatus', inputVars, inputOpts);
 }
 
 export function deleteInvoice(dcOrVarsOrOptions, varsOrOptions, options) {
@@ -210,10 +234,28 @@ export function deleteInvoice(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('DeleteInvoice', inputVars, inputOpts);
 }
 
+export function createPayment(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreatePayment', inputVars, inputOpts);
+}
+
+export function updatePaymentStatus(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdatePaymentStatus', inputVars, inputOpts);
+}
+
 export function createTeam(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeMutation('CreateTeam', inputVars, inputOpts);
+}
+
+export function updateTeam(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateTeam', inputVars, inputOpts);
 }
 
 export function deleteTeam(dcOrVarsOrOptions, varsOrOptions, options) {
@@ -360,16 +402,28 @@ export function listAllAuditLogs(dcOrOptions, options) {
   return dcInstance.executeQuery('ListAllAuditLogs', undefined, inputOpts);
 }
 
-export function listAllServices(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+export function listAllServices(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllServices', undefined, inputOpts);
+  return dcInstance.executeQuery('ListAllServices', inputVars, inputOpts);
 }
 
-export function listAllProducts(dcOrOptions, options) {
+export function listAllProducts(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListAllProducts', inputVars, inputOpts);
+}
+
+export function listAllProductBatches(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllProducts', undefined, inputOpts);
+  return dcInstance.executeQuery('ListAllProductBatches', undefined, inputOpts);
+}
+
+export function getProductBatchesByProduct(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetProductBatchesByProduct', inputVars, inputOpts);
 }
 
 export function listAllInvoices(dcOrOptions, options) {
@@ -400,6 +454,18 @@ export function listInvoicesBySeller(dcOrVarsOrOptions, varsOrOptions, options) 
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeQuery('ListInvoicesBySeller', inputVars, inputOpts);
+}
+
+export function listPaymentsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListPaymentsByOrg', inputVars, inputOpts);
+}
+
+export function listPaymentsBySeller(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListPaymentsBySeller', inputVars, inputOpts);
 }
 
 export function getInvoiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
@@ -442,5 +508,11 @@ export function listAuditLogsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeQuery('ListAuditLogsByOrg', inputVars, inputOpts);
+}
+
+export function checkVatNumberExists(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('CheckVatNumberExists', inputVars, inputOpts);
 }
 

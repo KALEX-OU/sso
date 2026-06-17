@@ -386,18 +386,23 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
 
   const hasPermission = (module: string, action: "read" | "create" | "update" | "delete"): boolean => {
     if (!claims) return false;
-    if (claims.role === "owner") return true; // Owner scavalca tutto
     
     const perms = (claims.perms as Record<string, number> | undefined) || {};
-    const mask = perms[module] || 0;
+    const mask = perms[module];
     
+    // Se il modulo è esplicitamente disattivato (pari a 0) nei claims, blocchiamo l'accesso
+    if (mask === 0) return false;
+    
+    if (claims.role === "owner") return true; // L'Owner scavalca tutto per i moduli attivi
+    
+    const activeMask = mask || 0;
     let bit = 0;
     if (action === "read") bit = 1;
     if (action === "create") bit = 2;
     if (action === "update") bit = 4;
     if (action === "delete") bit = 8;
     
-    return (mask & bit) !== 0;
+    return (activeMask & bit) !== 0;
   };
 
   if (!mounted || loading) {
@@ -417,6 +422,8 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       </div>
     );
   }
+
+
 
 
 

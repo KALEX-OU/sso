@@ -16,6 +16,7 @@ export interface AddUserToOrganizationVariables {
   uid: string;
   orgId: string;
   role: string;
+  rbac?: unknown | null;
 }
 
 export interface AddUserToTeamData {
@@ -58,6 +59,17 @@ export interface AuthCode_Key {
   __typename?: 'AuthCode_Key';
 }
 
+export interface CheckVatNumberExistsData {
+  organizations: ({
+    orgId: string;
+    name: string;
+  } & Organization_Key)[];
+}
+
+export interface CheckVatNumberExistsVariables {
+  vatNumber: string;
+}
+
 export interface ConfirmOrganizationData {
   organization_update?: Organization_Key | null;
 }
@@ -76,6 +88,7 @@ export interface CreateApiKeyVariables {
   userUid?: string | null;
   thingId?: string | null;
   orgId: string;
+  appId?: string | null;
   name: string;
   description?: string | null;
   ipWhitelist: unknown;
@@ -90,6 +103,7 @@ export interface CreateAuditLogData {
 
 export interface CreateAuditLogVariables {
   orgId: string;
+  appId?: string | null;
   uid: string;
   authType: string;
   method: string;
@@ -118,6 +132,8 @@ export interface CreateInvoiceData {
 
 export interface CreateInvoiceVariables {
   invoiceId: string;
+  stripeInvoiceId?: string | null;
+  invoiceNumber?: string | null;
   buyerId: string;
   sellerId: string;
   amount: number;
@@ -128,6 +144,9 @@ export interface CreateInvoiceVariables {
   subtotal?: number | null;
   products?: unknown | null;
   services?: unknown | null;
+  dueDate?: TimestampString | null;
+  paidAt?: TimestampString | null;
+  metadata?: unknown | null;
   isTest?: boolean | null;
 }
 
@@ -157,12 +176,52 @@ export interface CreateOrganizationVariables {
   metadata?: unknown | null;
 }
 
+export interface CreatePaymentData {
+  payment_insert: Payment_Key;
+}
+
+export interface CreatePaymentVariables {
+  paymentId: string;
+  orgId: string;
+  sellerOrgId?: string | null;
+  invoiceId?: string | null;
+  amount: number;
+  currency?: string | null;
+  status: string;
+  paymentMethodType?: string | null;
+  cardBrand?: string | null;
+  cardLast4?: string | null;
+  receiptUrl?: string | null;
+  stripeCustomerId?: string | null;
+  stripeConnectAccountId?: string | null;
+  applicationFeeAmount?: number | null;
+  errorMessage?: string | null;
+  metadata?: unknown | null;
+}
+
+export interface CreateProductBatchData {
+  productBatch_insert: ProductBatch_Key;
+}
+
+export interface CreateProductBatchVariables {
+  batchId: string;
+  productId: string;
+  batchNumber: string;
+  expirationDate?: TimestampString | null;
+  productionDate?: TimestampString | null;
+  stockStatus: unknown;
+  metadata?: unknown | null;
+  isTest?: boolean | null;
+}
+
 export interface CreateProductData {
   product_insert: Product_Key;
 }
 
 export interface CreateProductVariables {
   productId: string;
+  orgId: string;
+  appId?: string | null;
   name: string;
   description?: string | null;
   type: string;
@@ -175,6 +234,15 @@ export interface CreateProductVariables {
   stripePriceEducationId?: string | null;
   isActive?: boolean | null;
   isTest?: boolean | null;
+  metadata?: unknown | null;
+  variants?: unknown | null;
+  bom?: unknown | null;
+  relatedProducts?: unknown | null;
+  options?: unknown | null;
+  taxBehavior?: string | null;
+  taxCode?: string | null;
+  aiSummary?: string | null;
+  descriptionEmbedding?: unknown | null;
 }
 
 export interface CreateServiceData {
@@ -183,6 +251,8 @@ export interface CreateServiceData {
 
 export interface CreateServiceVariables {
   serviceId: string;
+  orgId: string;
+  appId?: string | null;
   name: string;
   description?: string | null;
   type: string;
@@ -195,6 +265,9 @@ export interface CreateServiceVariables {
   stripePriceEducationId?: string | null;
   isActive?: boolean | null;
   isTest?: boolean | null;
+  metadata?: unknown | null;
+  taxBehavior?: string | null;
+  taxCode?: string | null;
 }
 
 export interface CreateTeamData {
@@ -204,7 +277,11 @@ export interface CreateTeamData {
 export interface CreateTeamVariables {
   teamId: string;
   orgId: string;
+  appId?: string | null;
   name: string;
+  description?: string | null;
+  rbac?: unknown | null;
+  metadata?: unknown | null;
   isTest?: boolean | null;
 }
 
@@ -215,6 +292,7 @@ export interface CreateThingData {
 export interface CreateThingVariables {
   thingId: string;
   orgId: string;
+  appId?: string | null;
   name: string;
   type: string;
   status?: string | null;
@@ -278,6 +356,14 @@ export interface DeletePreRegistrationData {
 
 export interface DeletePreRegistrationVariables {
   email: string;
+}
+
+export interface DeleteProductBatchData {
+  productBatch_delete?: ProductBatch_Key | null;
+}
+
+export interface DeleteProductBatchVariables {
+  batchId: string;
 }
 
 export interface DeleteProductData {
@@ -345,18 +431,19 @@ export interface GetApiKeyData {
       uid: string;
       email: string;
     } & User_Key;
-      thing?: {
-        thingId: string;
-        name: string;
-      } & Thing_Key;
-        orgId: string;
-        name: string;
-        description?: string | null;
-        ipWhitelist: unknown;
-        isActive: boolean;
-        expiresAt?: TimestampString | null;
-        isTest: boolean;
-        createdAt: TimestampString;
+    thing?: {
+      thingId: string;
+      name: string;
+    } & Thing_Key;
+    orgId: string;
+    appId: string;
+    name: string;
+    description?: string | null;
+    ipWhitelist: unknown;
+    isActive: boolean;
+    expiresAt?: TimestampString | null;
+    isTest: boolean;
+    createdAt: TimestampString;
   } & ApiKey_Key;
 }
 
@@ -401,19 +488,19 @@ export interface GetInvoiceDetailsData {
       orgId: string;
       name: string;
     } & Organization_Key;
-      seller: {
-        orgId: string;
-        name: string;
-      } & Organization_Key;
-        amount: number;
-        status: string;
-        pdfUrl?: string | null;
-        taxPercent?: number | null;
-        taxAmount?: number | null;
-        subtotal?: number | null;
-        products?: unknown | null;
-        services?: unknown | null;
-        createdAt: TimestampString;
+    seller: {
+      orgId: string;
+      name: string;
+    } & Organization_Key;
+    amount: number;
+    status: string;
+    pdfUrl?: string | null;
+    taxPercent?: number | null;
+    taxAmount?: number | null;
+    subtotal?: number | null;
+    products?: unknown | null;
+    services?: unknown | null;
+    createdAt: TimestampString;
   } & Invoice_Key;
 }
 
@@ -443,12 +530,21 @@ export interface GetOrganizationDetailsData {
     name: string;
     type: string;
     country: string;
+    vatNumber?: string | null;
     isTest: boolean;
     viesValidated: boolean;
     address?: string | null;
     stripeCustomerId?: string | null;
     stripeConnectAccountId?: string | null;
     stripeConnectOnboarded?: boolean | null;
+    serviceSeats_on_organization: ({
+      service: {
+        serviceId: string;
+      } & Service_Key;
+      user: {
+        uid: string;
+      } & User_Key;
+    })[];
   } & Organization_Key;
 }
 
@@ -479,9 +575,28 @@ export interface GetPreRegistrationVariables {
   email: string;
 }
 
+export interface GetProductBatchesByProductData {
+  productBatches: ({
+    batchId: string;
+    batchNumber: string;
+    expirationDate?: TimestampString | null;
+    productionDate?: TimestampString | null;
+    stockStatus: unknown;
+    metadata?: unknown | null;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & ProductBatch_Key)[];
+}
+
+export interface GetProductBatchesByProductVariables {
+  productId: string;
+}
+
 export interface GetProductDetailsData {
   product?: {
     productId: string;
+    orgId: string;
+    appId: string;
     name: string;
     description?: string | null;
     type: string;
@@ -494,6 +609,15 @@ export interface GetProductDetailsData {
     stripePriceEducationId?: string | null;
     isActive: boolean;
     isTest: boolean;
+    metadata?: unknown | null;
+    variants?: unknown | null;
+    bom?: unknown | null;
+    relatedProducts?: unknown | null;
+    options?: unknown | null;
+    taxBehavior?: string | null;
+    taxCode?: string | null;
+    aiSummary?: string | null;
+    descriptionEmbedding?: unknown | null;
     createdAt: TimestampString;
   } & Product_Key;
 }
@@ -505,6 +629,8 @@ export interface GetProductDetailsVariables {
 export interface GetServiceDetailsData {
   service?: {
     serviceId: string;
+    orgId: string;
+    appId: string;
     name: string;
     description?: string | null;
     type: string;
@@ -517,6 +643,9 @@ export interface GetServiceDetailsData {
     stripePriceEducationId?: string | null;
     isActive: boolean;
     isTest: boolean;
+    metadata?: unknown | null;
+    taxBehavior?: string | null;
+    taxCode?: string | null;
     createdAt: TimestampString;
   } & Service_Key;
 }
@@ -529,6 +658,7 @@ export interface GetThingByTokenHashData {
   things: ({
     thingId: string;
     orgId: string;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -546,6 +676,7 @@ export interface GetThingData {
   thing?: {
     thingId: string;
     orgId: string;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -574,52 +705,63 @@ export interface GetUserClaimsContextData {
       service: {
         serviceId: string;
       } & Service_Key;
-        organization: {
-          orgId: string;
-        } & Organization_Key;
+      organization: {
+        orgId: string;
+      } & Organization_Key;
     })[];
-      userOrganizations_on_user: ({
-        role: string;
+    teamMembers_on_user: ({
+      team: {
+        teamId: string;
+        name: string;
+        rbac?: unknown | null;
         organization: {
           orgId: string;
-          name: string;
-          type: string;
-          confirmed: boolean;
-          isTest: boolean;
-          viesValidated: boolean;
-          country: string;
-          vatNumber?: string | null;
-          sdiCode?: string | null;
-          officeCode?: string | null;
-          cigCode?: string | null;
-          cupCode?: string | null;
-          stripeCustomerId?: string | null;
-          stripeConnectAccountId?: string | null;
-          stripeConnectOnboarded?: boolean | null;
-          address?: string | null;
-          latitude?: number | null;
-          longitude?: number | null;
-          altitude?: number | null;
-          metadata?: unknown | null;
-          serviceSubscriptions_on_organization: ({
-            service: {
-              serviceId: string;
-            } & Service_Key;
-              status: string;
-              tier?: string | null;
-              seats: number;
-              expiresAt?: TimestampString | null;
-          })[];
-            serviceSeats_on_organization: ({
-              service: {
-                serviceId: string;
-              } & Service_Key;
-                user: {
-                  uid: string;
-                } & User_Key;
-            })[];
         } & Organization_Key;
-      })[];
+      } & Team_Key;
+    })[];
+    userOrganizations_on_user: ({
+      role: string;
+      rbac?: unknown | null;
+      organization: {
+        orgId: string;
+        name: string;
+        type: string;
+        confirmed: boolean;
+        isTest: boolean;
+        viesValidated: boolean;
+        country: string;
+        vatNumber?: string | null;
+        sdiCode?: string | null;
+        officeCode?: string | null;
+        cigCode?: string | null;
+        cupCode?: string | null;
+        stripeCustomerId?: string | null;
+        stripeConnectAccountId?: string | null;
+        stripeConnectOnboarded?: boolean | null;
+        address?: string | null;
+        latitude?: number | null;
+        longitude?: number | null;
+        altitude?: number | null;
+        metadata?: unknown | null;
+        serviceSubscriptions_on_organization: ({
+          service: {
+            serviceId: string;
+          } & Service_Key;
+          status: string;
+          tier?: string | null;
+          seats: number;
+          expiresAt?: TimestampString | null;
+        })[];
+        serviceSeats_on_organization: ({
+          service: {
+            serviceId: string;
+          } & Service_Key;
+          user: {
+            uid: string;
+          } & User_Key;
+        })[];
+      } & Organization_Key;
+    })[];
   } & User_Key;
 }
 
@@ -680,9 +822,28 @@ export interface ListAllPreRegistrationsData {
   } & PreRegistration_Key)[];
 }
 
+export interface ListAllProductBatchesData {
+  productBatches: ({
+    batchId: string;
+    product: {
+      productId: string;
+      sku?: string | null;
+    } & Product_Key;
+    batchNumber: string;
+    expirationDate?: TimestampString | null;
+    productionDate?: TimestampString | null;
+    stockStatus: unknown;
+    metadata?: unknown | null;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & ProductBatch_Key)[];
+}
+
 export interface ListAllProductsData {
   products: ({
     productId: string;
+    orgId: string;
+    appId: string;
     name: string;
     type: string;
     sku?: string | null;
@@ -693,7 +854,20 @@ export interface ListAllProductsData {
     stripePriceBusinessId?: string | null;
     stripePriceGovernmentId?: string | null;
     stripePriceEducationId?: string | null;
+    metadata?: unknown | null;
+    variants?: unknown | null;
+    bom?: unknown | null;
+    relatedProducts?: unknown | null;
+    options?: unknown | null;
+    taxBehavior?: string | null;
+    taxCode?: string | null;
+    aiSummary?: string | null;
+    descriptionEmbedding?: unknown | null;
   } & Product_Key)[];
+}
+
+export interface ListAllProductsVariables {
+  appId: string;
 }
 
 export interface ListAllServiceSubscriptionsData {
@@ -701,16 +875,19 @@ export interface ListAllServiceSubscriptionsData {
     organization: {
       orgId: string;
     } & Organization_Key;
-      service: {
-        serviceId: string;
-      } & Service_Key;
+    service: {
+      serviceId: string;
+    } & Service_Key;
   })[];
 }
 
 export interface ListAllServicesData {
   services: ({
     serviceId: string;
+    orgId: string;
+    appId: string;
     name: string;
+    description?: string | null;
     type: string;
     isActive: boolean;
     stripeProductId?: string | null;
@@ -718,7 +895,14 @@ export interface ListAllServicesData {
     stripePriceBusinessId?: string | null;
     stripePriceGovernmentId?: string | null;
     stripePriceEducationId?: string | null;
+    metadata?: unknown | null;
+    taxBehavior?: string | null;
+    taxCode?: string | null;
   } & Service_Key)[];
+}
+
+export interface ListAllServicesVariables {
+  appId: string;
 }
 
 export interface ListAllTeamMembersData {
@@ -726,15 +910,19 @@ export interface ListAllTeamMembersData {
     user: {
       uid: string;
     } & User_Key;
-      team: {
-        teamId: string;
-      } & Team_Key;
+    team: {
+      teamId: string;
+    } & Team_Key;
   })[];
 }
 
 export interface ListAllTeamsData {
   teams: ({
     teamId: string;
+    name: string;
+    description?: string | null;
+    rbac?: unknown | null;
+    metadata?: unknown | null;
     organization: {
       orgId: string;
     } & Organization_Key;
@@ -752,9 +940,9 @@ export interface ListAllUserOrganizationsData {
     user: {
       uid: string;
     } & User_Key;
-      organization: {
-        orgId: string;
-      } & Organization_Key;
+    organization: {
+      orgId: string;
+    } & Organization_Key;
   })[];
 }
 
@@ -768,6 +956,7 @@ export interface ListAllUsersData {
 export interface ListApiKeysByOrgData {
   apiKeys: ({
     keyHash: string;
+    appId: string;
     name: string;
     description?: string | null;
     isActive: boolean;
@@ -779,36 +968,44 @@ export interface ListApiKeysByOrgData {
 
 export interface ListApiKeysByOrgVariables {
   orgId: string;
+  appId: string;
 }
 
 export interface ListAuditLogsByOrgData {
   auditLogs: ({
     logId: string;
+    appId: string;
   } & AuditLog_Key)[];
 }
 
 export interface ListAuditLogsByOrgVariables {
   orgId: string;
+  appId: string;
 }
 
 export interface ListInvoicesByOrgData {
   invoices: ({
     invoiceId: string;
+    stripeInvoiceId?: string | null;
+    invoiceNumber?: string | null;
     amount: number;
     status: string;
     pdfUrl?: string | null;
     taxPercent?: number | null;
     taxAmount?: number | null;
     subtotal?: number | null;
+    dueDate?: TimestampString | null;
+    paidAt?: TimestampString | null;
+    metadata?: unknown | null;
     createdAt: TimestampString;
     buyer: {
       orgId: string;
       name: string;
     } & Organization_Key;
-      seller: {
-        orgId: string;
-        name: string;
-      } & Organization_Key;
+    seller: {
+      orgId: string;
+      name: string;
+    } & Organization_Key;
   } & Invoice_Key)[];
 }
 
@@ -819,21 +1016,26 @@ export interface ListInvoicesByOrgVariables {
 export interface ListInvoicesBySellerData {
   invoices: ({
     invoiceId: string;
+    stripeInvoiceId?: string | null;
+    invoiceNumber?: string | null;
     amount: number;
     status: string;
     pdfUrl?: string | null;
     taxPercent?: number | null;
     taxAmount?: number | null;
     subtotal?: number | null;
+    dueDate?: TimestampString | null;
+    paidAt?: TimestampString | null;
+    metadata?: unknown | null;
     createdAt: TimestampString;
     buyer: {
       orgId: string;
       name: string;
     } & Organization_Key;
-      seller: {
-        orgId: string;
-        name: string;
-      } & Organization_Key;
+    seller: {
+      orgId: string;
+      name: string;
+    } & Organization_Key;
   } & Invoice_Key)[];
 }
 
@@ -844,18 +1046,77 @@ export interface ListInvoicesBySellerVariables {
 export interface ListMembersByOrgData {
   userOrganizations: ({
     role: string;
+    rbac?: unknown | null;
     joinedAt: TimestampString;
     user: {
       uid: string;
       email: string;
       fullName?: string | null;
       avatarUrl?: string | null;
+      metadata?: unknown | null;
+      locale?: string | null;
+      teamMembers_on_user: ({
+        team: {
+          teamId: string;
+          name: string;
+        } & Team_Key;
+      })[];
     } & User_Key;
   })[];
 }
 
 export interface ListMembersByOrgVariables {
   orgId: string;
+}
+
+export interface ListPaymentsByOrgData {
+  payments: ({
+    paymentId: string;
+    sellerOrgId?: string | null;
+    invoiceId?: string | null;
+    amount: number;
+    currency: string;
+    status: string;
+    paymentMethodType?: string | null;
+    cardBrand?: string | null;
+    cardLast4?: string | null;
+    receiptUrl?: string | null;
+    stripeCustomerId?: string | null;
+    stripeConnectAccountId?: string | null;
+    applicationFeeAmount?: number | null;
+    errorMessage?: string | null;
+    metadata?: unknown | null;
+    createdAt: TimestampString;
+  } & Payment_Key)[];
+}
+
+export interface ListPaymentsByOrgVariables {
+  orgId: string;
+}
+
+export interface ListPaymentsBySellerData {
+  payments: ({
+    paymentId: string;
+    orgId: string;
+    invoiceId?: string | null;
+    amount: number;
+    currency: string;
+    status: string;
+    paymentMethodType?: string | null;
+    cardBrand?: string | null;
+    cardLast4?: string | null;
+    receiptUrl?: string | null;
+    stripeCustomerId?: string | null;
+    stripeConnectAccountId?: string | null;
+    applicationFeeAmount?: number | null;
+    errorMessage?: string | null;
+    metadata?: unknown | null;
+    createdAt: TimestampString;
+  } & Payment_Key)[];
+}
+
+export interface ListPaymentsBySellerVariables {
+  sellerOrgId: string;
 }
 
 export interface ListTeamMembersData {
@@ -877,18 +1138,24 @@ export interface ListTeamMembersVariables {
 export interface ListTeamsByOrgData {
   teams: ({
     teamId: string;
+    appId: string;
     name: string;
+    description?: string | null;
+    rbac?: unknown | null;
+    metadata?: unknown | null;
     createdAt: TimestampString;
   } & Team_Key)[];
 }
 
 export interface ListTeamsByOrgVariables {
   orgId: string;
+  appId: string;
 }
 
 export interface ListThingsByOrgData {
   things: ({
     thingId: string;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -900,6 +1167,7 @@ export interface ListThingsByOrgData {
 
 export interface ListThingsByOrgVariables {
   orgId: string;
+  appId: string;
 }
 
 export interface Organization_Key {
@@ -907,9 +1175,19 @@ export interface Organization_Key {
   __typename?: 'Organization_Key';
 }
 
+export interface Payment_Key {
+  paymentId: string;
+  __typename?: 'Payment_Key';
+}
+
 export interface PreRegistration_Key {
   email: string;
   __typename?: 'PreRegistration_Key';
+}
+
+export interface ProductBatch_Key {
+  batchId: string;
+  __typename?: 'ProductBatch_Key';
 }
 
 export interface Product_Key {
@@ -970,6 +1248,15 @@ export interface Thing_Key {
   __typename?: 'Thing_Key';
 }
 
+export interface UpdateInvoiceStatusData {
+  invoice_update?: Invoice_Key | null;
+}
+
+export interface UpdateInvoiceStatusVariables {
+  invoiceId: string;
+  status: string;
+}
+
 export interface UpdateOrganizationBillingData {
   organization_update?: Organization_Key | null;
 }
@@ -1005,6 +1292,16 @@ export interface UpdateOrganizationStripeCustomerVariables {
   stripeCustomerId: string;
 }
 
+export interface UpdatePaymentStatusData {
+  payment_update?: Payment_Key | null;
+}
+
+export interface UpdatePaymentStatusVariables {
+  paymentId: string;
+  status: string;
+  errorMessage?: string | null;
+}
+
 export interface UpdateSubscriptionStatusData {
   serviceSubscription_upsert: ServiceSubscription_Key;
 }
@@ -1015,7 +1312,26 @@ export interface UpdateSubscriptionStatusVariables {
   status: string;
   tier?: string | null;
   seats?: number | null;
+  stripeSubscriptionId?: string | null;
+  cancelAtPeriodEnd?: boolean | null;
+  currentPeriodStart?: TimestampString | null;
+  currentPeriodEnd?: TimestampString | null;
+  trialStart?: TimestampString | null;
+  trialEnd?: TimestampString | null;
+  metadata?: unknown | null;
   expiresAt?: TimestampString | null;
+}
+
+export interface UpdateTeamData {
+  team_update?: Team_Key | null;
+}
+
+export interface UpdateTeamVariables {
+  teamId: string;
+  name: string;
+  description?: string | null;
+  rbac?: unknown | null;
+  metadata?: unknown | null;
 }
 
 export interface UpdateThingData {
@@ -1028,6 +1344,17 @@ export interface UpdateThingVariables {
   type?: string | null;
   status?: string | null;
   metadata?: unknown | null;
+}
+
+export interface UpdateUserOrganizationData {
+  userOrganization_update?: UserOrganization_Key | null;
+}
+
+export interface UpdateUserOrganizationVariables {
+  uid: string;
+  orgId: string;
+  role: string;
+  rbac?: unknown | null;
 }
 
 export interface UpdateUserPreferencesData {
@@ -1115,6 +1442,11 @@ export function createOrganization(vars: CreateOrganizationVariables, options?: 
 export function addUserToOrganization(dc: DataConnect, vars: AddUserToOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToOrganizationData>>;
 /** Generated Node Admin SDK operation action function for the 'AddUserToOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
 export function addUserToOrganization(vars: AddUserToOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateUserOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateUserOrganization(dc: DataConnect, vars: UpdateUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateUserOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateUserOrganization(vars: UpdateUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserOrganizationData>>;
 
 /** Generated Node Admin SDK operation action function for the 'UpdateSubscriptionStatus' Mutation. Allow users to execute without passing in DataConnect. */
 export function updateSubscriptionStatus(dc: DataConnect, vars: UpdateSubscriptionStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateSubscriptionStatusData>>;
@@ -1261,20 +1593,50 @@ export function deleteProduct(dc: DataConnect, vars: DeleteProductVariables, opt
 /** Generated Node Admin SDK operation action function for the 'DeleteProduct' Mutation. Allow users to pass in custom DataConnect instances. */
 export function deleteProduct(vars: DeleteProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductData>>;
 
+/** Generated Node Admin SDK operation action function for the 'CreateProductBatch' Mutation. Allow users to execute without passing in DataConnect. */
+export function createProductBatch(dc: DataConnect, vars: CreateProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductBatchData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateProductBatch' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createProductBatch(vars: CreateProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductBatchData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteProductBatch' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteProductBatch(dc: DataConnect, vars: DeleteProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductBatchData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteProductBatch' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteProductBatch(vars: DeleteProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductBatchData>>;
+
 /** Generated Node Admin SDK operation action function for the 'CreateInvoice' Mutation. Allow users to execute without passing in DataConnect. */
 export function createInvoice(dc: DataConnect, vars: CreateInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateInvoiceData>>;
 /** Generated Node Admin SDK operation action function for the 'CreateInvoice' Mutation. Allow users to pass in custom DataConnect instances. */
 export function createInvoice(vars: CreateInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateInvoiceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateInvoiceStatus' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateInvoiceStatus(dc: DataConnect, vars: UpdateInvoiceStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateInvoiceStatusData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateInvoiceStatus' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateInvoiceStatus(vars: UpdateInvoiceStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateInvoiceStatusData>>;
 
 /** Generated Node Admin SDK operation action function for the 'DeleteInvoice' Mutation. Allow users to execute without passing in DataConnect. */
 export function deleteInvoice(dc: DataConnect, vars: DeleteInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteInvoiceData>>;
 /** Generated Node Admin SDK operation action function for the 'DeleteInvoice' Mutation. Allow users to pass in custom DataConnect instances. */
 export function deleteInvoice(vars: DeleteInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteInvoiceData>>;
 
+/** Generated Node Admin SDK operation action function for the 'CreatePayment' Mutation. Allow users to execute without passing in DataConnect. */
+export function createPayment(dc: DataConnect, vars: CreatePaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePaymentData>>;
+/** Generated Node Admin SDK operation action function for the 'CreatePayment' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createPayment(vars: CreatePaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePaymentData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdatePaymentStatus' Mutation. Allow users to execute without passing in DataConnect. */
+export function updatePaymentStatus(dc: DataConnect, vars: UpdatePaymentStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePaymentStatusData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdatePaymentStatus' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updatePaymentStatus(vars: UpdatePaymentStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePaymentStatusData>>;
+
 /** Generated Node Admin SDK operation action function for the 'CreateTeam' Mutation. Allow users to execute without passing in DataConnect. */
 export function createTeam(dc: DataConnect, vars: CreateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateTeamData>>;
 /** Generated Node Admin SDK operation action function for the 'CreateTeam' Mutation. Allow users to pass in custom DataConnect instances. */
 export function createTeam(vars: CreateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateTeamData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateTeam' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateTeam(dc: DataConnect, vars: UpdateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateTeamData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateTeam' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateTeam(vars: UpdateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateTeamData>>;
 
 /** Generated Node Admin SDK operation action function for the 'DeleteTeam' Mutation. Allow users to execute without passing in DataConnect. */
 export function deleteTeam(dc: DataConnect, vars: DeleteTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteTeamData>>;
@@ -1397,14 +1759,24 @@ export function listAllAuditLogs(dc: DataConnect, options?: OperationOptions): P
 export function listAllAuditLogs(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllAuditLogsData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListAllServices' Query. Allow users to execute without passing in DataConnect. */
-export function listAllServices(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllServicesData>>;
+export function listAllServices(dc: DataConnect, vars: ListAllServicesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllServicesData>>;
 /** Generated Node Admin SDK operation action function for the 'ListAllServices' Query. Allow users to pass in custom DataConnect instances. */
-export function listAllServices(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllServicesData>>;
+export function listAllServices(vars: ListAllServicesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllServicesData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListAllProducts' Query. Allow users to execute without passing in DataConnect. */
-export function listAllProducts(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
+export function listAllProducts(dc: DataConnect, vars: ListAllProductsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
 /** Generated Node Admin SDK operation action function for the 'ListAllProducts' Query. Allow users to pass in custom DataConnect instances. */
-export function listAllProducts(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
+export function listAllProducts(vars: ListAllProductsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllProductBatches' Query. Allow users to execute without passing in DataConnect. */
+export function listAllProductBatches(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductBatchesData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllProductBatches' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllProductBatches(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductBatchesData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetProductBatchesByProduct' Query. Allow users to execute without passing in DataConnect. */
+export function getProductBatchesByProduct(dc: DataConnect, vars: GetProductBatchesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductBatchesByProductData>>;
+/** Generated Node Admin SDK operation action function for the 'GetProductBatchesByProduct' Query. Allow users to pass in custom DataConnect instances. */
+export function getProductBatchesByProduct(vars: GetProductBatchesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductBatchesByProductData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListAllInvoices' Query. Allow users to execute without passing in DataConnect. */
 export function listAllInvoices(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllInvoicesData>>;
@@ -1430,6 +1802,16 @@ export function listInvoicesByOrg(vars: ListInvoicesByOrgVariables, options?: Op
 export function listInvoicesBySeller(dc: DataConnect, vars: ListInvoicesBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListInvoicesBySellerData>>;
 /** Generated Node Admin SDK operation action function for the 'ListInvoicesBySeller' Query. Allow users to pass in custom DataConnect instances. */
 export function listInvoicesBySeller(vars: ListInvoicesBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListInvoicesBySellerData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listPaymentsByOrg(dc: DataConnect, vars: ListPaymentsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listPaymentsByOrg(vars: ListPaymentsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsBySeller' Query. Allow users to execute without passing in DataConnect. */
+export function listPaymentsBySeller(dc: DataConnect, vars: ListPaymentsBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsBySellerData>>;
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsBySeller' Query. Allow users to pass in custom DataConnect instances. */
+export function listPaymentsBySeller(vars: ListPaymentsBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsBySellerData>>;
 
 /** Generated Node Admin SDK operation action function for the 'GetInvoiceDetails' Query. Allow users to execute without passing in DataConnect. */
 export function getInvoiceDetails(dc: DataConnect, vars: GetInvoiceDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetInvoiceDetailsData>>;
@@ -1465,4 +1847,9 @@ export function listTeamMembers(vars: ListTeamMembersVariables, options?: Operat
 export function listAuditLogsByOrg(dc: DataConnect, vars: ListAuditLogsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAuditLogsByOrgData>>;
 /** Generated Node Admin SDK operation action function for the 'ListAuditLogsByOrg' Query. Allow users to pass in custom DataConnect instances. */
 export function listAuditLogsByOrg(vars: ListAuditLogsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAuditLogsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CheckVatNumberExists' Query. Allow users to execute without passing in DataConnect. */
+export function checkVatNumberExists(dc: DataConnect, vars: CheckVatNumberExistsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CheckVatNumberExistsData>>;
+/** Generated Node Admin SDK operation action function for the 'CheckVatNumberExists' Query. Allow users to pass in custom DataConnect instances. */
+export function checkVatNumberExists(vars: CheckVatNumberExistsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CheckVatNumberExistsData>>;
 

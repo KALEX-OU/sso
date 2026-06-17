@@ -29,6 +29,7 @@ interface ThingItem {
   status: string;
   createdAt: string;
   isTest: boolean;
+  appId?: string;
 }
 
 export default function ThingManagementPage() {
@@ -52,7 +53,7 @@ export default function ThingManagementPage() {
   const loadThings = useCallback(async (orgId: string) => {
     setLoadingData(true);
     try {
-      const thingRes = await listThingsByOrg(dataConnect, { orgId });
+      const thingRes = await listThingsByOrg(dataConnect, { orgId, appId: "sso" });
       setThings((thingRes.data.things || []) as ThingItem[]);
     } catch (err) {
       console.error("Errore caricamento cose:", err);
@@ -246,6 +247,7 @@ export default function ThingManagementPage() {
                     <tr>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Nome / ID</th>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Tipo</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">App</th>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Stato</th>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl text-right">Rimuovi</th>
                     </tr>
@@ -261,6 +263,9 @@ export default function ThingManagementPage() {
                         </td>
                         <td className="px-4 py-4">
                           <Chip size="sm" variant="soft" className="uppercase font-bold text-[8px]">{thing.type}</Chip>
+                        </td>
+                        <td className="px-4 py-4">
+                          <Chip size="sm" color={thing.appId === "sso" ? "default" : thing.appId === "safety" ? "warning" : "accent"} variant="soft" className="uppercase font-bold text-[8px]">{thing.appId || "sso"}</Chip>
                         </td>
                         <td className="px-4 py-4">
                           {thing.status === "active" && <Chip size="sm" color="success" variant="soft" className="font-bold text-[8px] uppercase">Active</Chip>}

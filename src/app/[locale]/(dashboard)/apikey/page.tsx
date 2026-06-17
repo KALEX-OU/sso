@@ -23,6 +23,7 @@ interface ApiKeyItem {
   expiresAt?: string | null;
   isTest: boolean;
   createdAt: string;
+  appId?: string;
 }
 
 interface ApiKeyPermissionDetail {
@@ -74,7 +75,7 @@ export default function ApiKeyManagementPage() {
   const loadApiKeys = useCallback(async (orgId: string) => {
     setLoadingData(true);
     try {
-      const keyRes = await listApiKeysByOrg(dataConnect, { orgId });
+      const keyRes = await listApiKeysByOrg(dataConnect, { orgId, appId: "sso" });
       setApiKeys((keyRes.data.apiKeys || []) as ApiKeyItem[]);
     } catch (err) {
       console.error("Errore caricamento api keys:", err);
@@ -307,6 +308,7 @@ export default function ApiKeyManagementPage() {
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Nome / Scopo</th>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Prefisso</th>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Environment</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">App</th>
                       <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl text-right">Revoca</th>
                     </tr>
                   </thead>
@@ -328,6 +330,9 @@ export default function ApiKeyManagementPage() {
                           <Chip size="sm" variant="soft" color={key.isTest ? "warning" : "success"} className="text-[8px] font-bold uppercase tracking-wider">
                             {key.isTest ? "Sandbox" : "Production"}
                           </Chip>
+                        </td>
+                        <td className="px-4 py-4">
+                          <Chip size="sm" color={key.appId === "sso" ? "default" : key.appId === "safety" ? "warning" : "accent"} variant="soft" className="uppercase font-bold text-[8px]">{key.appId || "sso"}</Chip>
                         </td>
                         <td className="px-4 py-4 text-right">
                           <Button

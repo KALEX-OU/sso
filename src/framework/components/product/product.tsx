@@ -38,12 +38,17 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetchAuthed(`/api/product/list/${organizationId}`);
+      const res = await fetchAuthed(`/api/product/list?appId=sso&orgId=${organizationId}`);
       const data = await res.json();
       if (data.success) {
-        setProducts(data.products || []);
+        setProducts(data.items || []);
       } else {
-        setError(data.error || "Impossibile caricare i prodotti.");
+        const errMsg = data.error && typeof data.error === "object" && "message" in data.error
+          ? String(data.error.message)
+          : typeof data.error === "string"
+            ? data.error
+            : "Impossibile caricare i prodotti.";
+        setError(errMsg);
       }
     } catch (err) {
       console.error("[ProductModule] Load Error:", err);

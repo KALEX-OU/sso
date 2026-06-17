@@ -17,6 +17,10 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
 
   // Copia gli headers importanti
   const headers = new Headers();
+
+  // Inoltra l'applicazione proprietaria
+  const appIdHeader = request.headers.get("x-app-id") || "sso";
+  headers.set("x-app-id", appIdHeader);
   
   // Inoltra il token di autenticazione se presente
   const authHeader = request.headers.get("authorization");

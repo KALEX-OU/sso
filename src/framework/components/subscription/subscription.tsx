@@ -58,15 +58,23 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
 
   const loadSubscriptions = useCallback(async () => {
     try {
-      const res = await fetchAuthed(`/api/subscription/list/${organizationId}`);
+      const res = await fetchAuthed("/api/subscription/list");
       const data = await res.json();
       if (data.success) {
-        setSubscriptions(data.subscriptions || []);
+        setSubscriptions(data.items || data.subscriptions || []);
+      } else {
+        const errMsg = data.error && typeof data.error === "object" && "message" in data.error
+          ? String(data.error.message)
+          : typeof data.error === "string"
+            ? data.error
+            : "Impossibile recuperare lo storico abbonamenti.";
+        setError(errMsg);
       }
     } catch (err) {
       console.error("[SubscriptionModule] Load Subs Error:", err);
+      setError("Errore durante il caricamento dei dati di abbonamento.");
     }
-  }, [organizationId, fetchAuthed]);
+  }, [fetchAuthed]);
 
   const loadMembers = useCallback(async () => {
     setLoadingMembers(true);

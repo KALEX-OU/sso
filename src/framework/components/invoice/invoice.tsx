@@ -46,12 +46,17 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetchAuthed(`/api/invoice/list/${organizationId}`);
+      const res = await fetchAuthed("/api/invoice/list");
       const data = await res.json();
       if (data.success) {
-        setInvoices(data.invoices || []);
+        setInvoices(data.items || data.invoices || []);
       } else {
-        setError(data.error || "Impossibile recuperare lo storico fatture.");
+        const errMsg = data.error && typeof data.error === "object" && "message" in data.error
+          ? String(data.error.message)
+          : typeof data.error === "string"
+            ? data.error
+            : "Impossibile recuperare lo storico fatture.";
+        setError(errMsg);
       }
     } catch (err) {
       console.error("[InvoiceModule] Load Error:", err);
@@ -59,7 +64,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [organizationId, fetchAuthed]);
+  }, [fetchAuthed]);
 
   useEffect(() => {
     if (organizationId) {

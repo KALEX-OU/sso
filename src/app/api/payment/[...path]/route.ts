@@ -6,8 +6,8 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
   const resolvedParams = await context.params;
   const pathString = resolvedParams.path.join("/");
   
-  // Costruisce l'URL di destinazione sul server API Hono (es. http://localhost:3001/apikey/...)
-  const targetUrl = new URL(`/apikey/${pathString}`, API_BASE_URL);
+  // Costruisce l'URL di destinazione sul server API Hono (es. http://localhost:3001/payment/...)
+  const targetUrl = new URL(`/payment/${pathString}`, API_BASE_URL);
   
   // Copia i query parameters dalla richiesta originale
   const { searchParams } = new URL(request.url);

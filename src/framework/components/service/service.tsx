@@ -44,20 +44,25 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [activatingService, setActivatingService] = useState<string | null>(null);
-
   const loadServices = useCallback(async () => {
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetchAuthed(`/api/service/list/${organizationId}`);
+      const res = await fetchAuthed(`/api/service/list?appId=sso&orgId=${organizationId}`);
       const data = await res.json();
       if (data.success) {
-        setServices(data.services || []);
+        setServices(data.items || []);
       } else {
-        setError(data.error || "Impossibile caricare i servizi.");
+        const errMsg = data.error && typeof data.error === "object" && "message" in data.error
+          ? String(data.error.message)
+          : typeof data.error === "string"
+            ? data.error
+            : "Impossibile caricare i servizi.";
+        setError(errMsg);
       }
     } catch (err) {
-      console.error("[ServiceModule] Load Error:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[ServiceModule] Load Error:", message);
       setError("Errore di connessione durante il recupero del catalogo dei servizi.");
     } finally {
       setLoading(false);
