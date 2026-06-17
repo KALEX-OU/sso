@@ -208,7 +208,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
   const openStripePortal = async () => {
     showToast("Reindirizzamento a Stripe Customer Portal in corso...", "info");
     try {
-      const res = await fetchAuthed("/api/stripe/portal-session", {
+      const res = await fetchAuthed("/api/stripe/subscription/portal-session", {
         method: "POST",
         body: JSON.stringify({ returnUrl: window.location.href })
       });
