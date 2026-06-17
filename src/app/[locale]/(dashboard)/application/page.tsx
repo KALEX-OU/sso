@@ -24,35 +24,47 @@ export default function ApplicationPage() {
 
   // 2. Intercettazione e polling per sincronizzare i claims post-checkout
   useEffect(() => {
-    if (shouldSync) {
-      let attempts = 0;
-      const maxAttempts = 5;
+    if (!shouldSync) return;
 
-      const pollClaims = async () => {
-        try {
-          console.log(`[Checkout Sync] Esecuzione refreshClaims (tentativo ${attempts + 1}/${maxAttempts})...`);
-          await refreshClaims(organizationId);
-          attempts++;
+    let attempts = 0;
+    const maxAttempts = 5;
+    let active = true;
+    let timerId: NodeJS.Timeout | null = null;
 
-          if (attempts >= maxAttempts) {
-            setSyncingClaims(false);
-            showToast("Sincronizzazione completata! Verifica lo stato dell'applicazione.", "success");
-            // Rimuoviamo i query parameters dall'URL per evitare refresh infiniti
-            router.replace(window.location.pathname);
-          } else {
-            setTimeout(pollClaims, 2500);
-          }
-        } catch (err) {
-          console.error("[Checkout Sync] Errore durante il refresh dei claims:", err);
+    const pollClaims = async () => {
+      if (!active) return;
+      try {
+        console.log(`[Checkout Sync] Esecuzione refreshClaims (tentativo ${attempts + 1}/${maxAttempts})...`);
+        await refreshClaims(organizationId);
+        attempts++;
+
+        if (!active) return;
+
+        if (attempts >= maxAttempts) {
+          setSyncingClaims(false);
+          showToast("Sincronizzazione completata! Verifica lo stato dell'applicazione.", "success");
+          // Rimuoviamo i query parameters dall'URL per evitare refresh infiniti
+          router.replace(window.location.pathname);
+        } else {
+          timerId = setTimeout(pollClaims, 2500);
+        }
+      } catch (err) {
+        console.error("[Checkout Sync] Errore durante il refresh dei claims:", err);
+        if (active) {
           setSyncingClaims(false);
           showToast("Errore durante la sincronizzazione. Prova a ricaricare la pagina.", "error");
         }
-      };
+      }
+    };
 
-      // Avvia polling dopo 1 secondo per dare tempo a Stripe webhook di completare l'elaborazione in background
-      const timer = setTimeout(pollClaims, 1000);
-      return () => clearTimeout(timer);
-    }
+    timerId = setTimeout(pollClaims, 1000);
+
+    return () => {
+      active = false;
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
   }, [shouldSync, refreshClaims, organizationId, router, showToast]);
 
   if (!organizationId) {

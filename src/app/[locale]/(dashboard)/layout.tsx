@@ -186,9 +186,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     }
   }, [toast]);
 
-  const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
+  const showToast = useCallback((message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ message, type });
-  };
+  }, []);
 
   // Funzione per ricaricare le claims e sincronizzare con il backend
   const refreshClaims = useCallback(async (targetOrgId?: string) => {
@@ -384,7 +384,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     }
   };
 
-  const hasPermission = (module: string, action: "read" | "create" | "update" | "delete"): boolean => {
+  const hasPermission = useCallback((module: string, action: "read" | "create" | "update" | "delete"): boolean => {
     if (!claims) return false;
     
     const rbac = claims.rbac as { apps?: { sso?: Record<string, number> } } | undefined;
@@ -404,7 +404,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     if (action === "delete") bit = 8;
     
     return (activeMask & bit) !== 0;
-  };
+  }, [claims]);
 
   if (!mounted || loading) {
     return (
