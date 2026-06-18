@@ -155,6 +155,16 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
     const currentAssigned = assignedSeats[serviceId] || [];
     const isAssigned = currentAssigned.includes(memberUid);
 
+    // Impedisce la revoca dei servizi di base per l'owner lato client
+    const isBaseService = serviceId === "a57173e2-89cd-4cbb-8452-40f42bf6e1e2" || serviceId === "c8d197e8-468f-4d43-a6d1-419b48c4cf1d";
+    const targetMember = members.find(m => m.user?.uid === memberUid);
+    const isOwner = targetMember?.role === "owner";
+
+    if (isBaseService && isOwner && isAssigned) {
+      showToast("Non è consentito revocare le licenze dei servizi di base (SSO e WEB) all'owner dell'organizzazione.", "error");
+      return;
+    }
+
     if (!isAssigned && currentAssigned.length >= maxSeats) {
       showToast(`Limite di postazioni raggiunto per questo abbonamento (${maxSeats}). Rimuovi un utente o acquistane di nuovi.`, "error");
       return;
@@ -310,7 +320,9 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
                               {(() => {
                                 const isSubUpdating = updatingSeats !== null && updatingSeats.startsWith(`${sub.service.serviceId}_`);
                                 const isLimitReached = !isAssigned && assigned.length >= maxSeats;
-                                const isBtnDisabled = isUpdating || isSubUpdating || isLimitReached;
+                                const isBaseService = sub.service.serviceId === "a57173e2-89cd-4cbb-8452-40f42bf6e1e2" || sub.service.serviceId === "c8d197e8-468f-4d43-a6d1-419b48c4cf1d";
+                                const isOwnerRow = member.role === "owner";
+                                const isBtnDisabled = isUpdating || isSubUpdating || isLimitReached || (isBaseService && isOwnerRow && isAssigned);
 
                                 return (
                                   <button
