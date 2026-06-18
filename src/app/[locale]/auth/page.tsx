@@ -175,6 +175,7 @@ function AuthPortal() {
   const [addressPredictions, setAddressPredictions] = useState<Array<{ description: string; placeId: string }>>([]);
   const [isAddressValidating, setIsAddressValidating] = useState(false);
   const [manualAddressInput, setManualAddressInput] = useState("");
+  const [selectedAddressDetails, setSelectedAddressDetails] = useState<unknown>(null);
 
   // Forza il rendering client-side per evitare warning di mismatch idrati
   useEffect(() => {
@@ -453,10 +454,35 @@ function AuthPortal() {
     }
   }, []);
 
-  const handleSelectAddress = useCallback(async (addressText: string, cCode: string) => {
+  const handleSelectAddress = useCallback(async (addressText: string, cCode: string, placeId?: string) => {
     setAddressPredictions([]);
     setIsAddressValidating(true);
     try {
+      if (placeId) {
+        const response = await fetchWithAppCheck(`/api/geolocation/details?placeId=${placeId}`);
+        if (response.ok) {
+          const data = (await response.json()) as {
+            success: boolean;
+            details: {
+              id: string;
+              formattedAddress: string;
+              addressComponents: unknown[];
+              location: { latitude: number; longitude: number };
+            };
+          };
+          if (data.success && data.details) {
+            setVatCoordinates({
+              latitude: data.details.location.latitude,
+              longitude: data.details.location.longitude,
+              altitude: null
+            });
+            setManualAddressInput(data.details.formattedAddress || addressText);
+            setSelectedAddressDetails(data.details);
+            return;
+          }
+        }
+      }
+
       const response = await fetchWithAppCheck(`/api/geolocation/geocode?address=${encodeURIComponent(addressText)}&country=${cCode}`);
       if (response.ok) {
         const data = (await response.json()) as {
@@ -467,6 +493,7 @@ function AuthPortal() {
         if (data.success && data.coordinates) {
           setVatCoordinates(data.coordinates);
           setManualAddressInput(data.formattedAddress || addressText);
+          setSelectedAddressDetails(null);
         }
       }
     } catch (err) {
@@ -770,6 +797,7 @@ function AuthPortal() {
         latitude: vatCoordinates ? vatCoordinates.latitude : undefined,
         longitude: vatCoordinates ? vatCoordinates.longitude : undefined,
         altitude: vatCoordinates ? vatCoordinates.altitude : undefined,
+        addressDetails: selectedAddressDetails || undefined,
         metadata: clientMetadata
       };
 
@@ -1429,7 +1457,7 @@ function AuthPortal() {
                               key={pred.placeId}
                               onClick={() => {
                                 setManualAddressInput(pred.description);
-                                handleSelectAddress(pred.description, country);
+                                handleSelectAddress(pred.description, country, pred.placeId);
                               }}
                               className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                             >
@@ -1650,7 +1678,7 @@ function AuthPortal() {
                                       key={pred.placeId}
                                       onClick={() => {
                                         setViesAddress(pred.description);
-                                        handleSelectAddress(pred.description, country);
+                                        handleSelectAddress(pred.description, country, pred.placeId);
                                       }}
                                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                                     >
