@@ -67,7 +67,7 @@ export async function fetchWithAppCheck(input: RequestInfo | URL, init?: Request
   const token = await getAppCheckToken();
   const headers = new Headers(init?.headers);
   if (token) {
-    headers.set("X-Firebase-App-Check", token);
+    headers.set("X-Firebase-AppCheck", token);
   }
   return fetch(input, {
     ...init,
@@ -82,7 +82,7 @@ export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit):
 
   const headers = new Headers(init?.headers);
   if (token) {
-    headers.set("X-Firebase-App-Check", token);
+    headers.set("X-Firebase-AppCheck", token);
   }
   if (idToken) {
     headers.set("Authorization", `Bearer ${idToken}`);

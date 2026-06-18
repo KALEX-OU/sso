@@ -32,13 +32,13 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ mo
   }
   
   // Inoltra i token di App Check regolare e debug se presenti
-  const appCheckHeader = request.headers.get("x-firebase-app-check") || request.headers.get("x-firebase-appcheck");
+  const appCheckHeader = request.headers.get("x-firebase-appcheck");
   if (appCheckHeader) {
-    headers.set("x-firebase-app-check", appCheckHeader);
+    headers.set("x-firebase-appcheck", appCheckHeader);
   }
-  const appCheckDebugHeader = request.headers.get("x-firebase-app-check-debug") || request.headers.get("x-firebase-appcheck-debug");
+  const appCheckDebugHeader = request.headers.get("x-firebase-appcheck-debug");
   if (appCheckDebugHeader) {
-    headers.set("x-firebase-app-check-debug", appCheckDebugHeader);
+    headers.set("x-firebase-appcheck-debug", appCheckDebugHeader);
   }
   
   // Inoltra i dati dell'IP originale per il Geo-IP
