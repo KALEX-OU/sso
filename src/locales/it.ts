@@ -90,6 +90,7 @@ export default {
   "auth.residenceAddress": "Indirizzo di Residenza",
   "auth.addressPlaceholder": "Inizia a digitare l'indirizzo...",
   "auth.legalAddress": "Indirizzo Sede Legale Ufficiale",
+  "auth.orgDetails": "Dettagli Organizzazione",
   "auth.typePersonal": "Privato",
   "auth.typeBusiness": "Azienda",
   "auth.typeGovernment": "P.A.",

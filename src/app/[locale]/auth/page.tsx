@@ -1510,7 +1510,13 @@ function AuthPortal() {
                 {regType !== "personal" && (
                   <div className="space-y-4 p-4 bg-slate-100/50 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 rounded-2xl mt-4 animate-in fade-in duration-300">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">
-                      Dettagli Organizzazione ({regType})
+                      {t("auth.orgDetails")} ({
+                        regType === "business"
+                          ? t("auth.typeBusiness")
+                          : regType === "government"
+                          ? t("auth.typeGovernment")
+                          : t("auth.typeEducation")
+                      })
                     </h3>
 
                     {/* Nazione Fiscale & Partita IVA Affiancati in Griglia */}
