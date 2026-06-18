@@ -112,7 +112,30 @@ export const RegisterSchema = z.object({
   cigCode: z.string().optional(),
   cupCode: z.string().optional()
 }).superRefine((data, ctx) => {
-  if (data.regType !== "personal") {
+  if (data.regType === "personal") {
+    if (data.vatNumber && data.vatNumber.trim() !== "") {
+      const val = data.vatNumber.trim().toUpperCase();
+      if (data.country === "IT") {
+        const cfRegex = /^[A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$/i;
+        if (!cfRegex.test(val)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["vatNumber"],
+            message: "Il formato del Codice Fiscale non è valido."
+          });
+        }
+      } else if (data.country === "ES") {
+        const nifRegex = /^[0-9XYZ][0-9]{7}[A-Z]$/i;
+        if (!nifRegex.test(val)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["vatNumber"],
+            message: "Il formato del NIF/NIE non è valido."
+          });
+        }
+      }
+    }
+  } else {
     // Ragione Sociale è obbligatoria per B2B / B2G / EDU
     if (!data.companyName || data.companyName.trim() === "") {
       ctx.addIssue({

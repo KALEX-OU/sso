@@ -69,6 +69,9 @@ export async function fetchWithAppCheck(input: RequestInfo | URL, init?: Request
   if (token) {
     headers.set("X-Firebase-AppCheck", token);
   }
+  if (process.env.NODE_ENV === "development") {
+    headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
+  }
   return fetch(input, {
     ...init,
     headers
@@ -83,6 +86,9 @@ export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit):
   const headers = new Headers(init?.headers);
   if (token) {
     headers.set("X-Firebase-AppCheck", token);
+  }
+  if (process.env.NODE_ENV === "development") {
+    headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
   }
   if (idToken) {
     headers.set("Authorization", `Bearer ${idToken}`);

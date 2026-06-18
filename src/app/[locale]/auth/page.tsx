@@ -853,6 +853,8 @@ function AuthPortal() {
 
       if (errCode === "auth/duplicate-vat") {
         setErrorReg("vatNumber", { type: "manual", message: t("auth.duplicateVatError") });
+      } else if (errCode === "auth/email-already-exists" || errCode === "auth/email-already-in-use" || (err instanceof Error && (err.message.includes("email-already-exists") || err.message.includes("email-already-in-use")))) {
+        setErrorReg("email", { type: "manual", message: t("auth.duplicateEmailError") });
       } else {
         const message = err instanceof Error ? err.message : "Errore durante la registrazione.";
         setError(message);
@@ -1424,6 +1426,24 @@ function AuthPortal() {
                       </Select>
                     )}
                   />
+                )}
+
+                {/* Sezione Privato: Codice Fiscale / NIF (Opzionale) */}
+                {regType === "personal" && (
+                  <TextField isInvalid={!!errorsReg.vatNumber} className="flex flex-col gap-1.5 w-full mt-3">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
+                      {t("auth.vatNumberPersonal")}
+                    </Label>
+                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full">
+                      <Input
+                        type="text"
+                        placeholder={t("auth.vatNumberPersonalPlaceholder")}
+                        className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
+                        {...registerReg("vatNumber")}
+                      />
+                    </InputGroup>
+                    <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                  </TextField>
                 )}
 
                 {/* Sezione Privato: Indirizzo di residenza con Autocomplete */}
