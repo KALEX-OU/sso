@@ -95,11 +95,11 @@ export function validateVatNumber(vat: string, country: EUCountryCode): boolean 
 }
 
 export const RegisterSchema = z.object({
-  fullName: z.string().min(1, { message: "Il nome completo è richiesto." }),
-  email: z.string().email({ message: "Inserisci un indirizzo email valido." }),
-  password: z.string().min(6, { message: "La password deve contenere almeno 6 caratteri." }),
+  fullName: z.string().min(1, { message: "validation.fullNameRequired" }),
+  email: z.string().email({ message: "validation.emailInvalid" }),
+  password: z.string().min(6, { message: "validation.passwordMin" }),
   acceptTerms: z.literal(true, {
-    message: "Devi accettare la privacy policy e i termini di servizio per procedere."
+    message: "validation.acceptTermsRequired"
   }),
   regType: z.enum(["personal", "business", "government", "education"]),
   country: z.enum(EU_COUNTRIES),
@@ -121,7 +121,7 @@ export const RegisterSchema = z.object({
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["vatNumber"],
-            message: "Il formato del Codice Fiscale non è valido."
+            message: "validation.fiscalCodeInvalid"
           });
         }
       } else if (data.country === "ES") {
@@ -130,7 +130,7 @@ export const RegisterSchema = z.object({
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["vatNumber"],
-            message: "Il formato del NIF/NIE non è valido."
+            message: "validation.nifNieInvalid"
           });
         }
       }
@@ -141,7 +141,7 @@ export const RegisterSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["companyName"],
-        message: "La ragione sociale è richiesta."
+        message: "validation.companyNameRequired"
       });
     }
 
@@ -151,13 +151,13 @@ export const RegisterSchema = z.object({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["vatNumber"],
-          message: "La partita IVA è richiesta."
+          message: "validation.vatNumberRequired"
         });
       } else if (!validateVatNumber(data.vatNumber, data.country)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["vatNumber"],
-          message: `Il formato della Partita IVA non è valido per il paese selezionato (${data.country}).`
+          message: "validation.vatNumberInvalid"
         });
       }
     }
@@ -169,7 +169,7 @@ export const RegisterSchema = z.object({
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["sdiCode"],
-            message: "Il codice destinatario SDI deve essere di esattamente 7 caratteri alfanumerici."
+            message: "validation.sdiCodeInvalid"
           });
         }
       }
@@ -179,13 +179,13 @@ export const RegisterSchema = z.object({
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["officeCode"],
-            message: "Il codice ufficio PA (IPA) è richiesto."
+            message: "validation.officeCodeRequired"
           });
         } else if (!/^[A-Z0-9]{6}$/i.test(data.officeCode)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["officeCode"],
-            message: "Il codice ufficio PA deve essere di esattamente 6 caratteri alfanumerici."
+            message: "validation.officeCodeInvalid"
           });
         }
       }
@@ -196,8 +196,8 @@ export const RegisterSchema = z.object({
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 
 export const LoginSchema = z.object({
-  email: z.string().email({ message: "Inserisci un indirizzo email valido." }),
-  password: z.string().min(1, { message: "La password è richiesta." }),
+  email: z.string().email({ message: "validation.emailInvalid" }),
+  password: z.string().min(1, { message: "validation.passwordRequired" }),
   rememberMe: z.boolean().optional()
 });
 

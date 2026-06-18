@@ -129,6 +129,14 @@ function AuthPortal() {
   const t = useI18n();
   const currentLocale = useCurrentLocale();
   const changeLocale = useChangeLocale();
+
+  const getErrorMessage = useCallback((errorObj?: { message?: string }) => {
+    if (!errorObj || !errorObj.message) return "";
+    if (errorObj.message.startsWith("validation.")) {
+      return t(errorObj.message as Parameters<typeof t>[0]);
+    }
+    return errorObj.message;
+  }, [t]);
   const { setTheme, resolvedTheme } = useTheme();
 
   const router = useRouter();
@@ -1214,7 +1222,7 @@ function AuthPortal() {
                       {...registerLogin("email")}
                     />
                   </InputGroup>
-                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsLogin.email)}</FieldError>
                 </TextField>
 
                 <TextField isInvalid={!!errorsLogin.password} className="flex flex-col gap-1.5 w-full">
@@ -1233,7 +1241,7 @@ function AuthPortal() {
                       {...registerLogin("password")}
                     />
                   </InputGroup>
-                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsLogin.password)}</FieldError>
                 </TextField>
 
                 <div className="flex items-center justify-between px-1 mt-1">
@@ -1318,7 +1326,7 @@ function AuthPortal() {
                       {...registerReg("fullName")}
                     />
                   </InputGroup>
-                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.fullName)}</FieldError>
                 </TextField>
 
                 {/* Email */}
@@ -1338,7 +1346,7 @@ function AuthPortal() {
                       {...registerReg("email")}
                     />
                   </InputGroup>
-                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.email)}</FieldError>
                 </TextField>
 
                 {/* Password con meter */}
@@ -1359,20 +1367,20 @@ function AuthPortal() {
                         {...registerReg("password")}
                       />
                     </InputGroup>
-                    <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                    <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.password)}</FieldError>
                   </TextField>
                   {passwordReg.length > 0 && (
                     <div className="mt-2 space-y-1 px-1">
                       <div className="flex justify-between text-[10px] font-semibold text-slate-500">
-                        <span>Forza password:</span>
+                        <span>{t("auth.passwordStrength")}</span>
                         <span>
                           {passwordReg.length < 6
-                            ? "Troppo corta"
+                            ? t("auth.passwordTooShort")
                             : passwordReg.length < 10
-                            ? "Debole"
+                            ? t("auth.passwordWeak")
                             : /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,}$/.test(passwordReg)
-                            ? "Forte ✨"
-                            : "Media"}
+                            ? t("auth.passwordStrong")
+                            : t("auth.passwordMedium")}
                         </span>
                       </div>
                       <div className="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -1426,7 +1434,7 @@ function AuthPortal() {
                             })}
                           </ListBox>
                         </SelectPopover>
-                        <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                        <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.country)}</FieldError>
                       </Select>
                     )}
                   />
@@ -1454,7 +1462,7 @@ function AuthPortal() {
                         {...registerReg("vatNumber")}
                       />
                     </InputGroup>
-                    <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                    <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.vatNumber)}</FieldError>
                   </TextField>
                 )}
 
@@ -1536,7 +1544,7 @@ function AuthPortal() {
                               isInvalid={!!errorsReg.country}
                               className="flex flex-col gap-1.5 w-full"
                             >
-                              <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Nazione</Label>
+                              <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("auth.country")}</Label>
                               <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                                 <SelectValue />
                               </SelectTrigger>
@@ -1554,7 +1562,7 @@ function AuthPortal() {
                                   })}
                                 </ListBox>
                               </SelectPopover>
-                              <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                              <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.country)}</FieldError>
                             </Select>
                           )}
                         />
@@ -1562,7 +1570,13 @@ function AuthPortal() {
 
                       <div className="col-span-7">
                         <TextField isInvalid={!!errorsReg.vatNumber} className="flex flex-col gap-1.5 w-full">
-                          <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Partita IVA</Label>
+                          <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
+                            {country === "IT"
+                              ? t("auth.vatNumberIT")
+                              : country === "ES"
+                              ? t("auth.vatNumberES")
+                              : t("auth.vatNumberGeneric")}
+                          </Label>
                           <InputGroup className={`bg-white/50 dark:bg-slate-950/40 border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
                             isVatVerified
                               ? "border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)] focus-within:!border-emerald-500"
@@ -1600,7 +1614,7 @@ function AuthPortal() {
                               </InputGroupSuffix>
                             )}
                           </InputGroup>
-                          <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                          <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.vatNumber)}</FieldError>
                         </TextField>
                       </div>
                     </div>
@@ -1608,7 +1622,7 @@ function AuthPortal() {
                     {isVatVerified && (
                       <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mt-1 flex items-center gap-1.5 animate-in fade-in duration-300">
                         <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        Convalidato tramite VIES Commissione Europea ✨
+                        {t("auth.viesValidated")}
                       </div>
                     )}
 
@@ -1670,11 +1684,11 @@ function AuthPortal() {
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
                                 ref={field.ref}
-                              />
+                                             />
                             )}
                           />
                         </InputGroup>
-                        <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                        <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.companyName)}</FieldError>
                       </TextField>
 
                       {/* Indirizzo Sede Legale (dati VIES) */}
@@ -1747,13 +1761,13 @@ function AuthPortal() {
                               <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                 <Input
                                   type="text"
-                                  placeholder="7 caratteri"
+                                  placeholder={t("auth.sdiPlaceholder")}
                                   maxLength={7}
                                   className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                                   {...registerReg("sdiCode")}
                                 />
                               </InputGroup>
-                              <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                              <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.sdiCode)}</FieldError>
                             </TextField>
                           </div>
                         )}
@@ -1768,13 +1782,13 @@ function AuthPortal() {
                                 <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
-                                    placeholder="6 caratteri"
+                                    placeholder={t("auth.officePlaceholder")}
                                     maxLength={6}
                                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                                     {...registerReg("officeCode")}
                                   />
                                 </InputGroup>
-                                <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                                <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.officeCode)}</FieldError>
                               </TextField>
                             </div>
 
@@ -1791,7 +1805,7 @@ function AuthPortal() {
                                     {...registerReg("cigCode")}
                                   />
                                 </InputGroup>
-                                <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                                <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.cigCode)}</FieldError>
                               </TextField>
                             </div>
 
@@ -1808,7 +1822,7 @@ function AuthPortal() {
                                     {...registerReg("cupCode")}
                                   />
                                 </InputGroup>
-                                <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
+                                <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.cupCode)}</FieldError>
                               </TextField>
                             </div>
                           </>
@@ -1843,7 +1857,7 @@ function AuthPortal() {
                       </div>
                       {errorsReg.acceptTerms && (
                         <p className="text-[11px] font-medium text-red-500 block mt-1">
-                          {errorsReg.acceptTerms.message}
+                          {getErrorMessage(errorsReg.acceptTerms)}
                         </p>
                       )}
                     </div>
