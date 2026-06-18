@@ -1308,7 +1308,11 @@ function AuthPortal() {
                     </InputGroupPrefix>
                     <Input
                       type="text"
-                      placeholder="Mario Rossi"
+                      placeholder={country === "IT"
+                        ? "Mario Rossi"
+                        : country === "ES"
+                        ? "Juan Pérez"
+                        : "John Doe"}
                       autoComplete="name"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerReg("fullName")}
