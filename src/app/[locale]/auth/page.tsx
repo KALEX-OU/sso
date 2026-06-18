@@ -1027,7 +1027,7 @@ function AuthPortal() {
 
           {/* Footer sotto la Card */}
           <div className="mt-8 text-center text-xs text-slate-500 dark:text-gray-500 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-            <p>© 2026 {brand.name}. Tutti i diritti riservati.</p>
+            <p>© 2026 {brand.name === "KALEX" ? "KALEX CLOUD OÜ" : brand.name}. Tutti i diritti riservati.</p>
             <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
             <div className="flex gap-3">
               <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
@@ -1846,7 +1846,7 @@ function AuthPortal() {
 
         {/* Footer sotto la Card */}
         <div className="mt-8 text-center text-xs text-slate-500 dark:text-gray-500 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-          <p>© 2026 {brand.name}. Tutti i diritti riservati.</p>
+          <p>© 2026 {brand.name === "KALEX" ? "KALEX CLOUD OÜ" : brand.name}. Tutti i diritti riservati.</p>
           <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
           <div className="flex gap-3">
             <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
