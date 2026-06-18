@@ -52,6 +52,7 @@ export default function ApplicationPage() {
     <ServiceModule
       organizationId={organizationId}
       activeRole={activeRole}
+      organizationType={activeOrg?.type}
       fetchAuthed={fetchAuthed}
       showToast={showToast}
     />

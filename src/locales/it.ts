@@ -146,5 +146,8 @@ export default {
   "application.payment_init_error": "Impossibile avviare il pagamento.",
   "application.activation_error": "Errore durante l'attivazione del servizio",
   "application.portal_init_error": "Impossibile avviare il portale clienti.",
-  "application.portal_error": "Errore durante l'apertura del portale clienti"
+  "application.portal_error": "Errore durante l'apertura del portale clienti",
+  "application.seats_label": "Licenze (Posti):",
+  "application.total_price_text": "Totale stimato:",
+  "application.personal_limit": "Limite del piano Personal: max 1 licenza."
 } as const;

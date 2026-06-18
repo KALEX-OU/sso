@@ -146,5 +146,8 @@ export default {
   "application.payment_init_error": "Unable to initialize payment.",
   "application.activation_error": "Error during service activation",
   "application.portal_init_error": "Unable to initialize customer portal.",
-  "application.portal_error": "Error opening customer portal"
+  "application.portal_error": "Error opening customer portal",
+  "application.seats_label": "Licenses (Seats):",
+  "application.total_price_text": "Estimated total:",
+  "application.personal_limit": "Personal plan limit: max 1 license."
 } as const;

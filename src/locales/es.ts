@@ -146,5 +146,8 @@ export default {
   "application.payment_init_error": "No se pudo inicializar el pago.",
   "application.activation_error": "Error durante la activación del servicio",
   "application.portal_init_error": "No se pudo inicializar el portal de clientes.",
-  "application.portal_error": "Error al abrir el portal de clientes"
+  "application.portal_error": "Error al abrir el portal de clientes",
+  "application.seats_label": "Licencias (Puestos):",
+  "application.total_price_text": "Total estimado:",
+  "application.personal_limit": "Límite del plan Personal: máx 1 licencia."
 } as const;
