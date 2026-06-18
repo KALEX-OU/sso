@@ -82,7 +82,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
         body: JSON.stringify({
           productId,
           quantity: 1,
-          sellerOrgId: "e8d2bb2d-7206-4b8a-9c76-ec551b9cf3d2" // KALEX OÜ
+          sellerOrgId: "70c3f4ff-828e-4cd0-81d5-db603b70576d" // KALEX OÜ
         })
       });
 
