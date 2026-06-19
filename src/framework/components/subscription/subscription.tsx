@@ -18,6 +18,7 @@ interface MemberItem {
 interface ServiceItem {
   serviceId: string;
   seats: number;
+  quantity?: number | null;
   assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
   tier?: string | null;
 }
@@ -92,11 +93,12 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
               service: {
                 serviceId: srv.serviceId,
                 name: srv.serviceId === "a57173e2-89cd-4cbb-8452-40f42bf6e1e2" ? "KALEX SSO Console" : 
-                      srv.serviceId === "c8d197e8-468f-4d43-a6d1-419b48c4cf1d" ? "KALEX API Gateway" : srv.serviceId
+                      srv.serviceId === "c8d197e8-468f-4d43-a6d1-419b48c4cf1d" ? "KALEX API Gateway" : 
+                      srv.serviceId === "f3b610c1-229d-4340-9a7e-1284eb34b68e" ? "KALEX Mobile App" : srv.serviceId
               },
               status: sub.status,
               tier: srv.tier || null,
-              seats: srv.seats || 1,
+              seats: typeof srv.quantity === "number" ? srv.quantity : (srv.seats || 1),
               expiresAt: sub.expiresAt,
               assignedSeats: srv.assignedSeats || []
             });
@@ -322,7 +324,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
                   <div className={styles.subCardHeader}>
                     <div>
                       <h3 className={styles.subTitle}>{sub.service.name || sub.service.serviceId}</h3>
-                      <span className={`${styles.badge} ${sub.status === "active" ? styles.badgeActive : styles.badgePastDue}`}>
+                      <span className={`${styles.badge} ${(sub.status === "active" || sub.status === "trialing") ? styles.badgeActive : styles.badgePastDue}`}>
                         {t(`subscription.status.${sub.status as "active" | "trialing" | "past_due" | "inactive" | "suspended"}`)}
                       </span>
                     </div>

@@ -21,13 +21,16 @@ import {
   Moon,
   LayoutDashboard,
   Users,
-  CreditCard,
   Key,
   Cpu,
   Menu,
   AlertCircle,
   FileText,
-  Globe
+  CalendarCheck,
+  ShoppingCart,
+  PackageCheck,
+  Coins,
+  Package
 } from "lucide-react";
 
 interface ToastNotification {
@@ -458,29 +461,59 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     );
   }
 
-
-
-
-
-
   const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
   const activeOrg = activeOrgRelation?.organization;
   const activeRole = activeOrgRelation?.role;
   const activeThemeClass = theme && theme.startsWith("theme-") ? theme : "theme-amethyst";
 
-  // Sidebar Menu Items con relative autorizzazioni e path di routing
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "" },
-    { id: "user", label: "Utenti & IAM", icon: Users, path: "/user", requiredPermission: "user" },
-    { id: "team", label: "Team", icon: Shield, path: "/team", requiredPermission: "team" },
-    { id: "thing", label: "Dispositivi Thing", icon: Cpu, path: "/thing", requiredPermission: "thing" },
-    { id: "apikey", label: "API Keys", icon: Key, path: "/apikey", requiredPermission: "apikey" },
-    { id: "application", label: "Catalogo App", icon: Globe, path: "/application", requiredPermission: "application" },
-    { id: "product", label: "Prodotti Fisici", icon: FileText, path: "/product", requiredPermission: "product" },
-    { id: "subscription", label: "Abbonamenti", icon: CreditCard, path: "/service/subscription", requiredPermission: "service_subscription" },
-    { id: "payment", label: "Pagamenti", icon: CreditCard, path: "/payment", requiredPermission: "payment" },
-    { id: "invoice", label: "Fatture", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
-    { id: "compute", label: "Compute Sandbox", icon: Cpu, path: "/compute", requiredPermission: "compute" }
+  // Calcolo di hasPastDue
+  const subscriptionsList = activeOrg?.subscriptions_on_organization || [];
+  const hasPastDue = subscriptionsList.some((sub: { status?: string | null }) => sub.status === "past_due");
+
+  // Sidebar Menu Sections con relative autorizzazioni e path di routing
+  const menuSections = [
+    {
+      id: "core",
+      labelKey: "sidebar.section.core",
+      items: [
+        { id: "dashboard", labelKey: "sidebar.dashboard", icon: LayoutDashboard, path: "" },
+        { id: "user", labelKey: "sidebar.user", icon: Users, path: "/user", requiredPermission: "user" },
+        { id: "team", labelKey: "sidebar.team", icon: Shield, path: "/team", requiredPermission: "team" }
+      ]
+    },
+    {
+      id: "resources",
+      labelKey: "sidebar.section.resources",
+      items: [
+        { id: "thing", labelKey: "sidebar.thing", icon: Cpu, path: "/thing", requiredPermission: "thing" },
+        { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" },
+        { id: "good", labelKey: "sidebar.good", icon: Package, path: "/good", requiredPermission: "good" }
+      ]
+    },
+    {
+      id: "services",
+      labelKey: "sidebar.section.services",
+      items: [
+        { id: "service_subscription", labelKey: "sidebar.service_subscription", icon: CalendarCheck, path: "/service/subscription", requiredPermission: "service_subscription", showBadgeOnPastDue: true },
+        { id: "service_checkout", labelKey: "sidebar.service_checkout", icon: ShoppingCart, path: "/service/checkout", requiredPermission: "service_checkout" }
+      ]
+    },
+    {
+      id: "products",
+      labelKey: "sidebar.section.products",
+      items: [
+        { id: "product_subscription", labelKey: "sidebar.product_subscription", icon: PackageCheck, path: "/product/subscription", requiredPermission: "product_subscription" },
+        { id: "product_checkout", labelKey: "sidebar.product_checkout", icon: ShoppingCart, path: "/product/checkout", requiredPermission: "product_checkout" }
+      ]
+    },
+    {
+      id: "billing",
+      labelKey: "sidebar.section.billing",
+      items: [
+        { id: "payment", labelKey: "sidebar.payment", icon: Coins, path: "/payment", requiredPermission: "payment" },
+        { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" }
+      ]
+    }
   ];
 
   // Identifica l'elemento di menu attivo in base all'URL corrente
@@ -488,8 +521,15 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     const relativePath = rawPathname.replace(new RegExp(`^\\/[a-z]{2}(\\/(dashboard)?)?`), "");
     if (!relativePath || relativePath === "/") return "dashboard";
     const cleanPath = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
-    const item = menuItems.find(mi => mi.path && cleanPath.startsWith(mi.path.substring(1)));
-    return item ? item.id : "dashboard";
+    
+    for (const section of menuSections) {
+      for (const item of section.items) {
+        if (item.path && cleanPath.startsWith(item.path.substring(1))) {
+          return item.id;
+        }
+      }
+    }
+    return "dashboard";
   };
 
   const activeView = getActiveView();
@@ -532,29 +572,50 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
             </div>
 
             {/* Menu Navigazione */}
-            <nav className="flex flex-col gap-1 px-2">
-              {menuItems.map((item) => {
-                // Se la voce richiede un permesso, verifica se l'utente ha i privilegi di lettura minime per quel modulo
-                if (item.requiredPermission && !hasPermission(item.requiredPermission, "read")) {
-                  return null;
-                }
+            <nav className="flex flex-col gap-4 px-2 select-none">
+              {menuSections.map((section) => {
+                const visibleItems = section.items.filter(item => 
+                  !item.requiredPermission || hasPermission(item.requiredPermission, "read")
+                );
 
-                const Icon = item.icon;
-                const active = activeView === item.id;
-                
+                if (visibleItems.length === 0) return null;
+
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => router.push(`/${localeParam}${item.path}`)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      active
-                        ? "bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 dark:text-purple-400 border-l-4 border-purple-500"
-                        : "text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/5"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    {!sidebarCollapsed && <span>{item.label}</span>}
-                  </button>
+                  <div key={section.id} className="flex flex-col gap-1">
+                    {!sidebarCollapsed && (
+                      <span className="px-3 text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        {t(section.labelKey as Parameters<typeof t>[0])}
+                      </span>
+                    )}
+                    {visibleItems.map((item) => {
+                      const Icon = item.icon;
+                      const active = activeView === item.id;
+                      const hasAlert = (item as { showBadgeOnPastDue?: boolean }).showBadgeOnPastDue && hasPastDue;
+
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => router.push(`/${localeParam}${item.path}`)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                            active
+                              ? "bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 dark:text-purple-400 border-l-4 border-purple-500"
+                              : "text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/5"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Icon className="w-4 h-4 shrink-0" />
+                            {!sidebarCollapsed && <span>{t(item.labelKey as Parameters<typeof t>[0])}</span>}
+                          </div>
+                          {hasAlert && !sidebarCollapsed && (
+                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0" title="Pagamento insoluto!" />
+                          )}
+                          {hasAlert && sidebarCollapsed && (
+                            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </nav>
@@ -617,7 +678,16 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
                 <Menu className="w-4.5 h-4.5" />
               </Button>
               <h1 className="text-lg font-black tracking-tight uppercase text-slate-900 dark:text-white">
-                {menuItems.find(mi => mi.id === activeView)?.label || "Console"}
+                {(() => {
+                  for (const section of menuSections) {
+                    for (const item of section.items) {
+                      if (item.id === activeView) {
+                        return t(item.labelKey as Parameters<typeof t>[0]);
+                      }
+                    }
+                  }
+                  return "Console";
+                })()}
               </h1>
             </div>
 
