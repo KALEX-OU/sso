@@ -30,7 +30,9 @@ import {
   ShoppingCart,
   PackageCheck,
   Coins,
-  Package
+  Package,
+  Globe,
+  Server
 } from "lucide-react";
 
 interface ToastNotification {
@@ -487,7 +489,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       items: [
         { id: "thing", labelKey: "sidebar.thing", icon: Cpu, path: "/thing", requiredPermission: "thing" },
         { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" },
-        { id: "good", labelKey: "sidebar.good", icon: Package, path: "/good", requiredPermission: "good" }
+        { id: "good", labelKey: "sidebar.good", icon: Package, path: "/good", requiredPermission: "good" },
+        { id: "application", labelKey: "sidebar.application", icon: Globe, path: "/application", requiredPermission: "application" },
+        { id: "compute", labelKey: "sidebar.compute", icon: Server, path: "/compute", requiredPermission: "compute" }
       ]
     },
     {

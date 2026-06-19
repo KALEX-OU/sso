@@ -193,6 +193,8 @@ export default {
   "sidebar.thing": "Dispositivi Thing",
   "sidebar.apikey": "API Keys",
   "sidebar.good": "Merci & Hardware",
+  "sidebar.application": "Applicazioni SSO",
+  "sidebar.compute": "Risorse Compute",
   "sidebar.section.services": "Servizi Cloud",
   "sidebar.service_subscription": "Abbonamenti Servizi",
   "sidebar.service_checkout": "Checkout Servizi",
