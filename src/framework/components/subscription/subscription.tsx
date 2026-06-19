@@ -15,6 +15,21 @@ interface MemberItem {
   } | null;
 }
 
+interface ServiceItem {
+  serviceId: string;
+  seats: number;
+  assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
+  tier?: string | null;
+}
+
+interface SubscriptionData {
+  subscriptionId: string;
+  appId: string;
+  status: string;
+  services: ServiceItem[];
+  expiresAt?: string | null;
+}
+
 interface SubscriptionItem {
   service: {
     serviceId: string;
@@ -66,7 +81,28 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
       const res = await fetchAuthed("/api/subscription/list");
       const data = await res.json();
       if (data.success) {
-        const subs = data.items || data.subscriptions || [];
+        const rawSubs = (data.items || data.subscriptions || []) as SubscriptionData[];
+        
+        // Flatten the multilateral ServiceSubscriptions into individual SubscriptionItems
+        const subs: SubscriptionItem[] = [];
+        for (const sub of rawSubs) {
+          const servicesList = Array.isArray(sub.services) ? sub.services : [];
+          for (const srv of servicesList) {
+            subs.push({
+              service: {
+                serviceId: srv.serviceId,
+                name: srv.serviceId === "a57173e2-89cd-4cbb-8452-40f42bf6e1e2" ? "KALEX SSO Console" : 
+                      srv.serviceId === "c8d197e8-468f-4d43-a6d1-419b48c4cf1d" ? "KALEX API Gateway" : srv.serviceId
+              },
+              status: sub.status,
+              tier: srv.tier || null,
+              seats: srv.seats || 1,
+              expiresAt: sub.expiresAt,
+              assignedSeats: srv.assignedSeats || []
+            });
+          }
+        }
+
         setSubscriptions(subs);
         
         // Popola l'assegnazione dei seats dalle sottoscrizioni fresche dell'API

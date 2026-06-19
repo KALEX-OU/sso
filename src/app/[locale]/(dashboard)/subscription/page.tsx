@@ -6,6 +6,21 @@ import { useDashboard } from "../layout";
 import { SubscriptionModule } from "@/framework/components/subscription/subscription";
 import { fetchAuthed } from "@/lib/firebase/client";
 
+interface ServiceItem {
+  serviceId: string;
+  seats: number;
+  assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
+  tier?: string | null;
+}
+
+interface SubscriptionData {
+  subscriptionId: string;
+  appId: string;
+  status: string;
+  services: ServiceItem[];
+  expiresAt?: string | null;
+}
+
 export default function SubscriptionPage() {
   const { user, dbData, showToast, refreshClaims } = useDashboard();
   const searchParams = useSearchParams();
@@ -39,16 +54,19 @@ export default function SubscriptionPage() {
 
   // Estrae i seats dalle subscriptions attive dell'organizzazione
   const serviceSeatsOnOrg: Array<{ service: { serviceId: string }; user: { uid: string } }> = [];
-  const subs = activeOrg?.subscriptions_on_organization || [];
+  const subs = (activeOrg?.subscriptions_on_organization || []) as unknown as SubscriptionData[];
   for (const sub of subs) {
-    if ((sub.status === "active" || sub.status === "trialing") && sub.service) {
-      const assigned = Array.isArray(sub.assignedSeats) ? (sub.assignedSeats as Array<{ uid: string }>) : [];
-      for (const seat of assigned) {
-        if (seat && typeof seat === "object" && "uid" in seat) {
-          serviceSeatsOnOrg.push({
-            service: { serviceId: sub.service.serviceId },
-            user: { uid: seat.uid }
-          });
+    if (sub.status === "active" || sub.status === "trialing") {
+      const servicesList = Array.isArray(sub.services) ? sub.services : [];
+      for (const srv of servicesList) {
+        const assigned = Array.isArray(srv.assignedSeats) ? srv.assignedSeats : [];
+        for (const seat of assigned) {
+          if (seat && typeof seat === "object" && "uid" in seat) {
+            serviceSeatsOnOrg.push({
+              service: { serviceId: srv.serviceId },
+              user: { uid: seat.uid }
+            });
+          }
         }
       }
     }

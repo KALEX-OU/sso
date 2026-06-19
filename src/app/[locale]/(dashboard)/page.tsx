@@ -21,6 +21,21 @@ interface DeviceSession {
   type: "desktop" | "mobile";
 }
 
+interface ServiceItem {
+  serviceId: string;
+  seats: number;
+  assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
+  tier?: string | null;
+}
+
+interface SubscriptionData {
+  subscriptionId: string;
+  appId: string;
+  status: string;
+  services: ServiceItem[];
+  expiresAt?: string | null;
+}
+
 export default function DashboardPage() {
   const t = useI18n();
   const { dbData, showToast } = useDashboard();
@@ -95,11 +110,18 @@ export default function DashboardPage() {
             </span>
             <div className="space-y-2">
               {activeOrg?.subscriptions_on_organization && activeOrg.subscriptions_on_organization.length > 0 ? (
-                activeOrg.subscriptions_on_organization.map((sub: { service: { serviceId: string }; status: string; tier?: string | null }) => (
-                  <div key={sub.service.serviceId} className="flex justify-between items-center bg-slate-100/50 dark:bg-slate-950/20 p-3 rounded-2xl border border-slate-200/50 dark:border-white/5">
-                    <span className="text-xs font-bold">{sub.service.serviceId}</span>
-                    <Chip size="sm" color={sub.status === "active" ? "success" : "warning"} variant="soft">
-                      {sub.status.toUpperCase()} ({sub.tier || "default"})
+                (activeOrg.subscriptions_on_organization as unknown as SubscriptionData[]).flatMap((sub) => {
+                  const servicesList = Array.isArray(sub.services) ? sub.services : [];
+                  return servicesList.map((srv) => ({
+                    serviceId: srv.serviceId,
+                    status: sub.status,
+                    tier: srv.tier || "default"
+                  }));
+                }).map((srvItem) => (
+                  <div key={srvItem.serviceId} className="flex justify-between items-center bg-slate-100/50 dark:bg-slate-950/20 p-3 rounded-2xl border border-slate-200/50 dark:border-white/5">
+                    <span className="text-xs font-bold">{srvItem.serviceId}</span>
+                    <Chip size="sm" color={srvItem.status === "active" ? "success" : "warning"} variant="soft">
+                      {srvItem.status.toUpperCase()} ({srvItem.tier})
                     </Chip>
                   </div>
                 ))
