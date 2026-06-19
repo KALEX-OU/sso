@@ -545,13 +545,25 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       ]
     }] : []),
     {
+      id: "services",
+      labelKey: "sidebar.section.services",
+      items: [
+        { id: "service_subscription", labelKey: "sidebar.service_subscription", icon: CalendarCheck, path: "/service/subscription", requiredPermission: "service_subscription", showBadgeOnPastDue: true },
+        { id: "service_checkout", labelKey: "sidebar.service_checkout", icon: ShoppingCart, path: "/service/checkout", requiredPermission: "service_checkout" }
+      ]
+    },
+    {
+      id: "products",
+      labelKey: "sidebar.section.products",
+      items: [
+        { id: "product_subscription", labelKey: "sidebar.product_subscription", icon: PackageCheck, path: "/product/subscription", requiredPermission: "product_subscription" },
+        { id: "product_checkout", labelKey: "sidebar.product_checkout", icon: ShoppingCart, path: "/product/checkout", requiredPermission: "product_checkout" }
+      ]
+    },
+    {
       id: "billing",
       labelKey: "sidebar.section.billing",
       items: [
-        { id: "service_subscription", labelKey: "sidebar.service_subscription", icon: CalendarCheck, path: "/service/subscription", requiredPermission: "service_subscription", showBadgeOnPastDue: true },
-        { id: "service_checkout", labelKey: "sidebar.service_checkout", icon: ShoppingCart, path: "/service/checkout", requiredPermission: "service_checkout" },
-        { id: "product_subscription", labelKey: "sidebar.product_subscription", icon: PackageCheck, path: "/product/subscription", requiredPermission: "product_subscription" },
-        { id: "product_checkout", labelKey: "sidebar.product_checkout", icon: ShoppingCart, path: "/product/checkout", requiredPermission: "product_checkout" },
         { id: "payment", labelKey: "sidebar.payment", icon: Coins, path: "/payment", requiredPermission: "payment" },
         { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
         { id: "connect", labelKey: "sidebar.connect", icon: RefreshCw, path: "/connect", requiredPermission: "payment" },
