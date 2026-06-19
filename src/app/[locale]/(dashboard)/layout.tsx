@@ -477,7 +477,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     { id: "apikey", label: "API Keys", icon: Key, path: "/apikey", requiredPermission: "apikey" },
     { id: "application", label: "Catalogo App", icon: Globe, path: "/application", requiredPermission: "application" },
     { id: "product", label: "Prodotti Fisici", icon: FileText, path: "/product", requiredPermission: "product" },
-    { id: "subscription", label: "Abbonamenti", icon: CreditCard, path: "/subscription", requiredPermission: "subscription" },
+    { id: "subscription", label: "Abbonamenti", icon: CreditCard, path: "/subscription", requiredPermission: "service_subscription" },
     { id: "payment", label: "Pagamenti", icon: CreditCard, path: "/payment", requiredPermission: "payment" },
     { id: "invoice", label: "Fatture", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
     { id: "compute", label: "Compute Sandbox", icon: Cpu, path: "/compute", requiredPermission: "compute" }

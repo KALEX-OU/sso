@@ -78,7 +78,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
 
   const loadSubscriptions = useCallback(async () => {
     try {
-      const res = await fetchAuthed("/api/subscription/list");
+      const res = await fetchAuthed("/api/service/subscription/list");
       const data = await res.json();
       if (data.success) {
         const rawSubs = (data.items || data.subscriptions || []) as SubscriptionData[];
@@ -212,7 +212,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
     try {
       let res;
       if (isAssigned) {
-        res = await fetchAuthed("/api/subscription/seat/revoke", {
+        res = await fetchAuthed("/api/service/subscription/seat/revoke", {
           method: "POST",
           body: JSON.stringify({ serviceId, uid: memberUid })
         });
@@ -221,7 +221,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
         const email = member?.user?.email;
         if (!email) throw new Error("Email utente non trovata.");
 
-        res = await fetchAuthed("/api/subscription/seat/assign", {
+        res = await fetchAuthed("/api/service/subscription/seat/assign", {
           method: "POST",
           body: JSON.stringify({ serviceId, email })
         });
