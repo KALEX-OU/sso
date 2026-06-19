@@ -220,14 +220,16 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         if (!active) return;
         
         if (thingRes.status === 200) {
-          const thingData = await thingRes.json();
+          const thingText = await thingRes.text();
+          const thingData = thingText ? JSON.parse(thingText) as { pagination?: { totalItems?: number } } : null;
           setThingCount(thingData?.pagination?.totalItems || 0);
         } else {
           setThingCount(0);
         }
 
         if (computeRes.status === 200) {
-          const computeData = await computeRes.json();
+          const computeText = await computeRes.text();
+          const computeData = computeText ? JSON.parse(computeText) as { pagination?: { totalItems?: number } } : null;
           setComputeCount(computeData?.pagination?.totalItems || 0);
         } else {
           setComputeCount(0);
