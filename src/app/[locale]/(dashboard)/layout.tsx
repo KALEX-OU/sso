@@ -436,6 +436,20 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     }
   }, [user, claims, onboardingPending]);
 
+  // Protezione proattiva delle rotte: solo l'utente con ruolo 'owner' può accedere alle sezioni esterne a dashboard/auth
+  useEffect(() => {
+    if (!loading && user && dbData && activeRole && activeRole !== "owner") {
+      const relativePath = rawPathname.replace(new RegExp(`^\\/[a-z]{2}(\\/(dashboard)?)?`), "");
+      const cleanPath = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
+      
+      // Se l'utente tenta di accedere a una rotta diversa da dashboard o auth, lo reindirizziamo alla dashboard
+      if (cleanPath && !cleanPath.startsWith("dashboard") && !cleanPath.startsWith("auth")) {
+        console.warn(`[Role Security] Accesso negato per ruolo '${activeRole}' alla rotta '/${cleanPath}'. Reindirizzamento a /dashboard.`);
+        router.push(`/${localeParam}/dashboard`);
+      }
+    }
+  }, [loading, user, dbData, activeRole, rawPathname, localeParam, router]);
+
 
 
 
@@ -632,9 +646,17 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
             {/* Menu Navigazione */}
             <nav className="flex flex-col gap-4 px-2 select-none">
               {menuSections.map((section) => {
-                const visibleItems = section.items.filter(item => 
-                  !item.requiredPermission || hasPermission(item.requiredPermission, "read")
-                );
+                // Se l'utente non è owner, mostriamo solo la dashboard principale
+                if (activeRole !== "owner" && section.id !== "core") {
+                  return null;
+                }
+
+                const visibleItems = section.items.filter(item => {
+                  if (activeRole !== "owner" && item.id !== "dashboard") {
+                    return false;
+                  }
+                  return !item.requiredPermission || hasPermission(item.requiredPermission, "read");
+                });
 
                 if (visibleItems.length === 0) return null;
 

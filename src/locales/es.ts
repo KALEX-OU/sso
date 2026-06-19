@@ -230,5 +230,17 @@ export default {
   "application.nav_card_title": "Licencias y Pagos",
   "application.nav_card_desc": "Gestione la facturación recurrente o vea los pagos de servicios.",
   "application.btn_subscriptions": "Suscripciones de Servicios",
-  "application.btn_orders": "Compras de Servicios"
+  "application.btn_orders": "Compras de Servicios",
+  "good.filter_subscription": "Suscripción",
+  "good.filter_checkout": "Compra",
+  "good.filter_consume": "Consumo",
+  "good.tooltip_subscription": "Facturación periódica de Stripe para el uso continuo del producto",
+  "good.tooltip_checkout": "Compra única a través de Stripe Checkout",
+  "good.tooltip_consume": "Facturación basada en el consumo real con Stripe Meters (próximamente)",
+  "application.filter_subscription": "Suscripción",
+  "application.filter_checkout": "Compra",
+  "application.filter_consume": "Consumo",
+  "application.tooltip_subscription": "SaaS con suscripción mensual/anual a través de Stripe",
+  "application.tooltip_checkout": "Activación de servicio único a través de Stripe",
+  "application.tooltip_consume": "Facturación por consumo real con Stripe Meters (próximamente)"
 } as const;

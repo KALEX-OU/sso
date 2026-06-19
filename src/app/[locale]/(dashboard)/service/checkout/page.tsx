@@ -8,7 +8,13 @@ import { fetchAuthed } from "@/lib/firebase/client";
 
 interface ServiceCheckoutItem {
   checkoutId: string;
-  serviceId: string;
+  serviceId?: string;
+  services?: Array<{
+    serviceId: string;
+    quantity: number;
+    tier: string;
+    priceId?: string;
+  }>;
   buyerId: string;
   sellerId: string;
   app: string;
@@ -141,7 +147,10 @@ export default function ServiceCheckoutPage() {
           ) : (
             <div className="divide-y divide-slate-200 dark:divide-white/5">
               {checkouts.map((checkout) => {
-                const serviceName = checkout.serviceId === "f3b610c1-229d-4340-9a7e-1284eb34b68e" ? "KALEX Mobile App" : (checkout.app === "mobile" ? "KALEX Mobile App" : `Servizio ID: ${checkout.serviceId.substring(0, 8)}`);
+                const servicesList = Array.isArray(checkout.services) ? checkout.services : [];
+                const firstService = servicesList[0];
+                const serviceId = checkout.serviceId || firstService?.serviceId || "";
+                const serviceName = serviceId === "f3b610c1-229d-4340-9a7e-1284eb34b68e" ? "KALEX Mobile App" : (checkout.app === "mobile" ? "KALEX Mobile App" : (serviceId ? `Servizio ID: ${serviceId.substring(0, 8)}` : "Servizio Generico"));
                 const checkoutDate = checkout.createdAt ? new Date(checkout.createdAt) : new Date();
                 return (
                   <div key={checkout.checkoutId} className="flex justify-between items-center py-4 first:pt-0 last:pb-0">

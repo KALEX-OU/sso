@@ -8,7 +8,12 @@ import { fetchAuthed } from "@/lib/firebase/client";
 
 interface ProductCheckoutItem {
   checkoutId: string;
-  productId: string;
+  productId?: string;
+  products?: Array<{
+    productId: string;
+    quantity: number;
+    priceId?: string;
+  }>;
   buyerId: string;
   sellerId: string;
   app: string;
@@ -141,7 +146,10 @@ export default function ProductCheckoutPage() {
           ) : (
             <div className="divide-y divide-slate-200 dark:divide-white/5">
               {checkouts.map((checkout) => {
-                const productName = checkout.productId === "70c3f4ff-828e-4cd0-81d5-db603b70576d" ? "Gateway IoT Pro" : `Hardware ID: ${checkout.productId.substring(0, 8)}`;
+                const productsList = Array.isArray(checkout.products) ? checkout.products : [];
+                const firstProduct = productsList[0];
+                const productId = checkout.productId || firstProduct?.productId || "";
+                const productName = productId === "70c3f4ff-828e-4cd0-81d5-db603b70576d" ? "Gateway IoT Pro" : (productId ? `Hardware ID: ${productId.substring(0, 8)}` : "Dispositivo Generico");
                 const checkoutDate = checkout.createdAt ? new Date(checkout.createdAt) : new Date();
                 return (
                   <div key={checkout.checkoutId} className="flex justify-between items-center py-4 first:pt-0 last:pb-0">

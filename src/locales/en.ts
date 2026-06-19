@@ -230,5 +230,17 @@ export default {
   "application.nav_card_title": "Licenses & Payments",
   "application.nav_card_desc": "Manage recurring billing or view service checkouts.",
   "application.btn_subscriptions": "Service Subscriptions",
-  "application.btn_orders": "Service Purchases"
+  "application.btn_orders": "Service Purchases",
+  "good.filter_subscription": "Subscription",
+  "good.filter_checkout": "Purchase",
+  "good.filter_consume": "Consume",
+  "good.tooltip_subscription": "Stripe recurring billing for continuous product use",
+  "good.tooltip_checkout": "One-time purchase via Stripe Checkout",
+  "good.tooltip_consume": "Pay-as-you-go billing based on usage with Stripe Meters (coming soon)",
+  "application.filter_subscription": "Subscription",
+  "application.filter_checkout": "Purchase",
+  "application.filter_consume": "Consume",
+  "application.tooltip_subscription": "SaaS monthly/yearly subscription via Stripe",
+  "application.tooltip_checkout": "One-time service activation via Stripe",
+  "application.tooltip_consume": "Pay-as-you-go billing based on usage with Stripe Meters (coming soon)"
 } as const;

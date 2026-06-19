@@ -230,5 +230,17 @@ export default {
   "application.nav_card_title": "Licenze & Pagamenti",
   "application.nav_card_desc": "Gestisci la fatturazione ricorrente o visualizza i checkout dei servizi.",
   "application.btn_subscriptions": "Abbonamenti Servizi",
-  "application.btn_orders": "Acquisti Servizi"
+  "application.btn_orders": "Acquisti Servizi",
+  "good.filter_subscription": "Abbonamento",
+  "good.filter_checkout": "Acquisto",
+  "good.filter_consume": "Consumo",
+  "good.tooltip_subscription": "Fatturazione ricorrente Stripe per l'uso continuo del prodotto",
+  "good.tooltip_checkout": "Acquisto una tantum tramite Stripe Checkout",
+  "good.tooltip_consume": "Fatturazione in base al consumo effettivo Stripe Meters (in arrivo)",
+  "application.filter_subscription": "Abbonamento",
+  "application.filter_checkout": "Acquisto",
+  "application.filter_consume": "Consumo",
+  "application.tooltip_subscription": "SaaS in abbonamento mensile/annuale tramite Stripe",
+  "application.tooltip_checkout": "Attivazione servizio una tantum tramite Stripe",
+  "application.tooltip_consume": "Tariffazione a consumo effettivo Stripe Meters (in arrivo)"
 } as const;

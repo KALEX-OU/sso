@@ -27,6 +27,16 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
   if (authHeader) {
     headers.set("authorization", authHeader);
   }
+
+  // Inoltra gli header App Check per consentire la validazione lato API Gateway
+  const appCheckHeader = request.headers.get("x-firebase-appcheck");
+  if (appCheckHeader) {
+    headers.set("x-firebase-appcheck", appCheckHeader);
+  }
+  const appCheckDebugHeader = request.headers.get("x-firebase-appcheck-debug");
+  if (appCheckDebugHeader) {
+    headers.set("x-firebase-appcheck-debug", appCheckDebugHeader);
+  }
   
   // Inoltra i dati dell'IP originale per il Geo-IP
   const forwardedFor = request.headers.get("x-forwarded-for");
