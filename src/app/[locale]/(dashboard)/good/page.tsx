@@ -1,24 +1,68 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layout";
 import { Package, Plus, Search, Filter } from "lucide-react";
 import { Button, Chip } from "@heroui/react";
+import { useI18n, useCurrentLocale } from "@/locales/client";
+import { fetchAuthed } from "@/lib/firebase/client";
+import { useRouter } from "next/navigation";
+
+interface GoodItem {
+  goodId: string;
+  name: string;
+  description: string | null;
+  sku: string;
+  isActive: boolean | null;
+  productId: string | null;
+  purchasable: boolean | null;
+}
 
 export default function GoodPage() {
   const { showToast } = useDashboard();
+  const t = useI18n();
+  const localeParam = useCurrentLocale();
+  const router = useRouter();
+  
+  const [goods, setGoods] = useState<GoodItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const loadGoods = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetchAuthed("/api/good/list?limit=50");
+      if (res.status === 200) {
+        const text = await res.text();
+        const data = text ? JSON.parse(text) as { success: boolean; items?: GoodItem[] } : null;
+        if (data?.success) {
+          setGoods(data.items || []);
+        } else {
+          showToast(t("good.no_goods"), "error");
+        }
+      } else {
+        showToast(t("good.no_goods"), "error");
+      }
+    } catch (err) {
+      console.error("Errore durante il recupero dei prodotti hardware:", err);
+      showToast(t("good.no_goods"), "error");
+    } finally {
+      setTimeout(() => setLoading(false), 800);
+    }
+  }, [showToast, t]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1200);
+    const timer = setTimeout(() => {
+      void loadGoods();
+    }, 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [loadGoods]);
 
-  const mockGoods = [
-    { id: "g1", name: "KALEX Gateway IoT v3", sku: "HW-GW-V3", status: "attivo", type: "gateway", location: "Sede Principale", serial: "SN-9821-A3" },
-    { id: "g2", name: "Sensore Termico di Sicurezza", sku: "HW-TS-04", status: "attivo", type: "sensore", location: "Sede Esterna", serial: "SN-0491-B9" },
-    { id: "g3", name: "Tag NFC Controllo Accessi", sku: "HW-NFC-88", status: "non_configurato", type: "nfc", location: "Magazzino", serial: "SN-8820-C1" }
-  ];
+  const filteredGoods = goods.filter(g =>
+    g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    g.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (g.description && g.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   if (loading) {
     return (
@@ -31,6 +75,9 @@ export default function GoodPage() {
           </div>
           <div className="h-10 w-36 bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
         </div>
+
+        {/* Navigation Card Skeleton */}
+        <div className="h-24 w-full bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />
 
         {/* Filters Skeleton */}
         <div className="flex gap-3">
@@ -65,15 +112,37 @@ export default function GoodPage() {
     <div className="space-y-6 animate-fade-in font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black tracking-tight uppercase text-slate-900 dark:text-white">Merci e Hardware Fisico</h2>
-          <p className="text-sm text-slate-500 dark:text-gray-400">Gestisci i dispositivi IoT, sensori ed hardware di sicurezza del tuo ecosistema.</p>
+          <h2 className="text-xl font-black tracking-tight uppercase text-slate-900 dark:text-white">{t("good.title")}</h2>
+          <p className="text-sm text-slate-500 dark:text-gray-400">{t("good.description")}</p>
         </div>
         <Button
           onClick={() => showToast("Richiesta di nuovo hardware inoltrata all'amministratore.", "info")}
           className="bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 font-bold text-xs py-2.5 rounded-xl shrink-0"
         >
-          <Plus className="w-4 h-4 inline mr-1" /> Richiedi Hardware
+          <Plus className="w-4 h-4 inline mr-1" /> {t("good.request_btn")}
         </Button>
+      </div>
+
+      {/* Box Navigazione Premium */}
+      <div className="border border-slate-200 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t("good.nav_card_title")}</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{t("good.nav_card_desc")}</p>
+        </div>
+        <div className="flex gap-3 w-full md:w-auto shrink-0">
+          <Button
+            onClick={() => router.push(`/${localeParam}/product/subscription`)}
+            className="flex-1 md:flex-initial bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white font-bold text-xs py-2.5 rounded-xl transition-all duration-300"
+          >
+            {t("good.btn_subscriptions")}
+          </Button>
+          <Button
+            onClick={() => router.push(`/${localeParam}/product/checkout`)}
+            className="flex-1 md:flex-initial bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white font-bold text-xs py-2.5 rounded-xl transition-all duration-300"
+          >
+            {t("good.btn_orders")}
+          </Button>
+        </div>
       </div>
 
       {/* Barra di ricerca e filtri */}
@@ -82,55 +151,67 @@ export default function GoodPage() {
           <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Cerca per nome, SKU o numero di serie..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={t("good.search_placeholder")}
             className="w-full pl-10 pr-4 py-2.5 bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-white"
           />
         </div>
         <Button variant="ghost" className="border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold text-xs py-2.5 rounded-xl">
-          <Filter className="w-4 h-4 inline mr-1" /> Filtra
+          <Filter className="w-4 h-4 inline mr-1" /> {t("good.filter_btn")}
         </Button>
       </div>
 
       {/* Grid delle merci */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {mockGoods.map((good) => (
-          <div
-            key={good.id}
-            className="border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-6 flex flex-col justify-between hover:scale-[1.02] transition-all duration-300"
-          >
-            <div>
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                  <Package className="w-5 h-5" />
+      {filteredGoods.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-slate-200 dark:border-white/10 rounded-3xl">
+          <Package className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+          <p className="text-xs text-slate-500 dark:text-slate-400">{t("good.no_goods")}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {filteredGoods.map((good) => (
+            <div
+              key={good.goodId}
+              className="border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-6 flex flex-col justify-between hover:scale-[1.02] transition-all duration-300"
+            >
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                    <Package className="w-5 h-5" />
+                  </div>
+                  <Chip
+                    variant="soft"
+                    className={`font-black uppercase text-[9px] ${
+                      good.isActive
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    }`}
+                  >
+                    {good.isActive ? t("good.status_active") : t("good.status_inactive")}
+                  </Chip>
                 </div>
-                <Chip
-                  variant="soft"
-                  className={`font-black uppercase text-[9px] ${
-                    good.status === "attivo"
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                  }`}
-                >
-                  {good.status === "attivo" ? "Attivo" : "Non Configurato"}
-                </Chip>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">{good.name}</h3>
+                <p className="text-xs font-semibold text-slate-400 mb-2">{good.description || ""}</p>
+                <p className="text-xs font-semibold text-slate-400 mb-4">{t("good.sku_label")}: {good.sku}</p>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">{good.name}</h3>
-              <p className="text-xs font-semibold text-slate-400 mb-4">SKU: {good.sku}</p>
-            </div>
 
-            <div className="border-t border-slate-200 dark:border-white/10 pt-4 space-y-2">
-              <div className="flex justify-between text-[11px] font-semibold">
-                <span className="text-slate-400">Posizione:</span>
-                <span className="text-slate-700 dark:text-slate-300">{good.location}</span>
-              </div>
-              <div className="flex justify-between text-[11px] font-semibold">
-                <span className="text-slate-400">S/N:</span>
-                <span className="text-slate-700 dark:text-slate-300">{good.serial}</span>
+              <div className="border-t border-slate-200 dark:border-white/10 pt-4 space-y-2">
+                <div className="flex justify-between text-[11px] font-semibold">
+                  <span className="text-slate-400">ID:</span>
+                  <span className="text-slate-700 dark:text-slate-300">{good.goodId}</span>
+                </div>
+                <div className="flex justify-between text-[11px] font-semibold">
+                  <span className="text-slate-400">Tipo:</span>
+                  <span className="text-slate-700 dark:text-slate-300">
+                    {good.purchasable ? t("good.purchasable_yes") : t("good.purchasable_no")}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
