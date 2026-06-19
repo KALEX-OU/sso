@@ -591,7 +591,17 @@ function AuthPortal() {
             handleSSORedirect(currentUser);
           } else {
             console.log("[Auth State Change] User verified but no redirectUri. Redirecting immediately to dashboard.");
-            router.push(`/${currentLocale}`);
+            const redirectTo = searchParams.get("redirectTo");
+            if (redirectTo && redirectTo.startsWith("/")) {
+              const hasLocale = /^\/(it|en|es)(\/|$)/.test(redirectTo);
+              if (hasLocale) {
+                router.push(redirectTo);
+              } else {
+                router.push(`/${currentLocale}${redirectTo}`);
+              }
+            } else {
+              router.push(`/${currentLocale}/dashboard`);
+            }
           }
         } else {
           setNeedsVerification(true);
@@ -605,7 +615,7 @@ function AuthPortal() {
       }
     });
     return () => unsubscribe();
-  }, [redirectUri, redirecting, handleSSORedirect, router, currentLocale]);
+  }, [redirectUri, redirecting, handleSSORedirect, router, currentLocale, searchParams]);
 
 
 

@@ -96,8 +96,18 @@ export default function VerifyEmailPage() {
       }
     }
     // Se non c'è un redirectUri, rimanda alla dashboard locale di SSO
-    router.push(`/${currentLocale}`);
-  }, [clientId, currentLocale, redirectUri, router, state, t]);
+    const redirectTo = searchParams.get("redirectTo");
+    if (redirectTo && redirectTo.startsWith("/")) {
+      const hasLocale = /^\/(it|en|es)(\/|$)/.test(redirectTo);
+      if (hasLocale) {
+        router.push(redirectTo);
+      } else {
+        router.push(`/${currentLocale}${redirectTo}`);
+      }
+    } else {
+      router.push(`/${currentLocale}/dashboard`);
+    }
+  }, [clientId, currentLocale, redirectUri, router, state, t, searchParams]);
 
   // Avvio dell'onboarding in PostgreSQL e Stripe
   const handleOnboarding = useCallback(async (user: User) => {

@@ -131,7 +131,17 @@ export default function FinalizeOnboardingPage() {
       setStatusMessage("Account attivato con successo! Reindirizzamento alla console...");
       
       setTimeout(() => {
-        router.push(`/${currentLocale}`);
+        const redirectTo = searchParams.get("redirectTo");
+        if (redirectTo && redirectTo.startsWith("/")) {
+          const hasLocale = /^\/(it|en|es)(\/|$)/.test(redirectTo);
+          if (hasLocale) {
+            router.push(redirectTo);
+          } else {
+            router.push(`/${currentLocale}${redirectTo}`);
+          }
+        } else {
+          router.push(`/${currentLocale}/dashboard`);
+        }
       }, 2000);
     } catch (err) {
       console.error("[Finalize Onboarding] Error:", err);

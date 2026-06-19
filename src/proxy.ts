@@ -52,13 +52,26 @@ export function proxy(request: NextRequest) {
   // Leggiamo il cookie di sessione client-side/server-side
   const sessionCookie = request.cookies.get("sso_session")?.value;
 
+  // Se l'utente è autenticato ed accede alla root ("/"), reindirizza alla dashboard
+  if (sessionCookie && relativePath === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/dashboard`;
+    return Response.redirect(url);
+  }
+
   // Se l'URL non è localizzato, facciamo subito un redirect all'URL localizzato corretto
   if (!isLocalized) {
     const url = request.nextUrl.clone();
     if (!sessionCookie && !isPublicRoute) {
       url.pathname = `/${locale}/auth`;
+      if (pathname !== "/") {
+        url.searchParams.set("redirectTo", pathname);
+      }
     } else {
       url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
+      if (sessionCookie && pathname === "/") {
+        url.pathname = `/${locale}/dashboard`;
+      }
     }
     return Response.redirect(url);
   }
@@ -67,6 +80,9 @@ export function proxy(request: NextRequest) {
   if (!sessionCookie && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/auth`;
+    if (relativePath !== "/") {
+      url.searchParams.set("redirectTo", relativePath);
+    }
     return Response.redirect(url);
   }
 

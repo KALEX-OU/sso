@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { auth, dataConnect, fetchWithAppCheck, db } from "@/lib/firebase/client";
+import { auth, dataConnect, fetchWithAppCheck, db, fetchAuthed } from "@/lib/firebase/client";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { Button, Avatar, Chip } from "@heroui/react";
@@ -22,7 +22,6 @@ import {
   LayoutDashboard,
   Users,
   Key,
-  Cpu,
   Menu,
   AlertCircle,
   FileText,
@@ -32,7 +31,9 @@ import {
   Coins,
   Package,
   Globe,
-  Server
+  Server,
+  Radio,
+  RefreshCw
 } from "lucide-react";
 
 interface ToastNotification {
@@ -164,6 +165,8 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [thingCount, setThingCount] = useState(0);
+  const [computeCount, setComputeCount] = useState(0);
   const [toast, setToast] = useState<ToastNotification | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [localeParam, setLocaleParam] = useState("en");
@@ -172,7 +175,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const isRefreshingRef = useRef(false);
   const refreshAttemptsRef = useRef(0);
 
-
+  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
+  const activeOrg = activeOrgRelation?.organization;
+  const activeRole = activeOrgRelation?.role;
 
   // Forza il rendering client-side per evitare hydration mismatches
   useEffect(() => {
@@ -195,6 +200,48 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const showToast = useCallback((message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ message, type });
   }, []);
+
+  useEffect(() => {
+    if (!activeOrg?.orgId) {
+      Promise.resolve().then(() => {
+        setThingCount(0);
+        setComputeCount(0);
+      });
+      return;
+    }
+
+    let active = true;
+    const fetchCounts = async () => {
+      try {
+        const [thingRes, computeRes] = await Promise.all([
+          fetchAuthed(`/api/thing/list?limit=1`),
+          fetchAuthed(`/api/compute/list?limit=1`)
+        ]);
+        if (!active) return;
+        
+        if (thingRes.status === 200) {
+          const thingData = await thingRes.json();
+          setThingCount(thingData?.pagination?.totalItems || 0);
+        } else {
+          setThingCount(0);
+        }
+
+        if (computeRes.status === 200) {
+          const computeData = await computeRes.json();
+          setComputeCount(computeData?.pagination?.totalItems || 0);
+        } else {
+          setComputeCount(0);
+        }
+      } catch (err) {
+        console.error("Errore nel caricamento dei conteggi delle risorse:", err);
+      }
+    };
+
+    void fetchCounts();
+    return () => {
+      active = false;
+    };
+  }, [activeOrg?.orgId]);
 
   // Funzione per ricaricare le claims e sincronizzare con il backend
   const refreshClaims = useCallback(async (targetOrgId?: string) => {
@@ -463,59 +510,52 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     );
   }
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
-  const activeRole = activeOrgRelation?.role;
   const activeThemeClass = theme && theme.startsWith("theme-") ? theme : "theme-amethyst";
 
   // Calcolo di hasPastDue
   const subscriptionsList = activeOrg?.subscriptions_on_organization || [];
   const hasPastDue = subscriptionsList.some((sub: { status?: string | null }) => sub.status === "past_due");
 
-  // Sidebar Menu Sections con relative autorizzazioni e path di routing
   const menuSections = [
     {
       id: "core",
       labelKey: "sidebar.section.core",
       items: [
-        { id: "dashboard", labelKey: "sidebar.dashboard", icon: LayoutDashboard, path: "" },
+        { id: "dashboard", labelKey: "sidebar.dashboard", icon: LayoutDashboard, path: "/dashboard" },
         { id: "user", labelKey: "sidebar.user", icon: Users, path: "/user", requiredPermission: "user" },
-        { id: "team", labelKey: "sidebar.team", icon: Shield, path: "/team", requiredPermission: "team" }
+        { id: "team", labelKey: "sidebar.team", icon: Shield, path: "/team", requiredPermission: "team" },
+        { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" }
       ]
     },
     {
+      id: "catalog",
+      labelKey: "sidebar.section.catalog",
+      items: [
+        { id: "good", labelKey: "sidebar.good", icon: Package, path: "/good", requiredPermission: "good" },
+        { id: "application", labelKey: "sidebar.application", icon: Globe, path: "/application", requiredPermission: "application" }
+      ]
+    },
+    // Sezione dinamica Risorse
+    ...(thingCount > 0 || computeCount > 0 ? [{
       id: "resources",
       labelKey: "sidebar.section.resources",
       items: [
-        { id: "thing", labelKey: "sidebar.thing", icon: Cpu, path: "/thing", requiredPermission: "thing" },
-        { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" },
-        { id: "good", labelKey: "sidebar.good", icon: Package, path: "/good", requiredPermission: "good" },
-        { id: "application", labelKey: "sidebar.application", icon: Globe, path: "/application", requiredPermission: "application" },
-        { id: "compute", labelKey: "sidebar.compute", icon: Server, path: "/compute", requiredPermission: "compute" }
+        ...(thingCount > 0 ? [{ id: "thing", labelKey: "sidebar.thing", icon: Radio, path: "/thing", requiredPermission: "thing" }] : []),
+        ...(computeCount > 0 ? [{ id: "compute", labelKey: "sidebar.compute", icon: Server, path: "/compute", requiredPermission: "compute" }] : [])
       ]
-    },
-    {
-      id: "services",
-      labelKey: "sidebar.section.services",
-      items: [
-        { id: "service_subscription", labelKey: "sidebar.service_subscription", icon: CalendarCheck, path: "/service/subscription", requiredPermission: "service_subscription", showBadgeOnPastDue: true },
-        { id: "service_checkout", labelKey: "sidebar.service_checkout", icon: ShoppingCart, path: "/service/checkout", requiredPermission: "service_checkout" }
-      ]
-    },
-    {
-      id: "products",
-      labelKey: "sidebar.section.products",
-      items: [
-        { id: "product_subscription", labelKey: "sidebar.product_subscription", icon: PackageCheck, path: "/product/subscription", requiredPermission: "product_subscription" },
-        { id: "product_checkout", labelKey: "sidebar.product_checkout", icon: ShoppingCart, path: "/product/checkout", requiredPermission: "product_checkout" }
-      ]
-    },
+    }] : []),
     {
       id: "billing",
       labelKey: "sidebar.section.billing",
       items: [
+        { id: "service_subscription", labelKey: "sidebar.service_subscription", icon: CalendarCheck, path: "/service/subscription", requiredPermission: "service_subscription", showBadgeOnPastDue: true },
+        { id: "service_checkout", labelKey: "sidebar.service_checkout", icon: ShoppingCart, path: "/service/checkout", requiredPermission: "service_checkout" },
+        { id: "product_subscription", labelKey: "sidebar.product_subscription", icon: PackageCheck, path: "/product/subscription", requiredPermission: "product_subscription" },
+        { id: "product_checkout", labelKey: "sidebar.product_checkout", icon: ShoppingCart, path: "/product/checkout", requiredPermission: "product_checkout" },
         { id: "payment", labelKey: "sidebar.payment", icon: Coins, path: "/payment", requiredPermission: "payment" },
-        { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" }
+        { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
+        { id: "connect", labelKey: "sidebar.connect", icon: RefreshCw, path: "/connect", requiredPermission: "payment" },
+        { id: "issue", labelKey: "sidebar.issue", icon: AlertCircle, path: "/issue" }
       ]
     }
   ];

@@ -1,23 +1,55 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../../layout";
 import { RefreshCw } from "lucide-react";
 import { Button, Chip } from "@heroui/react";
+import { fetchAuthed } from "@/lib/firebase/client";
+
+interface ServiceCheckoutItem {
+  checkoutId: string;
+  serviceId: string;
+  buyerId: string;
+  sellerId: string;
+  app: string;
+  status: string;
+  createdAt?: string;
+  route?: string;
+}
 
 export default function ServiceCheckoutPage() {
   const { showToast } = useDashboard();
   const [loading, setLoading] = useState(true);
+  const [checkouts, setCheckouts] = useState<ServiceCheckoutItem[]>([]);
+
+  const loadData = useCallback(async (showNotification = false) => {
+    try {
+      if (showNotification) {
+        setLoading(true);
+      }
+      const res = await fetchAuthed("/api/service/checkout/list");
+      if (res.status === 200) {
+        const data = await res.json();
+        setCheckouts(data?.items || []);
+        if (showNotification) {
+          showToast("Storico checkout aggiornato con successo.", "success");
+        }
+      } else {
+        showToast("Errore durante il recupero dei checkout.", "error");
+      }
+    } catch (err) {
+      console.error("Errore fetch checkout:", err);
+      showToast("Impossibile caricare i checkout.", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1400);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const mockCheckouts = [
-    { id: "c1", serviceName: "Pacchetto Start-Up Setup", amount: 450.00, status: "completed", date: "2026-06-12T14:30:00Z", receipt: "#1092-AA" },
-    { id: "c2", serviceName: "Integrazione API Custom B2B", amount: 1200.00, status: "completed", date: "2026-05-28T09:15:00Z", receipt: "#0981-CC" }
-  ];
+    Promise.resolve().then(() => {
+      void loadData();
+    });
+  }, [loadData]);
 
   if (loading) {
     return (
@@ -54,11 +86,36 @@ export default function ServiceCheckoutPage() {
     );
   }
 
+  const getStatusChip = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+      case "active":
+        return (
+          <Chip variant="soft" className="font-black uppercase text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10">
+            Completato
+          </Chip>
+        );
+      case "pending":
+      case "trialing":
+        return (
+          <Chip variant="soft" className="font-black uppercase text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/10 animate-pulse">
+            In attesa
+          </Chip>
+        );
+      default:
+        return (
+          <Chip variant="soft" className="font-black uppercase text-[9px] bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/10">
+            Fallito
+          </Chip>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black tracking-tight uppercase text-slate-900 dark:text-white">Checkout e Acquisti Servizi</h2>
+          <h2 className="text-xl font-black tracking-tight uppercase text-slate-900 dark:text-white">Servizi Acquistati (Checkout)</h2>
           <p className="text-sm text-slate-500 dark:text-gray-400">Consulta lo storico dei checkout dei moduli verticali una tantum acquistati dall&apos;organizzazione.</p>
         </div>
       </div>
@@ -69,7 +126,7 @@ export default function ServiceCheckoutPage() {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => showToast("Storico aggiornato.", "info")}
+            onClick={() => loadData(true)}
             className="border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-bold text-xs py-2 rounded-xl"
           >
             <RefreshCw className="w-3.5 h-3.5 inline mr-1" /> Aggiorna
@@ -77,30 +134,32 @@ export default function ServiceCheckoutPage() {
         </div>
 
         <div className="p-6">
-          {mockCheckouts.length === 0 ? (
+          {checkouts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-xs text-slate-400 font-semibold">Nessun acquisto singolo effettuato.</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-200 dark:divide-white/5">
-              {mockCheckouts.map((checkout) => (
-                <div key={checkout.id} className="flex justify-between items-center py-4 first:pt-0 last:pb-0">
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{checkout.serviceName}</h4>
-                    <p className="text-[10px] text-slate-400 font-semibold">
-                      Data: {new Date(checkout.date).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })} • Ricevuta: {checkout.receipt}
-                    </p>
+              {checkouts.map((checkout) => {
+                const serviceName = checkout.serviceId === "f3b610c1-229d-4340-9a7e-1284eb34b68e" ? "KALEX Mobile App" : (checkout.app === "mobile" ? "KALEX Mobile App" : `Servizio ID: ${checkout.serviceId.substring(0, 8)}`);
+                const checkoutDate = checkout.createdAt ? new Date(checkout.createdAt) : new Date();
+                return (
+                  <div key={checkout.checkoutId} className="flex justify-between items-center py-4 first:pt-0 last:pb-0">
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">{serviceName}</h4>
+                      <p className="text-[10px] text-slate-400 font-semibold">
+                        Data: {checkoutDate.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })} • ID: {checkout.checkoutId.substring(0, 8)} • Route: {checkout.route || "checkout"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs font-black text-slate-900 dark:text-white">
+                        Gestito via Stripe
+                      </span>
+                      {getStatusChip(checkout.status)}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-xs font-black text-slate-900 dark:text-white">
-                      € {checkout.amount.toLocaleString("it-IT", { minimumFractionDigits: 2 })}
-                    </span>
-                    <Chip variant="soft" className="font-black uppercase text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10">
-                      Completato
-                    </Chip>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

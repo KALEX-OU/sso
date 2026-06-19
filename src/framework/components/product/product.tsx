@@ -77,7 +77,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     try {
       showToast(`Inizializzazione acquisto per il prodotto...`, "info");
       
-      const res = await fetchAuthed("/api/stripe/checkout/partner", {
+      const res = await fetchAuthed("/api/stripe/checkout", {
         method: "POST",
         body: JSON.stringify({
           productId,

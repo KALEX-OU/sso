@@ -11,7 +11,7 @@ export default function ConnectRefreshPage() {
   useEffect(() => {
     // Reindirizza l'utente alla dashboard dopo 3 secondi per consentirgli di riavviare l'onboarding
     const timer = setTimeout(() => {
-      router.push(`/${locale}`);
+      router.push(`/${locale}/dashboard`);
     }, 3000);
 
     return () => clearTimeout(timer);
