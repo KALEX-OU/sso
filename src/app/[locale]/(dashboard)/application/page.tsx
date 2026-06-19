@@ -23,7 +23,7 @@ export default function ApplicationPage() {
   // Reindirizzamento immediato per sessioni legacy di checkout verso /subscription
   useEffect(() => {
     if (shouldRedirect) {
-      router.replace(`/subscription?${searchParams.toString()}`);
+      router.replace(`/service/subscription?${searchParams.toString()}`);
     }
   }, [shouldRedirect, searchParams, router]);
 

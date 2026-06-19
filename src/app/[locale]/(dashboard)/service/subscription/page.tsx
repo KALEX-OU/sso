@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useDashboard } from "../layout";
+import { useDashboard } from "../../layout";
 import { SubscriptionModule } from "@/framework/components/subscription/subscription";
 import { fetchAuthed } from "@/lib/firebase/client";
 
