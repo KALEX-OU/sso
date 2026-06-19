@@ -184,5 +184,10 @@ export default {
   "validation.vatNumberInvalid": "El formato del número de IVA no es válido.",
   "validation.sdiCodeInvalid": "El código de destinatario SDI debe tener exactamente 7 caracteres alfanuméricos.",
   "validation.officeCodeRequired": "El código de oficina PA (IPA) es obligatorio.",
-  "validation.officeCodeInvalid": "El código de oficina PA debe tener exactamente 6 caracteres alfanuméricos."
+  "validation.officeCodeInvalid": "El código de oficina PA debe tener exactamente 6 caracteres alfanuméricos.",
+  "subscription.status.trialing": "En prueba",
+  "subscription.status.active": "Activo",
+  "subscription.status.past_due": "Pago atrasado",
+  "subscription.status.inactive": "Inactivo",
+  "subscription.status.suspended": "Suspendido"
 } as const;

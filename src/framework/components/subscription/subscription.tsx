@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { CreditCard, UserCheck, ExternalLink, AlertCircle } from "lucide-react";
 import { BaseModuleLayout } from "../layout/BaseModuleLayout";
 import styles from "./subscription.module.css";
+import { useI18n } from "@/locales/client";
 
 interface MemberItem {
   role: string;
@@ -51,6 +52,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
   listMembersByOrg,
   currentUid
 }) => {
+  const t = useI18n();
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
   const [members, setMembers] = useState<MemberItem[]>([]);
   const [assignedSeats, setAssignedSeats] = useState<AssignedSeatsState>({});
@@ -285,7 +287,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
                     <div>
                       <h3 className={styles.subTitle}>{sub.service.name || sub.service.serviceId}</h3>
                       <span className={`${styles.badge} ${sub.status === "active" ? styles.badgeActive : styles.badgePastDue}`}>
-                        {sub.status}
+                        {t(`subscription.status.${sub.status as "active" | "trialing" | "past_due" | "inactive" | "suspended"}`)}
                       </span>
                     </div>
                     <div className={styles.seatsCount}>

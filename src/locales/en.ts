@@ -184,5 +184,10 @@ export default {
   "validation.vatNumberInvalid": "The format of the VAT number is invalid.",
   "validation.sdiCodeInvalid": "SDI recipient code must be exactly 7 alphanumeric characters.",
   "validation.officeCodeRequired": "PA office code (IPA) is required.",
-  "validation.officeCodeInvalid": "PA office code must be exactly 6 alphanumeric characters."
+  "validation.officeCodeInvalid": "PA office code must be exactly 6 alphanumeric characters.",
+  "subscription.status.trialing": "Trialing",
+  "subscription.status.active": "Active",
+  "subscription.status.past_due": "Past due",
+  "subscription.status.inactive": "Inactive",
+  "subscription.status.suspended": "Suspended"
 } as const;
