@@ -556,7 +556,15 @@ function AuthPortal() {
         const errMsg = typeof data.error === "object" && data.error ? data.error.message : (data.error as string) || "Errore durante la generazione del codice SSO.";
         throw new Error(errMsg);
       }
-      window.location.href = `${redirectUri}?code=${data.code}&state=${encodeURIComponent(state)}`;
+      try {
+        const targetUrl = new URL(redirectUri);
+        targetUrl.searchParams.set("code", data.code || "");
+        targetUrl.searchParams.set("state", state || "");
+        window.location.href = targetUrl.toString();
+      } catch (urlErr) {
+        console.error("Errore nel parsing del redirectUri:", urlErr);
+        window.location.href = `${redirectUri}${redirectUri.includes("?") ? "&" : "?"}code=${data.code}&state=${encodeURIComponent(state)}`;
+      }
     } catch (err) {
       console.error("SSO Redirect error:", err);
       const message = err instanceof Error ? err.message : "Errore durante il reindirizzamento.";

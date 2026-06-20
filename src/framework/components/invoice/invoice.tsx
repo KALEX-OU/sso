@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FileText, Download } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView, ActiveFilter } from "../layouts/ListView";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "../ui/Table";
+import { Table } from "../ui/Table";
 import { Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "@heroui/react";
-import styles from "./invoice.module.css";
 
 interface Column<T> {
   key: string;
@@ -119,9 +118,9 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "invoiceId",
       header: "Fattura ID / Riferimento",
       render: (item) => (
-        <div className={styles.invoiceRef}>
+        <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-purple-500 flex-shrink-0" />
-          <div className={styles.refCode} title={item.invoiceId}>
+          <div className="font-mono text-[13px] font-semibold text-slate-900 dark:text-white" title={item.invoiceId}>
             {item.invoiceId.substring(0, 8)}...{item.invoiceId.substring(item.invoiceId.length - 4)}
           </div>
         </div>
@@ -132,7 +131,11 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "type",
       header: "Flusso",
       render: (item) => (
-        <span className={`${styles.typeBadge} ${item.type === "received" ? styles.badgeReceived : styles.badgeIssued}`}>
+        <span className={`inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
+          item.type === "received" 
+            ? "bg-purple-500/8 text-purple-500 border border-purple-500/20" 
+            : "bg-blue-500/8 text-blue-500 border border-blue-500/20"
+        }`}>
           {item.type === "received" ? "Ricevuta" : "Emessa"}
         </span>
       ),
@@ -142,11 +145,11 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "partner",
       header: "Controparte",
       render: (item) => (
-        <div className={styles.partnerInfo}>
+        <div className="text-[13px] text-slate-600 dark:text-slate-400">
           {item.type === "received" ? (
-            <span>Da: <strong>{item.seller?.name || "KALEX CLOUD"}</strong></span>
+            <span>Da: <strong className="text-slate-900 dark:text-white">{item.seller?.name || "KALEX CLOUD"}</strong></span>
           ) : (
-            <span>A: <strong>{item.buyer?.name || "Cliente Partner"}</strong></span>
+            <span>A: <strong className="text-slate-900 dark:text-white">{item.buyer?.name || "Cliente Partner"}</strong></span>
           )}
         </div>
       )
@@ -155,7 +158,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "createdAt",
       header: "Data",
       render: (item) => (
-        <span className={styles.dateText}>
+        <span className="text-[13px] text-slate-500">
           {new Date(item.createdAt).toLocaleDateString("it-IT", {
             day: "2-digit",
             month: "2-digit",
@@ -169,12 +172,12 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "amount",
       header: "Importo Lordo",
       render: (item) => (
-        <div className={styles.amountInfo}>
-          <span className={styles.mainAmount}>
+        <div className="flex flex-col">
+          <span className="text-sm font-extrabold text-slate-900 dark:text-white">
             {new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(item.amount)}
           </span>
           {item.taxAmount !== undefined && item.taxAmount !== null && (
-            <span className={styles.subAmount}>
+            <span className="text-[11px] text-slate-500 mt-0.5">
               (IVA {item.taxPercent}%: {new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(item.taxAmount)})
             </span>
           )}
@@ -186,7 +189,11 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "status",
       header: "Stato",
       render: (item) => (
-        <span className={`${styles.statusBadge} ${item.status === "paid" ? styles.statusPaid : styles.statusPending}`}>
+        <span className={`inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
+          item.status === "paid" 
+            ? "bg-emerald-500/8 text-emerald-500 border border-emerald-500/20" 
+            : "bg-amber-500/8 text-amber-500 border border-amber-500/20"
+        }`}>
           {item.status}
         </span>
       ),
@@ -197,14 +204,14 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       header: "Azioni",
       render: (item) => {
         if (!item.pdfUrl) {
-          return <span className={styles.noPdf}>Nessun PDF</span>;
+          return <span className="text-xs text-slate-400 italic">Nessun PDF</span>;
         }
         return (
           <a
             href={item.pdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.downloadLink}
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-500 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             Scarica
@@ -215,7 +222,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
   ];
 
   const filterContent = (
-    <div className={styles.filterBar}>
+    <div className="flex items-center gap-4">
       <Select
         selectedKey={filterType}
         onSelectionChange={(key) => setFilterType(key as "all" | "received" | "issued")}
@@ -237,7 +244,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
 
   return (
     <BaseModuleLayout isLoading={loading} error={error}>
-      <div className={styles.invoiceModule}>
+      <div className="w-full">
         <ListView
           title="Registro Fatture e Ricevute"
           description="Consulta lo storico cronologico di tutte le fatture ricevute per acquisti SaaS e delle fatture emesse verso clienti partner."
@@ -250,30 +257,32 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
           filterContent={filterContent}
         >
           <Table aria-label="Tabella Fatture">
-            <TableHeader>
-              {columns.map(col => (
-                <TableColumn key={col.key} className="text-xs font-bold">{col.header}</TableColumn>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {filteredInvoices.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground text-xs">
-                    Nessuna fattura corrisponde ai criteri impostati.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredInvoices.map(item => (
-                  <TableRow key={item.invoiceId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
-                    {columns.map(col => (
-                      <TableCell key={col.key}>
-                        {col.render ? col.render(item) : String(item[col.key as keyof InvoiceItem] || "")}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
+            <Table.ScrollContainer>
+              <Table.Content>
+                <Table.Header>
+                  {columns.map(col => (
+                    <Table.Column key={col.key} id={col.key} className="text-xs font-bold">{col.header}</Table.Column>
+                  ))}
+                </Table.Header>
+                <Table.Body
+                  renderEmptyState={() => (
+                    <div className="text-center py-8 text-slate-400 text-xs">
+                      Nessuna fattura corrisponde ai criteri impostati.
+                    </div>
+                  )}
+                >
+                  {filteredInvoices.map(item => (
+                    <Table.Row key={item.invoiceId} id={item.invoiceId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
+                      {columns.map(col => (
+                        <Table.Cell key={col.key} id={`${item.invoiceId}-${col.key}`}>
+                          {col.render ? col.render(item) : String(item[col.key as keyof InvoiceItem] || "")}
+                        </Table.Cell>
+                      ))}
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
           </Table>
         </ListView>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView } from "../layouts/ListView";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "../ui/Table";
+import { Table } from "../ui/Table";
 
 interface Column<T> {
   key: string;
@@ -193,33 +193,36 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
           searchPlaceholder="Cerca prodotti per nome, SKU o tipo..."
         >
           <Table aria-label="Tabella Prodotti">
-            <TableHeader>
-              {columns.map(col => (
-                <TableColumn key={col.key} className="text-xs font-bold">{col.header}</TableColumn>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground text-xs">
-                    Nessun prodotto corrisponde ai criteri di ricerca.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredProducts.map(item => (
-                  <TableRow key={item.productId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
-                    {columns.map(col => (
-                      <TableCell key={col.key}>
-                        {col.render ? col.render(item) : String(item[col.key as keyof ProductItem] || "")}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
+            <Table.ScrollContainer>
+              <Table.Content>
+                <Table.Header>
+                  {columns.map(col => (
+                    <Table.Column key={col.key} id={col.key} className="text-xs font-bold">{col.header}</Table.Column>
+                  ))}
+                </Table.Header>
+                <Table.Body
+                  renderEmptyState={() => (
+                    <div className="text-center py-8 text-muted-foreground text-xs">
+                      Nessun prodotto corrisponde ai criteri di ricerca.
+                    </div>
+                  )}
+                >
+                  {filteredProducts.map(item => (
+                    <Table.Row key={item.productId} id={item.productId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
+                      {columns.map(col => (
+                        <Table.Cell key={col.key} id={`${item.productId}-${col.key}`}>
+                          {col.render ? col.render(item) : String(item[col.key as keyof ProductItem] || "")}
+                        </Table.Cell>
+                      ))}
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
           </Table>
         </ListView>
       </div>
     </BaseModuleLayout>
   );
 };
+export type { Column };

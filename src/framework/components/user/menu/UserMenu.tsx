@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useSyncExternalStore } from "react";
 import { useKalexAuth } from "../../../lib/auth";
 import { Button } from "../../ui/Button";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "../../ui/Dropdown";
@@ -12,10 +12,18 @@ interface UserMenuProps {
   className?: string;
 }
 
+const emptySubscribe = () => () => {};
+
 export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
   const { user, loading, claims, logout, loginRedirect, registerRedirect } = useKalexAuth();
 
-  if (loading) {
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  if (isMounted && loading) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <div className="w-8 h-8 rounded-full bg-divider animate-pulse" />

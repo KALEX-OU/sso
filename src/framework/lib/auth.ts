@@ -86,14 +86,54 @@ export function useKalexAuth() {
 
   const loginRedirect = (clientId: string) => {
     const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
-    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-    window.location.href = `${ssoUrl}/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrl)}`;
+    let currentUrlStr = typeof window !== "undefined" ? window.location.href : "";
+    if (currentUrlStr) {
+      try {
+        const url = new URL(currentUrlStr);
+        url.searchParams.delete("code");
+        url.searchParams.delete("state");
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+        if (appUrl) {
+          try {
+            const base = new URL(appUrl);
+            url.protocol = base.protocol;
+            url.host = base.host;
+          } catch (e) {
+            console.error("Errore parsing NEXT_PUBLIC_APP_URL in loginRedirect", e);
+          }
+        }
+        currentUrlStr = url.toString();
+      } catch (e) {
+        console.error("Errore parsing URL in loginRedirect", e);
+      }
+    }
+    window.location.href = `${ssoUrl}/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}`;
   };
 
   const registerRedirect = (clientId: string) => {
     const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
-    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-    window.location.href = `${ssoUrl}/auth?register=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrl)}`;
+    let currentUrlStr = typeof window !== "undefined" ? window.location.href : "";
+    if (currentUrlStr) {
+      try {
+        const url = new URL(currentUrlStr);
+        url.searchParams.delete("code");
+        url.searchParams.delete("state");
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+        if (appUrl) {
+          try {
+            const base = new URL(appUrl);
+            url.protocol = base.protocol;
+            url.host = base.host;
+          } catch (e) {
+            console.error("Errore parsing NEXT_PUBLIC_APP_URL in registerRedirect", e);
+          }
+        }
+        currentUrlStr = url.toString();
+      } catch (e) {
+        console.error("Errore parsing URL in registerRedirect", e);
+      }
+    }
+    window.location.href = `${ssoUrl}/auth?register=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}`;
   };
 
   return {
