@@ -593,8 +593,10 @@ function AuthPortal() {
 
         if (currentUser.emailVerified) {
           setNeedsVerification(false);
-          // Imposta il cookie di sessione per il middleware condiviso su *.kalex.cloud
           document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud";
+          if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+            document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax";
+          }
           if (redirectUri && !redirecting) {
             handleSSORedirect(currentUser);
           } else if (!redirecting) {
