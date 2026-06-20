@@ -49,7 +49,6 @@ export async function proxy(request: NextRequest) {
       const verifyRes = await fetch(`${API_BASE_URL}/auth/verify-session`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${sessionCookie}`, // Inoltriamo il session cookie come Bearer o nell'header Cookie
           "Cookie": `kalex_session=${sessionCookie}`,
           "X-Firebase-AppCheck": request.headers.get("x-firebase-appcheck") || "",
           "X-Firebase-AppCheck-Debug": request.headers.get("x-firebase-appcheck-debug") || ""
