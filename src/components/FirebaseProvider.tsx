@@ -15,11 +15,8 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
       try {
         await setPersistence(auth, inMemoryPersistence);
         
-        // Verifica se esiste il cookie di sessione
-        const hasSessionCookie = typeof document !== "undefined" && document.cookie.split(";").some(c => c.trim().startsWith("kalex_session="));
-        
-        if (hasSessionCookie && !auth.currentUser && active) {
-          // Tenta la sincronizzazione iniziale (Multi-Tab)
+        if (!auth.currentUser && active) {
+          // Tenta la sincronizzazione iniziale (Multi-Tab) se la sessione HttpOnly è attiva
           try {
             const res = await fetchWithAppCheck("/api/auth/client-token", { method: "POST" });
             if (res.ok) {
