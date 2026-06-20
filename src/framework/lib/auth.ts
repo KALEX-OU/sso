@@ -5,6 +5,9 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User, Auth } from "firebase/auth";
 
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import type { AppCheck } from "firebase/app-check";
+
 // Interfaccia forte per i Custom Claims di KALEX
 export interface CustomClaims {
   orgId?: string;
@@ -30,10 +33,31 @@ const firebaseConfig = {
 // Inizializza l'istanza client-side Firebase (solo in ambiente browser/client)
 let app;
 let authInstance: Auth;
+let appCheckInstance: AppCheck | null = null;
 
 if (typeof window !== "undefined") {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   authInstance = getAuth(app);
+
+  if (process.env.NODE_ENV === "development") {
+    // Configura il token di debug di App Check fornito per lo sviluppo locale
+    ((window as unknown) as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = "D8C27232-65AF-4C05-8528-595936C2DA78";
+  }
+
+  const existingAppCheck = (app as unknown as { appCheck?: AppCheck }).appCheck;
+  if (existingAppCheck) {
+    appCheckInstance = existingAppCheck;
+  } else {
+    try {
+      appCheckInstance = initializeAppCheck(app, {
+        provider: new ReCaptchaEnterpriseProvider("6LerwBwtAAAAAOPo8crSA1U9lRXbvBPCYU9XKFNn"),
+        isTokenAutoRefreshEnabled: true
+      });
+      (app as unknown as { appCheck: AppCheck }).appCheck = appCheckInstance;
+    } catch (e) {
+      console.warn("[Framework Auth] App Check già inizializzato:", e);
+    }
+  }
 }
 
 export const auth = typeof window !== "undefined" ? authInstance! : {} as Auth;
@@ -121,6 +145,12 @@ export function useKalexAuth() {
     window.location.href = `${ssoUrl}/auth?register=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}`;
   };
 
+  const hasPermission = (resource: string, requiredLevel: number): boolean => {
+    if (claims?.role === "owner") return true; // L'owner scavalca FLS/RBAC
+    const userPerm = claims?.perms?.[resource];
+    return userPerm !== undefined && userPerm >= requiredLevel;
+  };
+
   return {
     user,
     loading,
@@ -134,13 +164,14 @@ export function useKalexAuth() {
     perms: claims?.perms || {},
     logout,
     loginRedirect,
-    registerRedirect
+    registerRedirect,
+    hasPermission
   };
 }
 
 // Hook reattivo leggero specifico per accedere ai Custom Claims
 export function useKalexClaims() {
-  const { claims, loading, user } = useKalexAuth();
+  const { claims, loading, user, hasPermission } = useKalexAuth();
   return {
     claims,
     loading,
@@ -149,6 +180,7 @@ export function useKalexClaims() {
     role: claims?.role,
     confirmed: claims?.confirmed,
     perms: claims?.perms || {},
-    seats: claims?.seats || []
+    seats: claims?.seats || [],
+    hasPermission
   };
 }

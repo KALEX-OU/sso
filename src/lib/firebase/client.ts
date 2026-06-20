@@ -46,10 +46,20 @@ if (typeof window !== "undefined") {
     ((window as unknown) as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = "D8C27232-65AF-4C05-8528-595936C2DA78";
   }
 
-  appCheckInstance = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider("6LerwBwtAAAAAOPo8crSA1U9lRXbvBPCYU9XKFNn"),
-    isTokenAutoRefreshEnabled: true,
-  });
+  const existingAppCheck = (app as unknown as { appCheck?: AppCheck }).appCheck;
+  if (existingAppCheck) {
+    appCheckInstance = existingAppCheck;
+  } else {
+    try {
+      appCheckInstance = initializeAppCheck(app, {
+        provider: new ReCaptchaEnterpriseProvider("6LerwBwtAAAAAOPo8crSA1U9lRXbvBPCYU9XKFNn"),
+        isTokenAutoRefreshEnabled: true,
+      });
+      (app as unknown as { appCheck: AppCheck }).appCheck = appCheckInstance;
+    } catch (e) {
+      console.warn("[SSO Client] App Check già inizializzato:", e);
+    }
+  }
 }
 
 export async function getAppCheckToken(): Promise<string | null> {

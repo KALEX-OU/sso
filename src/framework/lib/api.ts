@@ -56,7 +56,13 @@ export async function fetchAuthedClient<T>(
 
   const headers = new Headers(init?.headers);
 
-  // 1. Inserisce il token di autenticazione Firebase se l'utente è loggato
+  // 1. Genera un Correlation ID univoco (UUIDv4) per la tracciabilità distribuita nei log
+  const correlationId = typeof crypto !== "undefined" && crypto.randomUUID 
+    ? crypto.randomUUID() 
+    : Math.random().toString(36).substring(2, 15);
+  headers.set("x-correlation-id", correlationId);
+
+  // 2. Inserisce il token di autenticazione Firebase se l'utente è loggato
   const { auth } = await import("./auth");
   const currentUser = auth.currentUser;
   if (currentUser) {
@@ -68,7 +74,7 @@ export async function fetchAuthedClient<T>(
     }
   }
 
-  // 2. Inserisce il token App Check
+  // 3. Inserisce il token App Check
   const appCheckToken = await getClientAppCheckToken();
   if (appCheckToken) {
     headers.set("X-Firebase-AppCheck", appCheckToken);
@@ -78,7 +84,7 @@ export async function fetchAuthedClient<T>(
     headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
   }
 
-  // 3. Inserisce l'App ID proprietario
+  // 4. Inserisce l'App ID proprietario
   headers.set("x-app-id", APP_ID);
 
   if (!headers.has("Content-Type") && init?.method !== "GET" && init?.method !== "HEAD") {
@@ -100,14 +106,20 @@ export async function fetchAuthedClient<T>(
     } catch {
       return {
         success: false,
-        error: { message: `Risposta non valida dal server (Status: ${response.status})`, details: text }
+        error: { 
+          message: `Risposta non valida dal server (Status: ${response.status})`, 
+          details: { text, correlationId } 
+        }
       };
     }
 
     if (!response.ok) {
       return {
         success: false,
-        error: json.error || { message: json.message || "Errore sconosciuto nella chiamata API." }
+        error: json.error || { 
+          message: json.message || "Errore sconosciuto nella chiamata API.",
+          details: { correlationId }
+        }
       };
     }
 
@@ -120,7 +132,11 @@ export async function fetchAuthedClient<T>(
     const message = err instanceof Error ? err.message : "Errore di rete durante la connessione.";
     return {
       success: false,
-      error: { message }
+      error: { 
+        message, 
+        code: "api/network-error",
+        details: { correlationId } 
+      }
     };
   }
 }
