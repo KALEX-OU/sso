@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDashboard } from "../layout";
 import { fetchAuthed } from "@/lib/firebase/client";
 import { Card, Chip, Button, Spinner } from "@heroui/react";
@@ -9,13 +9,23 @@ import {
   Layers, 
   Lock, 
   ShieldCheck, 
-  Coins, 
   Activity, 
   Info,
   HelpCircle,
-  ShoppingCart
+  ShoppingCart,
+  Cpu,
+  Wrench,
+  Smartphone,
+  Globe,
+  FileText,
+  Plus,
+  Minus,
+  RefreshCw,
+  AlertTriangle,
+  Key,
+  Radio
 } from "lucide-react";
-import { useI18n } from "@/locales/client";
+import { useI18n, useCurrentLocale } from "@/locales/client";
 
 interface ProductPrice {
   priceId: string;
@@ -51,39 +61,58 @@ interface ProductItem {
 export default function ProductCatalogPage() {
   const { dbData, showToast, hasPermission } = useDashboard();
   const t = useI18n();
+  const currentLocale = useCurrentLocale();
 
   const [products, setProducts] = useState<ProductItem[]>([]);
-  const [prices, setPrices] = useState<ProductPrice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"service" | "product">("service");
+  
+  // Tab attiva con combinazione mode + route
+  const [activeFilter, setActiveFilter] = useState({ mode: "service", route: "subscription" });
+  
+  // Quantità per prodotto
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  
+  // Stato loading del checkout per singolo prodotto
+  const [checkoutLoading, setCheckoutLoading] = useState<Record<string, boolean>>({});
 
   const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
   const activeOrg = activeOrgRelation?.organization;
   const organizationId = activeOrg?.orgId;
+  const orgType = activeOrg?.type || "personal";
 
-  // Verifica permessi amministrativi (basata su RBAC)
+  // Abilitazione basata su permessi di creazione o aggiornamento
   const canManage = hasPermission("product", "create") || hasPermission("product", "update");
 
+  // Definizione delle 4 tab per combinazione mode + route
+  const tabs = useMemo(() => [
+    { id: "saas_sub", labelKey: "product.tab.saasSub", defaultLabel: "Abbonamenti SaaS", mode: "service", route: "subscription", icon: Layers },
+    { id: "digital_spot", labelKey: "product.tab.spotServices", defaultLabel: "Servizi Una-Tantum", mode: "service", route: "payment", icon: FileText },
+    { id: "hw_sub", labelKey: "product.tab.hwSub", defaultLabel: "Noleggio Hardware", mode: "product", route: "subscription", icon: RefreshCw },
+    { id: "hw_buy", labelKey: "product.tab.hwBuy", defaultLabel: "Acquisto Hardware", mode: "product", route: "payment", icon: ShoppingCart }
+  ], []);
+
+  // Risolve l'etichetta della tab con fallback resiliente
+  const getTabLabel = (tab: typeof tabs[0]) => {
+    const translated = t(tab.labelKey as Parameters<typeof t>[0]);
+    return translated !== tab.labelKey ? translated : tab.defaultLabel;
+  };
+
+  // Carica i dati delle API Hono
   const loadCatalogData = useCallback(async () => {
     setLoading(true);
     try {
-      const [prodRes, priceRes] = await Promise.all([
-        fetchAuthed("/api/product/list?limit=100"),
-        fetchAuthed("/api/price/list?limit=100")
-      ]);
+      const prodRes = await fetchAuthed("/api/product/list?limit=100");
 
-      if (!prodRes.ok || !priceRes.ok) {
+      if (!prodRes.ok) {
         throw new Error("Errore durante il recupero dei dati delle API");
       }
 
       const prodData = await prodRes.json();
-      const priceData = await priceRes.json();
 
-      if (prodData.success && priceData.success) {
+      if (prodData.success) {
         setProducts(prodData.items || []);
-        setPrices(priceData.items || []);
       } else {
-        throw new Error(prodData.error || priceData.error || "Errore sconosciuto");
+        throw new Error(prodData.error || "Errore sconosciuto");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Errore generico";
@@ -105,31 +134,85 @@ export default function ProductCatalogPage() {
 
   // Formatta la valuta
   const formatCurrency = (amount: number, currencyCode: string) => {
-    return new Intl.NumberFormat("it-IT", {
+    return new Intl.NumberFormat(currentLocale || "it-IT", {
       style: "currency",
       currency: currencyCode || "EUR"
     }).format(amount);
   };
 
-  // Ottieni il nome tradotto del Stripe Tax Code
+  // Traduce il codice fiscale fiscale Stripe
   const getTaxCodeLabel = (taxCode: string) => {
     const translationKey = `product.category.${taxCode}`;
     const translated = t(translationKey as Parameters<typeof t>[0]);
     return translated !== translationKey ? translated : taxCode;
   };
 
-  // Filtra prodotti per l'ambiente corrente dell'organizzazione (isTest)
-  const isTestOrg = activeOrg?.isTest || false;
-  const filteredProducts = products.filter(p => p.isTest === isTestOrg && p.mode === activeTab);
+  // Mappatura delle icone tematiche del prodotto in stile Google Cloud / Stripe Connect
+  const getProductIconInfo = (appId: string, productId: string) => {
+    const id = (appId || productId || "").toLowerCase();
+    if (id.includes("safety")) return { icon: ShieldCheck, color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" };
+    if (id.includes("standlo")) return { icon: Activity, color: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20" };
+    if (id.includes("sso")) return { icon: Key, color: "text-purple-500 bg-purple-500/10 border-purple-500/20" };
+    if (id.includes("web")) return { icon: Globe, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" };
+    if (id.includes("mobile")) return { icon: Smartphone, color: "text-pink-500 bg-pink-500/10 border-pink-500/20" };
+    if (id.includes("audit")) return { icon: FileText, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" };
+    if (id.includes("consulting")) return { icon: HelpCircle, color: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20" };
+    if (id.includes("esp32")) return { icon: Cpu, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" };
+    if (id.includes("terminal")) return { icon: Smartphone, color: "text-teal-500 bg-teal-500/10 border-teal-500/20" };
+    if (id.includes("gateway")) return { icon: Wrench, color: "text-rose-500 bg-rose-500/10 border-rose-500/20" };
+    if (id.includes("badge") || id.includes("rfid")) return { icon: Radio, color: "text-violet-500 bg-violet-500/10 border-violet-500/20" };
+    if (id.includes("alarm") || id.includes("siren")) return { icon: AlertTriangle, color: "text-red-500 bg-red-500/10 border-red-500/20" };
+    return { icon: Package, color: "text-slate-500 bg-slate-500/10 border-slate-500/20" };
+  };
 
-  // Unisce i prezzi a ciascun prodotto
-  const productsWithPrices = filteredProducts.map(product => {
-    const productPrices = prices.filter(pr => pr.productId === product.productId && pr.isTest === isTestOrg);
-    return {
-      ...product,
-      prices: productPrices
-    };
-  });
+  // Avvio checkout Stripe
+  const handleStartCheckout = async (priceId: string, quantity: number, productId: string) => {
+    if (!priceId) return;
+    setCheckoutLoading(prev => ({ ...prev, [productId]: true }));
+    try {
+      const response = await fetchAuthed("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          priceId,
+          quantity,
+          successUrl: `${window.location.origin}/${currentLocale}/payment?success=true`,
+          cancelUrl: `${window.location.origin}/${currentLocale}/product?canceled=true`
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success && data.url) {
+        window.location.assign(data.url);
+      } else {
+        throw new Error(data.error?.message || "Impossibile inizializzare il pagamento Stripe.");
+      }
+    } catch (err) {
+      console.error("[Stripe Checkout] Errore:", err);
+      showToast(err instanceof Error ? err.message : "Errore durante l'avvio del checkout.", "error");
+    } finally {
+      setCheckoutLoading(prev => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  const handleUpdateQuantity = (productId: string, delta: number) => {
+    setQuantities(prev => {
+      const current = prev[productId] || 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [productId]: next };
+    });
+  };
+
+  // Filtra prodotti per l'ambiente corrente dell'organizzazione (isTest) e per combinazione tab attiva
+  const isTestOrg = activeOrg?.isTest || false;
+  const filteredProducts = products.filter(
+    p => p.isTest === isTestOrg && p.mode === activeFilter.mode && p.route === activeFilter.route
+  );
+
+  // I prezzi, lotti e consumi sono già inclusi relazionalmente a livello di API
+  const productsWithPrices = filteredProducts;
 
   if (!organizationId) {
     return (
@@ -144,7 +227,6 @@ export default function ProductCatalogPage() {
     );
   }
 
-  // Costruiamo i componenti JSX fuori dai blocchi try/catch per conformità alle regole React/Next.js
   return (
     <div className="space-y-6">
       {/* Intestazione */}
@@ -173,46 +255,35 @@ export default function ProductCatalogPage() {
         </div>
       </div>
 
-      {/* Tabs di Navigazione Custom Premium */}
-      <div className="flex justify-start border-b border-slate-200 dark:border-white/10 pb-px">
-        <div className="flex gap-6">
-          <button
-            onClick={() => setActiveTab("service")}
-            className={`pb-3 text-sm font-bold transition-all relative ${
-              activeTab === "service" 
-                ? "text-purple-600 dark:text-purple-400" 
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4" />
-              {t("product.tab.services")}
-            </div>
-            {activeTab === "service" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 rounded-full animate-fade-in" />
-            )}
-          </button>
-          
-          <button
-            onClick={() => setActiveTab("product")}
-            className={`pb-3 text-sm font-bold transition-all relative ${
-              activeTab === "product" 
-                ? "text-purple-600 dark:text-purple-400" 
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4" />
-              {t("product.tab.hardware")}
-            </div>
-            {activeTab === "product" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 rounded-full animate-fade-in" />
-            )}
-          </button>
+      {/* Tabs di Navigazione Combinate Premium */}
+      <div className="flex justify-start border-b border-slate-200 dark:border-white/10 pb-px overflow-x-auto">
+        <div className="flex gap-6 whitespace-nowrap">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeFilter.mode === tab.mode && activeFilter.route === tab.route;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveFilter({ mode: tab.mode, route: tab.route })}
+                className={`pb-3 text-sm font-bold transition-all relative cursor-pointer flex items-center gap-2 ${
+                  active 
+                    ? "text-purple-600 dark:text-purple-400" 
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                {getTabLabel(tab)}
+                {active && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 rounded-full animate-fade-in" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Sezione Caricamento */}
+      {/* Sezione Caricamento o Contenuto */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
           <div className="text-center">
@@ -228,143 +299,140 @@ export default function ProductCatalogPage() {
             </div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Nessun articolo trovato</h3>
             <p className="text-xs text-slate-400 max-w-sm">
-              Non sono presenti articoli in catalogo per questo tipo di modulo nell&apos;ambiente {isTestOrg ? "Sandbox" : "Produzione"}.
+              Non sono presenti articoli in catalogo per questa categoria nell&apos;ambiente {isTestOrg ? "Sandbox" : "Produzione"}.
             </p>
           </Card.Content>
         </Card>
       ) : (
-        /* Grid dei Prodotti */
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        /* Griglia dei Prodotti Compatta a 3 Colonne */
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {productsWithPrices.map(item => {
-            // Raggruppa i prezzi per tier
-            const personalPrice = item.prices?.find(p => p.tier === "personal");
-            const businessPrice = item.prices?.find(p => p.tier === "business");
-            const govPrice = item.prices?.find(p => p.tier === "government");
-            const eduPrice = item.prices?.find(p => p.tier === "education");
-
+            // Mappa direttamente il prezzo corretto per il tier dell'organizzazione attiva
+            const activePrice = item.prices?.find(p => p.tier === orgType) || item.prices?.[0];
             const isSubscription = item.route === "subscription";
+            const qty = quantities[item.productId] || 1;
+            const isCheckingOut = checkoutLoading[item.productId] || false;
+
+            const iconInfo = getProductIconInfo(item.appId, item.productId);
+            const ProductIcon = iconInfo.icon;
 
             return (
               <Card 
                 key={item.productId}
-                className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-6 shadow-xl flex flex-col justify-between"
+                className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-purple-500/20 transition-all duration-300 min-h-[220px]"
               >
-                <Card.Content className="space-y-4">
+                <Card.Content className="p-0 space-y-3">
                   {/* Intestazione Card */}
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <span className="text-[10px] font-bold text-purple-500 dark:text-purple-400 uppercase tracking-widest">
-                        {getTaxCodeLabel(item.type)}
-                      </span>
-                      <h2 className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
-                        {item.name}
-                      </h2>
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 flex items-center justify-center rounded-xl border shrink-0 ${iconInfo.color}`}>
+                        <ProductIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-sm font-extrabold text-slate-900 dark:text-white line-clamp-1">
+                          {item.name}
+                        </h2>
+                        <span className="text-[9px] font-bold text-purple-500 dark:text-purple-400 uppercase tracking-wider block mt-0.5">
+                          {getTaxCodeLabel(item.type)}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Badge della rotta commerciale */}
-                    <div className="flex gap-2">
-                      {item.sku && (
-                        <Chip size="sm" className="bg-slate-500/15 text-slate-600 dark:text-slate-300 font-bold border border-slate-500/20 rounded-lg">
-                          SKU: {item.sku}
-                        </Chip>
-                      )}
-                      {item.route && (
-                        <Chip size="sm" className="bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold border border-purple-500/20 rounded-lg">
-                          {isSubscription ? "Abbonamento" : "Usa & Getta"}
-                        </Chip>
-                      )}
-                    </div>
+                    {item.sku && (
+                      <Chip size="sm" className="bg-slate-500/15 text-slate-600 dark:text-slate-300 font-bold border border-slate-500/10 rounded-lg text-[8px] uppercase tracking-wider px-1">
+                        {item.sku}
+                      </Chip>
+                    )}
                   </div>
 
                   {/* Descrizione */}
-                  <p className="text-slate-600 dark:text-gray-300 text-xs leading-relaxed">
-                    {item.description || "Nessuna descrizione fornita."}
+                  <p className="text-slate-600 dark:text-gray-400 text-xs leading-relaxed line-clamp-3">
+                    {item.description || "Nessuna descrizione fornita per questo articolo."}
                   </p>
-
-                  {/* Listino Prezzi / Tier */}
-                  <div className="pt-3 border-t border-slate-100 dark:border-white/5 space-y-2.5">
-                    <h4 className="text-[10px] font-extrabold text-slate-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                      <Coins className="w-3.5 h-3.5 text-purple-400" />
-                      {t("product.price.tier")}
-                    </h4>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      {personalPrice && (
-                        <div className="p-3 rounded-2xl bg-slate-500/5 dark:bg-white/5 border border-slate-100 dark:border-white/5 flex flex-col justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-gray-400">Personal / B2C</span>
-                          <span className="text-sm font-black text-slate-800 dark:text-white mt-1">
-                            {formatCurrency(personalPrice.amount, personalPrice.currency)}
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-gray-500 ml-1">
-                              {personalPrice.type === "recurring" ? "/mese" : ""}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-
-                      {businessPrice && (
-                        <div className="p-3 rounded-2xl bg-purple-500/5 dark:bg-purple-500/5 border border-purple-500/10 dark:border-purple-500/10 flex flex-col justify-between">
-                          <span className="text-[10px] font-bold text-purple-500 dark:text-purple-400 flex items-center gap-1">
-                            Business / B2B
-                            <ShieldCheck className="w-3 h-3" />
-                          </span>
-                          <span className="text-sm font-black text-slate-800 dark:text-white mt-1">
-                            {formatCurrency(businessPrice.amount, businessPrice.currency)}
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-gray-500 ml-1">
-                              {businessPrice.type === "recurring" ? "/mese" : ""}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-
-                      {govPrice && (
-                        <div className="p-3 rounded-2xl bg-slate-500/5 dark:bg-white/5 border border-slate-100 dark:border-white/5 flex flex-col justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-gray-400">Government / B2G</span>
-                          <span className="text-sm font-black text-slate-800 dark:text-white mt-1">
-                            {formatCurrency(govPrice.amount, govPrice.currency)}
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-gray-500 ml-1">
-                              {govPrice.type === "recurring" ? "/mese" : ""}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-
-                      {eduPrice && (
-                        <div className="p-3 rounded-2xl bg-slate-500/5 dark:bg-white/5 border border-slate-100 dark:border-white/5 flex flex-col justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-gray-400">Education / EDU</span>
-                          <span className="text-sm font-black text-slate-800 dark:text-white mt-1">
-                            {formatCurrency(eduPrice.amount, eduPrice.currency)}
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-gray-500 ml-1">
-                              {eduPrice.type === "recurring" ? "/mese" : ""}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </Card.Content>
 
-                {/* Pulsante d'azione */}
-                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/5">
+                {/* Footer ed Azione d'Acquisto */}
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 space-y-3">
+                  {activePrice ? (
+                    <div className="flex justify-between items-center gap-4">
+                      {/* Prezzo Unitario dell'Organizzazione */}
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                          {t("product.price.tier")} ({orgType})
+                        </span>
+                        <span className="text-sm font-black text-slate-800 dark:text-white mt-0.5">
+                          {formatCurrency(activePrice.amount, activePrice.currency)}
+                          <span className="text-[10px] font-medium text-slate-400 dark:text-gray-500 ml-1">
+                            {activePrice.type === "recurring" ? "/mese" : ""}
+                          </span>
+                        </span>
+                      </div>
+
+                      {/* Selettore Quantità */}
+                      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200/50 dark:border-white/5 p-1 shrink-0">
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-lg h-6 w-6 min-w-6 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 p-0"
+                          onClick={() => handleUpdateQuantity(item.productId, -1)}
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        <span className="text-xs font-black px-1 text-slate-800 dark:text-white w-6 text-center select-none">
+                          {qty}
+                        </span>
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-lg h-6 w-6 min-w-6 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 p-0"
+                          onClick={() => handleUpdateQuantity(item.productId, 1)}
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-red-500 font-bold p-1">Listino prezzi non disponibile.</div>
+                  )}
+
+                  {/* Pulsante d'acquisto/sottoscrizione E2E Stripe */}
                   {canManage ? (
                     <Button 
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-2xl shadow-lg shadow-purple-500/20 transition-all text-xs"
-                      onClick={() => {
-                        showToast(`Procedura avviata per ${item.name}.`, "info");
-                      }}
+                      isDisabled={!activePrice || isCheckingOut}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl shadow-md transition-all text-xs flex justify-between items-center px-3.5 py-4 h-10"
+                      onClick={() => activePrice && void handleStartCheckout(activePrice.priceId, qty, item.productId)}
                     >
-                      <Activity className="w-4 h-4 mr-1.5" />
-                      {activeTab === "service" ? t("product.action.subscribe") : t("product.action.buy")}
+                      <div className="flex items-center gap-1.5">
+                        {isCheckingOut ? (
+                          <Spinner size="sm" color="current" />
+                        ) : (
+                          <Activity className="w-3.5 h-3.5" />
+                        )}
+                        <span>
+                          {isCheckingOut 
+                            ? "Inizializzazione..." 
+                            : (isSubscription ? t("product.action.subscribe") : t("product.action.buy"))
+                          }
+                        </span>
+                      </div>
+                      {activePrice && !isCheckingOut && (
+                        <span className="bg-purple-700/50 px-2 py-0.5 rounded-lg font-black tracking-wide">
+                          {formatCurrency(activePrice.amount * qty, activePrice.currency)}
+                        </span>
+                      )}
                     </Button>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Button 
                         isDisabled
-                        className="w-full bg-slate-800/50 text-slate-500 dark:text-slate-600 font-extrabold rounded-2xl border border-slate-800 cursor-not-allowed text-xs"
+                        className="w-full bg-slate-800/40 text-slate-500 dark:text-slate-600 font-extrabold rounded-xl border border-slate-800/20 cursor-not-allowed text-xs h-10"
                       >
                         <Lock className="w-3.5 h-3.5 mr-1.5" />
-                        {activeTab === "service" ? t("product.action.subscribe") : t("product.action.buy")}
+                        {isSubscription ? t("product.action.subscribe") : t("product.action.buy")}
                       </Button>
-                      <p className="text-[9px] text-slate-500 dark:text-slate-600 font-medium text-center flex items-center justify-center gap-1">
+                      <p className="text-[8px] text-slate-500 dark:text-slate-600 font-medium text-center flex items-center justify-center gap-1">
                         <Lock className="w-2.5 h-2.5" />
                         {t("product.action.disabled")}
                       </p>
@@ -378,14 +446,14 @@ export default function ProductCatalogPage() {
       )}
 
       {/* Disclaimer Stripe Tax in fondo alla pagina */}
-      <Card className="border border-slate-200 dark:border-white/10 bg-slate-500/5 dark:bg-slate-950/20 backdrop-blur-xl rounded-3xl p-5 shadow-xl">
-        <Card.Content className="flex gap-4">
-          <div className="p-3 bg-purple-500/10 rounded-2xl h-fit">
-            <Info className="w-5 h-5 text-purple-500" />
+      <Card className="border border-slate-200 dark:border-white/10 bg-slate-500/5 dark:bg-slate-950/20 backdrop-blur-xl rounded-2xl p-4 shadow-md">
+        <Card.Content className="flex gap-3">
+          <div className="p-2.5 bg-purple-500/10 rounded-xl h-fit">
+            <Info className="w-4 h-4 text-purple-500" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 dark:text-white">Indicazione sulle Imposte (Stripe Tax)</h3>
-            <p className="text-slate-500 dark:text-gray-400 text-xs mt-1 leading-relaxed">
+            <p className="text-slate-500 dark:text-gray-400 text-xs mt-0.5 leading-relaxed">
               {t("product.taxDisclaimer")}
             </p>
           </div>
