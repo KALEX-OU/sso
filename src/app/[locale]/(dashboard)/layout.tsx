@@ -25,12 +25,7 @@ import {
   Menu,
   AlertCircle,
   FileText,
-  CalendarCheck,
-  ShoppingCart,
-  PackageCheck,
   Coins,
-  Package,
-  Globe,
   Server,
   Radio,
   RefreshCw
@@ -543,14 +538,6 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" }
       ]
     },
-    {
-      id: "catalog",
-      labelKey: "sidebar.section.catalog",
-      items: [
-        { id: "good", labelKey: "sidebar.good", icon: Package, path: "/good", requiredPermission: "good" },
-        { id: "application", labelKey: "sidebar.application", icon: Globe, path: "/application", requiredPermission: "application" }
-      ]
-    },
     // Sezione dinamica Risorse
     ...(thingCount > 0 || computeCount > 0 ? [{
       id: "resources",
@@ -560,22 +547,6 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
         ...(computeCount > 0 ? [{ id: "compute", labelKey: "sidebar.compute", icon: Server, path: "/compute", requiredPermission: "compute" }] : [])
       ]
     }] : []),
-    {
-      id: "services",
-      labelKey: "sidebar.section.services",
-      items: [
-        { id: "service_subscription", labelKey: "sidebar.service_subscription", icon: CalendarCheck, path: "/service/subscription", requiredPermission: "service_subscription", showBadgeOnPastDue: true },
-        { id: "service_checkout", labelKey: "sidebar.service_checkout", icon: ShoppingCart, path: "/service/checkout", requiredPermission: "service_checkout" }
-      ]
-    },
-    {
-      id: "products",
-      labelKey: "sidebar.section.products",
-      items: [
-        { id: "product_subscription", labelKey: "sidebar.product_subscription", icon: PackageCheck, path: "/product/subscription", requiredPermission: "product_subscription" },
-        { id: "product_checkout", labelKey: "sidebar.product_checkout", icon: ShoppingCart, path: "/product/checkout", requiredPermission: "product_checkout" }
-      ]
-    },
     {
       id: "billing",
       labelKey: "sidebar.section.billing",
