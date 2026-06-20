@@ -34,6 +34,12 @@ export async function forwardProxyRequest(
     headers.set("authorization", authHeader);
   }
 
+  // Inoltra il Cookie originale (es. per sessioni HttpOnly)
+  const cookieHeader = request.headers.get("cookie");
+  if (cookieHeader) {
+    headers.set("cookie", cookieHeader);
+  }
+
   // Inoltra App Check
   const appCheckHeader = request.headers.get("x-firebase-appcheck");
   if (appCheckHeader) {
@@ -95,8 +101,30 @@ export async function forwardProxyRequest(
       }
     });
 
-    return new Response(responseBody, {
-      status: response.status,
+    // Inoltra l'header Set-Cookie da Hono al client (browser)
+    const setCookieHeaders = response.headers.getSetCookie 
+      ? response.headers.getSetCookie() 
+      : response.headers.get("set-cookie");
+    if (setCookieHeaders) {
+      if (Array.isArray(setCookieHeaders)) {
+        setCookieHeaders.forEach(cookie => responseHeaders.append("set-cookie", cookie));
+      } else {
+        responseHeaders.set("set-cookie", setCookieHeaders);
+      }
+    }
+
+    let status = response.status;
+    let finalBody = responseBody;
+
+    // Se stiamo richiedendo client-token e l'utente non è autenticato (401),
+    // convertiamo in 200 OK con success: false per evitare errori 401 rossi in console
+    if (moduleName === "auth" && pathString === "client-token" && status === 401) {
+      status = 200;
+      finalBody = JSON.stringify({ success: false, code: "auth/unauthorized", message: "Utente non autenticato." });
+    }
+
+    return new Response(finalBody, {
+      status,
       headers: responseHeaders
     });
   } catch (err) {
