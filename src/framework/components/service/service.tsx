@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ShieldCheck, Cpu, Cloud, CheckCircle2, ArrowRight } from "lucide-react";
+import { Cloud, CheckCircle2, ArrowRight, Hammer, Layout, Navigation, Camera } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 
 interface ServiceItem {
@@ -22,12 +22,14 @@ interface ServiceModuleProps {
 
 const getServiceIcon = (serviceId: string) => {
   switch (serviceId) {
-    case "3c16260a-9d62-4b2a-89a1-8d2a58b68832":
-    case "safety":
-      return ShieldCheck;
-    case "975e52be-df86-455b-9f6e-cd3bfd12f170":
-    case "standlo":
-      return Cpu;
+    case "etics":
+      return Hammer;
+    case "stand":
+      return Layout;
+    case "drone":
+      return Navigation;
+    case "photogrammetry":
+      return Camera;
     default:
       return Cloud;
   }
