@@ -1,0 +1,140 @@
+"use client";
+
+import React from "react";
+import { useKalexAuth } from "../../../lib/auth";
+import { Button } from "../../ui/Button";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "../../ui/Dropdown";
+import { Avatar } from "../../ui/Avatar";
+import { LogIn, UserPlus, LogOut, Settings, LayoutDashboard } from "lucide-react";
+
+interface UserMenuProps {
+  clientId?: string;
+  className?: string;
+}
+
+export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
+  const { user, loading, claims, logout, loginRedirect, registerRedirect } = useKalexAuth();
+
+  if (loading) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <div className="w-8 h-8 rounded-full bg-divider animate-pulse" />
+        <div className="w-20 h-4 bg-divider rounded animate-pulse hidden sm:block" />
+      </div>
+    );
+  }
+
+  // Flusso Utente NON autenticato: mostra pulsanti Accedi e Registrati
+  if (!user) {
+    return (
+      <div className={`flex items-center gap-2.5 ${className}`}>
+        <Button
+          onClick={() => loginRedirect(clientId)}
+          variant="ghost"
+          size="sm"
+          className="font-extrabold uppercase tracking-wider rounded-2xl text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 active:scale-95 transition-all flex items-center gap-2"
+        >
+          <LogIn className="w-4 h-4" />
+          Accedi
+        </Button>
+        <Button
+          onClick={() => registerRedirect(clientId)}
+          variant="primary"
+          size="sm"
+          className="font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 shadow-md active:scale-95 transition-all flex items-center gap-2"
+        >
+          <UserPlus className="w-4 h-4" />
+          Registrati
+        </Button>
+      </div>
+    );
+  }
+
+  // Calcola il nome da visualizzare (predilige display name, poi email)
+  const displayName = user.displayName || user.email?.split("@")[0] || "Utente";
+  const userEmail = user.email || "";
+  const roleName = claims?.role ? claims.role.toUpperCase() : "UTENTE";
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Opzionalmente ricarica la pagina o effettua un redirect locale
+      window.location.reload();
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Errore sconosciuto";
+      console.error("[UserMenu] Errore disconnessione:", errMsg);
+    }
+  };
+
+  const redirectToSSO = (path = "") => {
+    const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+    window.location.href = `${ssoUrl}${path}`;
+  };
+
+  // Flusso Utente autenticato: mostra Avatar e Dropdown di gestione
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      <Dropdown>
+        <DropdownTrigger>
+          <button className="flex items-center gap-2 outline-none cursor-pointer group active:scale-98 transition-transform">
+            <Avatar
+              className="w-8 h-8 text-xs cursor-pointer ring-2 ring-purple-500/50 ring-offset-1 ring-offset-background"
+            >
+              {user.photoURL ? (
+                React.createElement("img", { src: user.photoURL, alt: displayName, className: "w-full h-full object-cover rounded-full" })
+              ) : (
+                displayName.substring(0, 2).toUpperCase()
+              )}
+            </Avatar>
+            <div className="text-left hidden md:block">
+              <p className="text-xs font-black uppercase text-foreground group-hover:text-primary transition-colors">
+                {displayName}
+              </p>
+              <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">
+                {roleName}
+              </p>
+            </div>
+          </button>
+        </DropdownTrigger>
+        <DropdownMenu aria-label="Menu utente">
+          <DropdownItem key="profile" className="h-14 gap-2 opacity-100 pointer-events-none">
+            <div className="flex flex-col">
+              <p className="font-semibold text-xs">{displayName}</p>
+              <p className="font-normal text-[10px] text-muted-foreground">{userEmail}</p>
+            </div>
+          </DropdownItem>
+          
+          <DropdownItem 
+            key="dashboard" 
+            onClick={() => redirectToSSO("/dashboard")}
+            className="font-semibold"
+          >
+            <span className="flex items-center gap-2">
+              <LayoutDashboard className="w-4 h-4" /> Console Dashboard
+            </span>
+          </DropdownItem>
+
+          <DropdownItem 
+            key="settings" 
+            onClick={() => redirectToSSO("/profile")}
+            className="font-semibold"
+          >
+            <span className="flex items-center gap-2">
+              <Settings className="w-4 h-4" /> Gestione Account
+            </span>
+          </DropdownItem>
+
+          <DropdownItem
+            key="logout"
+            onClick={handleLogout}
+            className="font-bold text-danger"
+          >
+            <span className="flex items-center gap-2">
+              <LogOut className="w-4 h-4" /> Esci
+            </span>
+          </DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+    </div>
+  );
+}

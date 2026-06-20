@@ -6,8 +6,7 @@ import { dataConnect } from "@/lib/firebase/client";
 import { listPaymentsByOrg } from "@/lib/dataconnect-client";
 import {
   Card,
-  Chip,
-  Button
+  Chip
 } from "@heroui/react";
 import { 
   CreditCard, 
@@ -199,14 +198,7 @@ export default function PaymentPage() {
       <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl shadow-xl overflow-hidden">
         <div className="p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-white/40 dark:bg-slate-950/20">
           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Storico Pagamenti</h3>
-          <Button
-            size="sm"
-            onClick={() => void loadPayments(organizationId)}
-            className="bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl px-4 text-xs h-[36px] transition-all cursor-pointer shadow-md"
-            isDisabled={loading}
-          >
-            {loading ? "Aggiornamento..." : "Aggiorna"}
-          </Button>
+
         </div>
 
         <div className="overflow-x-auto">

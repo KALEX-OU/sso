@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FileText, Download } from "lucide-react";
-import { BaseModuleLayout } from "../layout/BaseModuleLayout";
-import { ListView, ActiveFilter } from "../ui/ListView";
-import { Table, Column } from "../ui/Table";
-import { Select } from "../ui/Select";
+import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
+import { ListView, ActiveFilter } from "../layouts/ListView";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "../ui/Table";
+import { Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "@heroui/react";
 import styles from "./invoice.module.css";
+
+interface Column<T> {
+  key: string;
+  header: string;
+  render?: (item: T) => React.ReactNode;
+  sortable?: boolean;
+}
 
 interface InvoiceItem {
   invoiceId: string;
@@ -210,15 +217,21 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
   const filterContent = (
     <div className={styles.filterBar}>
       <Select
-        options={[
-          { value: "all", label: "Tutti i flussi" },
-          { value: "received", label: "Fatture Ricevute" },
-          { value: "issued", label: "Fatture Emesse" }
-        ]}
-        value={filterType}
-        onChange={(e) => setFilterType(e.target.value as "all" | "received" | "issued")}
-        className={styles.filterSelect}
-      />
+        selectedKey={filterType}
+        onSelectionChange={(key) => setFilterType(key as "all" | "received" | "issued")}
+        aria-label="Filtro flusso fatture"
+      >
+        <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[40px] w-full text-xs text-slate-900 dark:text-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
+          <ListBox>
+            <ListBoxItem id="all" textValue="Tutti i flussi">Tutti i flussi</ListBoxItem>
+            <ListBoxItem id="received" textValue="Fatture Ricevute">Fatture Ricevute</ListBoxItem>
+            <ListBoxItem id="issued" textValue="Fatture Emesse">Fatture Emesse</ListBoxItem>
+          </ListBox>
+        </SelectPopover>
+      </Select>
     </div>
   );
 
@@ -236,12 +249,32 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
           onClearAllFilters={handleClearAllFilters}
           filterContent={filterContent}
         >
-          <Table
-            data={filteredInvoices}
-            columns={columns}
-            rowKey={(item) => item.invoiceId}
-            emptyContent="Nessuna fattura corrisponde ai criteri impostati."
-          />
+          <Table aria-label="Tabella Fatture">
+            <TableHeader>
+              {columns.map(col => (
+                <TableColumn key={col.key} className="text-xs font-bold">{col.header}</TableColumn>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {filteredInvoices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground text-xs">
+                    Nessuna fattura corrisponde ai criteri impostati.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredInvoices.map(item => (
+                  <TableRow key={item.invoiceId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
+                    {columns.map(col => (
+                      <TableCell key={col.key}>
+                        {col.render ? col.render(item) : String(item[col.key as keyof InvoiceItem] || "")}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </ListView>
       </div>
     </BaseModuleLayout>

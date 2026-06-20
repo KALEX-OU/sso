@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@heroui/react";
 import { LogIn, User } from "lucide-react";
-import { useKalexAuth } from "../hooks/useKalexAuth";
+import { useKalexAuth } from "../lib/auth";
 
 interface KalexLoginButtonProps {
   clientId: string;
