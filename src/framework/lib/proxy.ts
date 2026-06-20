@@ -59,3 +59,37 @@ export function getRealRequestUrl(
   const forwardedProto = request.headers.get("x-forwarded-proto") || currentUrl.protocol.replace(":", "");
   return `${forwardedProto}://${forwardedHost}/${locale}${relativePath}`;
 }
+
+/**
+ * Verifica la validità di un session cookie di KALEX effettuando una chiamata server-to-server
+ * verso l'API Gateway centralizzato.
+ */
+export async function verifySessionCookieServerSide(
+  sessionCookie: string,
+  request: NextRequest,
+  apiBaseUrl?: string
+): Promise<boolean> {
+  const baseUrl = apiBaseUrl || process.env.API_URL || "https://api.kalex.cloud";
+  try {
+    const verifyRes = await fetch(`${baseUrl}/auth/verify-session`, {
+      method: "POST",
+      headers: {
+        "Cookie": `kalex_session=${sessionCookie}`,
+        "X-Firebase-AppCheck": request.headers.get("x-firebase-appcheck") || "",
+        "X-Firebase-AppCheck-Debug": request.headers.get("x-firebase-appcheck-debug") || ""
+      },
+      cache: "no-store"
+    });
+    
+    if (verifyRes.status === 200) {
+      const verifyData = (await verifyRes.json()) as { success: boolean };
+      return !!(verifyData && verifyData.success);
+    }
+    return false;
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : "Errore sconosciuto";
+    console.error("[Framework Proxy] Errore verifica sessione server-side:", errMsg);
+    return false;
+  }
+}
+
