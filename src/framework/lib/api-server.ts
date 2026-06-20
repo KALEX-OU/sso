@@ -1,5 +1,5 @@
 // Determina l'URL di base dell'API centralizzata
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
 
 /**
