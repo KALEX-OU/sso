@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@heroui/react";
 import { LogIn, User } from "lucide-react";
-import { useKalexAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth";
 
 interface KalexLoginButtonProps {
   clientId: string;
@@ -18,7 +18,7 @@ export function KalexLoginButton({
   size = "md",
   variant = "primary"
 }: KalexLoginButtonProps) {
-  const { user, loading, loginRedirect } = useKalexAuth();
+  const { user, loading, loginRedirect } = useAuth();
 
   const handleAuth = () => {
     if (user) {

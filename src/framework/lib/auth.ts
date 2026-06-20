@@ -63,7 +63,7 @@ if (typeof window !== "undefined") {
 export const auth = typeof window !== "undefined" ? authInstance! : {} as Auth;
 
 // Hook principale per monitorare lo stato di autenticazione e caricare i claims di KALEX
-export function useKalexAuth() {
+export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(typeof window !== "undefined" && !!authInstance);
   const [claims, setClaims] = useState<CustomClaims | null>(null);
@@ -170,8 +170,8 @@ export function useKalexAuth() {
 }
 
 // Hook reattivo leggero specifico per accedere ai Custom Claims
-export function useKalexClaims() {
-  const { claims, loading, user, hasPermission } = useKalexAuth();
+export function useClaims() {
+  const { claims, loading, user, hasPermission } = useAuth();
   return {
     claims,
     loading,

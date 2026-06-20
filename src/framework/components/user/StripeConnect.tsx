@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useKalexAuth } from "../../lib/auth";
+import { useAuth } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -22,7 +22,7 @@ interface ConnectStatus {
 }
 
 export function StripeConnect() {
-  const { claims, loading: authLoading } = useKalexAuth();
+  const { claims, loading: authLoading } = useAuth();
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);

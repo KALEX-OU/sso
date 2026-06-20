@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useSyncExternalStore } from "react";
-import { useKalexAuth } from "../../../lib/auth";
+import { useAuth } from "../../../lib/auth";
 import { Button } from "../../ui/Button";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "../../ui/Dropdown";
 import { Avatar } from "../../ui/Avatar";
@@ -15,7 +15,7 @@ interface UserMenuProps {
 const emptySubscribe = () => () => {};
 
 export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
-  const { user, loading, claims, logout, loginRedirect, registerRedirect } = useKalexAuth();
+  const { user, loading, claims, logout, loginRedirect, registerRedirect } = useAuth();
 
   const isMounted = useSyncExternalStore(
     emptySubscribe,
