@@ -48,7 +48,7 @@ interface ApiKeyFormState {
 }
 
 export default function ApiKeyManagementPage() {
-  const { user, dbData, showToast } = useDashboard();
+  const { user, dbData, showToast, hasPermission } = useDashboard();
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [apiKeyGenerating, setApiKeyGenerating] = useState(false);
@@ -70,7 +70,6 @@ export default function ApiKeyManagementPage() {
 
   const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
   const activeOrg = activeOrgRelation?.organization;
-  const activeRole = activeOrgRelation?.role;
 
   const loadApiKeys = useCallback(async (orgId: string) => {
     setLoadingData(true);
@@ -281,7 +280,7 @@ export default function ApiKeyManagementPage() {
 
               <Button
                 type="submit"
-                isDisabled={apiKeyGenerating || activeRole !== "owner" && activeRole !== "admin"}
+                isDisabled={apiKeyGenerating || !hasPermission("apikey", "create")}
                 className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
               >
                 {apiKeyGenerating ? "Generazione..." : "Genera API Key"}
@@ -339,6 +338,7 @@ export default function ApiKeyManagementPage() {
                             isIconOnly
                             size="sm"
                             variant="danger-soft"
+                            isDisabled={!hasPermission("apikey", "delete")}
                             className="rounded-xl flex items-center justify-center cursor-pointer inline-flex"
                             onClick={() => void handleRevokeApiKey(key.keyHash)}
                           >

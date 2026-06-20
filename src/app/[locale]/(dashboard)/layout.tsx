@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { auth, dataConnect, fetchWithAppCheck, db, fetchAuthed } from "@/lib/firebase/client";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
@@ -241,6 +241,28 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     };
   }, [activeOrg?.orgId]);
 
+  const hasPermission = useCallback((module: string, action: "read" | "create" | "update" | "delete"): boolean => {
+    if (!claims) return false;
+    
+    const rbac = claims.rbac as { apps?: { sso?: Record<string, number> } } | undefined;
+    const ssoPerms = rbac?.apps?.sso || {};
+    const mask = ssoPerms[module];
+    
+    // Se il modulo è esplicitamente disattivato (pari a 0) nei claims, blocchiamo l'accesso
+    if (mask === 0) return false;
+    
+    if (claims.role === "owner") return true; // L'Owner scavalca tutto per i moduli attivi
+    
+    const activeMask = mask || 0;
+    let bit = 0;
+    if (action === "read") bit = 1;
+    if (action === "create") bit = 2;
+    if (action === "update") bit = 4;
+    if (action === "delete") bit = 8;
+    
+    return (activeMask & bit) !== 0;
+  }, [claims]);
+
   // Funzione per ricaricare le claims e sincronizzare con il backend
   const refreshClaims = useCallback(async (targetOrgId?: string) => {
     if (!auth.currentUser || isRefreshingRef.current) return;
@@ -432,19 +454,61 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     }
   }, [user, claims, onboardingPending]);
 
-  // Protezione proattiva delle rotte: solo l'utente con ruolo 'owner' può accedere alle sezioni esterne a dashboard/auth
+  // Definizione dinamica delle sezioni del menu in base all'RBAC ed alle risorse attive
+  const menuSections = useMemo(() => [
+    {
+      id: "core",
+      labelKey: "sidebar.section.core",
+      items: [
+        { id: "dashboard", labelKey: "sidebar.dashboard", icon: LayoutDashboard, path: "/dashboard" },
+        { id: "user", labelKey: "sidebar.user", icon: Users, path: "/user", requiredPermission: "user" },
+        { id: "team", labelKey: "sidebar.team", icon: Shield, path: "/team", requiredPermission: "team" },
+        { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" }
+      ]
+    },
+    // Sezione dinamica Risorse
+    ...(thingCount > 0 || computeCount > 0 ? [{
+      id: "resources",
+      labelKey: "sidebar.section.resources",
+      items: [
+        ...(thingCount > 0 ? [{ id: "thing", labelKey: "sidebar.thing", icon: Radio, path: "/thing", requiredPermission: "thing" }] : []),
+        ...(computeCount > 0 ? [{ id: "compute", labelKey: "sidebar.compute", icon: Server, path: "/compute", requiredPermission: "compute" }] : [])
+      ]
+    }] : []),
+    {
+      id: "billing",
+      labelKey: "sidebar.section.billing",
+      items: [
+        { id: "product", labelKey: "sidebar.product", icon: Package, path: "/product", requiredPermission: "product" },
+        { id: "payment", labelKey: "sidebar.payment", icon: Coins, path: "/payment", requiredPermission: "payment" },
+        { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
+        { id: "connect", labelKey: "sidebar.connect", icon: RefreshCw, path: "/connect", requiredPermission: "payment" },
+        { id: "issue", labelKey: "sidebar.issue", icon: AlertCircle, path: "/issue" }
+      ]
+    }
+  ], [thingCount, computeCount]);
+
+  // Protezione proattiva delle rotte in base a RBAC (hasPermission)
   useEffect(() => {
-    if (!loading && user && dbData && activeRole && activeRole !== "owner") {
+    // Il controllo si attiva solo se l'autenticazione ha terminato il caricamento e i dati utente/claims sono pronti
+    if (!loading && user && dbData && claims) {
       const relativePath = rawPathname.replace(new RegExp(`^\\/[a-z]{2}(\\/(dashboard)?)?`), "");
       const cleanPath = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
       
-      // Se l'utente tenta di accedere a una rotta diversa da dashboard o auth, lo reindirizziamo alla dashboard
+      // Se l'utente tenta di accedere a una rotta diversa da dashboard o auth
       if (cleanPath && !cleanPath.startsWith("dashboard") && !cleanPath.startsWith("auth")) {
-        console.warn(`[Role Security] Accesso negato per ruolo '${activeRole}' alla rotta '/${cleanPath}'. Reindirizzamento a /dashboard.`);
-        router.push(`/${localeParam}/dashboard`);
+        // Cerca se esiste un menu item associato a questa rotta o che ne faccia da prefisso
+        const matchedItem = menuSections
+          .flatMap(s => s.items)
+          .find(item => item.path && (cleanPath === item.id || cleanPath.startsWith(item.path.substring(1))));
+
+        if (matchedItem && matchedItem.requiredPermission && !hasPermission(matchedItem.requiredPermission, "read")) {
+          console.warn(`[RBAC Security] Accesso negato alla rotta '/${cleanPath}'. Permesso '${matchedItem.requiredPermission}' mancante. Reindirizzamento a /dashboard.`);
+          router.push(`/${localeParam}/dashboard`);
+        }
       }
     }
-  }, [loading, user, dbData, activeRole, rawPathname, localeParam, router]);
+  }, [loading, user, dbData, claims, rawPathname, localeParam, router, hasPermission, menuSections]);
 
 
 
@@ -482,27 +546,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     }
   };
 
-  const hasPermission = useCallback((module: string, action: "read" | "create" | "update" | "delete"): boolean => {
-    if (!claims) return false;
-    
-    const rbac = claims.rbac as { apps?: { sso?: Record<string, number> } } | undefined;
-    const ssoPerms = rbac?.apps?.sso || {};
-    const mask = ssoPerms[module];
-    
-    // Se il modulo è esplicitamente disattivato (pari a 0) nei claims, blocchiamo l'accesso
-    if (mask === 0) return false;
-    
-    if (claims.role === "owner") return true; // L'Owner scavalca tutto per i moduli attivi
-    
-    const activeMask = mask || 0;
-    let bit = 0;
-    if (action === "read") bit = 1;
-    if (action === "create") bit = 2;
-    if (action === "update") bit = 4;
-    if (action === "delete") bit = 8;
-    
-    return (activeMask & bit) !== 0;
-  }, [claims]);
+
 
   if (!mounted || loading) {
     return (
@@ -527,39 +571,6 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   // Calcolo di hasPastDue
   const subscriptionsList = activeOrg?.subscriptions_on_organization || [];
   const hasPastDue = subscriptionsList.some((sub: { status?: string | null }) => sub.status === "past_due");
-
-  const menuSections = [
-    {
-      id: "core",
-      labelKey: "sidebar.section.core",
-      items: [
-        { id: "dashboard", labelKey: "sidebar.dashboard", icon: LayoutDashboard, path: "/dashboard" },
-        { id: "user", labelKey: "sidebar.user", icon: Users, path: "/user", requiredPermission: "user" },
-        { id: "team", labelKey: "sidebar.team", icon: Shield, path: "/team", requiredPermission: "team" },
-        { id: "apikey", labelKey: "sidebar.apikey", icon: Key, path: "/apikey", requiredPermission: "apikey" }
-      ]
-    },
-    // Sezione dinamica Risorse
-    ...(thingCount > 0 || computeCount > 0 ? [{
-      id: "resources",
-      labelKey: "sidebar.section.resources",
-      items: [
-        ...(thingCount > 0 ? [{ id: "thing", labelKey: "sidebar.thing", icon: Radio, path: "/thing", requiredPermission: "thing" }] : []),
-        ...(computeCount > 0 ? [{ id: "compute", labelKey: "sidebar.compute", icon: Server, path: "/compute", requiredPermission: "compute" }] : [])
-      ]
-    }] : []),
-    {
-      id: "billing",
-      labelKey: "sidebar.section.billing",
-      items: [
-        { id: "product", labelKey: "sidebar.product", icon: Package, path: "/product", requiredPermission: "product" },
-        { id: "payment", labelKey: "sidebar.payment", icon: Coins, path: "/payment", requiredPermission: "payment" },
-        { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
-        { id: "connect", labelKey: "sidebar.connect", icon: RefreshCw, path: "/connect", requiredPermission: "payment" },
-        { id: "issue", labelKey: "sidebar.issue", icon: AlertCircle, path: "/issue" }
-      ]
-    }
-  ];
 
   // Identifica l'elemento di menu attivo in base all'URL corrente
   const getActiveView = () => {
@@ -619,15 +630,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
             {/* Menu Navigazione */}
             <nav className="flex flex-col gap-4 px-2 select-none">
               {menuSections.map((section) => {
-                // Se l'utente non è owner, mostriamo solo la dashboard principale
-                if (activeRole !== "owner" && section.id !== "core") {
-                  return null;
-                }
-
                 const visibleItems = section.items.filter(item => {
-                  if (activeRole !== "owner" && item.id !== "dashboard") {
-                    return false;
-                  }
                   return !item.requiredPermission || hasPermission(item.requiredPermission, "read");
                 });
 

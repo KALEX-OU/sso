@@ -49,7 +49,7 @@ interface ProductItem {
 }
 
 export default function ProductCatalogPage() {
-  const { dbData, showToast } = useDashboard();
+  const { dbData, showToast, hasPermission } = useDashboard();
   const t = useI18n();
 
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -60,10 +60,9 @@ export default function ProductCatalogPage() {
   const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
   const activeOrg = activeOrgRelation?.organization;
   const organizationId = activeOrg?.orgId;
-  const activeRole = activeOrgRelation?.role;
 
-  // Verifica permessi amministrativi
-  const canManage = activeRole === "owner" || activeRole === "admin";
+  // Verifica permessi amministrativi (basata su RBAC)
+  const canManage = hasPermission("product", "create") || hasPermission("product", "update");
 
   const loadCatalogData = useCallback(async () => {
     setLoading(true);

@@ -33,7 +33,7 @@ interface ThingItem {
 }
 
 export default function ThingManagementPage() {
-  const { user, dbData, showToast } = useDashboard();
+  const { user, dbData, showToast, hasPermission } = useDashboard();
   const [things, setThings] = useState<ThingItem[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [thingRegistering, setThingRegistering] = useState(false);
@@ -48,7 +48,6 @@ export default function ThingManagementPage() {
 
   const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
   const activeOrg = activeOrgRelation?.organization;
-  const activeRole = activeOrgRelation?.role;
 
   const loadThings = useCallback(async (orgId: string) => {
     setLoadingData(true);
@@ -221,7 +220,7 @@ export default function ThingManagementPage() {
 
               <Button
                 type="submit"
-                isDisabled={thingRegistering || activeRole !== "owner" && activeRole !== "admin"}
+                isDisabled={thingRegistering || !hasPermission("thing", "create")}
                 className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
               >
                 {thingRegistering ? "Registrazione..." : "Registra Dispositivo"}
@@ -277,7 +276,7 @@ export default function ThingManagementPage() {
                             isIconOnly
                             size="sm"
                             variant="danger-soft"
-                            isDisabled={thing.status === "deleting"}
+                            isDisabled={thing.status === "deleting" || !hasPermission("thing", "delete")}
                             className="rounded-xl flex items-center justify-center cursor-pointer inline-flex"
                             onClick={() => void handleRemoveThing(thing.thingId)}
                           >

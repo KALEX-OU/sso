@@ -54,7 +54,7 @@ const getMaskFromPermissions = (perms: { read: boolean; create: boolean; update:
 };
 
 export default function TeamManagementPage() {
-  const { user, showToast, claims } = useDashboard();
+  const { user, showToast, hasPermission } = useDashboard();
   
   const [teams, setTeams] = useState<TeamItem[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
@@ -66,8 +66,6 @@ export default function TeamManagementPage() {
   const [selectedTeam, setSelectedTeam] = useState<TeamItem | null>(null);
   const [editingRbac, setEditingRbac] = useState<RbacStructure>({ apps: { sso: {}, web: {} } });
   const [savingPerms, setSavingPerms] = useState(false);
-
-  const activeRole = claims?.role;
 
   const loadTeams = useCallback(async () => {
     if (!user) return;
@@ -256,7 +254,7 @@ export default function TeamManagementPage() {
               </TextField>
               <Button
                 type="submit"
-                isDisabled={creating || activeRole !== "owner" && activeRole !== "admin"}
+                isDisabled={creating || !hasPermission("team", "create")}
                 className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
@@ -292,11 +290,12 @@ export default function TeamManagementPage() {
                         </p>
                       </div>
                     </div>
-                    {(activeRole === "owner" || activeRole === "admin") && (
+                    {(hasPermission("team", "update") || hasPermission("team", "delete")) && (
                       <div className="flex gap-1">
                         <Button
                           isIconOnly
                           variant="ghost"
+                          isDisabled={!hasPermission("team", "update")}
                           className="text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"
                           onClick={() => handleOpenPermModal(team)}
                         >
@@ -305,6 +304,7 @@ export default function TeamManagementPage() {
                         <Button
                           isIconOnly
                           variant="ghost"
+                          isDisabled={!hasPermission("team", "delete")}
                           className="text-red-500 hover:bg-red-500/10 rounded-xl"
                           onClick={() => void handleDeleteTeam(team.teamId, team.name)}
                         >
