@@ -1,23 +1,15 @@
 import { createI18nMiddleware } from "next-international/middleware";
 import { NextRequest } from "next/server";
+import { parseLocalePath } from "./framework/lib/proxy";
+
+const locales = ["it", "en", "es"] as const;
+const defaultLocale = "en";
 
 const I18nMiddleware = createI18nMiddleware({
-  locales: ["it", "en", "es"],
-  defaultLocale: "en",
+  locales: locales as unknown as string[],
+  defaultLocale,
   urlMappingStrategy: "redirect"
 });
-
-function getLocaleFromHeaders(request: NextRequest): string {
-  const acceptLanguage = request.headers.get("accept-language");
-  if (!acceptLanguage) return "en";
-  
-  const languages = acceptLanguage
-    .split(",")
-    .map(lang => lang.split(";")[0].trim().toLowerCase().split("-")[0]);
-    
-  const matched = languages.find(lang => ["it", "en", "es"].includes(lang));
-  return matched || "en";
-}
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -32,16 +24,13 @@ export function proxy(request: NextRequest) {
     return;
   }
 
-  // Estraiamo il locale dal pathname per capire se siamo su una rotta localizzata
-  const parts = pathname.split("/");
-  const firstSegment = parts[1];
-  const isLocalized = ["it", "en", "es"].includes(firstSegment);
-  
-  // Calcoliamo il locale da usare
-  const locale = isLocalized ? firstSegment : getLocaleFromHeaders(request);
-  
-  // Calcoliamo la rotta relativa depurata dal locale
-  const relativePath = isLocalized ? "/" + parts.slice(2).join("/") : pathname;
+  // Estrae il locale e la rotta relativa usando gli helper del framework
+  const { locale, isLocalized, relativePath } = parseLocalePath(
+    pathname,
+    locales,
+    defaultLocale,
+    request
+  );
 
   // Rotte pubbliche che non richiedono login
   const isPublicRoute = 
