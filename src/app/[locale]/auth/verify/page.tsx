@@ -146,7 +146,7 @@ export default function VerifyEmailPage() {
       const isPending = await triggerOnboarding();
 
       if (!isPending) {
-        setSsoCookie("sso_session=active; path=/; max-age=31536000; SameSite=Lax");
+        setSsoCookie("kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud");
         console.log("[Verification Page] Onboarding già completato, forzo il refresh del token per caricare i claims...");
         await user.getIdToken(true);
         await handleFinalRedirect(user);
@@ -170,7 +170,7 @@ export default function VerifyEmailPage() {
               clearInterval(intervalId);
               setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
               setStatusMessage(t("auth.verifySuccessMessage"));
-              setSsoCookie("sso_session=active; path=/; max-age=31536000; SameSite=Lax");
+              setSsoCookie("kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud");
               console.log("[Verification Page] Onboarding completato con successo, forzo il refresh del token...");
               await user.getIdToken(true);
               await handleFinalRedirect(user);

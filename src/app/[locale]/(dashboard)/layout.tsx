@@ -367,12 +367,12 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
           pollingIntervalRef.current = null;
         }
         // Rimuove il cookie di sessione per il middleware
-        document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
         router.push(`/${localeParam}/auth`);
       } else {
         setUser(currentUser);
         // Imposta il cookie di sessione per il middleware
-        document.cookie = "sso_session=active; path=/; max-age=31536000; SameSite=Lax";
+        document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud";
         try {
           const tokenResult = await currentUser.getIdTokenResult();
           setClaims(tokenResult.claims);
@@ -538,7 +538,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
   const handleSignOut = async () => {
     try {
       // Rimuove il cookie prima del logout
-      document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
       await signOut(auth);
       router.push(`/${localeParam}/auth`);
     } catch (err) {

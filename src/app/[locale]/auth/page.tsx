@@ -593,11 +593,11 @@ function AuthPortal() {
 
         if (currentUser.emailVerified) {
           setNeedsVerification(false);
-          // Imposta il cookie di sessione per il middleware
-          document.cookie = "sso_session=active; path=/; max-age=31536000; SameSite=Lax";
+          // Imposta il cookie di sessione per il middleware condiviso su *.kalex.cloud
+          document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud";
           if (redirectUri && !redirecting) {
             handleSSORedirect(currentUser);
-          } else {
+          } else if (!redirecting) {
             console.log("[Auth State Change] User verified but no redirectUri. Redirecting immediately to dashboard.");
             const redirectTo = searchParams.get("redirectTo");
             if (redirectTo && redirectTo.startsWith("/")) {
@@ -614,12 +614,12 @@ function AuthPortal() {
         } else {
           setNeedsVerification(true);
           // Rimuove il cookie se l'email non è verificata
-          document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
         }
       } else {
         setNeedsVerification(false);
         // Rimuove il cookie se non loggato
-        document.cookie = "sso_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
       }
     });
     return () => unsubscribe();

@@ -39,7 +39,7 @@ export function proxy(request: NextRequest) {
     relativePath.startsWith("/terms");
 
   // Leggiamo il cookie di sessione client-side/server-side
-  const sessionCookie = request.cookies.get("sso_session")?.value;
+  const sessionCookie = request.cookies.get("kalex_session")?.value;
 
   // Se l'utente è autenticato ed accede alla root ("/"), reindirizza alla dashboard
   if (sessionCookie && relativePath === "/") {

@@ -82,6 +82,11 @@ export function useKalexAuth() {
   const logout = async () => {
     if (!authInstance) return;
     await signOut(authInstance);
+    // Cancella il cookie di sessione globale al logout
+    if (typeof document !== "undefined") {
+      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
+      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
   };
 
   const loginRedirect = (clientId: string) => {
