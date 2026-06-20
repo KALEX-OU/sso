@@ -92,16 +92,6 @@ export function useKalexAuth() {
         const url = new URL(currentUrlStr);
         url.searchParams.delete("code");
         url.searchParams.delete("state");
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-        if (appUrl) {
-          try {
-            const base = new URL(appUrl);
-            url.protocol = base.protocol;
-            url.host = base.host;
-          } catch (e) {
-            console.error("Errore parsing NEXT_PUBLIC_APP_URL in loginRedirect", e);
-          }
-        }
         currentUrlStr = url.toString();
       } catch (e) {
         console.error("Errore parsing URL in loginRedirect", e);
@@ -118,16 +108,6 @@ export function useKalexAuth() {
         const url = new URL(currentUrlStr);
         url.searchParams.delete("code");
         url.searchParams.delete("state");
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-        if (appUrl) {
-          try {
-            const base = new URL(appUrl);
-            url.protocol = base.protocol;
-            url.host = base.host;
-          } catch (e) {
-            console.error("Errore parsing NEXT_PUBLIC_APP_URL in registerRedirect", e);
-          }
-        }
         currentUrlStr = url.toString();
       } catch (e) {
         console.error("Errore parsing URL in registerRedirect", e);
