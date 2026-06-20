@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 // Determina l'URL di base dell'API centralizzata
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "https://api.kalex.cloud";
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
 
 interface CookieOptions {
