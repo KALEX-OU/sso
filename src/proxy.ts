@@ -11,7 +11,7 @@ const I18nMiddleware = createI18nMiddleware({
   urlMappingStrategy: "redirect"
 });
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

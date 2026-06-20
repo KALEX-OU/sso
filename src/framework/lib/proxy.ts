@@ -69,7 +69,7 @@ export async function verifySessionCookieServerSide(
   request: NextRequest,
   apiBaseUrl?: string
 ): Promise<boolean> {
-  const baseUrl = apiBaseUrl || process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "https://api.kalex.cloud";
+  const baseUrl = apiBaseUrl || process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
   try {
     const verifyRes = await fetch(`${baseUrl}/auth/verify-session`, {
       method: "POST",
