@@ -46,13 +46,6 @@ const BRAND_CONFIGS: Record<
   }
 };
 
-// Helper per bypassare l'errore di immutabilità di ESLint sulla modifica diretta di document.cookie
-function setSsoCookie(value: string) {
-  if (typeof document !== "undefined") {
-    document.cookie = value;
-  }
-}
-
 export default function VerifyEmailPage() {
   const t = useI18n();
   const currentLocale = useCurrentLocale();
@@ -77,6 +70,25 @@ export default function VerifyEmailPage() {
 
   // Reindirizzamento finale all'applicazione client o alla dashboard locale
   const handleFinalRedirect = useCallback(async (user: User) => {
+    // 1. Chiama /api/auth/session per impostare il cookie HttpOnly lato server
+    try {
+      const idToken = await user.getIdToken();
+      const sessionRes = await fetchWithAppCheck("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${idToken}`
+        }
+      });
+      if (!sessionRes.ok) {
+        throw new Error("Impossibile sincronizzare la sessione server-side.");
+      }
+    } catch (err) {
+      console.error("[Verification Page] Errore sincronizzazione sessione HttpOnly:", err);
+      setError(t("auth.verifyDatabaseError") || "Errore durante la creazione della sessione sicura.");
+      return;
+    }
+
+    // 2. Prosegui con il redirect SSO o dashboard
     if (redirectUri) {
       setStatusMessage(t("auth.verifyRedirecting"));
       try {
@@ -146,7 +158,6 @@ export default function VerifyEmailPage() {
       const isPending = await triggerOnboarding();
 
       if (!isPending) {
-        setSsoCookie("kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud");
         console.log("[Verification Page] Onboarding già completato, forzo il refresh del token per caricare i claims...");
         await user.getIdToken(true);
         await handleFinalRedirect(user);
@@ -170,7 +181,6 @@ export default function VerifyEmailPage() {
               clearInterval(intervalId);
               setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
               setStatusMessage(t("auth.verifySuccessMessage"));
-              setSsoCookie("kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud");
               console.log("[Verification Page] Onboarding completato con successo, forzo il refresh del token...");
               await user.getIdToken(true);
               await handleFinalRedirect(user);
