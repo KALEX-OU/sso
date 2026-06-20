@@ -1,6 +1,56 @@
+import { NextResponse } from "next/server";
+
 // Determina l'URL di base dell'API centralizzata
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
+
+interface CookieOptions {
+  httpOnly?: boolean;
+  secure?: boolean;
+  domain?: string;
+  path?: string;
+  maxAge?: number;
+  expires?: Date;
+  sameSite?: "lax" | "strict" | "none";
+}
+
+function parseSetCookie(cookieStr: string) {
+  const parts = cookieStr.split(";").map(p => p.trim());
+  if (parts.length === 0 || !parts[0].includes("=")) return null;
+  
+  const [name, ...valParts] = parts[0].split("=");
+  const value = valParts.join("=");
+  
+  const options: CookieOptions = {};
+  for (let i = 1; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) continue;
+    
+    if (part.toLowerCase() === "httponly") {
+      options.httpOnly = true;
+    } else if (part.toLowerCase() === "secure") {
+      options.secure = true;
+    } else if (part.includes("=")) {
+      const [key, ...valParts] = part.split("=");
+      const val = valParts.join("=");
+      const lowKey = key.trim().toLowerCase();
+      
+      if (lowKey === "domain") {
+        options.domain = val.trim();
+      } else if (lowKey === "path") {
+        options.path = val.trim();
+      } else if (lowKey === "max-age") {
+        options.maxAge = parseInt(val.trim(), 10);
+      } else if (lowKey === "expires") {
+        options.expires = new Date(val.trim());
+      } else if (lowKey === "samesite") {
+        const sSame = val.trim().toLowerCase();
+        options.sameSite = sSame === "lax" ? "lax" : sSame === "strict" ? "strict" : sSame === "none" ? "none" : undefined;
+      }
+    }
+  }
+  return { name: name.trim(), value, options };
+}
 
 /**
  * LATO SERVER (Next.js Proxy / Route Handlers)
@@ -101,18 +151,6 @@ export async function forwardProxyRequest(
       }
     });
 
-    // Inoltra l'header Set-Cookie da Hono al client (browser)
-    const setCookieHeaders = response.headers.getSetCookie 
-      ? response.headers.getSetCookie() 
-      : response.headers.get("set-cookie");
-    if (setCookieHeaders) {
-      if (Array.isArray(setCookieHeaders)) {
-        setCookieHeaders.forEach(cookie => responseHeaders.append("set-cookie", cookie));
-      } else {
-        responseHeaders.set("set-cookie", setCookieHeaders);
-      }
-    }
-
     let status = response.status;
     let finalBody = responseBody;
 
@@ -123,16 +161,33 @@ export async function forwardProxyRequest(
       finalBody = JSON.stringify({ success: false, code: "auth/unauthorized", message: "Utente non autenticato." });
     }
 
-    return new Response(finalBody, {
+    const nextResponse = new NextResponse(finalBody, {
       status,
       headers: responseHeaders
     });
+
+    // Inoltra l'header Set-Cookie da Hono al client (browser) in modo sicuro tramite cookies.set
+    const setCookieHeaders = response.headers.getSetCookie 
+      ? response.headers.getSetCookie() 
+      : response.headers.get("set-cookie");
+      
+    if (setCookieHeaders) {
+      const cookiesArray = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+      cookiesArray.forEach(cookieStr => {
+        const parsed = parseSetCookie(cookieStr);
+        if (parsed) {
+          nextResponse.cookies.set(parsed.name, parsed.value, parsed.options);
+        }
+      });
+    }
+
+    return nextResponse;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Errore sconosciuto";
     console.error(`[KALEX API Proxy Server] Errore proxying verso ${targetUrl}:`, message);
-    return new Response(
-      JSON.stringify({ success: false, error: { message: "Impossibile connettersi al server API centralizzato." } }),
-      { status: 502, headers: { "content-type": "application/json" } }
+    return NextResponse.json(
+      { success: false, error: { message: "Impossibile connettersi al server API centralizzato." } },
+      { status: 502 }
     );
   }
 }
