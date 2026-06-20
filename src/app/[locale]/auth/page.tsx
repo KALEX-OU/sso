@@ -593,35 +593,52 @@ function AuthPortal() {
 
         if (currentUser.emailVerified) {
           setNeedsVerification(false);
-          document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud";
-          if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
-            document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax";
-          }
-          if (redirectUri && !redirecting) {
-            handleSSORedirect(currentUser);
-          } else if (!redirecting) {
-            console.log("[Auth State Change] User verified but no redirectUri. Redirecting immediately to dashboard.");
-            const redirectTo = searchParams.get("redirectTo");
-            if (redirectTo && redirectTo.startsWith("/")) {
-              const hasLocale = /^\/(it|en|es)(\/|$)/.test(redirectTo);
-              if (hasLocale) {
-                router.push(redirectTo);
-              } else {
-                router.push(`/${currentLocale}${redirectTo}`);
+          
+          const syncSessionAndRedirect = async () => {
+            if (redirecting) return;
+            setRedirecting(true);
+            try {
+              // 1. Chiama /api/auth/session per impostare il cookie HttpOnly lato server
+              const idToken = await currentUser.getIdToken();
+              const sessionRes = await fetchWithAppCheck("/api/auth/session", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${idToken}`
+                }
+              });
+              if (!sessionRes.ok) {
+                throw new Error("Impossibile sincronizzare la sessione server-side.");
               }
-            } else {
-              router.push(`/${currentLocale}/dashboard`);
+              
+              // 2. Prosegui con il redirect SSO o dashboard
+              if (redirectUri) {
+                await handleSSORedirect(currentUser);
+              } else {
+                const redirectTo = searchParams.get("redirectTo");
+                if (redirectTo && redirectTo.startsWith("/")) {
+                  const hasLocale = /^\/(it|en|es)(\/|$)/.test(redirectTo);
+                  if (hasLocale) {
+                    router.push(redirectTo);
+                  } else {
+                    router.push(`/${currentLocale}${redirectTo}`);
+                  }
+                } else {
+                  router.push(`/${currentLocale}/dashboard`);
+                }
+              }
+            } catch (err) {
+              console.error("[Auth Sincronizzazione Sessione] Errore:", err);
+              setError("Errore durante l'attivazione della sessione sicura.");
+              setRedirecting(false);
             }
-          }
+          };
+          
+          void syncSessionAndRedirect();
         } else {
           setNeedsVerification(true);
-          // Rimuove il cookie se l'email non è verificata
-          document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
         }
       } else {
         setNeedsVerification(false);
-        // Rimuove il cookie se non loggato
-        document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
       }
     });
     return () => unsubscribe();

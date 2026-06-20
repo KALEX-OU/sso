@@ -366,13 +366,9 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
           clearInterval(pollingIntervalRef.current);
           pollingIntervalRef.current = null;
         }
-        // Rimuove il cookie di sessione per il middleware
-        document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
         router.push(`/${localeParam}/auth`);
       } else {
         setUser(currentUser);
-        // Imposta il cookie di sessione per il middleware
-        document.cookie = "kalex_session=active; path=/; max-age=31536000; SameSite=Lax; domain=.kalex.cloud";
         try {
           const tokenResult = await currentUser.getIdTokenResult();
           setClaims(tokenResult.claims);
@@ -537,8 +533,10 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
 
   const handleSignOut = async () => {
     try {
-      // Rimuove il cookie prima del logout
-      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
+      // Chiama il logout lato server per cancellare il cookie HttpOnly e revocare i token
+      await fetchAuthed("/api/auth/logout", { method: "POST" }).catch(err => {
+        console.warn("[Layout SignOut] Errore disconnessione server-side (proseguo comunque):", err);
+      });
       await signOut(auth);
       router.push(`/${localeParam}/auth`);
     } catch (err) {
