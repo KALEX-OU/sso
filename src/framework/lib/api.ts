@@ -111,7 +111,11 @@ export async function fetchAuthedClient<T>(
       };
     }
 
-    return json as unknown as KalexResponse<T>;
+    return {
+      success: json.success !== false,
+      data: json as unknown as T,
+      error: json.error as KalexError | undefined
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Errore di rete durante la connessione.";
     return {
