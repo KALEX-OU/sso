@@ -27,6 +27,12 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
   if (authHeader) {
     headers.set("authorization", authHeader);
   }
+
+  // Inoltra il Cookie originale (es. per sessioni HttpOnly)
+  const cookieHeader = request.headers.get("cookie");
+  if (cookieHeader) {
+    headers.set("cookie", cookieHeader);
+  }
   
   // Inoltra i token di App Check regolare e debug se presenti
   const appCheckHeader = request.headers.get("x-firebase-appcheck");
@@ -90,6 +96,18 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
         responseHeaders.set(header, val);
       }
     });
+
+    // Inoltra l'header Set-Cookie da Hono al client (browser)
+    const setCookieHeaders = response.headers.getSetCookie 
+      ? response.headers.getSetCookie() 
+      : response.headers.get("set-cookie");
+    if (setCookieHeaders) {
+      if (Array.isArray(setCookieHeaders)) {
+        setCookieHeaders.forEach(cookie => responseHeaders.append("set-cookie", cookie));
+      } else {
+        responseHeaders.set("set-cookie", setCookieHeaders);
+      }
+    }
 
     return new NextResponse(responseBody, {
       status: response.status,
