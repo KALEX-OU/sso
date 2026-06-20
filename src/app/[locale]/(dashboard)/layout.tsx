@@ -28,7 +28,8 @@ import {
   Coins,
   Server,
   Radio,
-  RefreshCw
+  RefreshCw,
+  Package
 } from "lucide-react";
 
 interface ToastNotification {
@@ -551,6 +552,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
       id: "billing",
       labelKey: "sidebar.section.billing",
       items: [
+        { id: "product", labelKey: "sidebar.product", icon: Package, path: "/product", requiredPermission: "product" },
         { id: "payment", labelKey: "sidebar.payment", icon: Coins, path: "/payment", requiredPermission: "payment" },
         { id: "invoice", labelKey: "sidebar.invoice", icon: FileText, path: "/invoice", requiredPermission: "invoice" },
         { id: "connect", labelKey: "sidebar.connect", icon: RefreshCw, path: "/connect", requiredPermission: "payment" },
