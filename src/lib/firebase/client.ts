@@ -3,9 +3,6 @@ import { getAuth } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken, AppCheck } from "firebase/app-check";
 import { getDataConnect } from "firebase/data-connect";
 import { connectorConfig } from "@/lib/dataconnect-client";
-import { getFirestore } from "firebase/firestore";
-import { getDatabase } from "firebase/database";
-import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAVJIh68g3ESxvd_0s2OhxixResOLq9wf4",
@@ -25,18 +22,6 @@ const auth = getAuth(app);
 
 // Inizializza SQL Connect (Client SDK)
 const dataConnect = getDataConnect(connectorConfig);
-
-// Inizializza Firestore (usando il database ID dall'env, default "default")
-const firestoreDbId = process.env.NEXT_PUBLIC_FIRESTORE_DATABASE_ID || "default";
-const db = getFirestore(app, firestoreDbId);
-
-// Inizializza Realtime Database
-const rtdbUrl = process.env.NEXT_PUBLIC_RTDB_URL || `https://${process.env.NEXT_PUBLIC_RTDB_DATABASE_ID || "kalex-cloud-default-rtdb"}.${process.env.NEXT_PUBLIC_RTDB_REGION || "europe-west1"}.firebasedatabase.app`;
-const rtdb = getDatabase(app, rtdbUrl);
-
-// Inizializza Cloud Storage
-const bucketName = process.env.NEXT_PUBLIC_STORAGE_BUCKET_ID || "kalex-cloud.firebasestorage.app";
-const storage = getStorage(app, `gs://${bucketName}`);
 
 // Inizializza App Check (solo lato client)
 let appCheckInstance: AppCheck | null = null;
@@ -116,6 +101,6 @@ export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit):
   });
 }
 
-export { app, auth, dataConnect, db, rtdb, storage };
+export { app, auth, dataConnect };
 
 

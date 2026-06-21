@@ -2,9 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { auth, dataConnect, fetchWithAppCheck, db, fetchAuthed } from "@/lib/firebase/client";
+import { auth, dataConnect, fetchWithAppCheck, fetchAuthed } from "@/lib/firebase/client";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
 import { Button, Avatar, Chip } from "@heroui/react";
 import { useTheme } from "next-themes";
 import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
@@ -317,38 +316,7 @@ export default function DashboardLayout({ children, params }: LayoutProps) {
     syncRefs.current = { currentLocale, changeLocale, theme, setTheme, refreshClaims };
   });
 
-  // Listener in tempo reale per la sincronizzazione delle claims remote con throttling e feedback visivo
-  useEffect(() => {
-    if (!user) return;
 
-    const docRef = doc(db, "user_claims_metadata", user.uid);
-    let lastUpdateProcessed = 0;
-
-    const unsubscribe = onSnapshot(docRef, async (snapshot) => {
-      const data = snapshot.data();
-      if (data && data.updatedAt) {
-        const updateTime = data.updatedAt.toMillis ? data.updatedAt.toMillis() : new Date(data.updatedAt.seconds * 1000).getTime();
-        const now = Date.now();
-        
-        // Esegue il refresh solo se l'evento è fresco ed è passato almeno un cooldown di 10 secondi dall'ultimo refresh
-        if (updateTime > lastUpdateProcessed && (now - lastUpdateProcessed) > 10000) {
-          lastUpdateProcessed = now;
-          console.log("[Auth Sync] Custom claims aggiornati in remoto. Avvio il refresh locale...");
-          
-          try {
-            await refreshClaims(data.orgId);
-            showToast("[Novità] I tuoi permessi sono stati aggiornati. Le nuove app e funzionalità sono pronte!", "success");
-          } catch (err) {
-            console.error("[Auth Sync] Impossibile aggiornare i claims locali:", err);
-          }
-        }
-      }
-    }, (err) => {
-      console.warn("[Auth Sync] Connessione Firestore offline o permessi mancanti per i metadati dei claims:", err);
-    });
-
-    return () => unsubscribe();
-  }, [user, refreshClaims, showToast]);
 
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
