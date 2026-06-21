@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useSyncExternalStore, useCallback, useRef } from "react";
 import { onAuthStateChanged, setPersistence, inMemoryPersistence, signInWithCustomToken } from "firebase/auth";
 import { auth, useAuth } from "../lib/auth";
 import { fetchAuthedClient } from "../lib/api";
 import { Spinner } from "./ui/Spinner";
+import { RateLimitGuard } from "./RateLimitGuard";
 
 const emptySubscribe = () => () => {};
 
@@ -13,11 +14,18 @@ export interface FirebaseProviderProps {
   clientId?: string; // Se fornito, gestisce lo scambio di codice SSO automatico (es. "web")
 }
 
+interface ClientTokenResult {
+  success: boolean;
+  customToken?: string;
+  isRateLimited?: boolean;
+}
+
 export default function FirebaseProvider({ children, clientId }: FirebaseProviderProps) {
   const { loading } = useAuth();
   const [initLoading, setInitLoading] = useState(true);
   const [exchangeLoading, setExchangeLoading] = useState(false);
   const [exchangeError, setExchangeError] = useState<string | null>(null);
+  const [rateLimited, setRateLimited] = useState(false);
 
   const isMounted = useSyncExternalStore(
     emptySubscribe,
@@ -26,7 +34,7 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
   );
 
   // Helper resiliente per recuperare il client token con tentativi multipli e backoff
-  const fetchClientTokenWithRetry = async (retries = 3, delay = 500): Promise<{ success: boolean; customToken?: string }> => {
+  const fetchClientTokenWithRetry = async (retries = 3, delay = 500): Promise<ClientTokenResult> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -39,6 +47,11 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
         
         if (response.success && response.data) {
           return { success: true, customToken: response.data.customToken };
+        }
+
+        // Se è throttling/rate-limited, arrestiamo i tentativi di retry ed evidenziamo l'errore
+        if (response.error?.code === "auth/rate-limited") {
+          return { success: false, isRateLimited: true };
         }
         
         // Se la sessione è scaduta o revocata (401), non riproviamo
@@ -64,39 +77,43 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
         throw err;
       }
     }
-    throw new Error("Impossibile recuperare il client token dopo tutti i tentativi.");
+    return { success: false };
   };
+
+  const activeRef = useRef(true);
+
+  const initAuth = useCallback(async (active: { current: boolean }) => {
+    try {
+      await setPersistence(auth, inMemoryPersistence);
+      
+      if (!auth.currentUser && active.current) {
+        // Tenta la sincronizzazione iniziale con retry resiliente
+        try {
+          const res = await fetchClientTokenWithRetry();
+          if (res.success && res.customToken && active.current) {
+            await signInWithCustomToken(auth, res.customToken);
+          } else if (res.isRateLimited && active.current) {
+            setRateLimited(true);
+          }
+        } catch (err) {
+          console.warn("[FirebaseProvider] Impossibile recuperare il client token iniziale:", err);
+        }
+      }
+    } catch (err) {
+      console.error("[FirebaseProvider] Errore inizializzazione Auth:", err);
+    } finally {
+      if (active.current) setInitLoading(false);
+    }
+  }, []);
 
   // Inizializza la persistenza in memory ed esegue il sync all'avvio se è presente il cookie
   useEffect(() => {
-    let active = true;
-    const initAuth = async () => {
-      try {
-        await setPersistence(auth, inMemoryPersistence);
-        
-        if (!auth.currentUser && active) {
-          // Tenta la sincronizzazione iniziale con retry resiliente
-          try {
-            const res = await fetchClientTokenWithRetry();
-            if (res.success && res.customToken && active) {
-              await signInWithCustomToken(auth, res.customToken);
-            }
-          } catch (err) {
-            console.warn("[FirebaseProvider] Impossibile recuperare il client token iniziale:", err);
-          }
-        }
-      } catch (err) {
-        console.error("[FirebaseProvider] Errore inizializzazione Auth:", err);
-      } finally {
-        if (active) setInitLoading(false);
-      }
-    };
-
-    void initAuth();
+    activeRef.current = true;
+    void initAuth(activeRef);
     return () => {
-      active = false;
+      activeRef.current = false;
     };
-  }, []);
+  }, [initAuth]);
 
   // Listener dello stato di autenticazione, Refresh periodico e Gestione offline
   useEffect(() => {
@@ -116,6 +133,8 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
             console.log("[FirebaseProvider] Client token rinfrescato in memoria.");
+          } else if (response.isRateLimited) {
+            setRateLimited(true);
           } else {
             // Se non riusciamo ad ottenere un token e la sessione è marcata come non valida/scaduta, sologghiamo il client
             await auth.signOut();
@@ -135,6 +154,8 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
             console.log("[FirebaseProvider] Client token sincronizzato dopo ripristino rete.");
+          } else if (response.isRateLimited) {
+            setRateLimited(true);
           } else {
             await auth.signOut();
           }
@@ -204,6 +225,19 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
       void handleTokenExchange();
     }
   }, [isMounted, clientId]);
+
+  if (rateLimited) {
+    return (
+      <RateLimitGuard
+        onRetry={() => {
+          setRateLimited(false);
+          setInitLoading(true);
+          activeRef.current = true;
+          void initAuth(activeRef);
+        }}
+      />
+    );
+  }
 
   const isLoading = loading || initLoading || exchangeLoading;
 

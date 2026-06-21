@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import { onAuthStateChanged, User, setPersistence, inMemoryPersistence, signInWithCustomToken } from "firebase/auth";
+import { RateLimitGuard } from "../framework/components/RateLimitGuard";
 
 export default function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const [, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [rateLimited, setRateLimited] = useState(false);
 
   // Helper resiliente per recuperare il client token con tentativi multipli e backoff
   const fetchClientTokenWithRetry = async (retries = 3, delay = 500): Promise<Response> => {
@@ -18,13 +20,13 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
         
         const res = await fetchWithAppCheck("/api/auth/client-token", { method: "POST" });
         
-        // Se la richiesta è andata a buon fine o se l'utente non è autorizzato (sessione scaduta/401)
-        // restituiamo immediatamente la risposta (inutile fare retry sul 401).
-        if (res.ok || res.status === 401) {
+        // Se la richiesta è andata a buon fine, se l'utente non è autorizzato (401)
+        // o se siamo rate-limited (429), ritorniamo immediatamente senza fare inutili retry.
+        if (res.ok || res.status === 401 || res.status === 429) {
           return res;
         }
 
-        // Se è un errore temporaneo (429, 5xx), tentiamo il retry se abbiamo ancora tentativi disponibili
+        // Se è un errore temporaneo (5xx), tentiamo il retry se abbiamo ancora tentativi disponibili
         if (attempt < retries) {
           console.warn(`[FirebaseProvider] Tentativo ${attempt} fallito con status ${res.status}. Riprovo tra ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
@@ -46,39 +48,43 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
     throw new Error("Impossibile recuperare il client token dopo tutti i tentativi.");
   };
 
+  const activeRef = useRef(true);
+
+  const initAuth = useCallback(async (active: { current: boolean }) => {
+    try {
+      await setPersistence(auth, inMemoryPersistence);
+      
+      if (!auth.currentUser && active.current) {
+        // Tenta la sincronizzazione iniziale (Multi-Tab) con retry resiliente se la sessione HttpOnly è attiva
+        try {
+          const res = await fetchClientTokenWithRetry();
+          if (res.ok && active.current) {
+            const data = (await res.json()) as { success: boolean; customToken?: string };
+            if (data.success && data.customToken) {
+              await signInWithCustomToken(auth, data.customToken);
+            }
+          } else if (res.status === 429 && active.current) {
+            setRateLimited(true);
+          }
+        } catch (err) {
+          console.warn("[FirebaseProvider] Impossibile recuperare il client token iniziale:", err);
+        }
+      }
+    } catch (err) {
+      console.error("[FirebaseProvider] Errore inizializzazione Auth:", err);
+    } finally {
+      if (active.current) setLoading(false);
+    }
+  }, []);
+
   // Inizializza la persistenza in memory ed esegue il sync all'avvio se è presente il cookie
   useEffect(() => {
-    let active = true;
-    const initAuth = async () => {
-      try {
-        await setPersistence(auth, inMemoryPersistence);
-        
-        if (!auth.currentUser && active) {
-          // Tenta la sincronizzazione iniziale (Multi-Tab) con retry resiliente se la sessione HttpOnly è attiva
-          try {
-            const res = await fetchClientTokenWithRetry();
-            if (res.ok && active) {
-              const data = (await res.json()) as { success: boolean; customToken?: string };
-              if (data.success && data.customToken) {
-                await signInWithCustomToken(auth, data.customToken);
-              }
-            }
-          } catch (err) {
-            console.warn("[FirebaseProvider] Impossibile recuperare il client token iniziale:", err);
-          }
-        }
-      } catch (err) {
-        console.error("[FirebaseProvider] Errore inizializzazione Auth:", err);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    void initAuth();
+    activeRef.current = true;
+    void initAuth(activeRef);
     return () => {
-      active = false;
+      activeRef.current = false;
     };
-  }, []);
+  }, [initAuth]);
 
   // Listener dello stato di autenticazione, Refresh periodico e Gestione offline
   useEffect(() => {
@@ -104,6 +110,8 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
               await signInWithCustomToken(auth, data.customToken);
               console.log("[FirebaseProvider] Client token rinfrescato in memoria.");
             }
+          } else if (res.status === 429) {
+            setRateLimited(true);
           } else if (res.status === 401) {
             // Se il cookie è scaduto o revocato, disconnetti il client
             await auth.signOut();
@@ -126,6 +134,8 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
               await signInWithCustomToken(auth, data.customToken);
               console.log("[FirebaseProvider] Client token sincronizzato dopo ripristino rete.");
             }
+          } else if (res.status === 429) {
+            setRateLimited(true);
           } else if (res.status === 401) {
             await auth.signOut();
           }
@@ -147,6 +157,19 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
       }
     };
   }, []);
+
+  if (rateLimited) {
+    return (
+      <RateLimitGuard
+        onRetry={() => {
+          setRateLimited(false);
+          setLoading(true);
+          activeRef.current = true;
+          void initAuth(activeRef);
+        }}
+      />
+    );
+  }
 
   if (loading) {
     return (
