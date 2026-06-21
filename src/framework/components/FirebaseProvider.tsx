@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useSyncExternalStore } from "react";
-import { onAuthStateChanged, User, setPersistence, inMemoryPersistence, signInWithCustomToken } from "firebase/auth";
+import { onAuthStateChanged, setPersistence, inMemoryPersistence, signInWithCustomToken } from "firebase/auth";
 import { auth, useAuth } from "../lib/auth";
 import { fetchAuthedClient } from "../lib/api";
 import { Spinner } from "./ui/Spinner";
