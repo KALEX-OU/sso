@@ -235,7 +235,11 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     const cleanPath = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
 
     // Se l'utente accede ad una sotto-rotta specifica che non sia dashboard o auth
-    if (cleanPath && !cleanPath.startsWith("dashboard") && !cleanPath.startsWith("auth") && !cleanPath.startsWith("support")) {
+    const isDashboardPath = appId === "sso"
+      ? cleanPath.startsWith("dashboard")
+      : (cleanPath === "" || cleanPath.startsWith("dashboard"));
+
+    if (cleanPath && !isDashboardPath && !cleanPath.startsWith("auth") && !cleanPath.startsWith("support")) {
       const appConfig = RESOURCE_REGISTRY[appId as keyof typeof RESOURCE_REGISTRY];
       if (appConfig) {
         // Cerca se la rotta corrisponde a un modulo registrato
@@ -244,7 +248,8 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
 
         if (matchedModule && !hasPermission(matchedModule, "read")) {
           console.warn(`[RBAC Guard] Accesso negato a '/${cleanPath}'. Ruolo '${authClaims.role}' non autorizzato. Reindirizzamento.`);
-          router.push(`/${locale}/dashboard`);
+          const dashboardRedirectPath = appId === "sso" ? "dashboard" : "";
+          router.push(`/${locale}/${dashboardRedirectPath}`);
         }
       }
     }
