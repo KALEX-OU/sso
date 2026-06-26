@@ -4,7 +4,7 @@ import React, { useState, useEffect, useSyncExternalStore, useCallback, useRef }
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { I18nProviderClient } from "@/locales/client";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, useAuth } from "../../lib/auth";
+import { auth, useAuth, forceCleanSession } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
 import { Spinner } from "../ui/Spinner";
 import { Button } from "@heroui/react";
@@ -276,8 +276,8 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           } else if (response.isRateLimited) {
             setRateLimited(true);
           } else {
-            // Se fallisce il refresh (sessione scaduta o revocata), disconnetti il client
-            await auth.signOut();
+            // Se fallisce il refresh (sessione scaduta o revocata), esegui l'auto-clean della sessione
+            await forceCleanSession(appId);
           }
         } catch (err) {
           console.warn("[FirebaseProvider] Errore durante il refresh del client token:", err);
@@ -299,7 +299,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           } else if (response.isRateLimited) {
             setRateLimited(true);
           } else {
-            await auth.signOut();
+            await forceCleanSession(appId);
           }
         } catch (err) {
           console.warn("[FirebaseProvider] Errore sincronizzazione client token dopo ripristino rete:", err);
@@ -324,7 +324,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
         window.removeEventListener("offline", handleOffline);
       }
     };
-  }, [fetchClientTokenWithRetry]);
+  }, [fetchClientTokenWithRetry, appId]);
 
   // Listener dello stato di autenticazione locale per reattività React
   useEffect(() => {
@@ -421,13 +421,13 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
             const errorMsg = response.error?.message || "Impossibile completare lo scambio del codice SSO.";
             const correlationId = (response.error?.details as { correlationId?: string })?.correlationId;
             setExchangeError(correlationId ? `${errorMsg} (Correlation ID: ${correlationId})` : errorMsg);
-            // Forza il logout per evitare sessioni parziali/invalide
-            await auth.signOut();
+            // Forza la pulizia per evitare sessioni parziali/invalide
+            await forceCleanSession(appId);
           }
         } catch (err) {
           console.error("[SSO Callback] Errore scambio token:", err);
           setExchangeError("Errore di rete durante lo scambio del codice SSO.");
-          await auth.signOut();
+          await forceCleanSession(appId);
         } finally {
           setExchangeLoading(false);
         }
@@ -436,6 +436,10 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
       void handleTokenExchange();
     }
   }, [isMounted, appId]);
+
+  const forceCleanAndRedirect = useCallback(async () => {
+    await forceCleanSession(appId);
+  }, [appId]);
 
   if (rateLimited) {
     return (
@@ -462,9 +466,21 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           </span>
         )}
         {exchangeError && (
-          <div className="mt-4 p-4 bg-red-950/60 border border-red-500/30 text-white text-xs rounded-2xl text-center max-w-md shadow-2xl flex flex-col items-center gap-3">
-            <span className="font-black text-red-500 uppercase tracking-widest text-[10px]">Autenticazione Fallita</span>
-            <p className="text-slate-300 font-medium leading-relaxed">{exchangeError}</p>
+          <div className="mt-4 p-5 border border-white/10 bg-slate-900/60 backdrop-blur-2xl rounded-3xl max-w-md shadow-2xl flex flex-col items-center gap-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <ShieldAlert className="w-6 h-6 text-red-500" />
+            </div>
+            <div className="space-y-1">
+              <span className="font-black text-red-500 uppercase tracking-widest text-[10px]">Autenticazione Fallita</span>
+              <p className="text-slate-300 text-xs font-semibold leading-relaxed px-2">{exchangeError}</p>
+            </div>
+            <Button
+              size="sm"
+              className="mt-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
+              onClick={forceCleanAndRedirect}
+            >
+              Pulisci Sessione e Riprova
+            </Button>
           </div>
         )}
       </div>

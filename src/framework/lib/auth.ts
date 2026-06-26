@@ -34,6 +34,99 @@ if (typeof window !== "undefined") {
 
 export const auth = typeof window !== "undefined" ? authInstance! : {} as Auth;
 
+const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
+
+/**
+ * Forza la pulizia completa della sessione a livello client e server.
+ * Rimuove i cookie, disconnette Firebase Auth, pulisce sessionStorage, notifica altre schede e reindirizza.
+ */
+export async function forceCleanSession(appId: string = APP_ID): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  console.warn(`[forceCleanSession] Avvio pulizia forzata della sessione per appId: ${appId}`);
+
+  // 1. Tenta di invalidare la sessione sul backend tramite POST /api/auth/logout
+  try {
+    const { fetchAuthedClient } = await import("./api");
+    const response = await fetchAuthedClient("/api/auth/logout", {
+      method: "POST"
+    });
+    if (!response.success) {
+      console.warn("[forceCleanSession] Il server ha risposto con errore al logout:", response.error?.message);
+    }
+  } catch (err) {
+    console.warn("[forceCleanSession] Impossibile contattare il server per il logout:", err);
+  }
+
+  // 2. Notifica le altre schede aperte tramite localStorage (per schede sullo stesso dominio)
+  try {
+    if (window.localStorage) {
+      window.localStorage.setItem("kalex_logout_event", Date.now().toString());
+    }
+  } catch {
+    // Silente
+  }
+
+  // 3. Notifica le altre schede aperte tramite BroadcastChannel (per app SPA multischeda)
+  try {
+    if ("BroadcastChannel" in window) {
+      const channel = new BroadcastChannel("kalex_auth_sync");
+      channel.postMessage("logout");
+      channel.close();
+    }
+  } catch {
+    // Silente
+  }
+
+  // 4. Esegue il signOut locale da Firebase Auth
+  try {
+    if (authInstance) {
+      await signOut(authInstance);
+    }
+  } catch (err) {
+    console.error("[forceCleanSession] Errore durante il signOut di Firebase:", err);
+  }
+
+  // 5. Pulisce sessionStorage (in particolare lo stato CSRF dell'SSO)
+  try {
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.removeItem("sso_auth_state");
+    }
+  } catch {
+    // Silente
+  }
+
+  // 6. Elimina i cookie di sessione sia locali che sul dominio centralizzato .kalex.cloud
+  try {
+    if (typeof document !== "undefined") {
+      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
+      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+  } catch {
+    // Silente
+  }
+
+  // 7. Esegue il reindirizzamento o ricaricamento finale della pagina
+  const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+  let currentUrlStr = window.location.href;
+  if (currentUrlStr) {
+    try {
+      const url = new URL(currentUrlStr);
+      url.searchParams.delete("code");
+      url.searchParams.delete("state");
+      currentUrlStr = url.toString();
+    } catch {
+      // Silente
+    }
+  }
+
+  if (appId === "sso") {
+    window.location.href = "/auth";
+  } else {
+    window.location.href = `${ssoUrl}/auth?client_id=${appId}&redirect_uri=${encodeURIComponent(currentUrlStr)}`;
+  }
+}
+
 /**
  * Inizializza App Check in modo sicuro e pigro per evitare errori di caricamento precoce di reCAPTCHA.
  */
@@ -140,34 +233,7 @@ export function useAuth() {
   }, []);
 
   const logout = useCallback(async () => {
-    if (!authInstance) return;
-
-    // 1. Invia la richiesta di logout autenticata al backend per eliminare il cookie HttpOnly ed invalidare la sessione
-    try {
-      const { fetchAuthedClient } = await import("./api");
-      const response = await fetchAuthedClient("/api/auth/logout", {
-        method: "POST"
-      });
-      if (!response.success) {
-        console.warn("[Framework Auth] Errore risposta logout server:", response.error?.message);
-      }
-    } catch (err) {
-      console.warn("[Framework Auth] Impossibile contattare il server per il logout:", err);
-    }
-
-    // 2. Notifica le altre schede aperte per innescare il logout simultaneo
-    if (typeof window !== "undefined" && window.localStorage) {
-      window.localStorage.setItem("kalex_logout_event", Date.now().toString());
-    }
-
-    // 3. Effettua il signOut lato client
-    await signOut(authInstance);
-
-    // 4. Pulisce anche i cookie non HttpOnly locali per sicurezza
-    if (typeof document !== "undefined") {
-      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
-      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    }
+    await forceCleanSession(APP_ID);
   }, []);
 
   const loginRedirect = useCallback((clientId: string) => {

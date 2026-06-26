@@ -119,6 +119,17 @@ export async function fetchAuthedClient<T>(
       }
     }
 
+    // 7. Se lo stato finale è 401 Unauthorized e non è la chiamata di logout stessa, esegue l'auto-clean session
+    if (response.status === 401 && !pathname.includes("/api/auth/logout")) {
+      console.warn(`[KALEX API Client] Ricevuto status 401 non risolvibile su ${pathname}. Avvio Auto-Clean Session...`);
+      try {
+        const { forceCleanSession } = await import("./auth");
+        void forceCleanSession(APP_ID);
+      } catch (cleanErr) {
+        console.error("[KALEX API Client] Errore durante l'auto-clean della sessione:", cleanErr);
+      }
+    }
+
     const text = await response.text();
     let json: Record<string, unknown> & { error?: KalexError; message?: string } = {};
     try {
