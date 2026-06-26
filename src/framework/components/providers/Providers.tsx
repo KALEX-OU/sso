@@ -185,8 +185,16 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           return { success: false, isRateLimited: true };
         }
         
-        // Se la sessione è scaduta o revocata (401), non riproviamo
-        if (response.error?.message?.includes("scadut") || response.error?.message?.includes("valida")) {
+        // Se la sessione non è presente, è scaduta o revocata (401 Unauthorized), non eseguiamo i retry
+        if (
+          response.error?.code === "auth/unauthorized" ||
+          response.error?.code === "auth/invalid-session" ||
+          response.error?.code === "auth/invalid-token" ||
+          response.error?.message?.includes("scadut") ||
+          response.error?.message?.includes("valida") ||
+          response.error?.message?.includes("mancante") ||
+          response.error?.message?.includes("non autorizzato")
+        ) {
           return { success: false };
         }
         
