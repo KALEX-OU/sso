@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import "../globals.css";
-import Providers from "@/components/Providers";
+import Providers from "@/framework/components/providers/Providers";
 import Script from "next/script";
 
 const outfit = Outfit({
@@ -51,7 +51,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
             </Script>
           </>
         )}
-        <Providers locale={locale}>
+        <Providers locale={locale} appId="sso">
           {children}
         </Providers>
       </body>

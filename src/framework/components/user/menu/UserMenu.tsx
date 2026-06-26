@@ -84,7 +84,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
     <div className={`flex items-center gap-3 ${className}`}>
       <Dropdown>
         <DropdownTrigger>
-          <button className="flex items-center gap-2 outline-none cursor-pointer group active:scale-98 transition-transform">
+          <span className="flex items-center gap-2 outline-none cursor-pointer group active:scale-98 transition-transform">
             <Avatar
               className="w-8 h-8 text-xs cursor-pointer ring-2 ring-purple-500/50 ring-offset-1 ring-offset-background"
             >
@@ -94,15 +94,15 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
                 displayName.substring(0, 2).toUpperCase()
               )}
             </Avatar>
-            <div className="text-left hidden md:block">
-              <p className="text-xs font-black uppercase text-foreground group-hover:text-primary transition-colors">
+            <span className="text-left hidden md:block">
+              <span className="text-xs font-black uppercase text-foreground group-hover:text-primary transition-colors block">
                 {displayName}
-              </p>
-              <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">
+              </span>
+              <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase block">
                 {roleName}
-              </p>
-            </div>
-          </button>
+              </span>
+            </span>
+          </span>
         </DropdownTrigger>
         <DropdownMenu aria-label="Menu utente">
           <DropdownItem key="profile" className="h-14 gap-2 opacity-100 pointer-events-none">

@@ -59,7 +59,7 @@ export function ListView({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="w-full md:max-w-md">
           <TextField value={searchValue} onChange={onSearchChange} aria-label={searchPlaceholder} className="w-full">
-            <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center h-[42px] transition-all focus-within:!border-purple-500/80 focus-within:shadow-md focus-within:shadow-purple-500/5 w-full">
+            <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center h-[42px] transition-all focus-within:!border-[#ff00ff]/80 focus-within:shadow-[0_0_12px_rgba(255,0,255,0.15)] w-full">
               <InputGroupPrefix className="flex items-center justify-center mr-2">
                 <Search className="w-4 h-4 text-muted-foreground" />
               </InputGroupPrefix>
@@ -88,7 +88,7 @@ export function ListView({
       )}
 
       {/* Contenuto Principale */}
-      <div className="w-full bg-content1 rounded-3xl p-6 shadow-sm border border-divider/30">
+      <div className="w-full bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 shadow-xl">
         {children}
       </div>
     </div>

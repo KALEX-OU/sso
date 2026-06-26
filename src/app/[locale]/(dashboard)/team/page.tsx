@@ -72,7 +72,7 @@ export default function TeamManagementPage() {
     setLoading(true);
     try {
       const idToken = await user.getIdToken();
-      const response = await fetchWithAppCheck("/api/team", {
+      const response = await fetchWithAppCheck("/api/team/list", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${idToken}`
@@ -80,9 +80,14 @@ export default function TeamManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        setTeams(data.teams || []);
+        setTeams(data.items || []);
       } else {
-        throw new Error(data.error || "Impossibile recuperare i team.");
+        const errMsg = data.error
+          ? (typeof data.error === "object" && "message" in data.error
+              ? String(data.error.message)
+              : String(data.error))
+          : "Impossibile recuperare i team.";
+        throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
@@ -106,13 +111,13 @@ export default function TeamManagementPage() {
     setCreating(true);
     try {
       const idToken = await user.getIdToken();
-      const response = await fetchWithAppCheck("/api/team", {
+      const response = await fetchWithAppCheck("/api/team/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${idToken}`
         },
-        body: JSON.stringify({ name: newTeamName })
+        body: JSON.stringify({ name: newTeamName, appId: "sso" })
       });
       const data = await response.json();
       if (response.ok && data.success) {
@@ -120,7 +125,12 @@ export default function TeamManagementPage() {
         setNewTeamName("");
         void loadTeams();
       } else {
-        throw new Error(data.error || "Errore durante la creazione del team.");
+        const errMsg = data.error
+          ? (typeof data.error === "object" && "message" in data.error
+              ? String(data.error.message)
+              : String(data.error))
+          : "Errore durante la creazione del team.";
+        throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
@@ -147,7 +157,12 @@ export default function TeamManagementPage() {
         showToast(`Team '${teamName}' eliminato con successo.`, "success");
         void loadTeams();
       } else {
-        throw new Error(data.error || "Errore durante l'eliminazione del team.");
+        const errMsg = data.error
+          ? (typeof data.error === "object" && "message" in data.error
+              ? String(data.error.message)
+              : String(data.error))
+          : "Errore durante l'eliminazione del team.";
+        throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
@@ -222,7 +237,12 @@ export default function TeamManagementPage() {
         setIsPermModalOpen(false);
         void loadTeams();
       } else {
-        throw new Error(data.error || "Impossibile aggiornare i permessi del team.");
+        const errMsg = data.error
+          ? (typeof data.error === "object" && "message" in data.error
+              ? String(data.error.message)
+              : String(data.error))
+          : "Impossibile aggiornare i permessi del team.";
+        throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);

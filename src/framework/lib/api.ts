@@ -1,5 +1,4 @@
-import { getApp } from "firebase/app";
-import { getToken, AppCheck } from "firebase/app-check";
+import { getToken } from "firebase/app-check";
 
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
 
@@ -22,17 +21,12 @@ export interface KalexResponse<T> {
 async function getClientAppCheckToken(): Promise<string | null> {
   if (typeof window === "undefined") return null;
   try {
-    const firebaseApp = getApp();
-    if (!firebaseApp) return null;
-    
-    // Inizializza o recupera l'istanza App Check.
-    // In produzione usiamo ReCaptcha Enterprise, in locale il token di debug.
-    // L'istanza è tipicamente inizializzata in auth.ts o client.ts
-    // Se non è inizializzata, evitiamo di far fallire la chiamata.
-    const appCheck = (firebaseApp as unknown as { appCheck?: unknown }).appCheck;
+    // Inizializza o recupera in modo sicuro l'istanza App Check tramite la funzione centralizzata.
+    const { initAppCheck } = await import("./auth");
+    const appCheck = initAppCheck();
     if (!appCheck) return null;
     
-    const tokenResult = await getToken(appCheck as AppCheck, false);
+    const tokenResult = await getToken(appCheck, false);
     return tokenResult.token;
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : "Errore sconosciuto App Check";
@@ -62,7 +56,16 @@ export async function fetchAuthedClient<T>(
     : Math.random().toString(36).substring(2, 15);
   headers.set("x-correlation-id", correlationId);
 
-  // 2. Inserisce il token di autenticazione Firebase se l'utente è loggato
+  // 2. Inietta automaticamente l'Idempotency-Key per richieste di scrittura (POST, PUT, DELETE) se non presente
+  const method = init?.method?.toUpperCase() || "GET";
+  if (["POST", "PUT", "DELETE"].includes(method) && !headers.has("Idempotency-Key")) {
+    const idempotencyKey = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    headers.set("Idempotency-Key", idempotencyKey);
+  }
+
+  // 3. Inserisce il token di autenticazione Firebase se l'utente è loggato
   const { auth } = await import("./auth");
   const currentUser = auth.currentUser;
   if (currentUser) {
@@ -74,7 +77,7 @@ export async function fetchAuthedClient<T>(
     }
   }
 
-  // 3. Inserisce il token App Check
+  // 4. Inserisce il token App Check
   const appCheckToken = await getClientAppCheckToken();
   if (appCheckToken) {
     headers.set("X-Firebase-AppCheck", appCheckToken);
@@ -84,7 +87,7 @@ export async function fetchAuthedClient<T>(
     headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
   }
 
-  // 4. Inserisce l'App ID proprietario
+  // 5. Inserisce l'App ID proprietario
   headers.set("x-app-id", APP_ID);
 
   if (!headers.has("Content-Type") && init?.method !== "GET" && init?.method !== "HEAD") {
@@ -94,10 +97,27 @@ export async function fetchAuthedClient<T>(
   const targetUrl = pathname.startsWith("/") ? pathname : `/${pathname}`;
 
   try {
-    const response = await fetch(targetUrl, {
+    let response = await fetch(targetUrl, {
       ...init,
       headers
     });
+
+    // 6. Se lo stato è 401 o 403 e l'utente è loggato, forza il refresh dei Custom Claims e riprova una singola volta
+    if ((response.status === 401 || response.status === 403) && currentUser) {
+      console.warn(`[KALEX API Client] Ricevuto status ${response.status}. Tentativo di refresh del token e retry...`);
+      try {
+        const newIdToken = await currentUser.getIdToken(true);
+        headers.set("Authorization", `Bearer ${newIdToken}`);
+        
+        // Manteniamo intatta l'Idempotency-Key per permettere al server di dedurre la ripetizione dell'azione
+        response = await fetch(targetUrl, {
+          ...init,
+          headers
+        });
+      } catch (refreshErr) {
+        console.error("[KALEX API Client] Fallito il refresh del token durante il retry:", refreshErr);
+      }
+    }
 
     const text = await response.text();
     let json: Record<string, unknown> & { error?: KalexError; message?: string } = {};

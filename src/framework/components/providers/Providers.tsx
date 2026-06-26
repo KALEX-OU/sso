@@ -1,17 +1,31 @@
 "use client";
 
 import React, { useState, useEffect, useSyncExternalStore, useCallback, useRef } from "react";
-import { onAuthStateChanged, setPersistence, inMemoryPersistence, signInWithCustomToken } from "firebase/auth";
-import { auth, useAuth } from "../lib/auth";
-import { fetchAuthedClient } from "../lib/api";
-import { Spinner } from "./ui/Spinner";
-import { RateLimitGuard } from "./RateLimitGuard";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { I18nProviderClient } from "@/locales/client";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth, useAuth } from "../../lib/auth";
+import { fetchAuthedClient } from "../../lib/api";
+import { Spinner } from "../ui/Spinner";
+import { RateLimitGuard } from "../RateLimitGuard";
+
+// Suppress the React 19 false-positive warning for inline script tags rendered by NextThemesProvider
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  const origError = console.error;
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === "string" && args[0].includes("Encountered a script tag")) {
+      return;
+    }
+    origError.apply(console, args);
+  };
+}
 
 const emptySubscribe = () => () => {};
 
-export interface FirebaseProviderProps {
+interface ProvidersProps {
   children: React.ReactNode;
-  clientId?: string; // Se fornito, gestisce lo scambio di codice SSO automatico (es. "web")
+  locale: string;
+  appId: "sso" | "web" | string;
 }
 
 interface ClientTokenResult {
@@ -20,12 +34,16 @@ interface ClientTokenResult {
   isRateLimited?: boolean;
 }
 
-export default function FirebaseProvider({ children, clientId }: FirebaseProviderProps) {
+// ---------------------------------------------------------
+// INNER COMPONENT: FirebaseProvider
+// ---------------------------------------------------------
+function FirebaseProvider({ children, appId }: { children: React.ReactNode; appId: string }) {
   const { loading } = useAuth();
   const [initLoading, setInitLoading] = useState(true);
   const [exchangeLoading, setExchangeLoading] = useState(false);
   const [exchangeError, setExchangeError] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState(false);
+  const [, setUser] = useState<User | null>(null);
 
   const isMounted = useSyncExternalStore(
     emptySubscribe,
@@ -33,8 +51,11 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
     () => false
   );
 
+  const activeRef = useRef(true);
+  const isOnlineRef = useRef(typeof navigator !== "undefined" ? navigator.onLine : true);
+
   // Helper resiliente per recuperare il client token con tentativi multipli e backoff
-  const fetchClientTokenWithRetry = async (retries = 3, delay = 500): Promise<ClientTokenResult> => {
+  const fetchClientTokenWithRetry = useCallback(async (retries = 3, delay = 500): Promise<ClientTokenResult> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -49,8 +70,8 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
           return { success: true, customToken: response.data.customToken };
         }
 
-        // Se è throttling/rate-limited, arrestiamo i tentativi di retry ed evidenziamo l'errore
-        if (response.error?.code === "auth/rate-limited") {
+        // Se l'errore è dovuto a rate limiting, interrompiamo i tentativi
+        if (response.error?.code === "auth/rate-limited" || response.error?.message?.includes("Too Many Requests")) {
           return { success: false, isRateLimited: true };
         }
         
@@ -62,7 +83,7 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
         if (attempt < retries) {
           console.warn(`[FirebaseProvider] Tentativo ${attempt} fallito. Riprovo tra ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2; // Backoff esponenziale leggero
+          delay *= 2;
           continue;
         }
         return { success: false };
@@ -78,14 +99,14 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
       }
     }
     return { success: false };
-  };
+  }, []);
 
-  const activeRef = useRef(true);
-
+  // Inizializzazione Auth definita come useCallback per poterla ri-invocare nel retry di RateLimitGuard
   const initAuth = useCallback(async (active: { current: boolean }) => {
     try {
+      const { setPersistence, inMemoryPersistence, signInWithCustomToken } = await import("firebase/auth");
       await setPersistence(auth, inMemoryPersistence);
-      
+
       if (!auth.currentUser && active.current) {
         // Tenta la sincronizzazione iniziale con retry resiliente
         try {
@@ -104,22 +125,24 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
     } finally {
       if (active.current) setInitLoading(false);
     }
-  }, []);
+  }, [fetchClientTokenWithRetry]);
 
-  // Inizializza la persistenza in memory ed esegue il sync all'avvio se è presente il cookie
+  // Inizializza la persistenza in memory ed esegue il sync all'avvio
   useEffect(() => {
     activeRef.current = true;
-    void initAuth(activeRef);
+    
+    const timer = setTimeout(() => {
+      void initAuth(activeRef);
+    }, 500);
+
     return () => {
       activeRef.current = false;
+      clearTimeout(timer);
     };
   }, [initAuth]);
 
-  // Listener dello stato di autenticazione, Refresh periodico e Gestione offline
+  // Configura il timer di auto-refresh del token client (ogni 45 minuti) ed ascolta offline/online
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, () => {});
-
-    // Configura il timer di auto-refresh del token client (ogni 45 minuti)
     const refreshInterval = setInterval(async () => {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         console.log("[FirebaseProvider] Browser offline, rinvio il refresh del client token.");
@@ -128,7 +151,7 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
 
       if (auth.currentUser) {
         try {
-          console.log("[FirebaseProvider] Eseguo il refresh periodico del client token...");
+          const { signInWithCustomToken } = await import("firebase/auth");
           const response = await fetchClientTokenWithRetry();
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
@@ -136,7 +159,7 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
           } else if (response.isRateLimited) {
             setRateLimited(true);
           } else {
-            // Se non riusciamo ad ottenere un token e la sessione è marcata come non valida/scaduta, sologghiamo il client
+            // Se fallisce il refresh (sessione scaduta o revocata), disconnetti il client
             await auth.signOut();
           }
         } catch (err) {
@@ -147,9 +170,11 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
 
     // Listener per il ripristino della rete: se eravamo offline, sincronizza subito il token
     const handleOnline = async () => {
+      isOnlineRef.current = true;
       console.log("[FirebaseProvider] Connessione ripristinata. Tento la sincronizzazione del client token...");
       if (auth.currentUser) {
         try {
+          const { signInWithCustomToken } = await import("firebase/auth");
           const response = await fetchClientTokenWithRetry();
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
@@ -165,25 +190,61 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
       }
     };
 
+    const handleOffline = () => {
+      isOnlineRef.current = false;
+      console.log("[FirebaseProvider] Browser offline.");
+    };
+
     if (typeof window !== "undefined") {
       window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
     }
 
     return () => {
-      unsubscribe();
       clearInterval(refreshInterval);
       if (typeof window !== "undefined") {
         window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
       }
+    };
+  }, [fetchClientTokenWithRetry]);
+
+  // Listener dello stato di autenticazione locale per reattività React
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Listener del BroadcastChannel per sincronizzare il logout/login multi-tab
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
+    const channel = new BroadcastChannel("kalex_auth_sync");
+    
+    channel.onmessage = async (event) => {
+      if (event.data === "logout") {
+        console.log("[BroadcastChannel] Ricevuto evento logout da un altro tab, disconnetto...");
+        await auth.signOut();
+        window.location.reload();
+      } else if (event.data === "login") {
+        console.log("[BroadcastChannel] Ricevuto evento login da un altro tab, rinfresco la sessione...");
+        window.location.reload();
+      }
+    };
+    
+    return () => {
+      channel.close();
     };
   }, []);
 
-  // Gestione scambio codice SSO se presente nell'URL (se clientId è fornito)
+  // Gestione scambio codice SSO (per tutti i client tranne il provider "sso" stesso)
   useEffect(() => {
-    if (!isMounted || !clientId) return;
+    if (!isMounted || appId === "sso") return;
 
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
+    const state = urlParams.get("state");
 
     if (code) {
       // Pulisce l'URL immediatamente prima dello scambio di rete
@@ -198,25 +259,51 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
         setExchangeLoading(true);
         setExchangeError(null);
         try {
+          // Convalida CSRF dello state token memorizzato
+          const storedState = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("sso_auth_state") : null;
+          
+          if (storedState && state !== storedState) {
+            console.error("[SSO Callback] Rilevato potenziale attacco CSRF: gli state non corrispondono.");
+            setExchangeError("Errore di convalida della sessione (CSRF Blocked).");
+            setExchangeLoading(false);
+            return;
+          }
+
+          // Pulisce lo state consumato
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.removeItem("sso_auth_state");
+          }
+
           const response = await fetchAuthedClient<{ success: boolean; customToken: string }>("/api/auth/token", {
             method: "POST",
             body: JSON.stringify({
               code,
-              clientId,
+              clientId: appId,
               redirectUri
             })
           });
 
           if (response.success && response.data?.customToken) {
+            const { signInWithCustomToken } = await import("firebase/auth");
             await signInWithCustomToken(auth, response.data.customToken);
+
+            // Invia segnale a tutte le altre schede aperte del completamento login
+            if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+              const channel = new BroadcastChannel("kalex_auth_sync");
+              channel.postMessage("login");
+              channel.close();
+            }
           } else {
             const errorMsg = response.error?.message || "Impossibile completare lo scambio del codice SSO.";
             const correlationId = (response.error?.details as { correlationId?: string })?.correlationId;
             setExchangeError(correlationId ? `${errorMsg} (Correlation ID: ${correlationId})` : errorMsg);
+            // Forza il logout per evitare sessioni parziali/invalide
+            await auth.signOut();
           }
         } catch (err) {
           console.error("[SSO Callback] Errore scambio token:", err);
           setExchangeError("Errore di rete durante lo scambio del codice SSO.");
+          await auth.signOut();
         } finally {
           setExchangeLoading(false);
         }
@@ -224,16 +311,16 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
 
       void handleTokenExchange();
     }
-  }, [isMounted, clientId]);
+  }, [isMounted, appId]);
 
   if (rateLimited) {
     return (
       <RateLimitGuard
-        onRetry={() => {
+        onRetry={async () => {
           setRateLimited(false);
           setInitLoading(true);
           activeRef.current = true;
-          void initAuth(activeRef);
+          await initAuth(activeRef);
         }}
       />
     );
@@ -258,4 +345,19 @@ export default function FirebaseProvider({ children, clientId }: FirebaseProvide
   }
 
   return <>{children}</>;
+}
+
+// ---------------------------------------------------------
+// EXPORTED DEFAULT COMPONENT: Providers
+// ---------------------------------------------------------
+export default function Providers({ children, locale, appId }: ProvidersProps) {
+  return (
+    <I18nProviderClient locale={locale}>
+      <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <FirebaseProvider appId={appId}>
+          {children}
+        </FirebaseProvider>
+      </NextThemesProvider>
+    </I18nProviderClient>
+  );
 }
