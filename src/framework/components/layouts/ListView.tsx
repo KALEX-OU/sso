@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import { TextField, Input, InputGroup, InputGroupPrefix } from "@heroui/react";
+import { TextField } from "../ui/TextField";
+import { Input } from "../ui/Input";
+import { InputGroup, InputGroupPrefix } from "../ui/InputGroup";
 import { Filter, ActiveFilter } from "./Filter";
 import { Search } from "lucide-react";
 
@@ -35,37 +37,37 @@ export function ListView({
   className = ""
 }: ListViewProps) {
   return (
-    <div className={`flex flex-col gap-6 w-full ${className}`}>
+    <div className={`klx-listview-container ${className}`}>
       {/* Intestazione */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-divider/50 pb-5">
+      <div className="klx-listview-header">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground uppercase">
+          <h1 className="klx-listview-title">
             {title}
           </h1>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1 font-medium">
+            <p className="klx-listview-desc">
               {description}
             </p>
           )}
         </div>
         {actions && (
-          <div className="flex items-center gap-2 self-start sm:self-center">
+          <div className="klx-listview-actions">
             {actions}
           </div>
         )}
       </div>
 
       {/* Barra dei controlli (Ricerca + Filtri) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="w-full md:max-w-md">
+      <div className="klx-listview-controls">
+        <div className="klx-listview-search-wrapper">
           <TextField value={searchValue} onChange={onSearchChange} aria-label={searchPlaceholder} className="w-full">
-            <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center h-[42px] transition-all focus-within:!border-[#ff00ff]/80 focus-within:shadow-[0_0_12px_rgba(255,0,255,0.15)] w-full">
+            <InputGroup className="klx-listview-search-input-group">
               <InputGroupPrefix className="flex items-center justify-center mr-2">
                 <Search className="w-4 h-4 text-muted-foreground" />
               </InputGroupPrefix>
               <Input
                 placeholder={searchPlaceholder}
-                className="bg-transparent border-0 outline-none w-full text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                className="klx-listview-search-input"
               />
             </InputGroup>
           </TextField>
@@ -88,7 +90,7 @@ export function ListView({
       )}
 
       {/* Contenuto Principale */}
-      <div className="w-full bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 shadow-xl">
+      <div className="klx-listview-content">
         {children}
       </div>
     </div>

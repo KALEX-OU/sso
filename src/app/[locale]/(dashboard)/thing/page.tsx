@@ -8,19 +8,10 @@ import {
   Button,
   Card,
   Chip,
-  Input,
-  Label,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectPopover,
-  ListBox,
-  ListBoxItem,
-  TextField,
-  TextArea,
   Modal
 } from "@heroui/react";
 import { AlertTriangle, Trash2, Copy } from "lucide-react";
+import { Form } from "@/framework/components/layouts/Form";
 
 interface ThingItem {
   thingId: string;
@@ -36,15 +27,8 @@ export default function ThingManagementPage() {
   const { user, dbData, showToast, hasPermission } = useDashboard();
   const [things, setThings] = useState<ThingItem[]>([]);
   const [loadingData, setLoadingData] = useState(false);
-  const [thingRegistering, setThingRegistering] = useState(false);
   const [isThingModalOpen, setIsThingModalOpen] = useState(false);
   const [generatedThingToken, setGeneratedThingToken] = useState("");
-
-  const [thingForm, setThingForm] = useState({
-    name: "",
-    type: "sensor",
-    metadataRaw: "{}"
-  });
 
   const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
   const activeOrg = activeOrgRelation?.organization;
@@ -71,59 +55,57 @@ export default function ThingManagementPage() {
     }
   }, [activeOrg?.orgId, loadThings]);
 
-  const handleRegisterThing = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegisterThing = async (data: Record<string, unknown>, idempotencyKey: string) => {
     if (!activeOrg) return;
 
-    setThingRegistering(true);
     try {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error("Non autenticato.");
 
       let metadata = {};
-      try {
-        metadata = JSON.parse(thingForm.metadataRaw);
-      } catch {
-        throw new Error("I metadati hardware non sono in un formato JSON valido.");
+      if (data.metadata) {
+        try {
+          metadata = typeof data.metadata === "string" ? JSON.parse(data.metadata) : data.metadata;
+        } catch {
+          throw new Error("I metadati hardware non sono in un formato JSON valido.");
+        }
       }
 
       const response = await fetchWithAppCheck("/api/thing/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`
+          "Authorization": `Bearer ${idToken}`,
+          "Idempotency-Key": idempotencyKey
         },
         body: JSON.stringify({
-          name: thingForm.name,
-          type: thingForm.type,
+          name: data.name,
+          type: data.type,
           orgId: activeOrg.orgId,
           metadata
         })
       });
 
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error?.message || "Errore registrazione dispositivo.");
+      const resJson = await response.json();
+      if (!response.ok || !resJson.success) {
+        throw new Error(resJson.error?.message || "Errore registrazione dispositivo.");
       }
 
-      setGeneratedThingToken(data.deviceToken);
+      setGeneratedThingToken(resJson.deviceToken);
       setIsThingModalOpen(true);
 
       const newThingLocal: ThingItem = {
-        thingId: data.thingId,
-        name: thingForm.name,
-        type: thingForm.type,
+        thingId: resJson.thingId,
+        name: String(data.name || ""),
+        type: String(data.type || ""),
         status: "inactive",
         createdAt: new Date().toISOString(),
         isTest: false
       };
       setThings(prev => [newThingLocal, ...prev]);
-      setThingForm({ name: "", type: "sensor", metadataRaw: "{}" });
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore registrazione.", "error");
-    } finally {
-      setThingRegistering(false);
+      throw err;
     }
   };
 
@@ -172,60 +154,12 @@ export default function ThingManagementPage() {
               <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{"Aggiungi un dispositivo IoT hardware all'organizzazione."}</p>
             </div>
 
-            <form onSubmit={handleRegisterThing} className="space-y-4">
-              <TextField isRequired className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Nome Dispositivo</Label>
-                <Input
-                  placeholder="Sensore Temperatura A"
-                  value={thingForm.name}
-                  onChange={e => setThingForm({ ...thingForm, name: e.target.value })}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
-                />
-              </TextField>
-              <Select
-                selectedKey={thingForm.type}
-                onSelectionChange={(key) => setThingForm({ ...thingForm, type: (key as string) || "sensor" })}
-                className="flex flex-col gap-1.5 w-full"
-              >
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Tipo Dispositivo</Label>
-                <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
-                  <ListBox className="outline-none">
-                    <ListBoxItem id="sensor" textValue="Sensore" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
-                      Sensore
-                    </ListBoxItem>
-                    <ListBoxItem id="camera" textValue="Telecamera" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
-                      Telecamera
-                    </ListBoxItem>
-                    <ListBoxItem id="gateway" textValue="Gateway" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
-                      Gateway
-                    </ListBoxItem>
-                    <ListBoxItem id="controller" textValue="Controller" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
-                      Controller
-                    </ListBoxItem>
-                  </ListBox>
-                </SelectPopover>
-              </Select>
-              <TextField className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Metadati Hardware (JSON)</Label>
-                <TextArea
-                  placeholder='{"firmware": "v1.2.0", "hardware_rev": "B4"}'
-                  value={thingForm.metadataRaw}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setThingForm({ ...thingForm, metadataRaw: e.target.value })}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center min-h-[80px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
-                />
-              </TextField>
-
-              <Button
-                type="submit"
-                isDisabled={thingRegistering || !hasPermission("thing", "create")}
-                className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
-              >
-                {thingRegistering ? "Registrazione..." : "Registra Dispositivo"}
-              </Button>
-            </form>
+            <Form
+              moduleId="thing"
+              fieldsOrder={["name", "type", "metadata"]}
+              onSubmit={handleRegisterThing}
+              submitLabel="Registra Dispositivo"
+            />
           </Card.Content>
         </Card>
 

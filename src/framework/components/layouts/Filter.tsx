@@ -27,16 +27,20 @@ export function Filter({
   if (activeFilters.length === 0) return null;
 
   return (
-    <div className={`flex flex-wrap items-center gap-2.5 py-2 ${className}`}>
-      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+    <div className={`klx-filter-container ${className}`}>
+      <span className="klx-filter-label">
         Filtri attivi:
       </span>
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="klx-filter-chips">
         {activeFilters.map((filter) => (
-          <div key={filter.id} className="inline-flex items-center gap-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 rounded-xl px-2.5 py-1 text-xs font-semibold">
+          <div key={filter.id} className="klx-filter-chip">
             <span className="opacity-70 mr-1">{filter.label}:</span>
             <span>{filter.displayValue}</span>
-            <button onClick={() => onRemoveFilter(filter.id)} className="ml-1 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer outline-none flex items-center justify-center">
+            <button 
+              onClick={() => onRemoveFilter(filter.id)} 
+              className="klx-filter-chip-remove-btn"
+              aria-label={`Rimuovi filtro ${filter.label}`}
+            >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -45,7 +49,7 @@ export function Filter({
           onClick={onClearAll}
           size="sm"
           variant="ghost"
-          className="h-7 min-w-0 px-2 text-xs font-extrabold uppercase tracking-wider rounded-lg text-danger hover:bg-danger/10 active:scale-95 transition-all"
+          className="klx-filter-clear-btn"
         >
           Rimuovi tutti
         </Button>

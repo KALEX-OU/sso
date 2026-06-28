@@ -4,29 +4,19 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
-import { RESOURCE_REGISTRY } from "@/framework/lib/resources.config";
+import { RESOURCE_REGISTRY, getVisibleModulesForSidebar, AppIds, MODULE_REGISTRY } from "@/framework/lib/resources.config";
 import { useTheme } from "next-themes";
 import { useCurrentLocale } from "@/locales/client";
 import pkg from "@/../package.json";
 import { SupportDialog } from "@/framework/components/user/SupportDialog";
 import { AIDataDialog } from "@/framework/components/user/AIDataDialog";
-import { Avatar } from "../ui/Avatar";
-import { Button } from "../ui/Button";
+import { Avatar } from "@/framework/components/ui/Avatar";
+import { Button } from "@/framework/components/ui/Button";
+import { Tooltip } from "@/framework/components/ui/Tooltip";
+import { ScrollShadow } from "@/framework/components/ui/ScrollShadow";
+import * as LucideIcons from "lucide-react";
 import {
   LayoutDashboard,
-  Users,
-  UserCog,
-  CreditCard,
-  ShoppingCart,
-  FileText,
-  DollarSign,
-  Cpu,
-  Activity,
-  Key,
-  Radio,
-  AppWindow,
-  Package,
-  Tag,
   Bell,
   MessageSquare,
   ActivitySquare,
@@ -35,25 +25,16 @@ import {
   ChevronRight,
   Sun,
   Moon,
-  LifeBuoy
+  LifeBuoy,
+  Settings,
+  Cpu
 } from "lucide-react";
 
-// Mappatura statica delle icone per i moduli del framework
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  dashboard: LayoutDashboard,
-  user: Users,
-  team: UserCog,
-  subscription: CreditCard,
-  checkout: ShoppingCart,
-  invoice: FileText,
-  payment: DollarSign,
-  compute: Cpu,
-  product_consume: Activity,
-  apikey: Key,
-  thing: Radio,
-  application: AppWindow,
-  product: Package,
-  productprice: Tag
+// Helper per risolvere l'icona del modulo dinamicamente dal registro SSOT
+const getIconComponent = (iconName?: string): React.ComponentType<{ className?: string }> => {
+  if (!iconName) return LayoutDashboard;
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+  return IconComponent || LayoutDashboard;
 };
 
 interface RegistryModule {
@@ -91,30 +72,28 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   const [supportOpen, setSupportOpen] = React.useState(false);
   const [aiOpen, setAiOpen] = React.useState(false);
 
-  const userRole = claims?.role || "viewer";
+  const userRole = (claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
   const displayName = user?.displayName || user?.email?.split("@")[0] || "Utente";
   const roleName = claims?.role ? claims.role.toUpperCase() : "VIEWER";
   
   // Recupera l'elenco moduli per l'appId corrente
   const registry = RESOURCE_REGISTRY as unknown as Record<string, RegistryApp>;
   const appConfig = registry[appId];
-  const modules = appConfig ? Object.keys(appConfig.modules) : [];
+  
+  interface ExtendedClaims {
+    orgRoles?: Record<string, "buyer" | "seller" | "both">;
+    role?: string;
+  }
+  
+  // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims (se configurato)
+  const extendedClaims = claims as ExtendedClaims | undefined;
+  const orgRole = (extendedClaims?.orgRoles?.[appId] || "buyer") as "buyer" | "seller" | "both";
 
-  // Verifica l'accesso di lettura al modulo in base al ruolo RBAC
-  const hasAccess = (moduleId: string) => {
-    if (!appConfig) return false;
-    const moduleConfig = appConfig.modules[moduleId];
-    if (!moduleConfig) return false;
-    
-    // Bypass per l'owner
-    if (userRole === "owner") return true;
+  // Estrae la lista dei moduli visibili sulla base del ruolo utente e ruolo organizzazione (SSOT)
+  const visibleModules = getVisibleModulesForSidebar(appId as AppIds, userRole, orgRole);
 
-    const roleKey = userRole.toLowerCase() as "owner" | "admin" | "member" | "viewer" | "device";
-    const policy = moduleConfig.rolePolicies[roleKey] || moduleConfig.rolePolicies["viewer"];
-    return policy ? (policy.canRead || policy.canList) : false;
-  };
-
-  const visibleModules = modules.filter(hasAccess);
+  const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+  const settingsUrl = appId === "sso" ? `/${currentLocale}/settings` : `${ssoUrl}/${currentLocale}/settings`;
 
   const handleLogout = async () => {
     try {
@@ -130,54 +109,51 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   };
 
   return (
-    <aside
-      className={`shrink-0 flex flex-col h-screen transition-all duration-300 ease-in-out z-30
-        bg-slate-950/95 dark:bg-black/90 text-slate-100 border-r border-slate-900/60 backdrop-blur-xl
-        ${collapsed ? "w-16" : "w-64"}`}
-    >
+    <aside className={`klx-sidebar ${collapsed ? "klx-sidebar--collapsed" : ""}`}>
       {/* 1. HEADER (LOGO & TOGGLE SIDEBAR) */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-900/50">
+      <div className="klx-sidebar-header">
         {!collapsed && (
-          <div className="flex items-center gap-2 select-none">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#00ffff] via-[#ff00ff] to-[#ffff00] flex items-center justify-center font-black text-black text-xs">
-              K
-            </div>
-            <span className="text-sm font-black uppercase tracking-[0.2em] bg-clip-text text-transparent bg-gradient-to-r from-[#00ffff] to-[#ff00ff]">
-              KALEX
-            </span>
+          <div className="klx-sidebar-logo-container">
+            <div className="klx-sidebar-logo-mark">K</div>
+            <span className="klx-sidebar-logo-text">KALEX</span>
           </div>
         )}
         {collapsed && (
-          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-[#00ffff] via-[#ff00ff] to-[#ffff00] flex items-center justify-center font-black text-black text-xs mx-auto">
-            K
-          </div>
+          <div className="klx-sidebar-logo-mark">K</div>
         )}
         {!collapsed && (
-          <button
+          <Button
+            isIconOnly
+            variant="ghost"
             onClick={() => setCollapsed(true)}
-            className="p-1 rounded-lg hover:bg-slate-900 text-slate-400 hover:text-white cursor-pointer transition-colors"
+            className="klx-sidebar-toggle-btn"
+            aria-label="Collassa Sidebar"
           >
             <ChevronLeft className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 
       {/* BOTTONE ESPANSIONE (QUANDO COLLASSED) */}
       {collapsed && (
         <div className="flex justify-center py-2 border-b border-slate-900/50">
-          <button
+          <Button
+            isIconOnly
+            variant="ghost"
             onClick={() => setCollapsed(false)}
-            className="p-1.5 rounded-lg hover:bg-slate-900 text-slate-400 hover:text-white cursor-pointer transition-colors"
+            className="klx-sidebar-toggle-btn"
+            aria-label="Espandi Sidebar"
           >
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       )}
 
       {/* 2. MENU MODULI (Middle) */}
-      <nav className="flex-1 overflow-y-auto py-4 space-y-1.5 scrollbar-none px-3">
+      <ScrollShadow hideScrollBar className="klx-sidebar-menu">
         {visibleModules.map((moduleId) => {
-          const Icon = ICON_MAP[moduleId] || LayoutDashboard;
+          const moduleConfig = MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY];
+          const Icon = getIconComponent(moduleConfig?.icon);
           const config = appConfig.modules[moduleId];
           const label = config?.name || moduleId;
           
@@ -186,95 +162,158 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
           const isActive = pathname === localizedPath || pathname.startsWith(localizedPath + "/");
 
           return (
-            <Link
+            <Tooltip
               key={moduleId}
-              href={localizedPath}
-              className={`flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-200 group relative
-                ${
-                  isActive
-                    ? "bg-[#ff00ff]/10 text-[#ff00ff] border-l-3 border-[#ff00ff]"
-                    : "text-slate-400 hover:text-[#00ffff] hover:bg-[#00ffff]/5"
-                }`}
+              isDisabled={!collapsed}
+              delay={0}
+              closeDelay={0}
             >
-              <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? "text-[#ff00ff]" : "text-slate-400 group-hover:text-[#00ffff]"}`} />
-              
-              {!collapsed && (
-                <span className="truncate">{label}</span>
-              )}
-
-              {/* Tooltip per modalità compatta */}
-              {collapsed && (
-                <div className="absolute left-18 bg-slate-950 text-white text-[10px] font-bold uppercase tracking-wider py-1.5 px-3 rounded-lg border border-slate-900 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                  {label}
-                </div>
-              )}
-            </Link>
+              <Tooltip.Trigger>
+                <Link
+                  href={localizedPath}
+                  className={`klx-sidebar-menu-item group ${isActive ? "klx-sidebar-menu-item--active" : ""}`}
+                >
+                  <Icon className="klx-sidebar-menu-item-icon" />
+                  {!collapsed && (
+                    <span className="klx-sidebar-menu-item-label">{label}</span>
+                  )}
+                </Link>
+              </Tooltip.Trigger>
+              <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+                {label}
+              </Tooltip.Content>
+            </Tooltip>
           );
         })}
-      </nav>
+      </ScrollShadow>
 
       {/* 3. FOOTER (NOTIFICHE, PROFILO, SUPPORTO & LOGOUT) */}
-      <div className="p-3 border-t border-slate-900/60 bg-slate-950/40 space-y-3">
+      <div className="klx-sidebar-footer">
         {/* BOTTONI DI STATO E NOTIFICHE */}
-        <div className={`flex items-center gap-1.5 ${collapsed ? "flex-col justify-center" : "justify-between"}`}>
+        <div className="klx-sidebar-actions-grid">
           {/* Notifiche */}
-          <button className="relative p-2 rounded-xl text-slate-400 hover:text-[#ffff00] hover:bg-[#ffff00]/5 transition-all group cursor-pointer">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#ffff00]" />
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                Notifiche
-              </div>
-            )}
-          </button>
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
+          >
+            <Tooltip.Trigger>
+              <Button
+                isIconOnly
+                variant="ghost"
+                className="klx-sidebar-action-btn klx-sidebar-action-btn--notif"
+                aria-label="Notifiche"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-warning" />
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              Notifiche
+            </Tooltip.Content>
+          </Tooltip>
 
           {/* Messaggi */}
-          <button className="relative p-2 rounded-xl text-slate-400 hover:text-[#00ffff] hover:bg-[#00ffff]/5 transition-all group cursor-pointer">
-            <MessageSquare className="w-4 h-4" />
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                Messaggi
-              </div>
-            )}
-          </button>
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
+          >
+            <Tooltip.Trigger>
+              <Button
+                isIconOnly
+                variant="ghost"
+                className="klx-sidebar-action-btn klx-sidebar-action-btn--msg"
+                aria-label="Messaggi"
+              >
+                <MessageSquare className="w-4 h-4" />
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              Messaggi
+            </Tooltip.Content>
+          </Tooltip>
 
           {/* Stato del Servizio */}
-          <button className="relative p-2 rounded-xl text-slate-400 hover:text-green-400 hover:bg-green-500/5 transition-all group cursor-pointer">
-            <ActivitySquare className="w-4 h-4" />
-            <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                Stato Servizio: OK
-              </div>
-            )}
-          </button>
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
+          >
+            <Tooltip.Trigger>
+              <Button
+                isIconOnly
+                variant="ghost"
+                className="klx-sidebar-action-btn klx-sidebar-action-btn--status"
+                aria-label="Stato del Servizio"
+              >
+                <ActivitySquare className="w-4 h-4" />
+                <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              Stato Servizio: OK
+            </Tooltip.Content>
+          </Tooltip>
 
           {/* Toggle Theme */}
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all group cursor-pointer"
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
           >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                Tema: {theme === "dark" ? "Light" : "Dark"}
-              </div>
-            )}
-          </button>
+            <Tooltip.Trigger>
+              <Button
+                isIconOnly
+                variant="ghost"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="klx-sidebar-action-btn"
+                aria-label="Cambia Tema"
+              >
+                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              Tema: {theme === "dark" ? "Light" : "Dark"}
+            </Tooltip.Content>
+          </Tooltip>
+
+          {/* Settings (solo per l'owner dell'organizzazione) */}
+          {userRole === "owner" && (
+            <Tooltip
+              isDisabled={!collapsed}
+              delay={0}
+              closeDelay={0}
+            >
+              <Tooltip.Trigger>
+                <Link
+                  href={settingsUrl}
+                  className="klx-sidebar-action-btn klx-sidebar-action-btn--settings"
+                  aria-label="Impostazioni"
+                >
+                  <Settings className="w-4 h-4" />
+                </Link>
+              </Tooltip.Trigger>
+              <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+                Impostazioni
+              </Tooltip.Content>
+            </Tooltip>
+          )}
         </div>
 
-        <div className={`flex items-center gap-3 p-1.5 rounded-xl bg-slate-900/30 ${collapsed ? "justify-center" : "justify-start"}`}>
-          <Avatar className="w-8 h-8 text-xs cursor-pointer ring-1 ring-slate-800 ring-offset-1 ring-offset-slate-950 shrink-0">
+        {/* Profilo utente */}
+        <div className="klx-sidebar-profile-card">
+          <Avatar className="klx-sidebar-profile-avatar">
             {user?.photoURL && <Avatar.Image src={user.photoURL} alt={displayName} />}
             <Avatar.Fallback className="text-white">{displayName.substring(0, 2).toUpperCase()}</Avatar.Fallback>
           </Avatar>
 
           {!collapsed && (
-            <div className="text-left min-w-0 flex-1">
-              <p className="text-xs font-black text-slate-200 truncate uppercase tracking-wide">
+            <div className="klx-sidebar-profile-info">
+              <p className="klx-sidebar-profile-name">
                 {displayName}
               </p>
-              <p className="text-[9px] font-bold text-slate-500 tracking-wider uppercase truncate">
+              <p className="klx-sidebar-profile-role">
                 {roleName}
               </p>
             </div>
@@ -282,54 +321,74 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         </div>
 
         {/* BOTTONI SUPPORTO & LOGOUT */}
-        <div className={`flex ${collapsed ? "flex-col gap-1 items-center" : "justify-between"} gap-1.5`}>
-          <button
-            onClick={() => setSupportOpen(true)}
-            className={`flex items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all group relative cursor-pointer
-              ${collapsed ? "w-8 h-8" : "flex-1 gap-2 text-[10px] font-bold uppercase tracking-wider"}`}
+        <div className="klx-sidebar-footer-buttons">
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
           >
-            <LifeBuoy className="w-4 h-4" />
-            {!collapsed && <span>Supporto</span>}
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                Supporto
-              </div>
-            )}
-          </button>
+            <Tooltip.Trigger>
+              <Button
+                onClick={() => setSupportOpen(true)}
+                variant="ghost"
+                className="klx-sidebar-footer-btn"
+                aria-label="Apri Supporto"
+              >
+                <LifeBuoy className="w-4 h-4" />
+                {!collapsed && <span>Supporto</span>}
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              Supporto
+            </Tooltip.Content>
+          </Tooltip>
 
-          <button
-            onClick={() => setAiOpen(true)}
-            className={`flex items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all group relative cursor-pointer
-               ${collapsed ? "w-8 h-8" : "flex-1 gap-2 text-[10px] font-bold uppercase tracking-wider"}`}
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
           >
-            <Cpu className="w-4 h-4 text-cyan-400 animate-pulse" />
-            {!collapsed && <span>AI Agent</span>}
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                AI Agent
-              </div>
-            )}
-          </button>
+            <Tooltip.Trigger>
+              <Button
+                onClick={() => setAiOpen(true)}
+                variant="ghost"
+                className="klx-sidebar-footer-btn"
+                aria-label="AI Agent"
+              >
+                <Cpu className="w-4 h-4 text-secondary animate-pulse" />
+                {!collapsed && <span>AI Agent</span>}
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              AI Agent
+            </Tooltip.Content>
+          </Tooltip>
 
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className={`flex items-center justify-center text-red-500 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-xl transition-all cursor-pointer min-w-0 h-auto
-              ${collapsed ? "w-8 h-8" : "flex-1 gap-2 text-[10px] font-bold uppercase tracking-wider"}`}
+          <Tooltip
+            isDisabled={!collapsed}
+            delay={0}
+            closeDelay={0}
           >
-            <LogOut className="w-4 h-4" />
-            {!collapsed && <span>Esci</span>}
-            {collapsed && (
-              <div className="absolute left-12 bg-slate-950 text-white text-[10px] font-bold uppercase py-1 px-2 rounded border border-slate-900 shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">
-                Disconnetti
-              </div>
-            )}
-          </Button>
+            <Tooltip.Trigger>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="klx-sidebar-footer-btn klx-sidebar-footer-btn--logout"
+                aria-label="Esci"
+              >
+                <LogOut className="w-4 h-4" />
+                {!collapsed && <span>Esci</span>}
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+              Disconnetti
+            </Tooltip.Content>
+          </Tooltip>
         </div>
 
         {/* COPYRIGHT E VERSIONE FOOTER */}
         {!collapsed && (
-          <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-900/60 text-[9px] text-slate-500 font-medium tracking-wide">
+          <div className="klx-sidebar-copyright">
             <span>© KALEX CLOUDTECH OÜ</span>
             <span className="bg-slate-900/80 text-slate-400 px-1.5 py-0.5 rounded font-mono text-[8px]">
               v{pkg.version}

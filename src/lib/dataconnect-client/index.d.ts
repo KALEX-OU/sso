@@ -11,64 +11,74 @@ export type DateString = string;
 
 
 export interface AddUserToOrganizationData {
-  userOrganization_insert: UserOrganization_Key;
+  userOrganization_insert: UserOrganizations_Key;
 }
 
 export interface AddUserToOrganizationVariables {
-  uid: string;
+  userId: string;
   orgId: string;
   role: string;
   rbac?: unknown | null;
 }
 
 export interface AddUserToTeamData {
-  teamMember_insert: TeamMember_Key;
+  teamMember_insert: TeamMembers_Key;
 }
 
 export interface AddUserToTeamVariables {
-  uid: string;
+  userId: string;
   teamId: string;
 }
 
-export interface ApiKeyPermission_Key {
+export interface ApiKeyPermissions_Key {
   keyHash: string;
   moduleId: string;
-  __typename?: 'ApiKeyPermission_Key';
+  __typename?: 'ApiKeyPermissions_Key';
 }
 
-export interface ApiKey_Key {
+export interface ApiKeys_Key {
   keyHash: string;
-  __typename?: 'ApiKey_Key';
+  __typename?: 'ApiKeys_Key';
 }
 
-export interface Application_Key {
+export interface Applications_Key {
   appId: string;
-  __typename?: 'Application_Key';
+  __typename?: 'Applications_Key';
 }
 
-export interface AuditLog_Key {
+export interface AuditLogs_Key {
   logId: string;
-  __typename?: 'AuditLog_Key';
+  __typename?: 'AuditLogs_Key';
 }
 
-export interface AuthCode_Key {
+export interface AuthCodes_Key {
   code: string;
-  __typename?: 'AuthCode_Key';
+  __typename?: 'AuthCodes_Key';
 }
 
 export interface CheckVatNumberExistsData {
   organizations: ({
     orgId: string;
     name: string;
-  } & Organization_Key)[];
+  } & Organizations_Key)[];
 }
 
 export interface CheckVatNumberExistsVariables {
   vatNumber: string;
 }
 
+export interface Checkouts_Key {
+  checkoutId: string;
+  __typename?: 'Checkouts_Key';
+}
+
+export interface Computes_Key {
+  computeId: string;
+  __typename?: 'Computes_Key';
+}
+
 export interface ConfirmOrganizationData {
-  organization_update?: Organization_Key | null;
+  organization_update?: Organizations_Key | null;
 }
 
 export interface ConfirmOrganizationVariables {
@@ -77,12 +87,12 @@ export interface ConfirmOrganizationVariables {
 }
 
 export interface CreateApiKeyData {
-  apiKey_insert: ApiKey_Key;
+  apiKey_upsert: ApiKeys_Key;
 }
 
 export interface CreateApiKeyVariables {
   keyHash: string;
-  userUid?: string | null;
+  userId?: string | null;
   thingId?: string | null;
   orgId: string;
   appId: string;
@@ -95,7 +105,7 @@ export interface CreateApiKeyVariables {
 }
 
 export interface CreateApplicationData {
-  application_insert: Application_Key;
+  application_insert: Applications_Key;
 }
 
 export interface CreateApplicationVariables {
@@ -103,18 +113,16 @@ export interface CreateApplicationVariables {
   name: string;
   description?: string | null;
   isActive?: boolean | null;
-  serviceId?: string | null;
-  purchasable?: boolean | null;
 }
 
 export interface CreateAuditLogData {
-  auditLog_insert: AuditLog_Key;
+  auditLog_insert: AuditLogs_Key;
 }
 
 export interface CreateAuditLogVariables {
   orgId: string;
   appId?: string | null;
-  uid: string;
+  userId: string;
   authType: string;
   method: string;
   endpoint: string;
@@ -125,36 +133,67 @@ export interface CreateAuditLogVariables {
 }
 
 export interface CreateAuthCodeData {
-  authCode_insert: AuthCode_Key;
+  authCode_insert: AuthCodes_Key;
 }
 
 export interface CreateAuthCodeVariables {
   code: string;
-  userUid: string;
+  userId: string;
   clientId: string;
   redirectUri: string;
   expiresAt: TimestampString;
 }
 
+export interface CreateCheckoutData {
+  checkout_upsert: Checkouts_Key;
+}
+
+export interface CreateCheckoutVariables {
+  checkoutId: string;
+  buyerId: string;
+  sellerId?: string | null;
+  appId: string;
+  status: string;
+  mode: string;
+  items: unknown;
+  amount: number;
+  isTest?: boolean | null;
+}
+
+export interface CreateComputeData {
+  compute_upsert: Computes_Key;
+}
+
+export interface CreateComputeVariables {
+  computeId: string;
+  orgId: string;
+  resourceType: string;
+  usage?: number | null;
+  status?: string | null;
+  metadata?: unknown | null;
+  isTest?: boolean | null;
+}
+
 export interface CreateInvoiceData {
-  invoice_insert: Invoice_Key;
+  invoice_upsert: Invoices_Key;
 }
 
 export interface CreateInvoiceVariables {
   invoiceId: string;
-  stripeInvoiceId?: string | null;
   invoiceNumber?: string | null;
   buyerId: string;
   sellerId: string;
   appId: string;
   amount: number;
+  currency?: string | null;
   status: string;
   pdfUrl?: string | null;
   taxPercent?: number | null;
   taxAmount?: number | null;
   subtotal?: number | null;
-  products?: unknown | null;
-  services?: unknown | null;
+  subscriptionId?: string | null;
+  checkoutId?: string | null;
+  lineItems?: unknown | null;
   dueDate?: TimestampString | null;
   paidAt?: TimestampString | null;
   metadata?: unknown | null;
@@ -162,7 +201,7 @@ export interface CreateInvoiceVariables {
 }
 
 export interface CreateOrganizationData {
-  organization_insert: Organization_Key;
+  organization_insert: Organizations_Key;
 }
 
 export interface CreateOrganizationVariables {
@@ -182,13 +221,14 @@ export interface CreateOrganizationVariables {
   latitude?: number | null;
   longitude?: number | null;
   altitude?: number | null;
+  addressDetails?: unknown | null;
   confirmed?: boolean | null;
   viesValidated?: boolean | null;
   metadata?: unknown | null;
 }
 
 export interface CreatePaymentData {
-  payment_insert: Payment_Key;
+  payment_upsert: Payments_Key;
 }
 
 export interface CreatePaymentVariables {
@@ -203,7 +243,6 @@ export interface CreatePaymentVariables {
   cardBrand?: string | null;
   cardLast4?: string | null;
   receiptUrl?: string | null;
-  stripeCustomerId?: string | null;
   stripeConnectAccountId?: string | null;
   applicationFeeAmount?: number | null;
   errorMessage?: string | null;
@@ -211,8 +250,28 @@ export interface CreatePaymentVariables {
   appId: string;
 }
 
+export interface CreatePriceData {
+  price_upsert: Prices_Key;
+}
+
+export interface CreatePriceVariables {
+  priceId: string;
+  productId: string;
+  amount: number;
+  currency?: string | null;
+  type: string;
+  billingScheme?: string | null;
+  recurringInterval?: string | null;
+  recurringUsageType?: string | null;
+  tier?: string | null;
+  isActive?: boolean | null;
+  isTest?: boolean | null;
+  taxBehavior?: string | null;
+  metadata?: unknown | null;
+}
+
 export interface CreateProductBatchData {
-  productBatch_insert: ProductBatch_Key;
+  productBatch_insert: ProductBatches_Key;
 }
 
 export interface CreateProductBatchVariables {
@@ -226,8 +285,22 @@ export interface CreateProductBatchVariables {
   isTest?: boolean | null;
 }
 
+export interface CreateProductConsumeData {
+  productConsume_upsert: ProductConsumes_Key;
+}
+
+export interface CreateProductConsumeVariables {
+  consumeId: string;
+  orgId: string;
+  productId: string;
+  quantity: number;
+  status?: string | null;
+  metadata?: unknown | null;
+  isTest?: boolean | null;
+}
+
 export interface CreateProductData {
-  product_insert: Product_Key;
+  product_upsert: Products_Key;
 }
 
 export interface CreateProductVariables {
@@ -236,14 +309,10 @@ export interface CreateProductVariables {
   appId: string;
   name: string;
   description?: string | null;
+  mode: string;
   type: string;
+  route?: string | null;
   sku?: string | null;
-  price: number;
-  stripeProductId?: string | null;
-  stripePricePersonalId?: string | null;
-  stripePriceBusinessId?: string | null;
-  stripePriceGovernmentId?: string | null;
-  stripePriceEducationId?: string | null;
   isActive?: boolean | null;
   isTest?: boolean | null;
   metadata?: unknown | null;
@@ -252,38 +321,12 @@ export interface CreateProductVariables {
   relatedProducts?: unknown | null;
   options?: unknown | null;
   taxBehavior?: string | null;
-  taxCode?: string | null;
   aiSummary?: string | null;
   descriptionEmbedding?: unknown | null;
 }
 
-export interface CreateServiceData {
-  service_insert: Service_Key;
-}
-
-export interface CreateServiceVariables {
-  serviceId: string;
-  orgId: string;
-  appId: string;
-  name: string;
-  description?: string | null;
-  type: string;
-  priceModel?: string | null;
-  priceText?: string | null;
-  stripeProductId?: string | null;
-  stripePricePersonalId?: string | null;
-  stripePriceBusinessId?: string | null;
-  stripePriceGovernmentId?: string | null;
-  stripePriceEducationId?: string | null;
-  isActive?: boolean | null;
-  isTest?: boolean | null;
-  metadata?: unknown | null;
-  taxBehavior?: string | null;
-  taxCode?: string | null;
-}
-
 export interface CreateTeamData {
-  team_insert: Team_Key;
+  team_upsert: Teams_Key;
 }
 
 export interface CreateTeamVariables {
@@ -298,7 +341,7 @@ export interface CreateTeamVariables {
 }
 
 export interface CreateThingData {
-  thing_insert: Thing_Key;
+  thing_insert: Things_Key;
 }
 
 export interface CreateThingVariables {
@@ -314,11 +357,11 @@ export interface CreateThingVariables {
 }
 
 export interface DeleteApiKeyData {
-  apiKey_delete?: ApiKey_Key | null;
+  apiKey_delete?: ApiKeys_Key | null;
 }
 
 export interface DeleteApiKeyPermissionData {
-  apiKeyPermission_delete?: ApiKeyPermission_Key | null;
+  apiKeyPermission_delete?: ApiKeyPermissions_Key | null;
 }
 
 export interface DeleteApiKeyPermissionVariables {
@@ -331,7 +374,7 @@ export interface DeleteApiKeyVariables {
 }
 
 export interface DeleteApplicationData {
-  application_delete?: Application_Key | null;
+  application_delete?: Applications_Key | null;
 }
 
 export interface DeleteApplicationVariables {
@@ -339,7 +382,7 @@ export interface DeleteApplicationVariables {
 }
 
 export interface DeleteAuditLogData {
-  auditLog_delete?: AuditLog_Key | null;
+  auditLog_delete?: AuditLogs_Key | null;
 }
 
 export interface DeleteAuditLogVariables {
@@ -347,15 +390,31 @@ export interface DeleteAuditLogVariables {
 }
 
 export interface DeleteAuthCodeData {
-  authCode_delete?: AuthCode_Key | null;
+  authCode_delete?: AuthCodes_Key | null;
 }
 
 export interface DeleteAuthCodeVariables {
   code: string;
 }
 
+export interface DeleteCheckoutData {
+  checkout_delete?: Checkouts_Key | null;
+}
+
+export interface DeleteCheckoutVariables {
+  checkoutId: string;
+}
+
+export interface DeleteComputeData {
+  compute_delete?: Computes_Key | null;
+}
+
+export interface DeleteComputeVariables {
+  computeId: string;
+}
+
 export interface DeleteInvoiceData {
-  invoice_delete?: Invoice_Key | null;
+  invoice_delete?: Invoices_Key | null;
 }
 
 export interface DeleteInvoiceVariables {
@@ -363,47 +422,63 @@ export interface DeleteInvoiceVariables {
 }
 
 export interface DeleteOrganizationData {
-  organization_delete?: Organization_Key | null;
+  organization_delete?: Organizations_Key | null;
 }
 
 export interface DeleteOrganizationVariables {
   orgId: string;
 }
 
+export interface DeletePaymentData {
+  payment_delete?: Payments_Key | null;
+}
+
+export interface DeletePaymentVariables {
+  paymentId: string;
+}
+
 export interface DeletePreRegistrationData {
-  preRegistration_delete?: PreRegistration_Key | null;
+  preRegistration_delete?: PreRegistrations_Key | null;
 }
 
 export interface DeletePreRegistrationVariables {
   email: string;
 }
 
+export interface DeletePriceData {
+  price_delete?: Prices_Key | null;
+}
+
+export interface DeletePriceVariables {
+  priceId: string;
+}
+
 export interface DeleteProductBatchData {
-  productBatch_delete?: ProductBatch_Key | null;
+  productBatch_delete?: ProductBatches_Key | null;
 }
 
 export interface DeleteProductBatchVariables {
   batchId: string;
 }
 
+export interface DeleteProductConsumeData {
+  productConsume_delete?: ProductConsumes_Key | null;
+}
+
+export interface DeleteProductConsumeVariables {
+  consumeId: string;
+}
+
 export interface DeleteProductData {
-  product_delete?: Product_Key | null;
+  product_delete?: Products_Key | null;
 }
 
 export interface DeleteProductVariables {
   productId: string;
 }
 
-export interface DeleteServiceData {
-  service_delete?: Service_Key | null;
-}
-
-export interface DeleteServiceVariables {
-  serviceId: string;
-}
-
 export interface DeleteSubscriptionData {
-  subscription_delete?: ServiceSubscription_Key | null;
+  subscription_delete?: Subscriptions_Key | null;
 }
 
 export interface DeleteSubscriptionVariables {
@@ -411,7 +486,7 @@ export interface DeleteSubscriptionVariables {
 }
 
 export interface DeleteTeamData {
-  team_delete?: Team_Key | null;
+  team_delete?: Teams_Key | null;
 }
 
 export interface DeleteTeamVariables {
@@ -419,7 +494,7 @@ export interface DeleteTeamVariables {
 }
 
 export interface DeleteThingData {
-  thing_delete?: Thing_Key | null;
+  thing_delete?: Things_Key | null;
 }
 
 export interface DeleteThingVariables {
@@ -427,39 +502,39 @@ export interface DeleteThingVariables {
 }
 
 export interface DeleteUserData {
-  user_delete?: User_Key | null;
+  user_delete?: Users_Key | null;
 }
 
 export interface DeleteUserOrganizationData {
-  userOrganization_delete?: UserOrganization_Key | null;
+  userOrganization_delete?: UserOrganizations_Key | null;
 }
 
 export interface DeleteUserOrganizationVariables {
-  uid: string;
+  userId: string;
   orgId: string;
 }
 
 export interface DeleteUserVariables {
-  uid: string;
+  userId: string;
 }
 
 export interface GetApiKeyData {
   apiKey?: {
     keyHash: string;
     user?: {
-      uid: string;
+      userId: string;
       email: string;
-    } & User_Key;
+    } & Users_Key;
     thing?: {
       thingId: string;
       name: string;
-    } & Thing_Key;
+    } & Things_Key;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     description?: string | null;
     ipWhitelist: unknown;
@@ -467,7 +542,7 @@ export interface GetApiKeyData {
     expiresAt?: TimestampString | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & ApiKey_Key;
+  } & ApiKeys_Key;
 }
 
 export interface GetApiKeyPermissionsData {
@@ -480,7 +555,7 @@ export interface GetApiKeyPermissionsData {
     canUpdate: boolean;
     canDelete: boolean;
     allowedFields: unknown;
-  } & ApiKeyPermission_Key)[];
+  } & ApiKeyPermissions_Key)[];
 }
 
 export interface GetApiKeyPermissionsVariables {
@@ -497,22 +572,8 @@ export interface GetApplicationData {
     name: string;
     description?: string | null;
     isActive: boolean;
-    serviceId?: string | null;
-    purchasable: boolean;
-    services_on_app: ({
-      serviceId: string;
-      priceModel?: string | null;
-      priceText?: string | null;
-      type: string;
-      stripeProductId?: string | null;
-      stripePricePersonalId?: string | null;
-      stripePriceBusinessId?: string | null;
-      stripePriceEducationId?: string | null;
-      stripePriceGovernmentId?: string | null;
-      isActive: boolean;
-    } & Service_Key)[];
     createdAt: TimestampString;
-  } & Application_Key;
+  } & Applications_Key;
 }
 
 export interface GetApplicationVariables {
@@ -522,15 +583,51 @@ export interface GetApplicationVariables {
 export interface GetAuthCodeData {
   authCode?: {
     code: string;
-    userUid: string;
+    userId: string;
     clientId: string;
     redirectUri: string;
     expiresAt: TimestampString;
-  } & AuthCode_Key;
+  } & AuthCodes_Key;
 }
 
 export interface GetAuthCodeVariables {
   code: string;
+}
+
+export interface GetCheckoutData {
+  checkout?: {
+    checkoutId: string;
+    buyerId: string;
+    sellerId?: string | null;
+    appId: string;
+    status: string;
+    mode: string;
+    items: unknown;
+    amount: number;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & Checkouts_Key;
+}
+
+export interface GetCheckoutVariables {
+  checkoutId: string;
+}
+
+export interface GetComputeData {
+  compute?: {
+    computeId: string;
+    orgId: string;
+    resourceType: string;
+    usage: number;
+    status: string;
+    metadata?: unknown | null;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & Computes_Key;
+}
+
+export interface GetComputeVariables {
+  computeId: string;
 }
 
 export interface GetInvoiceDetailsData {
@@ -540,27 +637,29 @@ export interface GetInvoiceDetailsData {
     app: {
       appId: string;
       name: string;
-    } & Application_Key;
+    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     seller: {
       orgId: string;
       name: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     amount: number;
+    currency: string;
     status: string;
     pdfUrl?: string | null;
     taxPercent?: number | null;
     taxAmount?: number | null;
     subtotal?: number | null;
-    products?: unknown | null;
-    services?: unknown | null;
+    subscriptionId?: string | null;
+    checkoutId?: string | null;
+    lineItems?: unknown | null;
     createdAt: TimestampString;
     metadata?: unknown | null;
     isTest: boolean;
-  } & Invoice_Key;
+  } & Invoices_Key;
 }
 
 export interface GetInvoiceDetailsVariables {
@@ -576,7 +675,7 @@ export interface GetOrganizationByStripeCustomerData {
     stripeCustomerId?: string | null;
     stripeConnectAccountId?: string | null;
     stripeConnectOnboarded?: boolean | null;
-  } & Organization_Key)[];
+  } & Organizations_Key)[];
 }
 
 export interface GetOrganizationByStripeCustomerVariables {
@@ -599,28 +698,59 @@ export interface GetOrganizationDetailsData {
     isTest: boolean;
     viesValidated: boolean;
     address?: string | null;
+    addressDetails?: unknown | null;
     stripeCustomerId?: string | null;
     stripeConnectAccountId?: string | null;
     stripeConnectOnboarded?: boolean | null;
     confirmed: boolean;
+    metadata?: unknown | null;
     createdAt: TimestampString;
-    subscriptions_on_organization: ({
+    subscriptions_on_buyer: ({
       subscriptionId: string;
-      service: {
-        serviceId: string;
-      } & Service_Key;
+      buyerId: string;
+      sellerId?: string | null;
+      appId: string;
       status: string;
-      tier?: string | null;
-      seats: number;
-      assignedSeats?: unknown | null;
+      items: unknown;
       expiresAt?: TimestampString | null;
       updatedAt: TimestampString;
-    } & ServiceSubscription_Key)[];
-  } & Organization_Key;
+    } & Subscriptions_Key)[];
+  } & Organizations_Key;
 }
 
 export interface GetOrganizationDetailsVariables {
   orgId: string;
+}
+
+export interface GetPaymentData {
+  payment?: {
+    paymentId: string;
+    buyerId: string;
+    sellerId?: string | null;
+    appId: string;
+    invoiceId?: string | null;
+    invoice?: {
+      invoiceId: string;
+      invoiceNumber?: string | null;
+      status: string;
+    } & Invoices_Key;
+    amount: number;
+    currency: string;
+    status: string;
+    paymentMethodType?: string | null;
+    cardBrand?: string | null;
+    cardLast4?: string | null;
+    receiptUrl?: string | null;
+    stripeConnectAccountId?: string | null;
+    applicationFeeAmount?: number | null;
+    errorMessage?: string | null;
+    metadata?: unknown | null;
+    createdAt: TimestampString;
+  } & Payments_Key;
+}
+
+export interface GetPaymentVariables {
+  paymentId: string;
 }
 
 export interface GetPreRegistrationData {
@@ -630,6 +760,7 @@ export interface GetPreRegistrationData {
     companyName: string;
     country: string;
     vatNumber?: string | null;
+    fiscalCode?: string | null;
     sdiCode?: string | null;
     officeCode?: string | null;
     cigCode?: string | null;
@@ -638,12 +769,36 @@ export interface GetPreRegistrationData {
     latitude?: number | null;
     longitude?: number | null;
     altitude?: number | null;
+    addressDetails?: unknown | null;
     metadata?: unknown | null;
-  } & PreRegistration_Key;
+  } & PreRegistrations_Key;
 }
 
 export interface GetPreRegistrationVariables {
   email: string;
+}
+
+export interface GetPriceData {
+  price?: {
+    priceId: string;
+    productId: string;
+    amount: number;
+    currency: string;
+    type: string;
+    billingScheme?: string | null;
+    recurringInterval?: string | null;
+    recurringUsageType?: string | null;
+    tier?: string | null;
+    isActive: boolean;
+    isTest: boolean;
+    taxBehavior?: string | null;
+    metadata?: unknown | null;
+    createdAt: TimestampString;
+  } & Prices_Key;
+}
+
+export interface GetPriceVariables {
+  priceId: string;
 }
 
 export interface GetProductBatchesByProductData {
@@ -656,11 +811,28 @@ export interface GetProductBatchesByProductData {
     metadata?: unknown | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & ProductBatch_Key)[];
+  } & ProductBatches_Key)[];
 }
 
 export interface GetProductBatchesByProductVariables {
   productId: string;
+}
+
+export interface GetProductConsumeData {
+  productConsume?: {
+    consumeId: string;
+    orgId: string;
+    productId: string;
+    quantity: number;
+    status: string;
+    metadata?: unknown | null;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & ProductConsumes_Key;
+}
+
+export interface GetProductConsumeVariables {
+  consumeId: string;
 }
 
 export interface GetProductDetailsData {
@@ -668,20 +840,16 @@ export interface GetProductDetailsData {
     productId: string;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     description?: string | null;
+    mode: string;
     type: string;
+    route: string;
     sku?: string | null;
-    price: number;
-    stripeProductId?: string | null;
-    stripePricePersonalId?: string | null;
-    stripePriceBusinessId?: string | null;
-    stripePriceGovernmentId?: string | null;
-    stripePriceEducationId?: string | null;
     isActive: boolean;
     isTest: boolean;
     metadata?: unknown | null;
@@ -689,68 +857,37 @@ export interface GetProductDetailsData {
     bom?: unknown | null;
     relatedProducts?: unknown | null;
     options?: unknown | null;
-    taxBehavior?: string | null;
-    taxCode?: string | null;
+    taxBehavior: string;
     aiSummary?: string | null;
     descriptionEmbedding?: unknown | null;
     createdAt: TimestampString;
-  } & Product_Key;
+  } & Products_Key;
 }
 
 export interface GetProductDetailsVariables {
   productId: string;
 }
 
-export interface GetServiceDetailsData {
-  service?: {
-    serviceId: string;
-    organization: {
-      orgId: string;
-    } & Organization_Key;
-    app: {
-      appId: string;
-    } & Application_Key;
-    name: string;
-    description?: string | null;
-    type: string;
-    priceModel?: string | null;
-    priceText?: string | null;
-    stripeProductId?: string | null;
-    stripePricePersonalId?: string | null;
-    stripePriceBusinessId?: string | null;
-    stripePriceGovernmentId?: string | null;
-    stripePriceEducationId?: string | null;
-    isActive: boolean;
-    isTest: boolean;
-    metadata?: unknown | null;
-    taxBehavior?: string | null;
-    taxCode?: string | null;
-    createdAt: TimestampString;
-  } & Service_Key;
-}
-
-export interface GetServiceDetailsVariables {
-  serviceId: string;
-}
-
 export interface GetSubscriptionData {
   subscription?: {
     subscriptionId: string;
-    organization: {
+    buyerId: string;
+    sellerId?: string | null;
+    appId: string;
+    buyer: {
       orgId: string;
-    } & Organization_Key;
-    service: {
-      serviceId: string;
       name: string;
-      app: {
-        appId: string;
-      } & Application_Key;
-    } & Service_Key;
+    } & Organizations_Key;
+    seller?: {
+      orgId: string;
+      name: string;
+    } & Organizations_Key;
+    app: {
+      appId: string;
+      name: string;
+    } & Applications_Key;
     status: string;
-    tier?: string | null;
-    seats: number;
-    assignedSeats?: unknown | null;
-    stripeSubscriptionId?: string | null;
+    items: unknown;
     cancelAtPeriodEnd?: boolean | null;
     currentPeriodStart?: TimestampString | null;
     currentPeriodEnd?: TimestampString | null;
@@ -759,7 +896,7 @@ export interface GetSubscriptionData {
     metadata?: unknown | null;
     expiresAt?: TimestampString | null;
     updatedAt: TimestampString;
-  } & ServiceSubscription_Key;
+  } & Subscriptions_Key;
 }
 
 export interface GetSubscriptionVariables {
@@ -771,17 +908,17 @@ export interface GetThingByTokenHashData {
     thingId: string;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     type: string;
     status: string;
     metadata?: unknown | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & Thing_Key)[];
+  } & Things_Key)[];
 }
 
 export interface GetThingByTokenHashVariables {
@@ -793,10 +930,10 @@ export interface GetThingData {
     thingId: string;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     type: string;
     status: string;
@@ -804,7 +941,7 @@ export interface GetThingData {
     metadata?: unknown | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & Thing_Key;
+  } & Things_Key;
 }
 
 export interface GetThingVariables {
@@ -813,13 +950,13 @@ export interface GetThingVariables {
 
 export interface GetUserClaimsContextData {
   user?: {
-    uid: string;
+    userId: string;
     email: string;
-    fullName?: string | null;
+    fullName: string;
     avatarUrl?: string | null;
     mobile?: string | null;
-    locale?: string | null;
-    theme?: string | null;
+    locale: string;
+    theme: string;
     metadata?: unknown | null;
     teamMembers_on_user: ({
       team: {
@@ -828,8 +965,8 @@ export interface GetUserClaimsContextData {
         rbac?: unknown | null;
         organization: {
           orgId: string;
-        } & Organization_Key;
-      } & Team_Key;
+        } & Organizations_Key;
+      } & Teams_Key;
     })[];
     userOrganizations_on_user: ({
       role: string;
@@ -856,45 +993,44 @@ export interface GetUserClaimsContextData {
         latitude?: number | null;
         longitude?: number | null;
         altitude?: number | null;
+        addressDetails?: unknown | null;
         metadata?: unknown | null;
         createdAt: TimestampString;
-        subscriptions_on_organization: ({
+        subscriptions_on_buyer: ({
           subscriptionId: string;
-          service: {
-            serviceId: string;
-          } & Service_Key;
+          buyerId: string;
+          sellerId?: string | null;
+          appId: string;
           status: string;
-          tier?: string | null;
-          seats: number;
-          assignedSeats?: unknown | null;
+          items: unknown;
           expiresAt?: TimestampString | null;
           updatedAt: TimestampString;
-        } & ServiceSubscription_Key)[];
-      } & Organization_Key;
+        } & Subscriptions_Key)[];
+      } & Organizations_Key;
     })[];
-  } & User_Key;
+  } & Users_Key;
 }
 
 export interface GetUserClaimsContextVariables {
-  uid: string;
+  userId: string;
 }
 
-export interface Invoice_Key {
+export interface Invoices_Key {
   invoiceId: string;
-  __typename?: 'Invoice_Key';
+  __typename?: 'Invoices_Key';
 }
 
 export interface ListAllApiKeyPermissionsData {
   apiKeyPermissions: ({
     keyHash: string;
     moduleId: string;
-  } & ApiKeyPermission_Key)[];
+  } & ApiKeyPermissions_Key)[];
 }
 
 export interface ListAllApiKeysData {
   apiKeys: ({
     keyHash: string;
-  } & ApiKey_Key)[];
+  } & ApiKeys_Key)[];
 }
 
 export interface ListAllApplicationsData {
@@ -903,36 +1039,32 @@ export interface ListAllApplicationsData {
     name: string;
     description?: string | null;
     isActive: boolean;
-    serviceId?: string | null;
-    purchasable: boolean;
-    services_on_app: ({
-      serviceId: string;
-      priceModel?: string | null;
-      priceText?: string | null;
-      type: string;
-      stripeProductId?: string | null;
-      stripePricePersonalId?: string | null;
-      stripePriceBusinessId?: string | null;
-      stripePriceEducationId?: string | null;
-      stripePriceGovernmentId?: string | null;
-      isActive: boolean;
-    } & Service_Key)[];
     createdAt: TimestampString;
-  } & Application_Key)[];
+  } & Applications_Key)[];
 }
 
 export interface ListAllAuditLogsData {
   auditLogs: ({
     logId: string;
     orgId: string;
-    uid: string;
-  } & AuditLog_Key)[];
+    userId: string;
+  } & AuditLogs_Key)[];
 }
 
 export interface ListAllAuthCodesData {
   authCodes: ({
     code: string;
-  } & AuthCode_Key)[];
+  } & AuthCodes_Key)[];
+}
+
+export interface ListAllCheckoutsData {
+  checkouts: ({
+    checkoutId: string;
+    buyerId: string;
+    status: string;
+    mode: string;
+    amount: number;
+  } & Checkouts_Key)[];
 }
 
 export interface ListAllInvoicesData {
@@ -944,21 +1076,34 @@ export interface ListAllInvoicesData {
     app: {
       appId: string;
       name: string;
-    } & Application_Key;
-  } & Invoice_Key)[];
+    } & Applications_Key;
+  } & Invoices_Key)[];
 }
 
 export interface ListAllOrganizationsData {
   organizations: ({
     orgId: string;
     stripeCustomerId?: string | null;
-  } & Organization_Key)[];
+  } & Organizations_Key)[];
 }
 
 export interface ListAllPreRegistrationsData {
   preRegistrations: ({
     email: string;
-  } & PreRegistration_Key)[];
+  } & PreRegistrations_Key)[];
+}
+
+export interface ListAllPricesData {
+  prices: ({
+    priceId: string;
+    productId: string;
+    amount: number;
+    currency: string;
+    type: string;
+    isActive: boolean;
+    tier?: string | null;
+    isTest: boolean;
+  } & Prices_Key)[];
 }
 
 export interface ListAllProductBatchesData {
@@ -967,7 +1112,7 @@ export interface ListAllProductBatchesData {
     product: {
       productId: string;
       sku?: string | null;
-    } & Product_Key;
+    } & Products_Key;
     batchNumber: string;
     expirationDate?: TimestampString | null;
     productionDate?: TimestampString | null;
@@ -975,7 +1120,7 @@ export interface ListAllProductBatchesData {
     metadata?: unknown | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & ProductBatch_Key)[];
+  } & ProductBatches_Key)[];
 }
 
 export interface ListAllProductsData {
@@ -983,31 +1128,65 @@ export interface ListAllProductsData {
     productId: string;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
+    description?: string | null;
+    mode: string;
     type: string;
+    route: string;
     sku?: string | null;
-    price: number;
     isActive: boolean;
-    stripeProductId?: string | null;
-    stripePricePersonalId?: string | null;
-    stripePriceBusinessId?: string | null;
-    stripePriceGovernmentId?: string | null;
-    stripePriceEducationId?: string | null;
+    isTest: boolean;
     metadata?: unknown | null;
     variants?: unknown | null;
     bom?: unknown | null;
     relatedProducts?: unknown | null;
     options?: unknown | null;
-    taxBehavior?: string | null;
-    taxCode?: string | null;
+    taxBehavior: string;
     aiSummary?: string | null;
     descriptionEmbedding?: unknown | null;
     createdAt: TimestampString;
-  } & Product_Key)[];
+    prices_on_product: ({
+      priceId: string;
+      productId: string;
+      amount: number;
+      currency: string;
+      type: string;
+      billingScheme?: string | null;
+      recurringInterval?: string | null;
+      recurringUsageType?: string | null;
+      tier?: string | null;
+      isActive: boolean;
+      isTest: boolean;
+      taxBehavior?: string | null;
+      metadata?: unknown | null;
+      createdAt: TimestampString;
+    } & Prices_Key)[];
+    productBatches_on_product: ({
+      batchId: string;
+      productId: string;
+      batchNumber: string;
+      expirationDate?: TimestampString | null;
+      productionDate?: TimestampString | null;
+      stockStatus: unknown;
+      metadata?: unknown | null;
+      isTest: boolean;
+      createdAt: TimestampString;
+    } & ProductBatches_Key)[];
+    productConsumes_on_product: ({
+      consumeId: string;
+      orgId: string;
+      productId: string;
+      quantity: number;
+      status: string;
+      metadata?: unknown | null;
+      isTest: boolean;
+      createdAt: TimestampString;
+    } & ProductConsumes_Key)[];
+  } & Products_Key)[];
 }
 
 export interface ListAllProductsGlobalData {
@@ -1015,111 +1194,94 @@ export interface ListAllProductsGlobalData {
     productId: string;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
+    description?: string | null;
+    mode: string;
     type: string;
+    route: string;
     sku?: string | null;
-    price: number;
     isActive: boolean;
-    stripeProductId?: string | null;
-    stripePricePersonalId?: string | null;
-    stripePriceBusinessId?: string | null;
-    stripePriceGovernmentId?: string | null;
-    stripePriceEducationId?: string | null;
+    isTest: boolean;
     metadata?: unknown | null;
     variants?: unknown | null;
     bom?: unknown | null;
     relatedProducts?: unknown | null;
     options?: unknown | null;
-    taxBehavior?: string | null;
-    taxCode?: string | null;
+    taxBehavior: string;
     aiSummary?: string | null;
     descriptionEmbedding?: unknown | null;
     createdAt: TimestampString;
-  } & Product_Key)[];
+    prices_on_product: ({
+      priceId: string;
+      productId: string;
+      amount: number;
+      currency: string;
+      type: string;
+      billingScheme?: string | null;
+      recurringInterval?: string | null;
+      recurringUsageType?: string | null;
+      tier?: string | null;
+      isActive: boolean;
+      isTest: boolean;
+      taxBehavior?: string | null;
+      metadata?: unknown | null;
+      createdAt: TimestampString;
+    } & Prices_Key)[];
+    productBatches_on_product: ({
+      batchId: string;
+      productId: string;
+      batchNumber: string;
+      expirationDate?: TimestampString | null;
+      productionDate?: TimestampString | null;
+      stockStatus: unknown;
+      metadata?: unknown | null;
+      isTest: boolean;
+      createdAt: TimestampString;
+    } & ProductBatches_Key)[];
+    productConsumes_on_product: ({
+      consumeId: string;
+      orgId: string;
+      productId: string;
+      quantity: number;
+      status: string;
+      metadata?: unknown | null;
+      isTest: boolean;
+      createdAt: TimestampString;
+    } & ProductConsumes_Key)[];
+  } & Products_Key)[];
 }
 
 export interface ListAllProductsVariables {
   appId: string;
 }
 
-export interface ListAllServicesData {
-  services: ({
-    serviceId: string;
-    organization: {
-      orgId: string;
-    } & Organization_Key;
-    app: {
-      appId: string;
-    } & Application_Key;
-    name: string;
-    description?: string | null;
-    type: string;
-    isActive: boolean;
-    stripeProductId?: string | null;
-    stripePricePersonalId?: string | null;
-    stripePriceBusinessId?: string | null;
-    stripePriceGovernmentId?: string | null;
-    stripePriceEducationId?: string | null;
-    metadata?: unknown | null;
-    taxBehavior?: string | null;
-    taxCode?: string | null;
-    createdAt: TimestampString;
-  } & Service_Key)[];
-}
-
-export interface ListAllServicesGlobalData {
-  services: ({
-    serviceId: string;
-    organization: {
-      orgId: string;
-    } & Organization_Key;
-    app: {
-      appId: string;
-    } & Application_Key;
-    name: string;
-    description?: string | null;
-    type: string;
-    isActive: boolean;
-    stripeProductId?: string | null;
-    stripePricePersonalId?: string | null;
-    stripePriceBusinessId?: string | null;
-    stripePriceGovernmentId?: string | null;
-    stripePriceEducationId?: string | null;
-    metadata?: unknown | null;
-    taxBehavior?: string | null;
-    taxCode?: string | null;
-    createdAt: TimestampString;
-  } & Service_Key)[];
-}
-
-export interface ListAllServicesVariables {
-  appId: string;
-}
-
 export interface ListAllSubscriptionsData {
   subscriptions: ({
     subscriptionId: string;
-    organization: {
+    buyerId: string;
+    sellerId?: string | null;
+    appId: string;
+    buyer: {
       orgId: string;
-    } & Organization_Key;
-    service: {
-      serviceId: string;
-    } & Service_Key;
-  } & ServiceSubscription_Key)[];
+      name: string;
+    } & Organizations_Key;
+    status: string;
+    items: unknown;
+  } & Subscriptions_Key)[];
 }
 
 export interface ListAllTeamMembersData {
   teamMembers: ({
     user: {
-      uid: string;
-    } & User_Key;
+      userId: string;
+    } & Users_Key;
     team: {
       teamId: string;
-    } & Team_Key;
+    } & Teams_Key;
   })[];
 }
 
@@ -1132,32 +1294,32 @@ export interface ListAllTeamsData {
     metadata?: unknown | null;
     organization: {
       orgId: string;
-    } & Organization_Key;
-  } & Team_Key)[];
+    } & Organizations_Key;
+  } & Teams_Key)[];
 }
 
 export interface ListAllThingsData {
   things: ({
     thingId: string;
-  } & Thing_Key)[];
+  } & Things_Key)[];
 }
 
 export interface ListAllUserOrganizationsData {
   userOrganizations: ({
     user: {
-      uid: string;
-    } & User_Key;
+      userId: string;
+    } & Users_Key;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
   })[];
 }
 
 export interface ListAllUsersData {
   users: ({
-    uid: string;
+    userId: string;
     email: string;
-  } & User_Key)[];
+  } & Users_Key)[];
 }
 
 export interface ListApiKeysByOrgData {
@@ -1165,17 +1327,17 @@ export interface ListApiKeysByOrgData {
     keyHash: string;
     organization: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     description?: string | null;
     isActive: boolean;
     expiresAt?: TimestampString | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & ApiKey_Key)[];
+  } & ApiKeys_Key)[];
 }
 
 export interface ListApiKeysByOrgVariables {
@@ -1187,7 +1349,7 @@ export interface ListAuditLogsByOrgData {
   auditLogs: ({
     logId: string;
     appId: string;
-  } & AuditLog_Key)[];
+  } & AuditLogs_Key)[];
 }
 
 export interface ListAuditLogsByOrgVariables {
@@ -1195,12 +1357,47 @@ export interface ListAuditLogsByOrgVariables {
   appId: string;
 }
 
+export interface ListCheckoutsByOrgData {
+  checkouts: ({
+    checkoutId: string;
+    buyerId: string;
+    sellerId?: string | null;
+    appId: string;
+    status: string;
+    mode: string;
+    amount: number;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & Checkouts_Key)[];
+}
+
+export interface ListCheckoutsByOrgVariables {
+  buyerId: string;
+}
+
+export interface ListComputesByOrgData {
+  computes: ({
+    computeId: string;
+    orgId: string;
+    resourceType: string;
+    usage: number;
+    status: string;
+    metadata?: unknown | null;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & Computes_Key)[];
+}
+
+export interface ListComputesByOrgVariables {
+  orgId: string;
+}
+
 export interface ListInvoicesByOrgData {
   invoices: ({
     invoiceId: string;
-    stripeInvoiceId?: string | null;
     invoiceNumber?: string | null;
     amount: number;
+    currency: string;
     status: string;
     pdfUrl?: string | null;
     taxPercent?: number | null;
@@ -1214,16 +1411,16 @@ export interface ListInvoicesByOrgData {
     app: {
       appId: string;
       name: string;
-    } & Application_Key;
+    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     seller: {
       orgId: string;
       name: string;
-    } & Organization_Key;
-  } & Invoice_Key)[];
+    } & Organizations_Key;
+  } & Invoices_Key)[];
 }
 
 export interface ListInvoicesByOrgVariables {
@@ -1233,9 +1430,9 @@ export interface ListInvoicesByOrgVariables {
 export interface ListInvoicesBySellerData {
   invoices: ({
     invoiceId: string;
-    stripeInvoiceId?: string | null;
     invoiceNumber?: string | null;
     amount: number;
+    currency: string;
     status: string;
     pdfUrl?: string | null;
     taxPercent?: number | null;
@@ -1249,16 +1446,16 @@ export interface ListInvoicesBySellerData {
     app: {
       appId: string;
       name: string;
-    } & Application_Key;
+    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     seller: {
       orgId: string;
       name: string;
-    } & Organization_Key;
-  } & Invoice_Key)[];
+    } & Organizations_Key;
+  } & Invoices_Key)[];
 }
 
 export interface ListInvoicesBySellerVariables {
@@ -1271,19 +1468,19 @@ export interface ListMembersByOrgData {
     rbac?: unknown | null;
     joinedAt: TimestampString;
     user: {
-      uid: string;
+      userId: string;
       email: string;
-      fullName?: string | null;
+      fullName: string;
       avatarUrl?: string | null;
       metadata?: unknown | null;
-      locale?: string | null;
+      locale: string;
       teamMembers_on_user: ({
         team: {
           teamId: string;
           name: string;
-        } & Team_Key;
+        } & Teams_Key;
       })[];
-    } & User_Key;
+    } & Users_Key;
   })[];
 }
 
@@ -1298,14 +1495,19 @@ export interface ListPaymentsByOrgData {
     app: {
       appId: string;
       name: string;
-    } & Application_Key;
+    } & Applications_Key;
     buyer: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     seller?: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     invoiceId?: string | null;
+    invoice?: {
+      invoiceId: string;
+      invoiceNumber?: string | null;
+      status: string;
+    } & Invoices_Key;
     amount: number;
     currency: string;
     status: string;
@@ -1313,13 +1515,12 @@ export interface ListPaymentsByOrgData {
     cardBrand?: string | null;
     cardLast4?: string | null;
     receiptUrl?: string | null;
-    stripeCustomerId?: string | null;
     stripeConnectAccountId?: string | null;
     applicationFeeAmount?: number | null;
     errorMessage?: string | null;
     metadata?: unknown | null;
     createdAt: TimestampString;
-  } & Payment_Key)[];
+  } & Payments_Key)[];
 }
 
 export interface ListPaymentsByOrgVariables {
@@ -1333,14 +1534,19 @@ export interface ListPaymentsBySellerData {
     app: {
       appId: string;
       name: string;
-    } & Application_Key;
+    } & Applications_Key;
     buyer: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     seller?: {
       orgId: string;
-    } & Organization_Key;
+    } & Organizations_Key;
     invoiceId?: string | null;
+    invoice?: {
+      invoiceId: string;
+      invoiceNumber?: string | null;
+      status: string;
+    } & Invoices_Key;
     amount: number;
     currency: string;
     status: string;
@@ -1348,28 +1554,61 @@ export interface ListPaymentsBySellerData {
     cardBrand?: string | null;
     cardLast4?: string | null;
     receiptUrl?: string | null;
-    stripeCustomerId?: string | null;
     stripeConnectAccountId?: string | null;
     applicationFeeAmount?: number | null;
     errorMessage?: string | null;
     metadata?: unknown | null;
     createdAt: TimestampString;
-  } & Payment_Key)[];
+  } & Payments_Key)[];
 }
 
 export interface ListPaymentsBySellerVariables {
   sellerOrgId: string;
 }
 
+export interface ListPricesByProductData {
+  prices: ({
+    priceId: string;
+    productId: string;
+    amount: number;
+    currency: string;
+    type: string;
+    isActive: boolean;
+    tier?: string | null;
+    isTest: boolean;
+  } & Prices_Key)[];
+}
+
+export interface ListPricesByProductVariables {
+  productId: string;
+}
+
+export interface ListProductConsumesByOrgData {
+  productConsumes: ({
+    consumeId: string;
+    orgId: string;
+    productId: string;
+    quantity: number;
+    status: string;
+    metadata?: unknown | null;
+    isTest: boolean;
+    createdAt: TimestampString;
+  } & ProductConsumes_Key)[];
+}
+
+export interface ListProductConsumesByOrgVariables {
+  orgId: string;
+}
+
 export interface ListTeamMembersData {
   teamMembers: ({
     joinedAt: TimestampString;
     user: {
-      uid: string;
+      userId: string;
       email: string;
-      fullName?: string | null;
+      fullName: string;
       avatarUrl?: string | null;
-    } & User_Key;
+    } & Users_Key;
   })[];
 }
 
@@ -1382,13 +1621,13 @@ export interface ListTeamsByOrgData {
     teamId: string;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     description?: string | null;
     rbac?: unknown | null;
     metadata?: unknown | null;
     createdAt: TimestampString;
-  } & Team_Key)[];
+  } & Teams_Key)[];
 }
 
 export interface ListTeamsByOrgVariables {
@@ -1401,14 +1640,14 @@ export interface ListThingsByOrgData {
     thingId: string;
     app: {
       appId: string;
-    } & Application_Key;
+    } & Applications_Key;
     name: string;
     type: string;
     status: string;
     metadata?: unknown | null;
     isTest: boolean;
     createdAt: TimestampString;
-  } & Thing_Key)[];
+  } & Things_Key)[];
 }
 
 export interface ListThingsByOrgVariables {
@@ -1416,52 +1655,52 @@ export interface ListThingsByOrgVariables {
   appId: string;
 }
 
-export interface Organization_Key {
+export interface Organizations_Key {
   orgId: string;
-  __typename?: 'Organization_Key';
+  __typename?: 'Organizations_Key';
 }
 
-export interface Payment_Key {
+export interface Payments_Key {
   paymentId: string;
-  __typename?: 'Payment_Key';
+  __typename?: 'Payments_Key';
 }
 
-export interface PreRegistration_Key {
+export interface PreRegistrations_Key {
   email: string;
-  __typename?: 'PreRegistration_Key';
+  __typename?: 'PreRegistrations_Key';
 }
 
-export interface ProductBatch_Key {
+export interface Prices_Key {
+  priceId: string;
+  __typename?: 'Prices_Key';
+}
+
+export interface ProductBatches_Key {
   batchId: string;
-  __typename?: 'ProductBatch_Key';
+  __typename?: 'ProductBatches_Key';
 }
 
-export interface Product_Key {
+export interface ProductConsumes_Key {
+  consumeId: string;
+  __typename?: 'ProductConsumes_Key';
+}
+
+export interface Products_Key {
   productId: string;
-  __typename?: 'Product_Key';
+  __typename?: 'Products_Key';
 }
 
 export interface RemoveUserFromTeamData {
-  teamMember_delete?: TeamMember_Key | null;
+  teamMember_delete?: TeamMembers_Key | null;
 }
 
 export interface RemoveUserFromTeamVariables {
-  uid: string;
+  userId: string;
   teamId: string;
 }
 
-export interface ServiceSubscription_Key {
-  subscriptionId: string;
-  __typename?: 'ServiceSubscription_Key';
-}
-
-export interface Service_Key {
-  serviceId: string;
-  __typename?: 'Service_Key';
-}
-
 export interface SetApiKeyPermissionData {
-  apiKeyPermission_upsert: ApiKeyPermission_Key;
+  apiKeyPermission_upsert: ApiKeyPermissions_Key;
 }
 
 export interface SetApiKeyPermissionVariables {
@@ -1475,24 +1714,29 @@ export interface SetApiKeyPermissionVariables {
   allowedFields: unknown;
 }
 
-export interface TeamMember_Key {
-  uid: string;
-  teamId: string;
-  __typename?: 'TeamMember_Key';
+export interface Subscriptions_Key {
+  subscriptionId: string;
+  __typename?: 'Subscriptions_Key';
 }
 
-export interface Team_Key {
+export interface TeamMembers_Key {
+  userId: string;
   teamId: string;
-  __typename?: 'Team_Key';
+  __typename?: 'TeamMembers_Key';
 }
 
-export interface Thing_Key {
+export interface Teams_Key {
+  teamId: string;
+  __typename?: 'Teams_Key';
+}
+
+export interface Things_Key {
   thingId: string;
-  __typename?: 'Thing_Key';
+  __typename?: 'Things_Key';
 }
 
 export interface UpdateApplicationData {
-  application_update?: Application_Key | null;
+  application_update?: Applications_Key | null;
 }
 
 export interface UpdateApplicationVariables {
@@ -1500,12 +1744,30 @@ export interface UpdateApplicationVariables {
   name?: string | null;
   description?: string | null;
   isActive?: boolean | null;
-  serviceId?: string | null;
-  purchasable?: boolean | null;
+}
+
+export interface UpdateCheckoutData {
+  checkout_update?: Checkouts_Key | null;
+}
+
+export interface UpdateCheckoutVariables {
+  checkoutId: string;
+  status: string;
+}
+
+export interface UpdateComputeData {
+  compute_update?: Computes_Key | null;
+}
+
+export interface UpdateComputeVariables {
+  computeId: string;
+  usage?: number | null;
+  status?: string | null;
+  metadata?: unknown | null;
 }
 
 export interface UpdateInvoiceStatusData {
-  invoice_update?: Invoice_Key | null;
+  invoice_update?: Invoices_Key | null;
 }
 
 export interface UpdateInvoiceStatusVariables {
@@ -1514,12 +1776,13 @@ export interface UpdateInvoiceStatusVariables {
 }
 
 export interface UpdateOrganizationBillingData {
-  organization_update?: Organization_Key | null;
+  organization_update?: Organizations_Key | null;
 }
 
 export interface UpdateOrganizationBillingVariables {
   orgId: string;
   type: string;
+  name?: string | null;
   vatNumber?: string | null;
   fiscalCode?: string | null;
   billingAddress?: string | null;
@@ -1527,29 +1790,41 @@ export interface UpdateOrganizationBillingVariables {
   officeCode?: string | null;
   cigCode?: string | null;
   cupCode?: string | null;
+  address?: string | null;
+  addressDetails?: unknown | null;
+  metadata?: unknown | null;
 }
 
 export interface UpdateOrganizationStripeConnectData {
-  organization_update?: Organization_Key | null;
+  organization_update?: Organizations_Key | null;
 }
 
 export interface UpdateOrganizationStripeConnectVariables {
   orgId: string;
-  stripeConnectAccountId: string;
+  stripeConnectAccountId?: string | null;
   stripeConnectOnboarded: boolean;
 }
 
 export interface UpdateOrganizationStripeCustomerData {
-  organization_update?: Organization_Key | null;
+  organization_update?: Organizations_Key | null;
 }
 
 export interface UpdateOrganizationStripeCustomerVariables {
   orgId: string;
-  stripeCustomerId: string;
+  stripeCustomerId?: string | null;
+}
+
+export interface UpdateOrganizationViesData {
+  organization_update?: Organizations_Key | null;
+}
+
+export interface UpdateOrganizationViesVariables {
+  orgId: string;
+  viesValidated: boolean;
 }
 
 export interface UpdatePaymentStatusData {
-  payment_update?: Payment_Key | null;
+  payment_update?: Payments_Key | null;
 }
 
 export interface UpdatePaymentStatusVariables {
@@ -1558,28 +1833,38 @@ export interface UpdatePaymentStatusVariables {
   errorMessage?: string | null;
 }
 
-export interface UpdateSubscriptionSeatsListData {
-  subscription_update?: ServiceSubscription_Key | null;
+export interface UpdatePriceData {
+  price_update?: Prices_Key | null;
 }
 
-export interface UpdateSubscriptionSeatsListVariables {
-  subscriptionId: string;
-  assignedSeats: unknown;
+export interface UpdatePriceVariables {
+  priceId: string;
+  isActive?: boolean | null;
+  metadata?: unknown | null;
+}
+
+export interface UpdateProductConsumeData {
+  productConsume_update?: ProductConsumes_Key | null;
+}
+
+export interface UpdateProductConsumeVariables {
+  consumeId: string;
+  quantity?: number | null;
+  status?: string | null;
+  metadata?: unknown | null;
 }
 
 export interface UpdateSubscriptionStatusData {
-  subscription_upsert: ServiceSubscription_Key;
+  subscription_upsert: Subscriptions_Key;
 }
 
 export interface UpdateSubscriptionStatusVariables {
-  subscriptionId?: string | null;
-  orgId: string;
-  serviceId: string;
+  subscriptionId: string;
+  buyerId: string;
+  sellerId?: string | null;
+  appId: string;
   status: string;
-  tier?: string | null;
-  seats?: number | null;
-  assignedSeats?: unknown | null;
-  stripeSubscriptionId?: string | null;
+  items: unknown;
   cancelAtPeriodEnd?: boolean | null;
   currentPeriodStart?: TimestampString | null;
   currentPeriodEnd?: TimestampString | null;
@@ -1590,7 +1875,7 @@ export interface UpdateSubscriptionStatusVariables {
 }
 
 export interface UpdateTeamData {
-  team_update?: Team_Key | null;
+  team_update?: Teams_Key | null;
 }
 
 export interface UpdateTeamVariables {
@@ -1602,7 +1887,7 @@ export interface UpdateTeamVariables {
 }
 
 export interface UpdateThingData {
-  thing_update?: Thing_Key | null;
+  thing_update?: Things_Key | null;
 }
 
 export interface UpdateThingVariables {
@@ -1614,28 +1899,31 @@ export interface UpdateThingVariables {
 }
 
 export interface UpdateUserOrganizationData {
-  userOrganization_update?: UserOrganization_Key | null;
+  userOrganization_update?: UserOrganizations_Key | null;
 }
 
 export interface UpdateUserOrganizationVariables {
-  uid: string;
+  userId: string;
   orgId: string;
   role: string;
   rbac?: unknown | null;
 }
 
-export interface UpdateUserPreferencesData {
-  user_update?: User_Key | null;
+export interface UpdateUserProfileData {
+  user_update?: Users_Key | null;
 }
 
-export interface UpdateUserPreferencesVariables {
-  uid: string;
-  locale: string;
-  theme: string;
+export interface UpdateUserProfileVariables {
+  userId: string;
+  fullName?: string | null;
+  locale?: string | null;
+  theme?: string | null;
+  avatarUrl?: string | null;
+  mobile?: string | null;
 }
 
 export interface UpsertPreRegistrationData {
-  preRegistration_upsert: PreRegistration_Key;
+  preRegistration_upsert: PreRegistrations_Key;
 }
 
 export interface UpsertPreRegistrationVariables {
@@ -1644,6 +1932,7 @@ export interface UpsertPreRegistrationVariables {
   companyName: string;
   country?: string | null;
   vatNumber?: string | null;
+  fiscalCode?: string | null;
   sdiCode?: string | null;
   officeCode?: string | null;
   cigCode?: string | null;
@@ -1652,15 +1941,16 @@ export interface UpsertPreRegistrationVariables {
   latitude?: number | null;
   longitude?: number | null;
   altitude?: number | null;
+  addressDetails?: unknown | null;
   metadata?: unknown | null;
 }
 
 export interface UpsertUserData {
-  user_upsert: User_Key;
+  user_upsert: Users_Key;
 }
 
 export interface UpsertUserVariables {
-  uid: string;
+  userId: string;
   email: string;
   fullName?: string | null;
   avatarUrl?: string | null;
@@ -1670,15 +1960,15 @@ export interface UpsertUserVariables {
   metadata?: unknown | null;
 }
 
-export interface UserOrganization_Key {
-  uid: string;
+export interface UserOrganizations_Key {
+  userId: string;
   orgId: string;
-  __typename?: 'UserOrganization_Key';
+  __typename?: 'UserOrganizations_Key';
 }
 
-export interface User_Key {
-  uid: string;
-  __typename?: 'User_Key';
+export interface Users_Key {
+  userId: string;
+  __typename?: 'Users_Key';
 }
 
 interface UpsertUserRef {
@@ -1741,18 +2031,6 @@ export const updateSubscriptionStatusRef: UpdateSubscriptionStatusRef;
 export function updateSubscriptionStatus(vars: UpdateSubscriptionStatusVariables): MutationPromise<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
 export function updateSubscriptionStatus(dc: DataConnect, vars: UpdateSubscriptionStatusVariables): MutationPromise<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
 
-interface UpdateSubscriptionSeatsListRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateSubscriptionSeatsListVariables): MutationRef<UpdateSubscriptionSeatsListData, UpdateSubscriptionSeatsListVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateSubscriptionSeatsListVariables): MutationRef<UpdateSubscriptionSeatsListData, UpdateSubscriptionSeatsListVariables>;
-  operationName: string;
-}
-export const updateSubscriptionSeatsListRef: UpdateSubscriptionSeatsListRef;
-
-export function updateSubscriptionSeatsList(vars: UpdateSubscriptionSeatsListVariables): MutationPromise<UpdateSubscriptionSeatsListData, UpdateSubscriptionSeatsListVariables>;
-export function updateSubscriptionSeatsList(dc: DataConnect, vars: UpdateSubscriptionSeatsListVariables): MutationPromise<UpdateSubscriptionSeatsListData, UpdateSubscriptionSeatsListVariables>;
-
 interface UpdateOrganizationStripeConnectRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: UpdateOrganizationStripeConnectVariables): MutationRef<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
@@ -1801,17 +2079,17 @@ export const deleteAuthCodeRef: DeleteAuthCodeRef;
 export function deleteAuthCode(vars: DeleteAuthCodeVariables): MutationPromise<DeleteAuthCodeData, DeleteAuthCodeVariables>;
 export function deleteAuthCode(dc: DataConnect, vars: DeleteAuthCodeVariables): MutationPromise<DeleteAuthCodeData, DeleteAuthCodeVariables>;
 
-interface UpdateUserPreferencesRef {
+interface UpdateUserProfileRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateUserPreferencesVariables): MutationRef<UpdateUserPreferencesData, UpdateUserPreferencesVariables>;
+  (vars: UpdateUserProfileVariables): MutationRef<UpdateUserProfileData, UpdateUserProfileVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateUserPreferencesVariables): MutationRef<UpdateUserPreferencesData, UpdateUserPreferencesVariables>;
+  (dc: DataConnect, vars: UpdateUserProfileVariables): MutationRef<UpdateUserProfileData, UpdateUserProfileVariables>;
   operationName: string;
 }
-export const updateUserPreferencesRef: UpdateUserPreferencesRef;
+export const updateUserProfileRef: UpdateUserProfileRef;
 
-export function updateUserPreferences(vars: UpdateUserPreferencesVariables): MutationPromise<UpdateUserPreferencesData, UpdateUserPreferencesVariables>;
-export function updateUserPreferences(dc: DataConnect, vars: UpdateUserPreferencesVariables): MutationPromise<UpdateUserPreferencesData, UpdateUserPreferencesVariables>;
+export function updateUserProfile(vars: UpdateUserProfileVariables): MutationPromise<UpdateUserProfileData, UpdateUserProfileVariables>;
+export function updateUserProfile(dc: DataConnect, vars: UpdateUserProfileVariables): MutationPromise<UpdateUserProfileData, UpdateUserProfileVariables>;
 
 interface UpdateOrganizationBillingRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1824,6 +2102,18 @@ export const updateOrganizationBillingRef: UpdateOrganizationBillingRef;
 
 export function updateOrganizationBilling(vars: UpdateOrganizationBillingVariables): MutationPromise<UpdateOrganizationBillingData, UpdateOrganizationBillingVariables>;
 export function updateOrganizationBilling(dc: DataConnect, vars: UpdateOrganizationBillingVariables): MutationPromise<UpdateOrganizationBillingData, UpdateOrganizationBillingVariables>;
+
+interface UpdateOrganizationViesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationViesVariables): MutationRef<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateOrganizationViesVariables): MutationRef<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
+  operationName: string;
+}
+export const updateOrganizationViesRef: UpdateOrganizationViesRef;
+
+export function updateOrganizationVies(vars: UpdateOrganizationViesVariables): MutationPromise<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
+export function updateOrganizationVies(dc: DataConnect, vars: UpdateOrganizationViesVariables): MutationPromise<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
 
 interface UpsertPreRegistrationRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -2017,30 +2307,6 @@ export const deleteAuditLogRef: DeleteAuditLogRef;
 export function deleteAuditLog(vars: DeleteAuditLogVariables): MutationPromise<DeleteAuditLogData, DeleteAuditLogVariables>;
 export function deleteAuditLog(dc: DataConnect, vars: DeleteAuditLogVariables): MutationPromise<DeleteAuditLogData, DeleteAuditLogVariables>;
 
-interface CreateServiceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateServiceVariables): MutationRef<CreateServiceData, CreateServiceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateServiceVariables): MutationRef<CreateServiceData, CreateServiceVariables>;
-  operationName: string;
-}
-export const createServiceRef: CreateServiceRef;
-
-export function createService(vars: CreateServiceVariables): MutationPromise<CreateServiceData, CreateServiceVariables>;
-export function createService(dc: DataConnect, vars: CreateServiceVariables): MutationPromise<CreateServiceData, CreateServiceVariables>;
-
-interface DeleteServiceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteServiceVariables): MutationRef<DeleteServiceData, DeleteServiceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteServiceVariables): MutationRef<DeleteServiceData, DeleteServiceVariables>;
-  operationName: string;
-}
-export const deleteServiceRef: DeleteServiceRef;
-
-export function deleteService(vars: DeleteServiceVariables): MutationPromise<DeleteServiceData, DeleteServiceVariables>;
-export function deleteService(dc: DataConnect, vars: DeleteServiceVariables): MutationPromise<DeleteServiceData, DeleteServiceVariables>;
-
 interface CreateProductRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: CreateProductVariables): MutationRef<CreateProductData, CreateProductVariables>;
@@ -2149,6 +2415,18 @@ export const updatePaymentStatusRef: UpdatePaymentStatusRef;
 export function updatePaymentStatus(vars: UpdatePaymentStatusVariables): MutationPromise<UpdatePaymentStatusData, UpdatePaymentStatusVariables>;
 export function updatePaymentStatus(dc: DataConnect, vars: UpdatePaymentStatusVariables): MutationPromise<UpdatePaymentStatusData, UpdatePaymentStatusVariables>;
 
+interface DeletePaymentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePaymentVariables): MutationRef<DeletePaymentData, DeletePaymentVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeletePaymentVariables): MutationRef<DeletePaymentData, DeletePaymentVariables>;
+  operationName: string;
+}
+export const deletePaymentRef: DeletePaymentRef;
+
+export function deletePayment(vars: DeletePaymentVariables): MutationPromise<DeletePaymentData, DeletePaymentVariables>;
+export function deletePayment(dc: DataConnect, vars: DeletePaymentVariables): MutationPromise<DeletePaymentData, DeletePaymentVariables>;
+
 interface CreateTeamRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: CreateTeamVariables): MutationRef<CreateTeamData, CreateTeamVariables>;
@@ -2244,6 +2522,150 @@ export const deleteApplicationRef: DeleteApplicationRef;
 
 export function deleteApplication(vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
 export function deleteApplication(dc: DataConnect, vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
+
+interface CreateComputeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateComputeVariables): MutationRef<CreateComputeData, CreateComputeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateComputeVariables): MutationRef<CreateComputeData, CreateComputeVariables>;
+  operationName: string;
+}
+export const createComputeRef: CreateComputeRef;
+
+export function createCompute(vars: CreateComputeVariables): MutationPromise<CreateComputeData, CreateComputeVariables>;
+export function createCompute(dc: DataConnect, vars: CreateComputeVariables): MutationPromise<CreateComputeData, CreateComputeVariables>;
+
+interface UpdateComputeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateComputeVariables): MutationRef<UpdateComputeData, UpdateComputeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateComputeVariables): MutationRef<UpdateComputeData, UpdateComputeVariables>;
+  operationName: string;
+}
+export const updateComputeRef: UpdateComputeRef;
+
+export function updateCompute(vars: UpdateComputeVariables): MutationPromise<UpdateComputeData, UpdateComputeVariables>;
+export function updateCompute(dc: DataConnect, vars: UpdateComputeVariables): MutationPromise<UpdateComputeData, UpdateComputeVariables>;
+
+interface DeleteComputeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteComputeVariables): MutationRef<DeleteComputeData, DeleteComputeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteComputeVariables): MutationRef<DeleteComputeData, DeleteComputeVariables>;
+  operationName: string;
+}
+export const deleteComputeRef: DeleteComputeRef;
+
+export function deleteCompute(vars: DeleteComputeVariables): MutationPromise<DeleteComputeData, DeleteComputeVariables>;
+export function deleteCompute(dc: DataConnect, vars: DeleteComputeVariables): MutationPromise<DeleteComputeData, DeleteComputeVariables>;
+
+interface CreatePriceRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreatePriceVariables): MutationRef<CreatePriceData, CreatePriceVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreatePriceVariables): MutationRef<CreatePriceData, CreatePriceVariables>;
+  operationName: string;
+}
+export const createPriceRef: CreatePriceRef;
+
+export function createPrice(vars: CreatePriceVariables): MutationPromise<CreatePriceData, CreatePriceVariables>;
+export function createPrice(dc: DataConnect, vars: CreatePriceVariables): MutationPromise<CreatePriceData, CreatePriceVariables>;
+
+interface UpdatePriceRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePriceVariables): MutationRef<UpdatePriceData, UpdatePriceVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdatePriceVariables): MutationRef<UpdatePriceData, UpdatePriceVariables>;
+  operationName: string;
+}
+export const updatePriceRef: UpdatePriceRef;
+
+export function updatePrice(vars: UpdatePriceVariables): MutationPromise<UpdatePriceData, UpdatePriceVariables>;
+export function updatePrice(dc: DataConnect, vars: UpdatePriceVariables): MutationPromise<UpdatePriceData, UpdatePriceVariables>;
+
+interface DeletePriceRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePriceVariables): MutationRef<DeletePriceData, DeletePriceVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeletePriceVariables): MutationRef<DeletePriceData, DeletePriceVariables>;
+  operationName: string;
+}
+export const deletePriceRef: DeletePriceRef;
+
+export function deletePrice(vars: DeletePriceVariables): MutationPromise<DeletePriceData, DeletePriceVariables>;
+export function deletePrice(dc: DataConnect, vars: DeletePriceVariables): MutationPromise<DeletePriceData, DeletePriceVariables>;
+
+interface CreateCheckoutRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateCheckoutVariables): MutationRef<CreateCheckoutData, CreateCheckoutVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateCheckoutVariables): MutationRef<CreateCheckoutData, CreateCheckoutVariables>;
+  operationName: string;
+}
+export const createCheckoutRef: CreateCheckoutRef;
+
+export function createCheckout(vars: CreateCheckoutVariables): MutationPromise<CreateCheckoutData, CreateCheckoutVariables>;
+export function createCheckout(dc: DataConnect, vars: CreateCheckoutVariables): MutationPromise<CreateCheckoutData, CreateCheckoutVariables>;
+
+interface UpdateCheckoutRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateCheckoutVariables): MutationRef<UpdateCheckoutData, UpdateCheckoutVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateCheckoutVariables): MutationRef<UpdateCheckoutData, UpdateCheckoutVariables>;
+  operationName: string;
+}
+export const updateCheckoutRef: UpdateCheckoutRef;
+
+export function updateCheckout(vars: UpdateCheckoutVariables): MutationPromise<UpdateCheckoutData, UpdateCheckoutVariables>;
+export function updateCheckout(dc: DataConnect, vars: UpdateCheckoutVariables): MutationPromise<UpdateCheckoutData, UpdateCheckoutVariables>;
+
+interface DeleteCheckoutRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteCheckoutVariables): MutationRef<DeleteCheckoutData, DeleteCheckoutVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteCheckoutVariables): MutationRef<DeleteCheckoutData, DeleteCheckoutVariables>;
+  operationName: string;
+}
+export const deleteCheckoutRef: DeleteCheckoutRef;
+
+export function deleteCheckout(vars: DeleteCheckoutVariables): MutationPromise<DeleteCheckoutData, DeleteCheckoutVariables>;
+export function deleteCheckout(dc: DataConnect, vars: DeleteCheckoutVariables): MutationPromise<DeleteCheckoutData, DeleteCheckoutVariables>;
+
+interface CreateProductConsumeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateProductConsumeVariables): MutationRef<CreateProductConsumeData, CreateProductConsumeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateProductConsumeVariables): MutationRef<CreateProductConsumeData, CreateProductConsumeVariables>;
+  operationName: string;
+}
+export const createProductConsumeRef: CreateProductConsumeRef;
+
+export function createProductConsume(vars: CreateProductConsumeVariables): MutationPromise<CreateProductConsumeData, CreateProductConsumeVariables>;
+export function createProductConsume(dc: DataConnect, vars: CreateProductConsumeVariables): MutationPromise<CreateProductConsumeData, CreateProductConsumeVariables>;
+
+interface UpdateProductConsumeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateProductConsumeVariables): MutationRef<UpdateProductConsumeData, UpdateProductConsumeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateProductConsumeVariables): MutationRef<UpdateProductConsumeData, UpdateProductConsumeVariables>;
+  operationName: string;
+}
+export const updateProductConsumeRef: UpdateProductConsumeRef;
+
+export function updateProductConsume(vars: UpdateProductConsumeVariables): MutationPromise<UpdateProductConsumeData, UpdateProductConsumeVariables>;
+export function updateProductConsume(dc: DataConnect, vars: UpdateProductConsumeVariables): MutationPromise<UpdateProductConsumeData, UpdateProductConsumeVariables>;
+
+interface DeleteProductConsumeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteProductConsumeVariables): MutationRef<DeleteProductConsumeData, DeleteProductConsumeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteProductConsumeVariables): MutationRef<DeleteProductConsumeData, DeleteProductConsumeVariables>;
+  operationName: string;
+}
+export const deleteProductConsumeRef: DeleteProductConsumeRef;
+
+export function deleteProductConsume(vars: DeleteProductConsumeVariables): MutationPromise<DeleteProductConsumeData, DeleteProductConsumeVariables>;
+export function deleteProductConsume(dc: DataConnect, vars: DeleteProductConsumeVariables): MutationPromise<DeleteProductConsumeData, DeleteProductConsumeVariables>;
 
 interface GetUserClaimsContextRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -2509,30 +2931,6 @@ export const listAllAuditLogsRef: ListAllAuditLogsRef;
 export function listAllAuditLogs(options?: ExecuteQueryOptions): QueryPromise<ListAllAuditLogsData, undefined>;
 export function listAllAuditLogs(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllAuditLogsData, undefined>;
 
-interface ListAllServicesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListAllServicesVariables): QueryRef<ListAllServicesData, ListAllServicesVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListAllServicesVariables): QueryRef<ListAllServicesData, ListAllServicesVariables>;
-  operationName: string;
-}
-export const listAllServicesRef: ListAllServicesRef;
-
-export function listAllServices(vars: ListAllServicesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllServicesData, ListAllServicesVariables>;
-export function listAllServices(dc: DataConnect, vars: ListAllServicesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllServicesData, ListAllServicesVariables>;
-
-interface ListAllServicesGlobalRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllServicesGlobalData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllServicesGlobalData, undefined>;
-  operationName: string;
-}
-export const listAllServicesGlobalRef: ListAllServicesGlobalRef;
-
-export function listAllServicesGlobal(options?: ExecuteQueryOptions): QueryPromise<ListAllServicesGlobalData, undefined>;
-export function listAllServicesGlobal(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllServicesGlobalData, undefined>;
-
 interface ListAllProductsRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: ListAllProductsVariables): QueryRef<ListAllProductsData, ListAllProductsVariables>;
@@ -2677,30 +3075,6 @@ export const getInvoiceDetailsRef: GetInvoiceDetailsRef;
 export function getInvoiceDetails(vars: GetInvoiceDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
 export function getInvoiceDetails(dc: DataConnect, vars: GetInvoiceDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
 
-interface GetServiceDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetServiceDetailsVariables): QueryRef<GetServiceDetailsData, GetServiceDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetServiceDetailsVariables): QueryRef<GetServiceDetailsData, GetServiceDetailsVariables>;
-  operationName: string;
-}
-export const getServiceDetailsRef: GetServiceDetailsRef;
-
-export function getServiceDetails(vars: GetServiceDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetServiceDetailsData, GetServiceDetailsVariables>;
-export function getServiceDetails(dc: DataConnect, vars: GetServiceDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetServiceDetailsData, GetServiceDetailsVariables>;
-
-interface GetProductDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
-  operationName: string;
-}
-export const getProductDetailsRef: GetProductDetailsRef;
-
-export function getProductDetails(vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
-export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
-
 interface GetOrganizationByStripeCustomerRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: GetOrganizationByStripeCustomerVariables): QueryRef<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
@@ -2784,4 +3158,148 @@ export const listAllApplicationsRef: ListAllApplicationsRef;
 
 export function listAllApplications(options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
 export function listAllApplications(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
+
+interface GetComputeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetComputeVariables): QueryRef<GetComputeData, GetComputeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetComputeVariables): QueryRef<GetComputeData, GetComputeVariables>;
+  operationName: string;
+}
+export const getComputeRef: GetComputeRef;
+
+export function getCompute(vars: GetComputeVariables, options?: ExecuteQueryOptions): QueryPromise<GetComputeData, GetComputeVariables>;
+export function getCompute(dc: DataConnect, vars: GetComputeVariables, options?: ExecuteQueryOptions): QueryPromise<GetComputeData, GetComputeVariables>;
+
+interface ListComputesByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListComputesByOrgVariables): QueryRef<ListComputesByOrgData, ListComputesByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListComputesByOrgVariables): QueryRef<ListComputesByOrgData, ListComputesByOrgVariables>;
+  operationName: string;
+}
+export const listComputesByOrgRef: ListComputesByOrgRef;
+
+export function listComputesByOrg(vars: ListComputesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListComputesByOrgData, ListComputesByOrgVariables>;
+export function listComputesByOrg(dc: DataConnect, vars: ListComputesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListComputesByOrgData, ListComputesByOrgVariables>;
+
+interface GetProductConsumeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetProductConsumeVariables): QueryRef<GetProductConsumeData, GetProductConsumeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetProductConsumeVariables): QueryRef<GetProductConsumeData, GetProductConsumeVariables>;
+  operationName: string;
+}
+export const getProductConsumeRef: GetProductConsumeRef;
+
+export function getProductConsume(vars: GetProductConsumeVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductConsumeData, GetProductConsumeVariables>;
+export function getProductConsume(dc: DataConnect, vars: GetProductConsumeVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductConsumeData, GetProductConsumeVariables>;
+
+interface ListProductConsumesByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListProductConsumesByOrgVariables): QueryRef<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListProductConsumesByOrgVariables): QueryRef<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
+  operationName: string;
+}
+export const listProductConsumesByOrgRef: ListProductConsumesByOrgRef;
+
+export function listProductConsumesByOrg(vars: ListProductConsumesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
+export function listProductConsumesByOrg(dc: DataConnect, vars: ListProductConsumesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
+
+interface GetPriceRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPriceVariables): QueryRef<GetPriceData, GetPriceVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPriceVariables): QueryRef<GetPriceData, GetPriceVariables>;
+  operationName: string;
+}
+export const getPriceRef: GetPriceRef;
+
+export function getPrice(vars: GetPriceVariables, options?: ExecuteQueryOptions): QueryPromise<GetPriceData, GetPriceVariables>;
+export function getPrice(dc: DataConnect, vars: GetPriceVariables, options?: ExecuteQueryOptions): QueryPromise<GetPriceData, GetPriceVariables>;
+
+interface ListPricesByProductRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListPricesByProductVariables): QueryRef<ListPricesByProductData, ListPricesByProductVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListPricesByProductVariables): QueryRef<ListPricesByProductData, ListPricesByProductVariables>;
+  operationName: string;
+}
+export const listPricesByProductRef: ListPricesByProductRef;
+
+export function listPricesByProduct(vars: ListPricesByProductVariables, options?: ExecuteQueryOptions): QueryPromise<ListPricesByProductData, ListPricesByProductVariables>;
+export function listPricesByProduct(dc: DataConnect, vars: ListPricesByProductVariables, options?: ExecuteQueryOptions): QueryPromise<ListPricesByProductData, ListPricesByProductVariables>;
+
+interface ListAllPricesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllPricesData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllPricesData, undefined>;
+  operationName: string;
+}
+export const listAllPricesRef: ListAllPricesRef;
+
+export function listAllPrices(options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
+export function listAllPrices(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
+
+interface GetCheckoutRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCheckoutVariables): QueryRef<GetCheckoutData, GetCheckoutVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetCheckoutVariables): QueryRef<GetCheckoutData, GetCheckoutVariables>;
+  operationName: string;
+}
+export const getCheckoutRef: GetCheckoutRef;
+
+export function getCheckout(vars: GetCheckoutVariables, options?: ExecuteQueryOptions): QueryPromise<GetCheckoutData, GetCheckoutVariables>;
+export function getCheckout(dc: DataConnect, vars: GetCheckoutVariables, options?: ExecuteQueryOptions): QueryPromise<GetCheckoutData, GetCheckoutVariables>;
+
+interface ListCheckoutsByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListCheckoutsByOrgVariables): QueryRef<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListCheckoutsByOrgVariables): QueryRef<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
+  operationName: string;
+}
+export const listCheckoutsByOrgRef: ListCheckoutsByOrgRef;
+
+export function listCheckoutsByOrg(vars: ListCheckoutsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
+export function listCheckoutsByOrg(dc: DataConnect, vars: ListCheckoutsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
+
+interface ListAllCheckoutsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListAllCheckoutsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListAllCheckoutsData, undefined>;
+  operationName: string;
+}
+export const listAllCheckoutsRef: ListAllCheckoutsRef;
+
+export function listAllCheckouts(options?: ExecuteQueryOptions): QueryPromise<ListAllCheckoutsData, undefined>;
+export function listAllCheckouts(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllCheckoutsData, undefined>;
+
+interface GetPaymentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPaymentVariables): QueryRef<GetPaymentData, GetPaymentVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPaymentVariables): QueryRef<GetPaymentData, GetPaymentVariables>;
+  operationName: string;
+}
+export const getPaymentRef: GetPaymentRef;
+
+export function getPayment(vars: GetPaymentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPaymentData, GetPaymentVariables>;
+export function getPayment(dc: DataConnect, vars: GetPaymentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPaymentData, GetPaymentVariables>;
+
+interface GetProductDetailsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
+  operationName: string;
+}
+export const getProductDetailsRef: GetProductDetailsRef;
+
+export function getProductDetails(vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
+export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
 

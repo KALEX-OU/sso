@@ -23,7 +23,7 @@ interface DeviceSession {
 interface ServiceItem {
   serviceId: string;
   seats: number;
-  assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
+  assignedSeats?: Array<{ userId: string; assignedAt: string }> | null;
   tier?: string | null;
 }
 

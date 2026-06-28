@@ -85,11 +85,23 @@ export async function verifySessionCookieServerSide(
       const verifyData = (await verifyRes.json()) as { success: boolean };
       return !!(verifyData && verifyData.success);
     }
-    return false;
+    
+    // Se lo status è espressamente 401 o 403, la sessione è sicuramente non valida/scaduta
+    if (verifyRes.status === 401 || verifyRes.status === 403) {
+      return false;
+    }
+    
+    // In caso di altri status (es. 500, 502, 503 per manutenzione o riavvio del server),
+    // consideriamo la sessione temporaneamente valida per evitare il redirect coercitivo
+    // e la conseguente cancellazione del cookie.
+    console.warn(`[Framework Proxy] Risposta non attesa dal server di verifica sessione (Status: ${verifyRes.status}). Sessione preservata.`);
+    return true;
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : "Errore sconosciuto";
-    console.error("[Framework Proxy] Errore verifica sessione server-side:", errMsg);
-    return false;
+    console.error("[Framework Proxy] Errore di rete/connessione durante la verifica sessione:", errMsg);
+    // In caso di errore di rete/connessione (es. server offline o in riavvio),
+    // preserviamo la sessione per evitare di sloggare forzatamente l'utente.
+    return true;
   }
 }
 

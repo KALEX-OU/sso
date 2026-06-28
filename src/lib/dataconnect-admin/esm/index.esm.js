@@ -1,560 +1,1399 @@
-import { validateAdminArgs } from 'firebase-admin/data-connect';
+import { validateAdminArgs as originalValidateAdminArgs } from "firebase-admin/data-connect";
+function validateAdminArgs(connectorConfig, dcOrVars, vars, hasVars, validateVars) { return originalValidateAdminArgs(connectorConfig, dcOrVars, vars, undefined, hasVars, validateVars); }
+function validateAdminArgsWithOptions(connectorConfig, dcOrVars, vars, options, hasVars, validateVars) { return originalValidateAdminArgs(connectorConfig, dcOrVars, vars, options, hasVars, validateVars); }
+function queryRef(dc, name, vars) { return { dc, name, vars }; }
+function mutationRef(dc, name, vars) { return { dc, name, vars }; }
+function executeQuery(ref, options) { return ref.dc.executeQuery(ref.name, ref.vars, options); }
+function executeMutation(ref, options) { return ref.dc.executeMutation(ref.name, ref.vars, options); }
 
 export const connectorConfig = {
   connector: 'default',
+  service: 'kalex-cloud-service',
   serviceId: 'kalex-cloud-service',
   location: 'europe-west4'
 };
+export const upsertUserRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpsertUser', inputVars);
+}
+upsertUserRef.operationName = 'UpsertUser';
 
-export function upsertUser(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpsertUser', inputVars, inputOpts);
+export function upsertUser(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertUserRef(dcInstance, inputVars));
 }
 
-export function createOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateOrganization', inputVars, inputOpts);
+export const createOrganizationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateOrganization', inputVars);
+}
+createOrganizationRef.operationName = 'CreateOrganization';
+
+export function createOrganization(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createOrganizationRef(dcInstance, inputVars));
 }
 
-export function addUserToOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('AddUserToOrganization', inputVars, inputOpts);
+export const addUserToOrganizationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'AddUserToOrganization', inputVars);
+}
+addUserToOrganizationRef.operationName = 'AddUserToOrganization';
+
+export function addUserToOrganization(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(addUserToOrganizationRef(dcInstance, inputVars));
 }
 
-export function updateUserOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateUserOrganization', inputVars, inputOpts);
+export const updateUserOrganizationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateUserOrganization', inputVars);
+}
+updateUserOrganizationRef.operationName = 'UpdateUserOrganization';
+
+export function updateUserOrganization(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateUserOrganizationRef(dcInstance, inputVars));
 }
 
-export function updateSubscriptionStatus(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateSubscriptionStatus', inputVars, inputOpts);
+export const updateSubscriptionStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateSubscriptionStatus', inputVars);
+}
+updateSubscriptionStatusRef.operationName = 'UpdateSubscriptionStatus';
+
+export function updateSubscriptionStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateSubscriptionStatusRef(dcInstance, inputVars));
 }
 
-export function updateSubscriptionSeatsList(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateSubscriptionSeatsList', inputVars, inputOpts);
+export const updateOrganizationStripeConnectRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateOrganizationStripeConnect', inputVars);
+}
+updateOrganizationStripeConnectRef.operationName = 'UpdateOrganizationStripeConnect';
+
+export function updateOrganizationStripeConnect(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationStripeConnectRef(dcInstance, inputVars));
 }
 
-export function updateOrganizationStripeConnect(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateOrganizationStripeConnect', inputVars, inputOpts);
+export const updateOrganizationStripeCustomerRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateOrganizationStripeCustomer', inputVars);
+}
+updateOrganizationStripeCustomerRef.operationName = 'UpdateOrganizationStripeCustomer';
+
+export function updateOrganizationStripeCustomer(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationStripeCustomerRef(dcInstance, inputVars));
 }
 
-export function updateOrganizationStripeCustomer(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateOrganizationStripeCustomer', inputVars, inputOpts);
+export const createAuthCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateAuthCode', inputVars);
+}
+createAuthCodeRef.operationName = 'CreateAuthCode';
+
+export function createAuthCode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createAuthCodeRef(dcInstance, inputVars));
 }
 
-export function createAuthCode(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateAuthCode', inputVars, inputOpts);
+export const deleteAuthCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteAuthCode', inputVars);
+}
+deleteAuthCodeRef.operationName = 'DeleteAuthCode';
+
+export function deleteAuthCode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteAuthCodeRef(dcInstance, inputVars));
 }
 
-export function deleteAuthCode(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteAuthCode', inputVars, inputOpts);
+export const updateUserProfileRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateUserProfile', inputVars);
+}
+updateUserProfileRef.operationName = 'UpdateUserProfile';
+
+export function updateUserProfile(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateUserProfileRef(dcInstance, inputVars));
 }
 
-export function updateUserPreferences(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateUserPreferences', inputVars, inputOpts);
+export const updateOrganizationBillingRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateOrganizationBilling', inputVars);
+}
+updateOrganizationBillingRef.operationName = 'UpdateOrganizationBilling';
+
+export function updateOrganizationBilling(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationBillingRef(dcInstance, inputVars));
 }
 
-export function updateOrganizationBilling(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateOrganizationBilling', inputVars, inputOpts);
+export const updateOrganizationViesRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateOrganizationVies', inputVars);
+}
+updateOrganizationViesRef.operationName = 'UpdateOrganizationVies';
+
+export function updateOrganizationVies(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationViesRef(dcInstance, inputVars));
 }
 
-export function upsertPreRegistration(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpsertPreRegistration', inputVars, inputOpts);
+export const upsertPreRegistrationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpsertPreRegistration', inputVars);
+}
+upsertPreRegistrationRef.operationName = 'UpsertPreRegistration';
+
+export function upsertPreRegistration(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertPreRegistrationRef(dcInstance, inputVars));
 }
 
-export function deletePreRegistration(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeletePreRegistration', inputVars, inputOpts);
+export const deletePreRegistrationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeletePreRegistration', inputVars);
+}
+deletePreRegistrationRef.operationName = 'DeletePreRegistration';
+
+export function deletePreRegistration(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePreRegistrationRef(dcInstance, inputVars));
 }
 
-export function confirmOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('ConfirmOrganization', inputVars, inputOpts);
+export const confirmOrganizationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'ConfirmOrganization', inputVars);
+}
+confirmOrganizationRef.operationName = 'ConfirmOrganization';
+
+export function confirmOrganization(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(confirmOrganizationRef(dcInstance, inputVars));
 }
 
-export function deleteUser(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteUser', inputVars, inputOpts);
+export const deleteUserRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteUser', inputVars);
+}
+deleteUserRef.operationName = 'DeleteUser';
+
+export function deleteUser(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteUserRef(dcInstance, inputVars));
 }
 
-export function deleteOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteOrganization', inputVars, inputOpts);
+export const deleteOrganizationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteOrganization', inputVars);
+}
+deleteOrganizationRef.operationName = 'DeleteOrganization';
+
+export function deleteOrganization(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteOrganizationRef(dcInstance, inputVars));
 }
 
-export function deleteUserOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteUserOrganization', inputVars, inputOpts);
+export const deleteUserOrganizationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteUserOrganization', inputVars);
+}
+deleteUserOrganizationRef.operationName = 'DeleteUserOrganization';
+
+export function deleteUserOrganization(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteUserOrganizationRef(dcInstance, inputVars));
 }
 
-export function deleteSubscription(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteSubscription', inputVars, inputOpts);
+export const deleteSubscriptionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteSubscription', inputVars);
+}
+deleteSubscriptionRef.operationName = 'DeleteSubscription';
+
+export function deleteSubscription(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteSubscriptionRef(dcInstance, inputVars));
 }
 
-export function createApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateApiKey', inputVars, inputOpts);
+export const createApiKeyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateApiKey', inputVars);
+}
+createApiKeyRef.operationName = 'CreateApiKey';
+
+export function createApiKey(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createApiKeyRef(dcInstance, inputVars));
 }
 
-export function deleteApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteApiKey', inputVars, inputOpts);
+export const deleteApiKeyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteApiKey', inputVars);
+}
+deleteApiKeyRef.operationName = 'DeleteApiKey';
+
+export function deleteApiKey(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteApiKeyRef(dcInstance, inputVars));
 }
 
-export function setApiKeyPermission(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('SetApiKeyPermission', inputVars, inputOpts);
+export const setApiKeyPermissionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'SetApiKeyPermission', inputVars);
+}
+setApiKeyPermissionRef.operationName = 'SetApiKeyPermission';
+
+export function setApiKeyPermission(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setApiKeyPermissionRef(dcInstance, inputVars));
 }
 
-export function createThing(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateThing', inputVars, inputOpts);
+export const createThingRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateThing', inputVars);
+}
+createThingRef.operationName = 'CreateThing';
+
+export function createThing(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createThingRef(dcInstance, inputVars));
 }
 
-export function updateThing(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateThing', inputVars, inputOpts);
+export const updateThingRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateThing', inputVars);
+}
+updateThingRef.operationName = 'UpdateThing';
+
+export function updateThing(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateThingRef(dcInstance, inputVars));
 }
 
-export function deleteThing(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteThing', inputVars, inputOpts);
+export const deleteThingRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteThing', inputVars);
+}
+deleteThingRef.operationName = 'DeleteThing';
+
+export function deleteThing(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteThingRef(dcInstance, inputVars));
 }
 
-export function createAuditLog(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateAuditLog', inputVars, inputOpts);
+export const createAuditLogRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateAuditLog', inputVars);
+}
+createAuditLogRef.operationName = 'CreateAuditLog';
+
+export function createAuditLog(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createAuditLogRef(dcInstance, inputVars));
 }
 
-export function deleteApiKeyPermission(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteApiKeyPermission', inputVars, inputOpts);
+export const deleteApiKeyPermissionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteApiKeyPermission', inputVars);
+}
+deleteApiKeyPermissionRef.operationName = 'DeleteApiKeyPermission';
+
+export function deleteApiKeyPermission(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteApiKeyPermissionRef(dcInstance, inputVars));
 }
 
-export function deleteAuditLog(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteAuditLog', inputVars, inputOpts);
+export const deleteAuditLogRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteAuditLog', inputVars);
+}
+deleteAuditLogRef.operationName = 'DeleteAuditLog';
+
+export function deleteAuditLog(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteAuditLogRef(dcInstance, inputVars));
 }
 
-export function createService(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateService', inputVars, inputOpts);
+export const createProductRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateProduct', inputVars);
+}
+createProductRef.operationName = 'CreateProduct';
+
+export function createProduct(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createProductRef(dcInstance, inputVars));
 }
 
-export function deleteService(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteService', inputVars, inputOpts);
+export const deleteProductRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteProduct', inputVars);
+}
+deleteProductRef.operationName = 'DeleteProduct';
+
+export function deleteProduct(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteProductRef(dcInstance, inputVars));
 }
 
-export function createProduct(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateProduct', inputVars, inputOpts);
+export const createProductBatchRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateProductBatch', inputVars);
+}
+createProductBatchRef.operationName = 'CreateProductBatch';
+
+export function createProductBatch(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createProductBatchRef(dcInstance, inputVars));
 }
 
-export function deleteProduct(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteProduct', inputVars, inputOpts);
+export const deleteProductBatchRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteProductBatch', inputVars);
+}
+deleteProductBatchRef.operationName = 'DeleteProductBatch';
+
+export function deleteProductBatch(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteProductBatchRef(dcInstance, inputVars));
 }
 
-export function createProductBatch(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateProductBatch', inputVars, inputOpts);
+export const createInvoiceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateInvoice', inputVars);
+}
+createInvoiceRef.operationName = 'CreateInvoice';
+
+export function createInvoice(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createInvoiceRef(dcInstance, inputVars));
 }
 
-export function deleteProductBatch(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteProductBatch', inputVars, inputOpts);
+export const updateInvoiceStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateInvoiceStatus', inputVars);
+}
+updateInvoiceStatusRef.operationName = 'UpdateInvoiceStatus';
+
+export function updateInvoiceStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateInvoiceStatusRef(dcInstance, inputVars));
 }
 
-export function createInvoice(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateInvoice', inputVars, inputOpts);
+export const deleteInvoiceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteInvoice', inputVars);
+}
+deleteInvoiceRef.operationName = 'DeleteInvoice';
+
+export function deleteInvoice(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteInvoiceRef(dcInstance, inputVars));
 }
 
-export function updateInvoiceStatus(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateInvoiceStatus', inputVars, inputOpts);
+export const createPaymentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreatePayment', inputVars);
+}
+createPaymentRef.operationName = 'CreatePayment';
+
+export function createPayment(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createPaymentRef(dcInstance, inputVars));
 }
 
-export function deleteInvoice(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteInvoice', inputVars, inputOpts);
+export const updatePaymentStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdatePaymentStatus', inputVars);
+}
+updatePaymentStatusRef.operationName = 'UpdatePaymentStatus';
+
+export function updatePaymentStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updatePaymentStatusRef(dcInstance, inputVars));
 }
 
-export function createPayment(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreatePayment', inputVars, inputOpts);
+export const deletePaymentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeletePayment', inputVars);
+}
+deletePaymentRef.operationName = 'DeletePayment';
+
+export function deletePayment(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePaymentRef(dcInstance, inputVars));
 }
 
-export function updatePaymentStatus(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdatePaymentStatus', inputVars, inputOpts);
+export const createTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateTeam', inputVars);
+}
+createTeamRef.operationName = 'CreateTeam';
+
+export function createTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createTeamRef(dcInstance, inputVars));
 }
 
-export function createTeam(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateTeam', inputVars, inputOpts);
+export const updateTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateTeam', inputVars);
+}
+updateTeamRef.operationName = 'UpdateTeam';
+
+export function updateTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateTeamRef(dcInstance, inputVars));
 }
 
-export function updateTeam(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateTeam', inputVars, inputOpts);
+export const deleteTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteTeam', inputVars);
+}
+deleteTeamRef.operationName = 'DeleteTeam';
+
+export function deleteTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteTeamRef(dcInstance, inputVars));
 }
 
-export function deleteTeam(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteTeam', inputVars, inputOpts);
+export const addUserToTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'AddUserToTeam', inputVars);
+}
+addUserToTeamRef.operationName = 'AddUserToTeam';
+
+export function addUserToTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(addUserToTeamRef(dcInstance, inputVars));
 }
 
-export function addUserToTeam(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('AddUserToTeam', inputVars, inputOpts);
+export const removeUserFromTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'RemoveUserFromTeam', inputVars);
+}
+removeUserFromTeamRef.operationName = 'RemoveUserFromTeam';
+
+export function removeUserFromTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(removeUserFromTeamRef(dcInstance, inputVars));
 }
 
-export function removeUserFromTeam(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('RemoveUserFromTeam', inputVars, inputOpts);
+export const createApplicationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateApplication', inputVars);
+}
+createApplicationRef.operationName = 'CreateApplication';
+
+export function createApplication(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createApplicationRef(dcInstance, inputVars));
 }
 
-export function createApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateApplication', inputVars, inputOpts);
+export const updateApplicationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateApplication', inputVars);
+}
+updateApplicationRef.operationName = 'UpdateApplication';
+
+export function updateApplication(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateApplicationRef(dcInstance, inputVars));
 }
 
-export function updateApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateApplication', inputVars, inputOpts);
+export const deleteApplicationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteApplication', inputVars);
+}
+deleteApplicationRef.operationName = 'DeleteApplication';
+
+export function deleteApplication(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteApplicationRef(dcInstance, inputVars));
 }
 
-export function deleteApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteApplication', inputVars, inputOpts);
+export const createComputeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateCompute', inputVars);
+}
+createComputeRef.operationName = 'CreateCompute';
+
+export function createCompute(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createComputeRef(dcInstance, inputVars));
 }
 
-export function getUserClaimsContext(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetUserClaimsContext', inputVars, inputOpts);
+export const updateComputeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateCompute', inputVars);
+}
+updateComputeRef.operationName = 'UpdateCompute';
+
+export function updateCompute(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateComputeRef(dcInstance, inputVars));
 }
 
-export function getOrganizationDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetOrganizationDetails', inputVars, inputOpts);
+export const deleteComputeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteCompute', inputVars);
+}
+deleteComputeRef.operationName = 'DeleteCompute';
+
+export function deleteCompute(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteComputeRef(dcInstance, inputVars));
 }
 
-export function getAuthCode(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetAuthCode', inputVars, inputOpts);
+export const createPriceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreatePrice', inputVars);
+}
+createPriceRef.operationName = 'CreatePrice';
+
+export function createPrice(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createPriceRef(dcInstance, inputVars));
 }
 
-export function getPreRegistration(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetPreRegistration', inputVars, inputOpts);
+export const updatePriceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdatePrice', inputVars);
 }
+updatePriceRef.operationName = 'UpdatePrice';
+
+export function updatePrice(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updatePriceRef(dcInstance, inputVars));
+}
+
+export const deletePriceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeletePrice', inputVars);
+}
+deletePriceRef.operationName = 'DeletePrice';
+
+export function deletePrice(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePriceRef(dcInstance, inputVars));
+}
+
+export const createCheckoutRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateCheckout', inputVars);
+}
+createCheckoutRef.operationName = 'CreateCheckout';
+
+export function createCheckout(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createCheckoutRef(dcInstance, inputVars));
+}
+
+export const updateCheckoutRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateCheckout', inputVars);
+}
+updateCheckoutRef.operationName = 'UpdateCheckout';
+
+export function updateCheckout(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateCheckoutRef(dcInstance, inputVars));
+}
+
+export const deleteCheckoutRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteCheckout', inputVars);
+}
+deleteCheckoutRef.operationName = 'DeleteCheckout';
+
+export function deleteCheckout(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteCheckoutRef(dcInstance, inputVars));
+}
+
+export const createProductConsumeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'CreateProductConsume', inputVars);
+}
+createProductConsumeRef.operationName = 'CreateProductConsume';
+
+export function createProductConsume(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createProductConsumeRef(dcInstance, inputVars));
+}
+
+export const updateProductConsumeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'UpdateProductConsume', inputVars);
+}
+updateProductConsumeRef.operationName = 'UpdateProductConsume';
+
+export function updateProductConsume(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateProductConsumeRef(dcInstance, inputVars));
+}
+
+export const deleteProductConsumeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return mutationRef(dcInstance, 'DeleteProductConsume', inputVars);
+}
+deleteProductConsumeRef.operationName = 'DeleteProductConsume';
+
+export function deleteProductConsume(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteProductConsumeRef(dcInstance, inputVars));
+}
+
+export const getUserClaimsContextRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetUserClaimsContext', inputVars);
+}
+getUserClaimsContextRef.operationName = 'GetUserClaimsContext';
+
+export function getUserClaimsContext(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getUserClaimsContextRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getOrganizationDetailsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetOrganizationDetails', inputVars);
+}
+getOrganizationDetailsRef.operationName = 'GetOrganizationDetails';
+
+export function getOrganizationDetails(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrganizationDetailsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getAuthCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetAuthCode', inputVars);
+}
+getAuthCodeRef.operationName = 'GetAuthCode';
+
+export function getAuthCode(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getAuthCodeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getPreRegistrationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetPreRegistration', inputVars);
+}
+getPreRegistrationRef.operationName = 'GetPreRegistration';
+
+export function getPreRegistration(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPreRegistrationRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listAllPreRegistrationsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllPreRegistrations');
+}
+listAllPreRegistrationsRef.operationName = 'ListAllPreRegistrations';
 
 export function listAllPreRegistrations(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllPreRegistrations', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllPreRegistrationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllUsersRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllUsers');
+}
+listAllUsersRef.operationName = 'ListAllUsers';
 
 export function listAllUsers(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllUsers', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllUsersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllOrganizationsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllOrganizations');
+}
+listAllOrganizationsRef.operationName = 'ListAllOrganizations';
 
 export function listAllOrganizations(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllOrganizations', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllOrganizationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllUserOrganizationsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllUserOrganizations');
+}
+listAllUserOrganizationsRef.operationName = 'ListAllUserOrganizations';
 
 export function listAllUserOrganizations(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllUserOrganizations', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllUserOrganizationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllSubscriptionsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllSubscriptions');
+}
+listAllSubscriptionsRef.operationName = 'ListAllSubscriptions';
 
 export function listAllSubscriptions(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllSubscriptions', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllSubscriptionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getSubscription(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetSubscription', inputVars, inputOpts);
+export const getSubscriptionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetSubscription', inputVars);
 }
+getSubscriptionRef.operationName = 'GetSubscription';
+
+export function getSubscription(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getSubscriptionRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listAllAuthCodesRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllAuthCodes');
+}
+listAllAuthCodesRef.operationName = 'ListAllAuthCodes';
 
 export function listAllAuthCodes(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllAuthCodes', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllAuthCodesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getApiKey(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetApiKey', inputVars, inputOpts);
+export const getApiKeyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetApiKey', inputVars);
+}
+getApiKeyRef.operationName = 'GetApiKey';
+
+export function getApiKey(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getApiKeyRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getApiKeyPermissions(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetApiKeyPermissions', inputVars, inputOpts);
+export const getApiKeyPermissionsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetApiKeyPermissions', inputVars);
+}
+getApiKeyPermissionsRef.operationName = 'GetApiKeyPermissions';
+
+export function getApiKeyPermissions(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getApiKeyPermissionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getThing(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetThing', inputVars, inputOpts);
+export const getThingRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetThing', inputVars);
+}
+getThingRef.operationName = 'GetThing';
+
+export function getThing(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getThingRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getThingByTokenHash(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetThingByTokenHash', inputVars, inputOpts);
+export const getThingByTokenHashRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetThingByTokenHash', inputVars);
+}
+getThingByTokenHashRef.operationName = 'GetThingByTokenHash';
+
+export function getThingByTokenHash(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getThingByTokenHashRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listThingsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListThingsByOrg', inputVars, inputOpts);
+export const listThingsByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListThingsByOrg', inputVars);
+}
+listThingsByOrgRef.operationName = 'ListThingsByOrg';
+
+export function listThingsByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listThingsByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listApiKeysByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListApiKeysByOrg', inputVars, inputOpts);
+export const listApiKeysByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListApiKeysByOrg', inputVars);
+}
+listApiKeysByOrgRef.operationName = 'ListApiKeysByOrg';
+
+export function listApiKeysByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listApiKeysByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listMembersByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListMembersByOrg', inputVars, inputOpts);
+export const listMembersByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListMembersByOrg', inputVars);
 }
+listMembersByOrgRef.operationName = 'ListMembersByOrg';
+
+export function listMembersByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listMembersByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listAllThingsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllThings');
+}
+listAllThingsRef.operationName = 'ListAllThings';
 
 export function listAllThings(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllThings', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllThingsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllApiKeysRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllApiKeys');
+}
+listAllApiKeysRef.operationName = 'ListAllApiKeys';
 
 export function listAllApiKeys(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllApiKeys', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllApiKeysRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllApiKeyPermissionsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllApiKeyPermissions');
+}
+listAllApiKeyPermissionsRef.operationName = 'ListAllApiKeyPermissions';
 
 export function listAllApiKeyPermissions(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllApiKeyPermissions', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllApiKeyPermissionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllAuditLogsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllAuditLogs');
+}
+listAllAuditLogsRef.operationName = 'ListAllAuditLogs';
 
 export function listAllAuditLogs(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllAuditLogs', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllAuditLogsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listAllServices(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllServices', inputVars, inputOpts);
+export const listAllProductsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListAllProducts', inputVars);
+}
+listAllProductsRef.operationName = 'ListAllProducts';
+
+export function listAllProducts(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listAllProductsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listAllServicesGlobal(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllServicesGlobal', undefined, inputOpts);
+export const listAllProductsGlobalRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllProductsGlobal');
 }
-
-export function listAllProducts(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllProducts', inputVars, inputOpts);
-}
+listAllProductsGlobalRef.operationName = 'ListAllProductsGlobal';
 
 export function listAllProductsGlobal(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllProductsGlobal', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllProductsGlobalRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllProductBatchesRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllProductBatches');
+}
+listAllProductBatchesRef.operationName = 'ListAllProductBatches';
 
 export function listAllProductBatches(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllProductBatches', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllProductBatchesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getProductBatchesByProduct(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetProductBatchesByProduct', inputVars, inputOpts);
+export const getProductBatchesByProductRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetProductBatchesByProduct', inputVars);
 }
+getProductBatchesByProductRef.operationName = 'GetProductBatchesByProduct';
+
+export function getProductBatchesByProduct(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getProductBatchesByProductRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listAllInvoicesRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllInvoices');
+}
+listAllInvoicesRef.operationName = 'ListAllInvoices';
 
 export function listAllInvoices(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllInvoices', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllInvoicesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllTeamsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllTeams');
+}
+listAllTeamsRef.operationName = 'ListAllTeams';
 
 export function listAllTeams(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllTeams', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllTeamsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
+
+export const listAllTeamMembersRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllTeamMembers');
+}
+listAllTeamMembersRef.operationName = 'ListAllTeamMembers';
 
 export function listAllTeamMembers(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllTeamMembers', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllTeamMembersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listInvoicesByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListInvoicesByOrg', inputVars, inputOpts);
+export const listInvoicesByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListInvoicesByOrg', inputVars);
+}
+listInvoicesByOrgRef.operationName = 'ListInvoicesByOrg';
+
+export function listInvoicesByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listInvoicesByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listInvoicesBySeller(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListInvoicesBySeller', inputVars, inputOpts);
+export const listInvoicesBySellerRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListInvoicesBySeller', inputVars);
+}
+listInvoicesBySellerRef.operationName = 'ListInvoicesBySeller';
+
+export function listInvoicesBySeller(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listInvoicesBySellerRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listPaymentsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListPaymentsByOrg', inputVars, inputOpts);
+export const listPaymentsByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListPaymentsByOrg', inputVars);
+}
+listPaymentsByOrgRef.operationName = 'ListPaymentsByOrg';
+
+export function listPaymentsByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listPaymentsByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listPaymentsBySeller(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListPaymentsBySeller', inputVars, inputOpts);
+export const listPaymentsBySellerRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListPaymentsBySeller', inputVars);
+}
+listPaymentsBySellerRef.operationName = 'ListPaymentsBySeller';
+
+export function listPaymentsBySeller(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listPaymentsBySellerRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getInvoiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetInvoiceDetails', inputVars, inputOpts);
+export const getInvoiceDetailsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetInvoiceDetails', inputVars);
+}
+getInvoiceDetailsRef.operationName = 'GetInvoiceDetails';
+
+export function getInvoiceDetails(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getInvoiceDetailsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getServiceDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetServiceDetails', inputVars, inputOpts);
+export const getOrganizationByStripeCustomerRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetOrganizationByStripeCustomer', inputVars);
+}
+getOrganizationByStripeCustomerRef.operationName = 'GetOrganizationByStripeCustomer';
+
+export function getOrganizationByStripeCustomer(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrganizationByStripeCustomerRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getProductDetails(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetProductDetails', inputVars, inputOpts);
+export const listTeamsByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListTeamsByOrg', inputVars);
+}
+listTeamsByOrgRef.operationName = 'ListTeamsByOrg';
+
+export function listTeamsByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listTeamsByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function getOrganizationByStripeCustomer(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetOrganizationByStripeCustomer', inputVars, inputOpts);
+export const listTeamMembersRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListTeamMembers', inputVars);
+}
+listTeamMembersRef.operationName = 'ListTeamMembers';
+
+export function listTeamMembers(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listTeamMembersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listTeamsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListTeamsByOrg', inputVars, inputOpts);
+export const listAuditLogsByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListAuditLogsByOrg', inputVars);
+}
+listAuditLogsByOrgRef.operationName = 'ListAuditLogsByOrg';
+
+export function listAuditLogsByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listAuditLogsByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listTeamMembers(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListTeamMembers', inputVars, inputOpts);
+export const checkVatNumberExistsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'CheckVatNumberExists', inputVars);
+}
+checkVatNumberExistsRef.operationName = 'CheckVatNumberExists';
+
+export function checkVatNumberExists(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(checkVatNumberExistsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function listAuditLogsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAuditLogsByOrg', inputVars, inputOpts);
+export const getApplicationRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetApplication', inputVars);
+}
+getApplicationRef.operationName = 'GetApplication';
+
+export function getApplication(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getApplicationRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export function checkVatNumberExists(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('CheckVatNumberExists', inputVars, inputOpts);
+export const listAllApplicationsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllApplications');
 }
-
-export function getApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetApplication', inputVars, inputOpts);
-}
+listAllApplicationsRef.operationName = 'ListAllApplications';
 
 export function listAllApplications(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllApplications', undefined, inputOpts);
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllApplicationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getComputeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetCompute', inputVars);
+}
+getComputeRef.operationName = 'GetCompute';
+
+export function getCompute(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getComputeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listComputesByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListComputesByOrg', inputVars);
+}
+listComputesByOrgRef.operationName = 'ListComputesByOrg';
+
+export function listComputesByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listComputesByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getProductConsumeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetProductConsume', inputVars);
+}
+getProductConsumeRef.operationName = 'GetProductConsume';
+
+export function getProductConsume(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getProductConsumeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listProductConsumesByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListProductConsumesByOrg', inputVars);
+}
+listProductConsumesByOrgRef.operationName = 'ListProductConsumesByOrg';
+
+export function listProductConsumesByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listProductConsumesByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getPriceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetPrice', inputVars);
+}
+getPriceRef.operationName = 'GetPrice';
+
+export function getPrice(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPriceRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listPricesByProductRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListPricesByProduct', inputVars);
+}
+listPricesByProductRef.operationName = 'ListPricesByProduct';
+
+export function listPricesByProduct(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listPricesByProductRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listAllPricesRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllPrices');
+}
+listAllPricesRef.operationName = 'ListAllPrices';
+
+export function listAllPrices(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllPricesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getCheckoutRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetCheckout', inputVars);
+}
+getCheckoutRef.operationName = 'GetCheckout';
+
+export function getCheckout(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getCheckoutRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listCheckoutsByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'ListCheckoutsByOrg', inputVars);
+}
+listCheckoutsByOrgRef.operationName = 'ListCheckoutsByOrg';
+
+export function listCheckoutsByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listCheckoutsByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listAllCheckoutsRef = (dc) => {
+  const { dc: dcInstance} = validateAdminArgs(connectorConfig, dc, undefined);
+  
+  return queryRef(dcInstance, 'ListAllCheckouts');
+}
+listAllCheckoutsRef.operationName = 'ListAllCheckouts';
+
+export function listAllCheckouts(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listAllCheckoutsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getPaymentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetPayment', inputVars);
+}
+getPaymentRef.operationName = 'GetPayment';
+
+export function getPayment(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPaymentRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getProductDetailsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateAdminArgs(connectorConfig, dcOrVars, vars, true);
+  
+  return queryRef(dcInstance, 'GetProductDetails', inputVars);
+}
+getProductDetailsRef.operationName = 'GetProductDetails';
+
+export function getProductDetails(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateAdminArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getProductDetailsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

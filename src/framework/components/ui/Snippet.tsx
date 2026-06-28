@@ -2,14 +2,22 @@
 
 import React, { useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { Tooltip } from "./Tooltip";
+import { Skeleton } from "./Skeleton";
 
 export interface SnippetProps extends React.HTMLAttributes<HTMLDivElement> {
   textToCopy?: string;
+  isSkeleton?: boolean;
+  tooltip?: string;
 }
 
 export const Snippet = React.forwardRef<HTMLDivElement, SnippetProps>(
-  ({ children, textToCopy, className = "", ...props }, ref) => {
+  ({ children, textToCopy, className = "", isSkeleton, tooltip, ...props }, ref) => {
     const [copied, setCopied] = useState(false);
+
+    if (isSkeleton) {
+      return <Skeleton className={`h-10 w-full rounded-2xl ${className}`} />;
+    }
 
     const handleCopy = async () => {
       const copyText = textToCopy || (typeof children === "string" ? children : "");
@@ -23,22 +31,28 @@ export const Snippet = React.forwardRef<HTMLDivElement, SnippetProps>(
       }
     };
 
-    return (
+    const snippetElement = (
       <div
         ref={ref}
-        className={`flex items-center justify-between gap-4 p-3 bg-default-100 rounded-lg border border-divider font-mono text-xs ${className}`}
+        className={`klx-snippet ${className}`}
         {...props}
       >
-        <span className="truncate">{children}</span>
+        <span className="klx-snippet-content">{children}</span>
         <button
           onClick={handleCopy}
-          className="p-1.5 rounded-md hover:bg-default-200 active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+          className="klx-snippet-copy-btn"
           aria-label="Copia negli appunti"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
       </div>
     );
+
+    if (tooltip) {
+      return <Tooltip content={tooltip}>{snippetElement}</Tooltip>;
+    }
+
+    return snippetElement;
   }
 );
 Snippet.displayName = "Snippet";

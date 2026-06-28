@@ -1,0 +1,39 @@
+"use client";
+
+import React from "react";
+import { ToggleButton as HeroToggleButton } from "@heroui/react";
+import { Tooltip } from "./Tooltip";
+import { Skeleton } from "./Skeleton";
+
+export type ToggleButtonProps = React.ComponentProps<typeof HeroToggleButton> & {
+  className?: string;
+  isSkeleton?: boolean;
+  tooltip?: string;
+};
+
+export const ToggleButton = React.forwardRef<React.ElementRef<typeof HeroToggleButton>, ToggleButtonProps>(
+  ({ className = "", isSkeleton, tooltip, children, ...props }, ref) => {
+    if (isSkeleton) {
+      return <Skeleton className={`klx-toggle-button-skeleton ${className}`} />;
+    }
+
+    const content = (
+      <HeroToggleButton
+        ref={ref}
+        className={`klx-toggle-button ${className}`}
+        {...props}
+      >
+        {children}
+      </HeroToggleButton>
+    );
+
+    if (tooltip) {
+      return <Tooltip content={tooltip}>{content}</Tooltip>
+    }
+
+    return content;
+  }
+);
+
+ToggleButton.displayName = "ToggleButton";
+

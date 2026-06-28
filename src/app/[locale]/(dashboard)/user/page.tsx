@@ -32,7 +32,7 @@ interface MemberItem {
   joinedAt: string;
   rbac?: RbacStructure | null;
   user?: {
-    uid: string;
+    userId: string;
     email: string;
     fullName?: string | null;
     avatarUrl?: string | null;
@@ -185,7 +185,7 @@ export default function UserManagementPage() {
         role: memberForm.role,
         joinedAt: new Date().toISOString(),
         user: {
-          uid: `temp_${Math.random().toString(36).substring(2, 9)}`,
+          userId: `temp_${Math.random().toString(36).substring(2, 9)}`,
           email: memberForm.email,
           fullName: memberForm.fullName,
           avatarUrl: null
@@ -227,13 +227,13 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleDeleteMember = async (targetUid: string, email: string) => {
+  const handleDeleteMember = async (targetUserId: string, email: string) => {
     if (!activeOrg || !user) return;
     if (!confirm(`Sei sicuro di voler rimuovere l'utente '${email}' dall'organizzazione?`)) return;
 
     try {
       const idToken = await user.getIdToken();
-      const response = await fetchWithAppCheck(`/api/user/${targetUid}`, {
+      const response = await fetchWithAppCheck(`/api/user/${targetUserId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${idToken}`
@@ -301,13 +301,13 @@ export default function UserManagementPage() {
   };
 
   const handleSavePermissions = async () => {
-    if (!selectedMember?.user?.uid || !activeOrg || !user) return;
+    if (!selectedMember?.user?.userId || !activeOrg || !user) return;
 
     setSavingPerms(true);
     try {
       const idToken = await user.getIdToken();
-      const response = await fetchWithAppCheck(`/api/user/${selectedMember.user.uid}`, {
-        method: "PUT",
+      const response = await fetchWithAppCheck(`/api/user/${selectedMember.user.userId}`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${idToken}`
@@ -461,7 +461,7 @@ export default function UserManagementPage() {
                         : undefined;
                       
                       return (
-                        <tr key={u?.uid || idx} className="border-b border-slate-200/50 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                        <tr key={u?.userId || idx} className="border-b border-slate-200/50 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="w-8 h-8 text-xs font-bold bg-slate-200 dark:bg-white/10">
@@ -531,7 +531,7 @@ export default function UserManagementPage() {
                                     isIconOnly
                                     variant="ghost"
                                     className="text-red-500 hover:bg-red-500/10 rounded-xl"
-                                    onClick={() => void handleDeleteMember(u.uid, u.email)}
+                                    onClick={() => void handleDeleteMember(u.userId, u.email)}
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
