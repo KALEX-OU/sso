@@ -152,7 +152,13 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
     // convertiamo in 200 OK con success: false per evitare errori 401 rossi in console
     if (pathString === "client-token" && status === 401) {
       status = 200;
-      finalBody = JSON.stringify({ success: false, code: "auth/unauthorized", message: "Utente non autenticato." });
+      finalBody = JSON.stringify({ 
+        success: false, 
+        error: { 
+          code: "auth/unauthorized", 
+          message: "Utente non autenticato." 
+        } 
+      });
     }
 
     const nextResponse = new NextResponse(finalBody, {

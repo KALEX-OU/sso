@@ -199,7 +199,6 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
         }
         
         if (attempt < retries) {
-          console.warn(`[FirebaseProvider] Tentativo ${attempt} fallito. Riprovo tra ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
           delay *= 2;
           continue;
@@ -207,8 +206,6 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
         return { success: false };
       } catch (err) {
         if (attempt < retries) {
-          const errMsg = err instanceof Error ? err.message : String(err);
-          console.warn(`[FirebaseProvider] Tentativo ${attempt} fallito causa errore (${errMsg}). Riprovo tra ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
           delay *= 2;
           continue;
@@ -233,7 +230,6 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
             try {
               await signInWithCustomToken(auth, res.customToken);
             } catch (signInErr) {
-              console.error("[FirebaseProvider] Errore durante il signIn con custom token:", signInErr);
               const errMsg = signInErr instanceof Error ? signInErr.message : String(signInErr);
               setExchangeError(`Errore di inizializzazione Firebase Auth: ${errMsg}. Verifica che il dominio '${window.location.hostname}' sia inserito tra i referrer consentiti per la chiave API di Firebase.`);
               await auth.signOut();
@@ -241,12 +237,12 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           } else if (res.isRateLimited && active.current) {
             setRateLimited(true);
           }
-        } catch (err) {
-          console.warn("[FirebaseProvider] Impossibile recuperare il client token iniziale:", err);
+        } catch {
+          // Silent fallback
         }
       }
-    } catch (err) {
-      console.error("[FirebaseProvider] Errore inizializzazione Auth:", err);
+    } catch {
+      // Silent fallback
     } finally {
       if (active.current) setInitLoading(false);
     }
@@ -270,7 +266,6 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
   useEffect(() => {
     const refreshInterval = setInterval(async () => {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        console.log("[FirebaseProvider] Browser offline, rinvio il refresh del client token.");
         return;
       }
 
@@ -280,15 +275,14 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           const response = await fetchClientTokenWithRetry();
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
-            console.log("[FirebaseProvider] Client token rinfrescato in memoria.");
           } else if (response.isRateLimited) {
             setRateLimited(true);
           } else {
             // Se fallisce il refresh (sessione scaduta o revocata), esegui l'auto-clean della sessione
             await forceCleanSession(appId);
           }
-        } catch (err) {
-          console.warn("[FirebaseProvider] Errore durante il refresh del client token:", err);
+        } catch {
+          // Silent fallback
         }
       }
     }, 45 * 60 * 1000); // 45 minuti
@@ -296,28 +290,25 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
     // Listener per il ripristino della rete: se eravamo offline, sincronizza subito il token
     const handleOnline = async () => {
       isOnlineRef.current = true;
-      console.log("[FirebaseProvider] Connessione ripristinata. Tento la sincronizzazione del client token...");
       if (auth.currentUser) {
         try {
           const { signInWithCustomToken } = await import("firebase/auth");
           const response = await fetchClientTokenWithRetry();
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
-            console.log("[FirebaseProvider] Client token sincronizzato dopo ripristino rete.");
           } else if (response.isRateLimited) {
             setRateLimited(true);
           } else {
             await forceCleanSession(appId);
           }
-        } catch (err) {
-          console.warn("[FirebaseProvider] Errore sincronizzazione client token dopo ripristino rete:", err);
+        } catch {
+          // Silent fallback
         }
       }
     };
 
     const handleOffline = () => {
       isOnlineRef.current = false;
-      console.log("[FirebaseProvider] Browser offline.");
     };
 
     if (typeof window !== "undefined") {
