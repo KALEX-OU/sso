@@ -1,5 +1,8 @@
 // framework/src/lib/resources.config.ts
 
+import type * as LucideIcons from "lucide-react";
+export type LucideIconName = keyof typeof LucideIcons;
+
 const STRIPE_TAX_CODE_KEYS = [
   "txcd_10103000",
   "txcd_10102000",
@@ -2527,7 +2530,7 @@ export interface AppInfo {
 export interface ModuleInfo {
   readonly id: keyof typeof MODULE_REGISTRY;
   readonly name: string;
-  readonly icon?: string;
+  readonly icon?: LucideIconName;
   readonly fields: Record<string, FieldConfig>;
   readonly rolePolicies: Record<string, SecurityPolicy>;
 }
@@ -2548,7 +2551,7 @@ export function listModules(): ModuleInfo[] {
   return Object.entries(MODULE_REGISTRY).map(([id, mod]) => ({
     id: id as keyof typeof MODULE_REGISTRY,
     name: mod.name,
-    icon: "icon" in mod ? (mod as { icon: string }).icon : undefined,
+    icon: "icon" in mod ? (mod as { icon: LucideIconName }).icon : undefined,
     fields: mod.fields as Record<string, FieldConfig>,
     rolePolicies: mod.rolePolicies as Record<string, SecurityPolicy>
   }));
@@ -2575,7 +2578,7 @@ export function getModuleInfo(moduleId: keyof typeof MODULE_REGISTRY): ModuleInf
   return {
     id: moduleId,
     name: mod.name,
-    icon: "icon" in mod ? (mod as { icon: string }).icon : undefined,
+    icon: "icon" in mod ? (mod as { icon: LucideIconName }).icon : undefined,
     fields: mod.fields as Record<string, FieldConfig>,
     rolePolicies: mod.rolePolicies as Record<string, SecurityPolicy>
   };

@@ -1,4 +1,5 @@
 import { getToken } from "firebase/app-check";
+import { setCorrelationId } from "./logger";
 
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
 
@@ -55,6 +56,7 @@ export async function fetchAuthedClient<T>(
     ? crypto.randomUUID() 
     : Math.random().toString(36).substring(2, 15);
   headers.set("x-correlation-id", correlationId);
+  setCorrelationId(correlationId);
 
   // 2. Inietta automaticamente l'Idempotency-Key per richieste di scrittura (POST, PUT, DELETE) se non presente
   const method = init?.method?.toUpperCase() || "GET";
@@ -83,8 +85,9 @@ export async function fetchAuthedClient<T>(
     headers.set("X-Firebase-AppCheck", appCheckToken);
   }
   
-  if (process.env.NODE_ENV === "development") {
-    headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
+  const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN;
+  if (debugToken) {
+    headers.set("X-Firebase-AppCheck-Debug", debugToken);
   }
 
   // 5. Inserisce l'App ID proprietario

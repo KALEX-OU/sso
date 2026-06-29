@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
-import { RESOURCE_REGISTRY, getVisibleModulesForSidebar, AppIds, MODULE_REGISTRY } from "@/framework/lib/resources.config";
+import { RESOURCE_REGISTRY, getVisibleModulesForSidebar, AppIds, MODULE_REGISTRY, LucideIconName } from "@/framework/lib/resources.config";
 import { useTheme } from "next-themes";
 import { useCurrentLocale } from "@/locales/client";
 import pkg from "@/../package.json";
@@ -31,9 +31,9 @@ import {
 } from "lucide-react";
 
 // Helper per risolvere l'icona del modulo dinamicamente dal registro SSOT
-const getIconComponent = (iconName?: string): React.ComponentType<{ className?: string }> => {
+const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> => {
   if (!iconName) return LayoutDashboard;
-  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+  const IconComponent = LucideIcons[iconName] as React.ComponentType<{ className?: string }>;
   return IconComponent || LayoutDashboard;
 };
 
