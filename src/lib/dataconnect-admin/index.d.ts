@@ -1,4 +1,4 @@
-import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, ExecuteQueryOptions, MutationRef, MutationPromise } from "firebase-admin/data-connect";
+import { ConnectorConfig, DataConnect, OperationOptions, ExecuteOperationResponse } from 'firebase-admin/data-connect';
 
 export const connectorConfig: ConnectorConfig;
 
@@ -6,8 +6,6 @@ export type TimestampString = string;
 export type UUIDString = string;
 export type Int64String = string;
 export type DateString = string;
-
-
 
 
 export interface AddUserToOrganizationData {
@@ -859,7 +857,22 @@ export interface GetProductDetailsData {
     options?: unknown | null;
     taxBehavior: string;
     aiSummary?: string | null;
-    descriptionEmbedding?: unknown | null;
+    prices_on_product: ({
+      priceId: string;
+      productId: string;
+      amount: number;
+      currency: string;
+      type: string;
+      billingScheme?: string | null;
+      recurringInterval?: string | null;
+      recurringUsageType?: string | null;
+      tier?: string | null;
+      isActive: boolean;
+      isTest: boolean;
+      taxBehavior?: string | null;
+      metadata?: unknown | null;
+      createdAt: TimestampString;
+    } & Prices_Key)[];
     createdAt: TimestampString;
   } & Products_Key;
 }
@@ -1971,1335 +1984,558 @@ export interface Users_Key {
   __typename?: 'Users_Key';
 }
 
-interface UpsertUserRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertUserVariables): MutationRef<UpsertUserData, UpsertUserVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpsertUserVariables): MutationRef<UpsertUserData, UpsertUserVariables>;
-  operationName: string;
-}
-export const upsertUserRef: UpsertUserRef;
-
-export function upsertUser(vars: UpsertUserVariables): MutationPromise<UpsertUserData, UpsertUserVariables>;
-export function upsertUser(dc: DataConnect, vars: UpsertUserVariables, options?: any): MutationPromise<UpsertUserData, UpsertUserVariables>;
-
-interface CreateOrganizationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateOrganizationVariables): MutationRef<CreateOrganizationData, CreateOrganizationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateOrganizationVariables): MutationRef<CreateOrganizationData, CreateOrganizationVariables>;
-  operationName: string;
-}
-export const createOrganizationRef: CreateOrganizationRef;
-
-export function createOrganization(vars: CreateOrganizationVariables): MutationPromise<CreateOrganizationData, CreateOrganizationVariables>;
-export function createOrganization(dc: DataConnect, vars: CreateOrganizationVariables, options?: any): MutationPromise<CreateOrganizationData, CreateOrganizationVariables>;
-
-interface AddUserToOrganizationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: AddUserToOrganizationVariables): MutationRef<AddUserToOrganizationData, AddUserToOrganizationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: AddUserToOrganizationVariables): MutationRef<AddUserToOrganizationData, AddUserToOrganizationVariables>;
-  operationName: string;
-}
-export const addUserToOrganizationRef: AddUserToOrganizationRef;
-
-export function addUserToOrganization(vars: AddUserToOrganizationVariables): MutationPromise<AddUserToOrganizationData, AddUserToOrganizationVariables>;
-export function addUserToOrganization(dc: DataConnect, vars: AddUserToOrganizationVariables, options?: any): MutationPromise<AddUserToOrganizationData, AddUserToOrganizationVariables>;
-
-interface UpdateUserOrganizationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateUserOrganizationVariables): MutationRef<UpdateUserOrganizationData, UpdateUserOrganizationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateUserOrganizationVariables): MutationRef<UpdateUserOrganizationData, UpdateUserOrganizationVariables>;
-  operationName: string;
-}
-export const updateUserOrganizationRef: UpdateUserOrganizationRef;
-
-export function updateUserOrganization(vars: UpdateUserOrganizationVariables): MutationPromise<UpdateUserOrganizationData, UpdateUserOrganizationVariables>;
-export function updateUserOrganization(dc: DataConnect, vars: UpdateUserOrganizationVariables, options?: any): MutationPromise<UpdateUserOrganizationData, UpdateUserOrganizationVariables>;
-
-interface UpdateSubscriptionStatusRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateSubscriptionStatusVariables): MutationRef<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateSubscriptionStatusVariables): MutationRef<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
-  operationName: string;
-}
-export const updateSubscriptionStatusRef: UpdateSubscriptionStatusRef;
-
-export function updateSubscriptionStatus(vars: UpdateSubscriptionStatusVariables): MutationPromise<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
-export function updateSubscriptionStatus(dc: DataConnect, vars: UpdateSubscriptionStatusVariables, options?: any): MutationPromise<UpdateSubscriptionStatusData, UpdateSubscriptionStatusVariables>;
-
-interface UpdateOrganizationStripeConnectRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateOrganizationStripeConnectVariables): MutationRef<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateOrganizationStripeConnectVariables): MutationRef<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
-  operationName: string;
-}
-export const updateOrganizationStripeConnectRef: UpdateOrganizationStripeConnectRef;
-
-export function updateOrganizationStripeConnect(vars: UpdateOrganizationStripeConnectVariables): MutationPromise<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
-export function updateOrganizationStripeConnect(dc: DataConnect, vars: UpdateOrganizationStripeConnectVariables, options?: any): MutationPromise<UpdateOrganizationStripeConnectData, UpdateOrganizationStripeConnectVariables>;
-
-interface UpdateOrganizationStripeCustomerRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateOrganizationStripeCustomerVariables): MutationRef<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateOrganizationStripeCustomerVariables): MutationRef<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
-  operationName: string;
-}
-export const updateOrganizationStripeCustomerRef: UpdateOrganizationStripeCustomerRef;
-
-export function updateOrganizationStripeCustomer(vars: UpdateOrganizationStripeCustomerVariables): MutationPromise<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
-export function updateOrganizationStripeCustomer(dc: DataConnect, vars: UpdateOrganizationStripeCustomerVariables, options?: any): MutationPromise<UpdateOrganizationStripeCustomerData, UpdateOrganizationStripeCustomerVariables>;
-
-interface CreateAuthCodeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateAuthCodeVariables): MutationRef<CreateAuthCodeData, CreateAuthCodeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateAuthCodeVariables): MutationRef<CreateAuthCodeData, CreateAuthCodeVariables>;
-  operationName: string;
-}
-export const createAuthCodeRef: CreateAuthCodeRef;
-
-export function createAuthCode(vars: CreateAuthCodeVariables): MutationPromise<CreateAuthCodeData, CreateAuthCodeVariables>;
-export function createAuthCode(dc: DataConnect, vars: CreateAuthCodeVariables, options?: any): MutationPromise<CreateAuthCodeData, CreateAuthCodeVariables>;
-
-interface DeleteAuthCodeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteAuthCodeVariables): MutationRef<DeleteAuthCodeData, DeleteAuthCodeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteAuthCodeVariables): MutationRef<DeleteAuthCodeData, DeleteAuthCodeVariables>;
-  operationName: string;
-}
-export const deleteAuthCodeRef: DeleteAuthCodeRef;
-
-export function deleteAuthCode(vars: DeleteAuthCodeVariables): MutationPromise<DeleteAuthCodeData, DeleteAuthCodeVariables>;
-export function deleteAuthCode(dc: DataConnect, vars: DeleteAuthCodeVariables, options?: any): MutationPromise<DeleteAuthCodeData, DeleteAuthCodeVariables>;
-
-interface UpdateUserProfileRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateUserProfileVariables): MutationRef<UpdateUserProfileData, UpdateUserProfileVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateUserProfileVariables): MutationRef<UpdateUserProfileData, UpdateUserProfileVariables>;
-  operationName: string;
-}
-export const updateUserProfileRef: UpdateUserProfileRef;
-
-export function updateUserProfile(vars: UpdateUserProfileVariables): MutationPromise<UpdateUserProfileData, UpdateUserProfileVariables>;
-export function updateUserProfile(dc: DataConnect, vars: UpdateUserProfileVariables, options?: any): MutationPromise<UpdateUserProfileData, UpdateUserProfileVariables>;
-
-interface UpdateOrganizationBillingRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateOrganizationBillingVariables): MutationRef<UpdateOrganizationBillingData, UpdateOrganizationBillingVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateOrganizationBillingVariables): MutationRef<UpdateOrganizationBillingData, UpdateOrganizationBillingVariables>;
-  operationName: string;
-}
-export const updateOrganizationBillingRef: UpdateOrganizationBillingRef;
-
-export function updateOrganizationBilling(vars: UpdateOrganizationBillingVariables): MutationPromise<UpdateOrganizationBillingData, UpdateOrganizationBillingVariables>;
-export function updateOrganizationBilling(dc: DataConnect, vars: UpdateOrganizationBillingVariables, options?: any): MutationPromise<UpdateOrganizationBillingData, UpdateOrganizationBillingVariables>;
-
-interface UpdateOrganizationViesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateOrganizationViesVariables): MutationRef<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateOrganizationViesVariables): MutationRef<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
-  operationName: string;
-}
-export const updateOrganizationViesRef: UpdateOrganizationViesRef;
-
-export function updateOrganizationVies(vars: UpdateOrganizationViesVariables): MutationPromise<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
-export function updateOrganizationVies(dc: DataConnect, vars: UpdateOrganizationViesVariables, options?: any): MutationPromise<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
-
-interface UpsertPreRegistrationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertPreRegistrationVariables): MutationRef<UpsertPreRegistrationData, UpsertPreRegistrationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpsertPreRegistrationVariables): MutationRef<UpsertPreRegistrationData, UpsertPreRegistrationVariables>;
-  operationName: string;
-}
-export const upsertPreRegistrationRef: UpsertPreRegistrationRef;
-
-export function upsertPreRegistration(vars: UpsertPreRegistrationVariables): MutationPromise<UpsertPreRegistrationData, UpsertPreRegistrationVariables>;
-export function upsertPreRegistration(dc: DataConnect, vars: UpsertPreRegistrationVariables, options?: any): MutationPromise<UpsertPreRegistrationData, UpsertPreRegistrationVariables>;
-
-interface DeletePreRegistrationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeletePreRegistrationVariables): MutationRef<DeletePreRegistrationData, DeletePreRegistrationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeletePreRegistrationVariables): MutationRef<DeletePreRegistrationData, DeletePreRegistrationVariables>;
-  operationName: string;
-}
-export const deletePreRegistrationRef: DeletePreRegistrationRef;
-
-export function deletePreRegistration(vars: DeletePreRegistrationVariables): MutationPromise<DeletePreRegistrationData, DeletePreRegistrationVariables>;
-export function deletePreRegistration(dc: DataConnect, vars: DeletePreRegistrationVariables, options?: any): MutationPromise<DeletePreRegistrationData, DeletePreRegistrationVariables>;
-
-interface ConfirmOrganizationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ConfirmOrganizationVariables): MutationRef<ConfirmOrganizationData, ConfirmOrganizationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ConfirmOrganizationVariables): MutationRef<ConfirmOrganizationData, ConfirmOrganizationVariables>;
-  operationName: string;
-}
-export const confirmOrganizationRef: ConfirmOrganizationRef;
-
-export function confirmOrganization(vars: ConfirmOrganizationVariables): MutationPromise<ConfirmOrganizationData, ConfirmOrganizationVariables>;
-export function confirmOrganization(dc: DataConnect, vars: ConfirmOrganizationVariables, options?: any): MutationPromise<ConfirmOrganizationData, ConfirmOrganizationVariables>;
-
-interface DeleteUserRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteUserVariables): MutationRef<DeleteUserData, DeleteUserVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteUserVariables): MutationRef<DeleteUserData, DeleteUserVariables>;
-  operationName: string;
-}
-export const deleteUserRef: DeleteUserRef;
-
-export function deleteUser(vars: DeleteUserVariables): MutationPromise<DeleteUserData, DeleteUserVariables>;
-export function deleteUser(dc: DataConnect, vars: DeleteUserVariables, options?: any): MutationPromise<DeleteUserData, DeleteUserVariables>;
-
-interface DeleteOrganizationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteOrganizationVariables): MutationRef<DeleteOrganizationData, DeleteOrganizationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteOrganizationVariables): MutationRef<DeleteOrganizationData, DeleteOrganizationVariables>;
-  operationName: string;
-}
-export const deleteOrganizationRef: DeleteOrganizationRef;
-
-export function deleteOrganization(vars: DeleteOrganizationVariables): MutationPromise<DeleteOrganizationData, DeleteOrganizationVariables>;
-export function deleteOrganization(dc: DataConnect, vars: DeleteOrganizationVariables, options?: any): MutationPromise<DeleteOrganizationData, DeleteOrganizationVariables>;
-
-interface DeleteUserOrganizationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteUserOrganizationVariables): MutationRef<DeleteUserOrganizationData, DeleteUserOrganizationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteUserOrganizationVariables): MutationRef<DeleteUserOrganizationData, DeleteUserOrganizationVariables>;
-  operationName: string;
-}
-export const deleteUserOrganizationRef: DeleteUserOrganizationRef;
-
-export function deleteUserOrganization(vars: DeleteUserOrganizationVariables): MutationPromise<DeleteUserOrganizationData, DeleteUserOrganizationVariables>;
-export function deleteUserOrganization(dc: DataConnect, vars: DeleteUserOrganizationVariables, options?: any): MutationPromise<DeleteUserOrganizationData, DeleteUserOrganizationVariables>;
-
-interface DeleteSubscriptionRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteSubscriptionVariables): MutationRef<DeleteSubscriptionData, DeleteSubscriptionVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteSubscriptionVariables): MutationRef<DeleteSubscriptionData, DeleteSubscriptionVariables>;
-  operationName: string;
-}
-export const deleteSubscriptionRef: DeleteSubscriptionRef;
-
-export function deleteSubscription(vars: DeleteSubscriptionVariables): MutationPromise<DeleteSubscriptionData, DeleteSubscriptionVariables>;
-export function deleteSubscription(dc: DataConnect, vars: DeleteSubscriptionVariables, options?: any): MutationPromise<DeleteSubscriptionData, DeleteSubscriptionVariables>;
-
-interface CreateApiKeyRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateApiKeyVariables): MutationRef<CreateApiKeyData, CreateApiKeyVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateApiKeyVariables): MutationRef<CreateApiKeyData, CreateApiKeyVariables>;
-  operationName: string;
-}
-export const createApiKeyRef: CreateApiKeyRef;
-
-export function createApiKey(vars: CreateApiKeyVariables): MutationPromise<CreateApiKeyData, CreateApiKeyVariables>;
-export function createApiKey(dc: DataConnect, vars: CreateApiKeyVariables, options?: any): MutationPromise<CreateApiKeyData, CreateApiKeyVariables>;
-
-interface DeleteApiKeyRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteApiKeyVariables): MutationRef<DeleteApiKeyData, DeleteApiKeyVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteApiKeyVariables): MutationRef<DeleteApiKeyData, DeleteApiKeyVariables>;
-  operationName: string;
-}
-export const deleteApiKeyRef: DeleteApiKeyRef;
-
-export function deleteApiKey(vars: DeleteApiKeyVariables): MutationPromise<DeleteApiKeyData, DeleteApiKeyVariables>;
-export function deleteApiKey(dc: DataConnect, vars: DeleteApiKeyVariables, options?: any): MutationPromise<DeleteApiKeyData, DeleteApiKeyVariables>;
-
-interface SetApiKeyPermissionRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: SetApiKeyPermissionVariables): MutationRef<SetApiKeyPermissionData, SetApiKeyPermissionVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: SetApiKeyPermissionVariables): MutationRef<SetApiKeyPermissionData, SetApiKeyPermissionVariables>;
-  operationName: string;
-}
-export const setApiKeyPermissionRef: SetApiKeyPermissionRef;
-
-export function setApiKeyPermission(vars: SetApiKeyPermissionVariables): MutationPromise<SetApiKeyPermissionData, SetApiKeyPermissionVariables>;
-export function setApiKeyPermission(dc: DataConnect, vars: SetApiKeyPermissionVariables, options?: any): MutationPromise<SetApiKeyPermissionData, SetApiKeyPermissionVariables>;
-
-interface CreateThingRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateThingVariables): MutationRef<CreateThingData, CreateThingVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateThingVariables): MutationRef<CreateThingData, CreateThingVariables>;
-  operationName: string;
-}
-export const createThingRef: CreateThingRef;
-
-export function createThing(vars: CreateThingVariables): MutationPromise<CreateThingData, CreateThingVariables>;
-export function createThing(dc: DataConnect, vars: CreateThingVariables, options?: any): MutationPromise<CreateThingData, CreateThingVariables>;
-
-interface UpdateThingRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateThingVariables): MutationRef<UpdateThingData, UpdateThingVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateThingVariables): MutationRef<UpdateThingData, UpdateThingVariables>;
-  operationName: string;
-}
-export const updateThingRef: UpdateThingRef;
-
-export function updateThing(vars: UpdateThingVariables): MutationPromise<UpdateThingData, UpdateThingVariables>;
-export function updateThing(dc: DataConnect, vars: UpdateThingVariables, options?: any): MutationPromise<UpdateThingData, UpdateThingVariables>;
-
-interface DeleteThingRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteThingVariables): MutationRef<DeleteThingData, DeleteThingVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteThingVariables): MutationRef<DeleteThingData, DeleteThingVariables>;
-  operationName: string;
-}
-export const deleteThingRef: DeleteThingRef;
-
-export function deleteThing(vars: DeleteThingVariables): MutationPromise<DeleteThingData, DeleteThingVariables>;
-export function deleteThing(dc: DataConnect, vars: DeleteThingVariables, options?: any): MutationPromise<DeleteThingData, DeleteThingVariables>;
-
-interface CreateAuditLogRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateAuditLogVariables): MutationRef<CreateAuditLogData, CreateAuditLogVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateAuditLogVariables): MutationRef<CreateAuditLogData, CreateAuditLogVariables>;
-  operationName: string;
-}
-export const createAuditLogRef: CreateAuditLogRef;
-
-export function createAuditLog(vars: CreateAuditLogVariables): MutationPromise<CreateAuditLogData, CreateAuditLogVariables>;
-export function createAuditLog(dc: DataConnect, vars: CreateAuditLogVariables, options?: any): MutationPromise<CreateAuditLogData, CreateAuditLogVariables>;
-
-interface DeleteApiKeyPermissionRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteApiKeyPermissionVariables): MutationRef<DeleteApiKeyPermissionData, DeleteApiKeyPermissionVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteApiKeyPermissionVariables): MutationRef<DeleteApiKeyPermissionData, DeleteApiKeyPermissionVariables>;
-  operationName: string;
-}
-export const deleteApiKeyPermissionRef: DeleteApiKeyPermissionRef;
-
-export function deleteApiKeyPermission(vars: DeleteApiKeyPermissionVariables): MutationPromise<DeleteApiKeyPermissionData, DeleteApiKeyPermissionVariables>;
-export function deleteApiKeyPermission(dc: DataConnect, vars: DeleteApiKeyPermissionVariables, options?: any): MutationPromise<DeleteApiKeyPermissionData, DeleteApiKeyPermissionVariables>;
-
-interface DeleteAuditLogRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteAuditLogVariables): MutationRef<DeleteAuditLogData, DeleteAuditLogVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteAuditLogVariables): MutationRef<DeleteAuditLogData, DeleteAuditLogVariables>;
-  operationName: string;
-}
-export const deleteAuditLogRef: DeleteAuditLogRef;
-
-export function deleteAuditLog(vars: DeleteAuditLogVariables): MutationPromise<DeleteAuditLogData, DeleteAuditLogVariables>;
-export function deleteAuditLog(dc: DataConnect, vars: DeleteAuditLogVariables, options?: any): MutationPromise<DeleteAuditLogData, DeleteAuditLogVariables>;
-
-interface CreateProductRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateProductVariables): MutationRef<CreateProductData, CreateProductVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateProductVariables): MutationRef<CreateProductData, CreateProductVariables>;
-  operationName: string;
-}
-export const createProductRef: CreateProductRef;
-
-export function createProduct(vars: CreateProductVariables): MutationPromise<CreateProductData, CreateProductVariables>;
-export function createProduct(dc: DataConnect, vars: CreateProductVariables, options?: any): MutationPromise<CreateProductData, CreateProductVariables>;
-
-interface DeleteProductRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteProductVariables): MutationRef<DeleteProductData, DeleteProductVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteProductVariables): MutationRef<DeleteProductData, DeleteProductVariables>;
-  operationName: string;
-}
-export const deleteProductRef: DeleteProductRef;
-
-export function deleteProduct(vars: DeleteProductVariables): MutationPromise<DeleteProductData, DeleteProductVariables>;
-export function deleteProduct(dc: DataConnect, vars: DeleteProductVariables, options?: any): MutationPromise<DeleteProductData, DeleteProductVariables>;
-
-interface CreateProductBatchRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateProductBatchVariables): MutationRef<CreateProductBatchData, CreateProductBatchVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateProductBatchVariables): MutationRef<CreateProductBatchData, CreateProductBatchVariables>;
-  operationName: string;
-}
-export const createProductBatchRef: CreateProductBatchRef;
-
-export function createProductBatch(vars: CreateProductBatchVariables): MutationPromise<CreateProductBatchData, CreateProductBatchVariables>;
-export function createProductBatch(dc: DataConnect, vars: CreateProductBatchVariables, options?: any): MutationPromise<CreateProductBatchData, CreateProductBatchVariables>;
-
-interface DeleteProductBatchRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteProductBatchVariables): MutationRef<DeleteProductBatchData, DeleteProductBatchVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteProductBatchVariables): MutationRef<DeleteProductBatchData, DeleteProductBatchVariables>;
-  operationName: string;
-}
-export const deleteProductBatchRef: DeleteProductBatchRef;
-
-export function deleteProductBatch(vars: DeleteProductBatchVariables): MutationPromise<DeleteProductBatchData, DeleteProductBatchVariables>;
-export function deleteProductBatch(dc: DataConnect, vars: DeleteProductBatchVariables, options?: any): MutationPromise<DeleteProductBatchData, DeleteProductBatchVariables>;
-
-interface CreateInvoiceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateInvoiceVariables): MutationRef<CreateInvoiceData, CreateInvoiceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateInvoiceVariables): MutationRef<CreateInvoiceData, CreateInvoiceVariables>;
-  operationName: string;
-}
-export const createInvoiceRef: CreateInvoiceRef;
-
-export function createInvoice(vars: CreateInvoiceVariables): MutationPromise<CreateInvoiceData, CreateInvoiceVariables>;
-export function createInvoice(dc: DataConnect, vars: CreateInvoiceVariables, options?: any): MutationPromise<CreateInvoiceData, CreateInvoiceVariables>;
-
-interface UpdateInvoiceStatusRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateInvoiceStatusVariables): MutationRef<UpdateInvoiceStatusData, UpdateInvoiceStatusVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateInvoiceStatusVariables): MutationRef<UpdateInvoiceStatusData, UpdateInvoiceStatusVariables>;
-  operationName: string;
-}
-export const updateInvoiceStatusRef: UpdateInvoiceStatusRef;
-
-export function updateInvoiceStatus(vars: UpdateInvoiceStatusVariables): MutationPromise<UpdateInvoiceStatusData, UpdateInvoiceStatusVariables>;
-export function updateInvoiceStatus(dc: DataConnect, vars: UpdateInvoiceStatusVariables, options?: any): MutationPromise<UpdateInvoiceStatusData, UpdateInvoiceStatusVariables>;
-
-interface DeleteInvoiceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteInvoiceVariables): MutationRef<DeleteInvoiceData, DeleteInvoiceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteInvoiceVariables): MutationRef<DeleteInvoiceData, DeleteInvoiceVariables>;
-  operationName: string;
-}
-export const deleteInvoiceRef: DeleteInvoiceRef;
-
-export function deleteInvoice(vars: DeleteInvoiceVariables): MutationPromise<DeleteInvoiceData, DeleteInvoiceVariables>;
-export function deleteInvoice(dc: DataConnect, vars: DeleteInvoiceVariables, options?: any): MutationPromise<DeleteInvoiceData, DeleteInvoiceVariables>;
-
-interface CreatePaymentRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreatePaymentVariables): MutationRef<CreatePaymentData, CreatePaymentVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreatePaymentVariables): MutationRef<CreatePaymentData, CreatePaymentVariables>;
-  operationName: string;
-}
-export const createPaymentRef: CreatePaymentRef;
-
-export function createPayment(vars: CreatePaymentVariables): MutationPromise<CreatePaymentData, CreatePaymentVariables>;
-export function createPayment(dc: DataConnect, vars: CreatePaymentVariables, options?: any): MutationPromise<CreatePaymentData, CreatePaymentVariables>;
-
-interface UpdatePaymentStatusRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdatePaymentStatusVariables): MutationRef<UpdatePaymentStatusData, UpdatePaymentStatusVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdatePaymentStatusVariables): MutationRef<UpdatePaymentStatusData, UpdatePaymentStatusVariables>;
-  operationName: string;
-}
-export const updatePaymentStatusRef: UpdatePaymentStatusRef;
-
-export function updatePaymentStatus(vars: UpdatePaymentStatusVariables): MutationPromise<UpdatePaymentStatusData, UpdatePaymentStatusVariables>;
-export function updatePaymentStatus(dc: DataConnect, vars: UpdatePaymentStatusVariables, options?: any): MutationPromise<UpdatePaymentStatusData, UpdatePaymentStatusVariables>;
-
-interface DeletePaymentRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeletePaymentVariables): MutationRef<DeletePaymentData, DeletePaymentVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeletePaymentVariables): MutationRef<DeletePaymentData, DeletePaymentVariables>;
-  operationName: string;
-}
-export const deletePaymentRef: DeletePaymentRef;
-
-export function deletePayment(vars: DeletePaymentVariables): MutationPromise<DeletePaymentData, DeletePaymentVariables>;
-export function deletePayment(dc: DataConnect, vars: DeletePaymentVariables, options?: any): MutationPromise<DeletePaymentData, DeletePaymentVariables>;
-
-interface CreateTeamRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateTeamVariables): MutationRef<CreateTeamData, CreateTeamVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateTeamVariables): MutationRef<CreateTeamData, CreateTeamVariables>;
-  operationName: string;
-}
-export const createTeamRef: CreateTeamRef;
-
-export function createTeam(vars: CreateTeamVariables): MutationPromise<CreateTeamData, CreateTeamVariables>;
-export function createTeam(dc: DataConnect, vars: CreateTeamVariables, options?: any): MutationPromise<CreateTeamData, CreateTeamVariables>;
-
-interface UpdateTeamRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateTeamVariables): MutationRef<UpdateTeamData, UpdateTeamVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateTeamVariables): MutationRef<UpdateTeamData, UpdateTeamVariables>;
-  operationName: string;
-}
-export const updateTeamRef: UpdateTeamRef;
-
-export function updateTeam(vars: UpdateTeamVariables): MutationPromise<UpdateTeamData, UpdateTeamVariables>;
-export function updateTeam(dc: DataConnect, vars: UpdateTeamVariables, options?: any): MutationPromise<UpdateTeamData, UpdateTeamVariables>;
-
-interface DeleteTeamRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteTeamVariables): MutationRef<DeleteTeamData, DeleteTeamVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteTeamVariables): MutationRef<DeleteTeamData, DeleteTeamVariables>;
-  operationName: string;
-}
-export const deleteTeamRef: DeleteTeamRef;
-
-export function deleteTeam(vars: DeleteTeamVariables): MutationPromise<DeleteTeamData, DeleteTeamVariables>;
-export function deleteTeam(dc: DataConnect, vars: DeleteTeamVariables, options?: any): MutationPromise<DeleteTeamData, DeleteTeamVariables>;
-
-interface AddUserToTeamRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: AddUserToTeamVariables): MutationRef<AddUserToTeamData, AddUserToTeamVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: AddUserToTeamVariables): MutationRef<AddUserToTeamData, AddUserToTeamVariables>;
-  operationName: string;
-}
-export const addUserToTeamRef: AddUserToTeamRef;
-
-export function addUserToTeam(vars: AddUserToTeamVariables): MutationPromise<AddUserToTeamData, AddUserToTeamVariables>;
-export function addUserToTeam(dc: DataConnect, vars: AddUserToTeamVariables, options?: any): MutationPromise<AddUserToTeamData, AddUserToTeamVariables>;
-
-interface RemoveUserFromTeamRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: RemoveUserFromTeamVariables): MutationRef<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: RemoveUserFromTeamVariables): MutationRef<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
-  operationName: string;
-}
-export const removeUserFromTeamRef: RemoveUserFromTeamRef;
-
-export function removeUserFromTeam(vars: RemoveUserFromTeamVariables): MutationPromise<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
-export function removeUserFromTeam(dc: DataConnect, vars: RemoveUserFromTeamVariables, options?: any): MutationPromise<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
-
-interface CreateApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateApplicationVariables): MutationRef<CreateApplicationData, CreateApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateApplicationVariables): MutationRef<CreateApplicationData, CreateApplicationVariables>;
-  operationName: string;
-}
-export const createApplicationRef: CreateApplicationRef;
-
-export function createApplication(vars: CreateApplicationVariables): MutationPromise<CreateApplicationData, CreateApplicationVariables>;
-export function createApplication(dc: DataConnect, vars: CreateApplicationVariables, options?: any): MutationPromise<CreateApplicationData, CreateApplicationVariables>;
-
-interface UpdateApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateApplicationVariables): MutationRef<UpdateApplicationData, UpdateApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateApplicationVariables): MutationRef<UpdateApplicationData, UpdateApplicationVariables>;
-  operationName: string;
-}
-export const updateApplicationRef: UpdateApplicationRef;
-
-export function updateApplication(vars: UpdateApplicationVariables): MutationPromise<UpdateApplicationData, UpdateApplicationVariables>;
-export function updateApplication(dc: DataConnect, vars: UpdateApplicationVariables, options?: any): MutationPromise<UpdateApplicationData, UpdateApplicationVariables>;
-
-interface DeleteApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteApplicationVariables): MutationRef<DeleteApplicationData, DeleteApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteApplicationVariables): MutationRef<DeleteApplicationData, DeleteApplicationVariables>;
-  operationName: string;
-}
-export const deleteApplicationRef: DeleteApplicationRef;
-
-export function deleteApplication(vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
-export function deleteApplication(dc: DataConnect, vars: DeleteApplicationVariables, options?: any): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
-
-interface CreateComputeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateComputeVariables): MutationRef<CreateComputeData, CreateComputeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateComputeVariables): MutationRef<CreateComputeData, CreateComputeVariables>;
-  operationName: string;
-}
-export const createComputeRef: CreateComputeRef;
-
-export function createCompute(vars: CreateComputeVariables): MutationPromise<CreateComputeData, CreateComputeVariables>;
-export function createCompute(dc: DataConnect, vars: CreateComputeVariables, options?: any): MutationPromise<CreateComputeData, CreateComputeVariables>;
-
-interface UpdateComputeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateComputeVariables): MutationRef<UpdateComputeData, UpdateComputeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateComputeVariables): MutationRef<UpdateComputeData, UpdateComputeVariables>;
-  operationName: string;
-}
-export const updateComputeRef: UpdateComputeRef;
-
-export function updateCompute(vars: UpdateComputeVariables): MutationPromise<UpdateComputeData, UpdateComputeVariables>;
-export function updateCompute(dc: DataConnect, vars: UpdateComputeVariables, options?: any): MutationPromise<UpdateComputeData, UpdateComputeVariables>;
-
-interface DeleteComputeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteComputeVariables): MutationRef<DeleteComputeData, DeleteComputeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteComputeVariables): MutationRef<DeleteComputeData, DeleteComputeVariables>;
-  operationName: string;
-}
-export const deleteComputeRef: DeleteComputeRef;
-
-export function deleteCompute(vars: DeleteComputeVariables): MutationPromise<DeleteComputeData, DeleteComputeVariables>;
-export function deleteCompute(dc: DataConnect, vars: DeleteComputeVariables, options?: any): MutationPromise<DeleteComputeData, DeleteComputeVariables>;
-
-interface CreatePriceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreatePriceVariables): MutationRef<CreatePriceData, CreatePriceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreatePriceVariables): MutationRef<CreatePriceData, CreatePriceVariables>;
-  operationName: string;
-}
-export const createPriceRef: CreatePriceRef;
-
-export function createPrice(vars: CreatePriceVariables): MutationPromise<CreatePriceData, CreatePriceVariables>;
-export function createPrice(dc: DataConnect, vars: CreatePriceVariables, options?: any): MutationPromise<CreatePriceData, CreatePriceVariables>;
-
-interface UpdatePriceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdatePriceVariables): MutationRef<UpdatePriceData, UpdatePriceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdatePriceVariables): MutationRef<UpdatePriceData, UpdatePriceVariables>;
-  operationName: string;
-}
-export const updatePriceRef: UpdatePriceRef;
-
-export function updatePrice(vars: UpdatePriceVariables): MutationPromise<UpdatePriceData, UpdatePriceVariables>;
-export function updatePrice(dc: DataConnect, vars: UpdatePriceVariables, options?: any): MutationPromise<UpdatePriceData, UpdatePriceVariables>;
-
-interface DeletePriceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeletePriceVariables): MutationRef<DeletePriceData, DeletePriceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeletePriceVariables): MutationRef<DeletePriceData, DeletePriceVariables>;
-  operationName: string;
-}
-export const deletePriceRef: DeletePriceRef;
-
-export function deletePrice(vars: DeletePriceVariables): MutationPromise<DeletePriceData, DeletePriceVariables>;
-export function deletePrice(dc: DataConnect, vars: DeletePriceVariables, options?: any): MutationPromise<DeletePriceData, DeletePriceVariables>;
-
-interface CreateCheckoutRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateCheckoutVariables): MutationRef<CreateCheckoutData, CreateCheckoutVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateCheckoutVariables): MutationRef<CreateCheckoutData, CreateCheckoutVariables>;
-  operationName: string;
-}
-export const createCheckoutRef: CreateCheckoutRef;
-
-export function createCheckout(vars: CreateCheckoutVariables): MutationPromise<CreateCheckoutData, CreateCheckoutVariables>;
-export function createCheckout(dc: DataConnect, vars: CreateCheckoutVariables, options?: any): MutationPromise<CreateCheckoutData, CreateCheckoutVariables>;
-
-interface UpdateCheckoutRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateCheckoutVariables): MutationRef<UpdateCheckoutData, UpdateCheckoutVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateCheckoutVariables): MutationRef<UpdateCheckoutData, UpdateCheckoutVariables>;
-  operationName: string;
-}
-export const updateCheckoutRef: UpdateCheckoutRef;
-
-export function updateCheckout(vars: UpdateCheckoutVariables): MutationPromise<UpdateCheckoutData, UpdateCheckoutVariables>;
-export function updateCheckout(dc: DataConnect, vars: UpdateCheckoutVariables, options?: any): MutationPromise<UpdateCheckoutData, UpdateCheckoutVariables>;
-
-interface DeleteCheckoutRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteCheckoutVariables): MutationRef<DeleteCheckoutData, DeleteCheckoutVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteCheckoutVariables): MutationRef<DeleteCheckoutData, DeleteCheckoutVariables>;
-  operationName: string;
-}
-export const deleteCheckoutRef: DeleteCheckoutRef;
-
-export function deleteCheckout(vars: DeleteCheckoutVariables): MutationPromise<DeleteCheckoutData, DeleteCheckoutVariables>;
-export function deleteCheckout(dc: DataConnect, vars: DeleteCheckoutVariables, options?: any): MutationPromise<DeleteCheckoutData, DeleteCheckoutVariables>;
-
-interface CreateProductConsumeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateProductConsumeVariables): MutationRef<CreateProductConsumeData, CreateProductConsumeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateProductConsumeVariables): MutationRef<CreateProductConsumeData, CreateProductConsumeVariables>;
-  operationName: string;
-}
-export const createProductConsumeRef: CreateProductConsumeRef;
-
-export function createProductConsume(vars: CreateProductConsumeVariables): MutationPromise<CreateProductConsumeData, CreateProductConsumeVariables>;
-export function createProductConsume(dc: DataConnect, vars: CreateProductConsumeVariables, options?: any): MutationPromise<CreateProductConsumeData, CreateProductConsumeVariables>;
-
-interface UpdateProductConsumeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateProductConsumeVariables): MutationRef<UpdateProductConsumeData, UpdateProductConsumeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateProductConsumeVariables): MutationRef<UpdateProductConsumeData, UpdateProductConsumeVariables>;
-  operationName: string;
-}
-export const updateProductConsumeRef: UpdateProductConsumeRef;
-
-export function updateProductConsume(vars: UpdateProductConsumeVariables): MutationPromise<UpdateProductConsumeData, UpdateProductConsumeVariables>;
-export function updateProductConsume(dc: DataConnect, vars: UpdateProductConsumeVariables, options?: any): MutationPromise<UpdateProductConsumeData, UpdateProductConsumeVariables>;
-
-interface DeleteProductConsumeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteProductConsumeVariables): MutationRef<DeleteProductConsumeData, DeleteProductConsumeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteProductConsumeVariables): MutationRef<DeleteProductConsumeData, DeleteProductConsumeVariables>;
-  operationName: string;
-}
-export const deleteProductConsumeRef: DeleteProductConsumeRef;
-
-export function deleteProductConsume(vars: DeleteProductConsumeVariables): MutationPromise<DeleteProductConsumeData, DeleteProductConsumeVariables>;
-export function deleteProductConsume(dc: DataConnect, vars: DeleteProductConsumeVariables, options?: any): MutationPromise<DeleteProductConsumeData, DeleteProductConsumeVariables>;
-
-interface GetUserClaimsContextRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-  operationName: string;
-}
-export const getUserClaimsContextRef: GetUserClaimsContextRef;
-
-export function getUserClaimsContext(vars: GetUserClaimsContextVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-export function getUserClaimsContext(dc: DataConnect, vars: GetUserClaimsContextVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserClaimsContextData, GetUserClaimsContextVariables>;
-
-interface GetOrganizationDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetOrganizationDetailsVariables): QueryRef<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetOrganizationDetailsVariables): QueryRef<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-  operationName: string;
-}
-export const getOrganizationDetailsRef: GetOrganizationDetailsRef;
-
-export function getOrganizationDetails(vars: GetOrganizationDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-export function getOrganizationDetails(dc: DataConnect, vars: GetOrganizationDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDetailsData, GetOrganizationDetailsVariables>;
-
-interface GetAuthCodeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetAuthCodeVariables): QueryRef<GetAuthCodeData, GetAuthCodeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetAuthCodeVariables): QueryRef<GetAuthCodeData, GetAuthCodeVariables>;
-  operationName: string;
-}
-export const getAuthCodeRef: GetAuthCodeRef;
-
-export function getAuthCode(vars: GetAuthCodeVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthCodeData, GetAuthCodeVariables>;
-export function getAuthCode(dc: DataConnect, vars: GetAuthCodeVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthCodeData, GetAuthCodeVariables>;
-
-interface GetPreRegistrationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetPreRegistrationVariables): QueryRef<GetPreRegistrationData, GetPreRegistrationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetPreRegistrationVariables): QueryRef<GetPreRegistrationData, GetPreRegistrationVariables>;
-  operationName: string;
-}
-export const getPreRegistrationRef: GetPreRegistrationRef;
-
-export function getPreRegistration(vars: GetPreRegistrationVariables, options?: ExecuteQueryOptions): QueryPromise<GetPreRegistrationData, GetPreRegistrationVariables>;
-export function getPreRegistration(dc: DataConnect, vars: GetPreRegistrationVariables, options?: ExecuteQueryOptions): QueryPromise<GetPreRegistrationData, GetPreRegistrationVariables>;
-
-interface ListAllPreRegistrationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllPreRegistrationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllPreRegistrationsData, undefined>;
-  operationName: string;
-}
-export const listAllPreRegistrationsRef: ListAllPreRegistrationsRef;
-
-export function listAllPreRegistrations(options?: ExecuteQueryOptions): QueryPromise<ListAllPreRegistrationsData, undefined>;
-export function listAllPreRegistrations(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllPreRegistrationsData, undefined>;
-
-interface ListAllUsersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllUsersData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllUsersData, undefined>;
-  operationName: string;
-}
-export const listAllUsersRef: ListAllUsersRef;
-
-export function listAllUsers(options?: ExecuteQueryOptions): QueryPromise<ListAllUsersData, undefined>;
-export function listAllUsers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllUsersData, undefined>;
-
-interface ListAllOrganizationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllOrganizationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllOrganizationsData, undefined>;
-  operationName: string;
-}
-export const listAllOrganizationsRef: ListAllOrganizationsRef;
-
-export function listAllOrganizations(options?: ExecuteQueryOptions): QueryPromise<ListAllOrganizationsData, undefined>;
-export function listAllOrganizations(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllOrganizationsData, undefined>;
-
-interface ListAllUserOrganizationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllUserOrganizationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllUserOrganizationsData, undefined>;
-  operationName: string;
-}
-export const listAllUserOrganizationsRef: ListAllUserOrganizationsRef;
-
-export function listAllUserOrganizations(options?: ExecuteQueryOptions): QueryPromise<ListAllUserOrganizationsData, undefined>;
-export function listAllUserOrganizations(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllUserOrganizationsData, undefined>;
-
-interface ListAllSubscriptionsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllSubscriptionsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllSubscriptionsData, undefined>;
-  operationName: string;
-}
-export const listAllSubscriptionsRef: ListAllSubscriptionsRef;
-
-export function listAllSubscriptions(options?: ExecuteQueryOptions): QueryPromise<ListAllSubscriptionsData, undefined>;
-export function listAllSubscriptions(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllSubscriptionsData, undefined>;
-
-interface GetSubscriptionRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetSubscriptionVariables): QueryRef<GetSubscriptionData, GetSubscriptionVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetSubscriptionVariables): QueryRef<GetSubscriptionData, GetSubscriptionVariables>;
-  operationName: string;
-}
-export const getSubscriptionRef: GetSubscriptionRef;
-
-export function getSubscription(vars: GetSubscriptionVariables, options?: ExecuteQueryOptions): QueryPromise<GetSubscriptionData, GetSubscriptionVariables>;
-export function getSubscription(dc: DataConnect, vars: GetSubscriptionVariables, options?: ExecuteQueryOptions): QueryPromise<GetSubscriptionData, GetSubscriptionVariables>;
-
-interface ListAllAuthCodesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllAuthCodesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllAuthCodesData, undefined>;
-  operationName: string;
-}
-export const listAllAuthCodesRef: ListAllAuthCodesRef;
-
-export function listAllAuthCodes(options?: ExecuteQueryOptions): QueryPromise<ListAllAuthCodesData, undefined>;
-export function listAllAuthCodes(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllAuthCodesData, undefined>;
-
-interface GetApiKeyRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApiKeyVariables): QueryRef<GetApiKeyData, GetApiKeyVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetApiKeyVariables): QueryRef<GetApiKeyData, GetApiKeyVariables>;
-  operationName: string;
-}
-export const getApiKeyRef: GetApiKeyRef;
-
-export function getApiKey(vars: GetApiKeyVariables, options?: ExecuteQueryOptions): QueryPromise<GetApiKeyData, GetApiKeyVariables>;
-export function getApiKey(dc: DataConnect, vars: GetApiKeyVariables, options?: ExecuteQueryOptions): QueryPromise<GetApiKeyData, GetApiKeyVariables>;
-
-interface GetApiKeyPermissionsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApiKeyPermissionsVariables): QueryRef<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetApiKeyPermissionsVariables): QueryRef<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-  operationName: string;
-}
-export const getApiKeyPermissionsRef: GetApiKeyPermissionsRef;
-
-export function getApiKeyPermissions(vars: GetApiKeyPermissionsVariables, options?: ExecuteQueryOptions): QueryPromise<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-export function getApiKeyPermissions(dc: DataConnect, vars: GetApiKeyPermissionsVariables, options?: ExecuteQueryOptions): QueryPromise<GetApiKeyPermissionsData, GetApiKeyPermissionsVariables>;
-
-interface GetThingRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetThingVariables): QueryRef<GetThingData, GetThingVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetThingVariables): QueryRef<GetThingData, GetThingVariables>;
-  operationName: string;
-}
-export const getThingRef: GetThingRef;
-
-export function getThing(vars: GetThingVariables, options?: ExecuteQueryOptions): QueryPromise<GetThingData, GetThingVariables>;
-export function getThing(dc: DataConnect, vars: GetThingVariables, options?: ExecuteQueryOptions): QueryPromise<GetThingData, GetThingVariables>;
-
-interface GetThingByTokenHashRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetThingByTokenHashVariables): QueryRef<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetThingByTokenHashVariables): QueryRef<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-  operationName: string;
-}
-export const getThingByTokenHashRef: GetThingByTokenHashRef;
-
-export function getThingByTokenHash(vars: GetThingByTokenHashVariables, options?: ExecuteQueryOptions): QueryPromise<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-export function getThingByTokenHash(dc: DataConnect, vars: GetThingByTokenHashVariables, options?: ExecuteQueryOptions): QueryPromise<GetThingByTokenHashData, GetThingByTokenHashVariables>;
-
-interface ListThingsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListThingsByOrgVariables): QueryRef<ListThingsByOrgData, ListThingsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListThingsByOrgVariables): QueryRef<ListThingsByOrgData, ListThingsByOrgVariables>;
-  operationName: string;
-}
-export const listThingsByOrgRef: ListThingsByOrgRef;
-
-export function listThingsByOrg(vars: ListThingsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListThingsByOrgData, ListThingsByOrgVariables>;
-export function listThingsByOrg(dc: DataConnect, vars: ListThingsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListThingsByOrgData, ListThingsByOrgVariables>;
-
-interface ListApiKeysByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListApiKeysByOrgVariables): QueryRef<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListApiKeysByOrgVariables): QueryRef<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-  operationName: string;
-}
-export const listApiKeysByOrgRef: ListApiKeysByOrgRef;
-
-export function listApiKeysByOrg(vars: ListApiKeysByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-export function listApiKeysByOrg(dc: DataConnect, vars: ListApiKeysByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListApiKeysByOrgData, ListApiKeysByOrgVariables>;
-
-interface ListMembersByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListMembersByOrgVariables): QueryRef<ListMembersByOrgData, ListMembersByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListMembersByOrgVariables): QueryRef<ListMembersByOrgData, ListMembersByOrgVariables>;
-  operationName: string;
-}
-export const listMembersByOrgRef: ListMembersByOrgRef;
-
-export function listMembersByOrg(vars: ListMembersByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
-export function listMembersByOrg(dc: DataConnect, vars: ListMembersByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
-
-interface ListAllThingsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllThingsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllThingsData, undefined>;
-  operationName: string;
-}
-export const listAllThingsRef: ListAllThingsRef;
-
-export function listAllThings(options?: ExecuteQueryOptions): QueryPromise<ListAllThingsData, undefined>;
-export function listAllThings(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllThingsData, undefined>;
-
-interface ListAllApiKeysRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApiKeysData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllApiKeysData, undefined>;
-  operationName: string;
-}
-export const listAllApiKeysRef: ListAllApiKeysRef;
-
-export function listAllApiKeys(options?: ExecuteQueryOptions): QueryPromise<ListAllApiKeysData, undefined>;
-export function listAllApiKeys(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllApiKeysData, undefined>;
-
-interface ListAllApiKeyPermissionsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApiKeyPermissionsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllApiKeyPermissionsData, undefined>;
-  operationName: string;
-}
-export const listAllApiKeyPermissionsRef: ListAllApiKeyPermissionsRef;
-
-export function listAllApiKeyPermissions(options?: ExecuteQueryOptions): QueryPromise<ListAllApiKeyPermissionsData, undefined>;
-export function listAllApiKeyPermissions(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllApiKeyPermissionsData, undefined>;
-
-interface ListAllAuditLogsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllAuditLogsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllAuditLogsData, undefined>;
-  operationName: string;
-}
-export const listAllAuditLogsRef: ListAllAuditLogsRef;
-
-export function listAllAuditLogs(options?: ExecuteQueryOptions): QueryPromise<ListAllAuditLogsData, undefined>;
-export function listAllAuditLogs(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllAuditLogsData, undefined>;
-
-interface ListAllProductsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListAllProductsVariables): QueryRef<ListAllProductsData, ListAllProductsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListAllProductsVariables): QueryRef<ListAllProductsData, ListAllProductsVariables>;
-  operationName: string;
-}
-export const listAllProductsRef: ListAllProductsRef;
-
-export function listAllProducts(vars: ListAllProductsVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsData, ListAllProductsVariables>;
-export function listAllProducts(dc: DataConnect, vars: ListAllProductsVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsData, ListAllProductsVariables>;
-
-interface ListAllProductsGlobalRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllProductsGlobalData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllProductsGlobalData, undefined>;
-  operationName: string;
-}
-export const listAllProductsGlobalRef: ListAllProductsGlobalRef;
-
-export function listAllProductsGlobal(options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, undefined>;
-export function listAllProductsGlobal(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, undefined>;
-
-interface ListAllProductBatchesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllProductBatchesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllProductBatchesData, undefined>;
-  operationName: string;
-}
-export const listAllProductBatchesRef: ListAllProductBatchesRef;
-
-export function listAllProductBatches(options?: ExecuteQueryOptions): QueryPromise<ListAllProductBatchesData, undefined>;
-export function listAllProductBatches(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllProductBatchesData, undefined>;
-
-interface GetProductBatchesByProductRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetProductBatchesByProductVariables): QueryRef<GetProductBatchesByProductData, GetProductBatchesByProductVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetProductBatchesByProductVariables): QueryRef<GetProductBatchesByProductData, GetProductBatchesByProductVariables>;
-  operationName: string;
-}
-export const getProductBatchesByProductRef: GetProductBatchesByProductRef;
-
-export function getProductBatchesByProduct(vars: GetProductBatchesByProductVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductBatchesByProductData, GetProductBatchesByProductVariables>;
-export function getProductBatchesByProduct(dc: DataConnect, vars: GetProductBatchesByProductVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductBatchesByProductData, GetProductBatchesByProductVariables>;
-
-interface ListAllInvoicesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllInvoicesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllInvoicesData, undefined>;
-  operationName: string;
-}
-export const listAllInvoicesRef: ListAllInvoicesRef;
-
-export function listAllInvoices(options?: ExecuteQueryOptions): QueryPromise<ListAllInvoicesData, undefined>;
-export function listAllInvoices(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllInvoicesData, undefined>;
-
-interface ListAllTeamsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllTeamsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllTeamsData, undefined>;
-  operationName: string;
-}
-export const listAllTeamsRef: ListAllTeamsRef;
-
-export function listAllTeams(options?: ExecuteQueryOptions): QueryPromise<ListAllTeamsData, undefined>;
-export function listAllTeams(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllTeamsData, undefined>;
-
-interface ListAllTeamMembersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllTeamMembersData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllTeamMembersData, undefined>;
-  operationName: string;
-}
-export const listAllTeamMembersRef: ListAllTeamMembersRef;
-
-export function listAllTeamMembers(options?: ExecuteQueryOptions): QueryPromise<ListAllTeamMembersData, undefined>;
-export function listAllTeamMembers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllTeamMembersData, undefined>;
-
-interface ListInvoicesByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListInvoicesByOrgVariables): QueryRef<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListInvoicesByOrgVariables): QueryRef<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-  operationName: string;
-}
-export const listInvoicesByOrgRef: ListInvoicesByOrgRef;
-
-export function listInvoicesByOrg(vars: ListInvoicesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-export function listInvoicesByOrg(dc: DataConnect, vars: ListInvoicesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListInvoicesByOrgData, ListInvoicesByOrgVariables>;
-
-interface ListInvoicesBySellerRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListInvoicesBySellerVariables): QueryRef<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListInvoicesBySellerVariables): QueryRef<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
-  operationName: string;
-}
-export const listInvoicesBySellerRef: ListInvoicesBySellerRef;
-
-export function listInvoicesBySeller(vars: ListInvoicesBySellerVariables, options?: ExecuteQueryOptions): QueryPromise<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
-export function listInvoicesBySeller(dc: DataConnect, vars: ListInvoicesBySellerVariables, options?: ExecuteQueryOptions): QueryPromise<ListInvoicesBySellerData, ListInvoicesBySellerVariables>;
-
-interface ListPaymentsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListPaymentsByOrgVariables): QueryRef<ListPaymentsByOrgData, ListPaymentsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListPaymentsByOrgVariables): QueryRef<ListPaymentsByOrgData, ListPaymentsByOrgVariables>;
-  operationName: string;
-}
-export const listPaymentsByOrgRef: ListPaymentsByOrgRef;
-
-export function listPaymentsByOrg(vars: ListPaymentsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListPaymentsByOrgData, ListPaymentsByOrgVariables>;
-export function listPaymentsByOrg(dc: DataConnect, vars: ListPaymentsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListPaymentsByOrgData, ListPaymentsByOrgVariables>;
-
-interface ListPaymentsBySellerRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListPaymentsBySellerVariables): QueryRef<ListPaymentsBySellerData, ListPaymentsBySellerVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListPaymentsBySellerVariables): QueryRef<ListPaymentsBySellerData, ListPaymentsBySellerVariables>;
-  operationName: string;
-}
-export const listPaymentsBySellerRef: ListPaymentsBySellerRef;
-
-export function listPaymentsBySeller(vars: ListPaymentsBySellerVariables, options?: ExecuteQueryOptions): QueryPromise<ListPaymentsBySellerData, ListPaymentsBySellerVariables>;
-export function listPaymentsBySeller(dc: DataConnect, vars: ListPaymentsBySellerVariables, options?: ExecuteQueryOptions): QueryPromise<ListPaymentsBySellerData, ListPaymentsBySellerVariables>;
-
-interface GetInvoiceDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetInvoiceDetailsVariables): QueryRef<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetInvoiceDetailsVariables): QueryRef<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-  operationName: string;
-}
-export const getInvoiceDetailsRef: GetInvoiceDetailsRef;
-
-export function getInvoiceDetails(vars: GetInvoiceDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-export function getInvoiceDetails(dc: DataConnect, vars: GetInvoiceDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetInvoiceDetailsData, GetInvoiceDetailsVariables>;
-
-interface GetOrganizationByStripeCustomerRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetOrganizationByStripeCustomerVariables): QueryRef<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetOrganizationByStripeCustomerVariables): QueryRef<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
-  operationName: string;
-}
-export const getOrganizationByStripeCustomerRef: GetOrganizationByStripeCustomerRef;
-
-export function getOrganizationByStripeCustomer(vars: GetOrganizationByStripeCustomerVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
-export function getOrganizationByStripeCustomer(dc: DataConnect, vars: GetOrganizationByStripeCustomerVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationByStripeCustomerData, GetOrganizationByStripeCustomerVariables>;
-
-interface ListTeamsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListTeamsByOrgVariables): QueryRef<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListTeamsByOrgVariables): QueryRef<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-  operationName: string;
-}
-export const listTeamsByOrgRef: ListTeamsByOrgRef;
-
-export function listTeamsByOrg(vars: ListTeamsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-export function listTeamsByOrg(dc: DataConnect, vars: ListTeamsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeamsByOrgData, ListTeamsByOrgVariables>;
-
-interface ListTeamMembersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListTeamMembersVariables): QueryRef<ListTeamMembersData, ListTeamMembersVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListTeamMembersVariables): QueryRef<ListTeamMembersData, ListTeamMembersVariables>;
-  operationName: string;
-}
-export const listTeamMembersRef: ListTeamMembersRef;
-
-export function listTeamMembers(vars: ListTeamMembersVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeamMembersData, ListTeamMembersVariables>;
-export function listTeamMembers(dc: DataConnect, vars: ListTeamMembersVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeamMembersData, ListTeamMembersVariables>;
-
-interface ListAuditLogsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListAuditLogsByOrgVariables): QueryRef<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListAuditLogsByOrgVariables): QueryRef<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-  operationName: string;
-}
-export const listAuditLogsByOrgRef: ListAuditLogsByOrgRef;
-
-export function listAuditLogsByOrg(vars: ListAuditLogsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-export function listAuditLogsByOrg(dc: DataConnect, vars: ListAuditLogsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListAuditLogsByOrgData, ListAuditLogsByOrgVariables>;
-
-interface CheckVatNumberExistsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CheckVatNumberExistsVariables): QueryRef<CheckVatNumberExistsData, CheckVatNumberExistsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CheckVatNumberExistsVariables): QueryRef<CheckVatNumberExistsData, CheckVatNumberExistsVariables>;
-  operationName: string;
-}
-export const checkVatNumberExistsRef: CheckVatNumberExistsRef;
-
-export function checkVatNumberExists(vars: CheckVatNumberExistsVariables, options?: ExecuteQueryOptions): QueryPromise<CheckVatNumberExistsData, CheckVatNumberExistsVariables>;
-export function checkVatNumberExists(dc: DataConnect, vars: CheckVatNumberExistsVariables, options?: ExecuteQueryOptions): QueryPromise<CheckVatNumberExistsData, CheckVatNumberExistsVariables>;
-
-interface GetApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApplicationVariables): QueryRef<GetApplicationData, GetApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetApplicationVariables): QueryRef<GetApplicationData, GetApplicationVariables>;
-  operationName: string;
-}
-export const getApplicationRef: GetApplicationRef;
-
-export function getApplication(vars: GetApplicationVariables, options?: ExecuteQueryOptions): QueryPromise<GetApplicationData, GetApplicationVariables>;
-export function getApplication(dc: DataConnect, vars: GetApplicationVariables, options?: ExecuteQueryOptions): QueryPromise<GetApplicationData, GetApplicationVariables>;
-
-interface ListAllApplicationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApplicationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllApplicationsData, undefined>;
-  operationName: string;
-}
-export const listAllApplicationsRef: ListAllApplicationsRef;
-
-export function listAllApplications(options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
-export function listAllApplications(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
-
-interface GetComputeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetComputeVariables): QueryRef<GetComputeData, GetComputeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetComputeVariables): QueryRef<GetComputeData, GetComputeVariables>;
-  operationName: string;
-}
-export const getComputeRef: GetComputeRef;
-
-export function getCompute(vars: GetComputeVariables, options?: ExecuteQueryOptions): QueryPromise<GetComputeData, GetComputeVariables>;
-export function getCompute(dc: DataConnect, vars: GetComputeVariables, options?: ExecuteQueryOptions): QueryPromise<GetComputeData, GetComputeVariables>;
-
-interface ListComputesByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListComputesByOrgVariables): QueryRef<ListComputesByOrgData, ListComputesByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListComputesByOrgVariables): QueryRef<ListComputesByOrgData, ListComputesByOrgVariables>;
-  operationName: string;
-}
-export const listComputesByOrgRef: ListComputesByOrgRef;
-
-export function listComputesByOrg(vars: ListComputesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListComputesByOrgData, ListComputesByOrgVariables>;
-export function listComputesByOrg(dc: DataConnect, vars: ListComputesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListComputesByOrgData, ListComputesByOrgVariables>;
-
-interface GetProductConsumeRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetProductConsumeVariables): QueryRef<GetProductConsumeData, GetProductConsumeVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetProductConsumeVariables): QueryRef<GetProductConsumeData, GetProductConsumeVariables>;
-  operationName: string;
-}
-export const getProductConsumeRef: GetProductConsumeRef;
-
-export function getProductConsume(vars: GetProductConsumeVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductConsumeData, GetProductConsumeVariables>;
-export function getProductConsume(dc: DataConnect, vars: GetProductConsumeVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductConsumeData, GetProductConsumeVariables>;
-
-interface ListProductConsumesByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListProductConsumesByOrgVariables): QueryRef<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListProductConsumesByOrgVariables): QueryRef<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
-  operationName: string;
-}
-export const listProductConsumesByOrgRef: ListProductConsumesByOrgRef;
-
-export function listProductConsumesByOrg(vars: ListProductConsumesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
-export function listProductConsumesByOrg(dc: DataConnect, vars: ListProductConsumesByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListProductConsumesByOrgData, ListProductConsumesByOrgVariables>;
-
-interface GetPriceRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetPriceVariables): QueryRef<GetPriceData, GetPriceVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetPriceVariables): QueryRef<GetPriceData, GetPriceVariables>;
-  operationName: string;
-}
-export const getPriceRef: GetPriceRef;
-
-export function getPrice(vars: GetPriceVariables, options?: ExecuteQueryOptions): QueryPromise<GetPriceData, GetPriceVariables>;
-export function getPrice(dc: DataConnect, vars: GetPriceVariables, options?: ExecuteQueryOptions): QueryPromise<GetPriceData, GetPriceVariables>;
-
-interface ListPricesByProductRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListPricesByProductVariables): QueryRef<ListPricesByProductData, ListPricesByProductVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListPricesByProductVariables): QueryRef<ListPricesByProductData, ListPricesByProductVariables>;
-  operationName: string;
-}
-export const listPricesByProductRef: ListPricesByProductRef;
-
-export function listPricesByProduct(vars: ListPricesByProductVariables, options?: ExecuteQueryOptions): QueryPromise<ListPricesByProductData, ListPricesByProductVariables>;
-export function listPricesByProduct(dc: DataConnect, vars: ListPricesByProductVariables, options?: ExecuteQueryOptions): QueryPromise<ListPricesByProductData, ListPricesByProductVariables>;
-
-interface ListAllPricesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllPricesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllPricesData, undefined>;
-  operationName: string;
-}
-export const listAllPricesRef: ListAllPricesRef;
-
-export function listAllPrices(options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
-export function listAllPrices(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
-
-interface GetCheckoutRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetCheckoutVariables): QueryRef<GetCheckoutData, GetCheckoutVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetCheckoutVariables): QueryRef<GetCheckoutData, GetCheckoutVariables>;
-  operationName: string;
-}
-export const getCheckoutRef: GetCheckoutRef;
-
-export function getCheckout(vars: GetCheckoutVariables, options?: ExecuteQueryOptions): QueryPromise<GetCheckoutData, GetCheckoutVariables>;
-export function getCheckout(dc: DataConnect, vars: GetCheckoutVariables, options?: ExecuteQueryOptions): QueryPromise<GetCheckoutData, GetCheckoutVariables>;
-
-interface ListCheckoutsByOrgRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListCheckoutsByOrgVariables): QueryRef<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListCheckoutsByOrgVariables): QueryRef<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
-  operationName: string;
-}
-export const listCheckoutsByOrgRef: ListCheckoutsByOrgRef;
-
-export function listCheckoutsByOrg(vars: ListCheckoutsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
-export function listCheckoutsByOrg(dc: DataConnect, vars: ListCheckoutsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListCheckoutsByOrgData, ListCheckoutsByOrgVariables>;
-
-interface ListAllCheckoutsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllCheckoutsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllCheckoutsData, undefined>;
-  operationName: string;
-}
-export const listAllCheckoutsRef: ListAllCheckoutsRef;
-
-export function listAllCheckouts(options?: ExecuteQueryOptions): QueryPromise<ListAllCheckoutsData, undefined>;
-export function listAllCheckouts(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllCheckoutsData, undefined>;
-
-interface GetPaymentRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetPaymentVariables): QueryRef<GetPaymentData, GetPaymentVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetPaymentVariables): QueryRef<GetPaymentData, GetPaymentVariables>;
-  operationName: string;
-}
-export const getPaymentRef: GetPaymentRef;
-
-export function getPayment(vars: GetPaymentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPaymentData, GetPaymentVariables>;
-export function getPayment(dc: DataConnect, vars: GetPaymentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPaymentData, GetPaymentVariables>;
-
-interface GetProductDetailsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetProductDetailsVariables): QueryRef<GetProductDetailsData, GetProductDetailsVariables>;
-  operationName: string;
-}
-export const getProductDetailsRef: GetProductDetailsRef;
-
-export function getProductDetails(vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
-export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
+/** Generated Node Admin SDK operation action function for the 'UpsertUser' Mutation. Allow users to execute without passing in DataConnect. */
+export function upsertUser(dc: DataConnect, vars: UpsertUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertUserData>>;
+/** Generated Node Admin SDK operation action function for the 'UpsertUser' Mutation. Allow users to pass in custom DataConnect instances. */
+export function upsertUser(vars: UpsertUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertUserData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function createOrganization(dc: DataConnect, vars: CreateOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createOrganization(vars: CreateOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'AddUserToOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function addUserToOrganization(dc: DataConnect, vars: AddUserToOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'AddUserToOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function addUserToOrganization(vars: AddUserToOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateUserOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateUserOrganization(dc: DataConnect, vars: UpdateUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateUserOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateUserOrganization(vars: UpdateUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateSubscriptionStatus' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateSubscriptionStatus(dc: DataConnect, vars: UpdateSubscriptionStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateSubscriptionStatusData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateSubscriptionStatus' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateSubscriptionStatus(vars: UpdateSubscriptionStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateSubscriptionStatusData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationStripeConnect' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationStripeConnect(dc: DataConnect, vars: UpdateOrganizationStripeConnectVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationStripeConnectData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationStripeConnect' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationStripeConnect(vars: UpdateOrganizationStripeConnectVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationStripeConnectData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationStripeCustomer' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationStripeCustomer(dc: DataConnect, vars: UpdateOrganizationStripeCustomerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationStripeCustomerData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationStripeCustomer' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationStripeCustomer(vars: UpdateOrganizationStripeCustomerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationStripeCustomerData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateAuthCode' Mutation. Allow users to execute without passing in DataConnect. */
+export function createAuthCode(dc: DataConnect, vars: CreateAuthCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateAuthCodeData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateAuthCode' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createAuthCode(vars: CreateAuthCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateAuthCodeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteAuthCode' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteAuthCode(dc: DataConnect, vars: DeleteAuthCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteAuthCodeData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteAuthCode' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteAuthCode(vars: DeleteAuthCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteAuthCodeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateUserProfile' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateUserProfile(dc: DataConnect, vars: UpdateUserProfileVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserProfileData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateUserProfile' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateUserProfile(vars: UpdateUserProfileVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserProfileData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationBilling' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationBilling(dc: DataConnect, vars: UpdateOrganizationBillingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationBillingData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationBilling' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationBilling(vars: UpdateOrganizationBillingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationBillingData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationVies' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationVies(dc: DataConnect, vars: UpdateOrganizationViesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationViesData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationVies' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationVies(vars: UpdateOrganizationViesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationViesData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpsertPreRegistration' Mutation. Allow users to execute without passing in DataConnect. */
+export function upsertPreRegistration(dc: DataConnect, vars: UpsertPreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertPreRegistrationData>>;
+/** Generated Node Admin SDK operation action function for the 'UpsertPreRegistration' Mutation. Allow users to pass in custom DataConnect instances. */
+export function upsertPreRegistration(vars: UpsertPreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertPreRegistrationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeletePreRegistration' Mutation. Allow users to execute without passing in DataConnect. */
+export function deletePreRegistration(dc: DataConnect, vars: DeletePreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePreRegistrationData>>;
+/** Generated Node Admin SDK operation action function for the 'DeletePreRegistration' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deletePreRegistration(vars: DeletePreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePreRegistrationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ConfirmOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function confirmOrganization(dc: DataConnect, vars: ConfirmOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ConfirmOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'ConfirmOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function confirmOrganization(vars: ConfirmOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ConfirmOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteUser' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteUser(dc: DataConnect, vars: DeleteUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteUserData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteUser' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteUser(vars: DeleteUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteUserData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteOrganization(dc: DataConnect, vars: DeleteOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteOrganization(vars: DeleteOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteUserOrganization' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteUserOrganization(dc: DataConnect, vars: DeleteUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteUserOrganizationData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteUserOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteUserOrganization(vars: DeleteUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteUserOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteSubscription' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteSubscription(dc: DataConnect, vars: DeleteSubscriptionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteSubscriptionData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteSubscription' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteSubscription(vars: DeleteSubscriptionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteSubscriptionData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateApiKey' Mutation. Allow users to execute without passing in DataConnect. */
+export function createApiKey(dc: DataConnect, vars: CreateApiKeyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateApiKeyData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateApiKey' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createApiKey(vars: CreateApiKeyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateApiKeyData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteApiKey' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteApiKey(dc: DataConnect, vars: DeleteApiKeyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApiKeyData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteApiKey' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteApiKey(vars: DeleteApiKeyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApiKeyData>>;
+
+/** Generated Node Admin SDK operation action function for the 'SetApiKeyPermission' Mutation. Allow users to execute without passing in DataConnect. */
+export function setApiKeyPermission(dc: DataConnect, vars: SetApiKeyPermissionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SetApiKeyPermissionData>>;
+/** Generated Node Admin SDK operation action function for the 'SetApiKeyPermission' Mutation. Allow users to pass in custom DataConnect instances. */
+export function setApiKeyPermission(vars: SetApiKeyPermissionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SetApiKeyPermissionData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateThing' Mutation. Allow users to execute without passing in DataConnect. */
+export function createThing(dc: DataConnect, vars: CreateThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateThingData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateThing' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createThing(vars: CreateThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateThingData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateThing' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateThing(dc: DataConnect, vars: UpdateThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateThingData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateThing' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateThing(vars: UpdateThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateThingData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteThing' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteThing(dc: DataConnect, vars: DeleteThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteThingData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteThing' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteThing(vars: DeleteThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteThingData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateAuditLog' Mutation. Allow users to execute without passing in DataConnect. */
+export function createAuditLog(dc: DataConnect, vars: CreateAuditLogVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateAuditLogData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateAuditLog' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createAuditLog(vars: CreateAuditLogVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateAuditLogData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteApiKeyPermission' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteApiKeyPermission(dc: DataConnect, vars: DeleteApiKeyPermissionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApiKeyPermissionData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteApiKeyPermission' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteApiKeyPermission(vars: DeleteApiKeyPermissionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApiKeyPermissionData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteAuditLog' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteAuditLog(dc: DataConnect, vars: DeleteAuditLogVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteAuditLogData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteAuditLog' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteAuditLog(vars: DeleteAuditLogVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteAuditLogData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateProduct' Mutation. Allow users to execute without passing in DataConnect. */
+export function createProduct(dc: DataConnect, vars: CreateProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateProduct' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createProduct(vars: CreateProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteProduct' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteProduct(dc: DataConnect, vars: DeleteProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteProduct' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteProduct(vars: DeleteProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateProductBatch' Mutation. Allow users to execute without passing in DataConnect. */
+export function createProductBatch(dc: DataConnect, vars: CreateProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductBatchData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateProductBatch' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createProductBatch(vars: CreateProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductBatchData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteProductBatch' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteProductBatch(dc: DataConnect, vars: DeleteProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductBatchData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteProductBatch' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteProductBatch(vars: DeleteProductBatchVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductBatchData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateInvoice' Mutation. Allow users to execute without passing in DataConnect. */
+export function createInvoice(dc: DataConnect, vars: CreateInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateInvoiceData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateInvoice' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createInvoice(vars: CreateInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateInvoiceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateInvoiceStatus' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateInvoiceStatus(dc: DataConnect, vars: UpdateInvoiceStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateInvoiceStatusData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateInvoiceStatus' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateInvoiceStatus(vars: UpdateInvoiceStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateInvoiceStatusData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteInvoice' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteInvoice(dc: DataConnect, vars: DeleteInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteInvoiceData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteInvoice' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteInvoice(vars: DeleteInvoiceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteInvoiceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreatePayment' Mutation. Allow users to execute without passing in DataConnect. */
+export function createPayment(dc: DataConnect, vars: CreatePaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePaymentData>>;
+/** Generated Node Admin SDK operation action function for the 'CreatePayment' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createPayment(vars: CreatePaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePaymentData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdatePaymentStatus' Mutation. Allow users to execute without passing in DataConnect. */
+export function updatePaymentStatus(dc: DataConnect, vars: UpdatePaymentStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePaymentStatusData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdatePaymentStatus' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updatePaymentStatus(vars: UpdatePaymentStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePaymentStatusData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeletePayment' Mutation. Allow users to execute without passing in DataConnect. */
+export function deletePayment(dc: DataConnect, vars: DeletePaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePaymentData>>;
+/** Generated Node Admin SDK operation action function for the 'DeletePayment' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deletePayment(vars: DeletePaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePaymentData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateTeam' Mutation. Allow users to execute without passing in DataConnect. */
+export function createTeam(dc: DataConnect, vars: CreateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateTeamData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateTeam' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createTeam(vars: CreateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateTeamData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateTeam' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateTeam(dc: DataConnect, vars: UpdateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateTeamData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateTeam' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateTeam(vars: UpdateTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateTeamData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteTeam' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteTeam(dc: DataConnect, vars: DeleteTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteTeamData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteTeam' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteTeam(vars: DeleteTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteTeamData>>;
+
+/** Generated Node Admin SDK operation action function for the 'AddUserToTeam' Mutation. Allow users to execute without passing in DataConnect. */
+export function addUserToTeam(dc: DataConnect, vars: AddUserToTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToTeamData>>;
+/** Generated Node Admin SDK operation action function for the 'AddUserToTeam' Mutation. Allow users to pass in custom DataConnect instances. */
+export function addUserToTeam(vars: AddUserToTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToTeamData>>;
+
+/** Generated Node Admin SDK operation action function for the 'RemoveUserFromTeam' Mutation. Allow users to execute without passing in DataConnect. */
+export function removeUserFromTeam(dc: DataConnect, vars: RemoveUserFromTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RemoveUserFromTeamData>>;
+/** Generated Node Admin SDK operation action function for the 'RemoveUserFromTeam' Mutation. Allow users to pass in custom DataConnect instances. */
+export function removeUserFromTeam(vars: RemoveUserFromTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RemoveUserFromTeamData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateApplication' Mutation. Allow users to execute without passing in DataConnect. */
+export function createApplication(dc: DataConnect, vars: CreateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateApplicationData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateApplication' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createApplication(vars: CreateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateApplicationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateApplication' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateApplication(dc: DataConnect, vars: UpdateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateApplicationData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateApplication' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateApplication(vars: UpdateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateApplicationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteApplication' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteApplication(dc: DataConnect, vars: DeleteApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApplicationData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteApplication' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteApplication(vars: DeleteApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApplicationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateCompute' Mutation. Allow users to execute without passing in DataConnect. */
+export function createCompute(dc: DataConnect, vars: CreateComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateComputeData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateCompute' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createCompute(vars: CreateComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateComputeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateCompute' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateCompute(dc: DataConnect, vars: UpdateComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateComputeData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateCompute' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateCompute(vars: UpdateComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateComputeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteCompute' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteCompute(dc: DataConnect, vars: DeleteComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteComputeData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteCompute' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteCompute(vars: DeleteComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteComputeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreatePrice' Mutation. Allow users to execute without passing in DataConnect. */
+export function createPrice(dc: DataConnect, vars: CreatePriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePriceData>>;
+/** Generated Node Admin SDK operation action function for the 'CreatePrice' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createPrice(vars: CreatePriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePriceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdatePrice' Mutation. Allow users to execute without passing in DataConnect. */
+export function updatePrice(dc: DataConnect, vars: UpdatePriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePriceData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdatePrice' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updatePrice(vars: UpdatePriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePriceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeletePrice' Mutation. Allow users to execute without passing in DataConnect. */
+export function deletePrice(dc: DataConnect, vars: DeletePriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePriceData>>;
+/** Generated Node Admin SDK operation action function for the 'DeletePrice' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deletePrice(vars: DeletePriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePriceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateCheckout' Mutation. Allow users to execute without passing in DataConnect. */
+export function createCheckout(dc: DataConnect, vars: CreateCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateCheckoutData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateCheckout' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createCheckout(vars: CreateCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateCheckoutData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateCheckout' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateCheckout(dc: DataConnect, vars: UpdateCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateCheckoutData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateCheckout' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateCheckout(vars: UpdateCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateCheckoutData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteCheckout' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteCheckout(dc: DataConnect, vars: DeleteCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteCheckoutData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteCheckout' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteCheckout(vars: DeleteCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteCheckoutData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateProductConsume' Mutation. Allow users to execute without passing in DataConnect. */
+export function createProductConsume(dc: DataConnect, vars: CreateProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductConsumeData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateProductConsume' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createProductConsume(vars: CreateProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateProductConsumeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateProductConsume' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateProductConsume(dc: DataConnect, vars: UpdateProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateProductConsumeData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateProductConsume' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateProductConsume(vars: UpdateProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateProductConsumeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteProductConsume' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteProductConsume(dc: DataConnect, vars: DeleteProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductConsumeData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteProductConsume' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteProductConsume(vars: DeleteProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductConsumeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetUserClaimsContext' Query. Allow users to execute without passing in DataConnect. */
+export function getUserClaimsContext(dc: DataConnect, vars: GetUserClaimsContextVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserClaimsContextData>>;
+/** Generated Node Admin SDK operation action function for the 'GetUserClaimsContext' Query. Allow users to pass in custom DataConnect instances. */
+export function getUserClaimsContext(vars: GetUserClaimsContextVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserClaimsContextData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationDetails' Query. Allow users to execute without passing in DataConnect. */
+export function getOrganizationDetails(dc: DataConnect, vars: GetOrganizationDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationDetailsData>>;
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationDetails' Query. Allow users to pass in custom DataConnect instances. */
+export function getOrganizationDetails(vars: GetOrganizationDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationDetailsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetAuthCode' Query. Allow users to execute without passing in DataConnect. */
+export function getAuthCode(dc: DataConnect, vars: GetAuthCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetAuthCodeData>>;
+/** Generated Node Admin SDK operation action function for the 'GetAuthCode' Query. Allow users to pass in custom DataConnect instances. */
+export function getAuthCode(vars: GetAuthCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetAuthCodeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetPreRegistration' Query. Allow users to execute without passing in DataConnect. */
+export function getPreRegistration(dc: DataConnect, vars: GetPreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPreRegistrationData>>;
+/** Generated Node Admin SDK operation action function for the 'GetPreRegistration' Query. Allow users to pass in custom DataConnect instances. */
+export function getPreRegistration(vars: GetPreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPreRegistrationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllPreRegistrations' Query. Allow users to execute without passing in DataConnect. */
+export function listAllPreRegistrations(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPreRegistrationsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllPreRegistrations' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllPreRegistrations(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPreRegistrationsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllUsers' Query. Allow users to execute without passing in DataConnect. */
+export function listAllUsers(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllUsersData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllUsers' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllUsers(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllUsersData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllOrganizations' Query. Allow users to execute without passing in DataConnect. */
+export function listAllOrganizations(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllOrganizationsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllOrganizations' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllOrganizations(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllOrganizationsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllUserOrganizations' Query. Allow users to execute without passing in DataConnect. */
+export function listAllUserOrganizations(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllUserOrganizationsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllUserOrganizations' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllUserOrganizations(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllUserOrganizationsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllSubscriptions' Query. Allow users to execute without passing in DataConnect. */
+export function listAllSubscriptions(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllSubscriptionsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllSubscriptions' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllSubscriptions(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllSubscriptionsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetSubscription' Query. Allow users to execute without passing in DataConnect. */
+export function getSubscription(dc: DataConnect, vars: GetSubscriptionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetSubscriptionData>>;
+/** Generated Node Admin SDK operation action function for the 'GetSubscription' Query. Allow users to pass in custom DataConnect instances. */
+export function getSubscription(vars: GetSubscriptionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetSubscriptionData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllAuthCodes' Query. Allow users to execute without passing in DataConnect. */
+export function listAllAuthCodes(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllAuthCodesData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllAuthCodes' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllAuthCodes(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllAuthCodesData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetApiKey' Query. Allow users to execute without passing in DataConnect. */
+export function getApiKey(dc: DataConnect, vars: GetApiKeyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApiKeyData>>;
+/** Generated Node Admin SDK operation action function for the 'GetApiKey' Query. Allow users to pass in custom DataConnect instances. */
+export function getApiKey(vars: GetApiKeyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApiKeyData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetApiKeyPermissions' Query. Allow users to execute without passing in DataConnect. */
+export function getApiKeyPermissions(dc: DataConnect, vars: GetApiKeyPermissionsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApiKeyPermissionsData>>;
+/** Generated Node Admin SDK operation action function for the 'GetApiKeyPermissions' Query. Allow users to pass in custom DataConnect instances. */
+export function getApiKeyPermissions(vars: GetApiKeyPermissionsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApiKeyPermissionsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetThing' Query. Allow users to execute without passing in DataConnect. */
+export function getThing(dc: DataConnect, vars: GetThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetThingData>>;
+/** Generated Node Admin SDK operation action function for the 'GetThing' Query. Allow users to pass in custom DataConnect instances. */
+export function getThing(vars: GetThingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetThingData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetThingByTokenHash' Query. Allow users to execute without passing in DataConnect. */
+export function getThingByTokenHash(dc: DataConnect, vars: GetThingByTokenHashVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetThingByTokenHashData>>;
+/** Generated Node Admin SDK operation action function for the 'GetThingByTokenHash' Query. Allow users to pass in custom DataConnect instances. */
+export function getThingByTokenHash(vars: GetThingByTokenHashVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetThingByTokenHashData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListThingsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listThingsByOrg(dc: DataConnect, vars: ListThingsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListThingsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListThingsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listThingsByOrg(vars: ListThingsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListThingsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListApiKeysByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listApiKeysByOrg(dc: DataConnect, vars: ListApiKeysByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListApiKeysByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListApiKeysByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listApiKeysByOrg(vars: ListApiKeysByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListApiKeysByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListMembersByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listMembersByOrg(dc: DataConnect, vars: ListMembersByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMembersByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListMembersByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listMembersByOrg(vars: ListMembersByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMembersByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllThings' Query. Allow users to execute without passing in DataConnect. */
+export function listAllThings(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllThingsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllThings' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllThings(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllThingsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllApiKeys' Query. Allow users to execute without passing in DataConnect. */
+export function listAllApiKeys(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApiKeysData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllApiKeys' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllApiKeys(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApiKeysData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllApiKeyPermissions' Query. Allow users to execute without passing in DataConnect. */
+export function listAllApiKeyPermissions(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApiKeyPermissionsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllApiKeyPermissions' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllApiKeyPermissions(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApiKeyPermissionsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllAuditLogs' Query. Allow users to execute without passing in DataConnect. */
+export function listAllAuditLogs(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllAuditLogsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllAuditLogs' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllAuditLogs(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllAuditLogsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllProducts' Query. Allow users to execute without passing in DataConnect. */
+export function listAllProducts(dc: DataConnect, vars: ListAllProductsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllProducts' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllProducts(vars: ListAllProductsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllProductsGlobal' Query. Allow users to execute without passing in DataConnect. */
+export function listAllProductsGlobal(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsGlobalData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllProductsGlobal' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllProductsGlobal(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsGlobalData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllProductBatches' Query. Allow users to execute without passing in DataConnect. */
+export function listAllProductBatches(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductBatchesData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllProductBatches' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllProductBatches(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductBatchesData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetProductBatchesByProduct' Query. Allow users to execute without passing in DataConnect. */
+export function getProductBatchesByProduct(dc: DataConnect, vars: GetProductBatchesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductBatchesByProductData>>;
+/** Generated Node Admin SDK operation action function for the 'GetProductBatchesByProduct' Query. Allow users to pass in custom DataConnect instances. */
+export function getProductBatchesByProduct(vars: GetProductBatchesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductBatchesByProductData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllInvoices' Query. Allow users to execute without passing in DataConnect. */
+export function listAllInvoices(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllInvoicesData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllInvoices' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllInvoices(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllInvoicesData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllTeams' Query. Allow users to execute without passing in DataConnect. */
+export function listAllTeams(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllTeamsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllTeams' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllTeams(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllTeamsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllTeamMembers' Query. Allow users to execute without passing in DataConnect. */
+export function listAllTeamMembers(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllTeamMembersData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllTeamMembers' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllTeamMembers(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllTeamMembersData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListInvoicesByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listInvoicesByOrg(dc: DataConnect, vars: ListInvoicesByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListInvoicesByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListInvoicesByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listInvoicesByOrg(vars: ListInvoicesByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListInvoicesByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListInvoicesBySeller' Query. Allow users to execute without passing in DataConnect. */
+export function listInvoicesBySeller(dc: DataConnect, vars: ListInvoicesBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListInvoicesBySellerData>>;
+/** Generated Node Admin SDK operation action function for the 'ListInvoicesBySeller' Query. Allow users to pass in custom DataConnect instances. */
+export function listInvoicesBySeller(vars: ListInvoicesBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListInvoicesBySellerData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listPaymentsByOrg(dc: DataConnect, vars: ListPaymentsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listPaymentsByOrg(vars: ListPaymentsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsBySeller' Query. Allow users to execute without passing in DataConnect. */
+export function listPaymentsBySeller(dc: DataConnect, vars: ListPaymentsBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsBySellerData>>;
+/** Generated Node Admin SDK operation action function for the 'ListPaymentsBySeller' Query. Allow users to pass in custom DataConnect instances. */
+export function listPaymentsBySeller(vars: ListPaymentsBySellerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPaymentsBySellerData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetInvoiceDetails' Query. Allow users to execute without passing in DataConnect. */
+export function getInvoiceDetails(dc: DataConnect, vars: GetInvoiceDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetInvoiceDetailsData>>;
+/** Generated Node Admin SDK operation action function for the 'GetInvoiceDetails' Query. Allow users to pass in custom DataConnect instances. */
+export function getInvoiceDetails(vars: GetInvoiceDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetInvoiceDetailsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationByStripeCustomer' Query. Allow users to execute without passing in DataConnect. */
+export function getOrganizationByStripeCustomer(dc: DataConnect, vars: GetOrganizationByStripeCustomerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationByStripeCustomerData>>;
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationByStripeCustomer' Query. Allow users to pass in custom DataConnect instances. */
+export function getOrganizationByStripeCustomer(vars: GetOrganizationByStripeCustomerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationByStripeCustomerData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListTeamsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listTeamsByOrg(dc: DataConnect, vars: ListTeamsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListTeamsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListTeamsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listTeamsByOrg(vars: ListTeamsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListTeamsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListTeamMembers' Query. Allow users to execute without passing in DataConnect. */
+export function listTeamMembers(dc: DataConnect, vars: ListTeamMembersVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListTeamMembersData>>;
+/** Generated Node Admin SDK operation action function for the 'ListTeamMembers' Query. Allow users to pass in custom DataConnect instances. */
+export function listTeamMembers(vars: ListTeamMembersVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListTeamMembersData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAuditLogsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listAuditLogsByOrg(dc: DataConnect, vars: ListAuditLogsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAuditLogsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAuditLogsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listAuditLogsByOrg(vars: ListAuditLogsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAuditLogsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CheckVatNumberExists' Query. Allow users to execute without passing in DataConnect. */
+export function checkVatNumberExists(dc: DataConnect, vars: CheckVatNumberExistsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CheckVatNumberExistsData>>;
+/** Generated Node Admin SDK operation action function for the 'CheckVatNumberExists' Query. Allow users to pass in custom DataConnect instances. */
+export function checkVatNumberExists(vars: CheckVatNumberExistsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CheckVatNumberExistsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetApplication' Query. Allow users to execute without passing in DataConnect. */
+export function getApplication(dc: DataConnect, vars: GetApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApplicationData>>;
+/** Generated Node Admin SDK operation action function for the 'GetApplication' Query. Allow users to pass in custom DataConnect instances. */
+export function getApplication(vars: GetApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApplicationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllApplications' Query. Allow users to execute without passing in DataConnect. */
+export function listAllApplications(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApplicationsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllApplications' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllApplications(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApplicationsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetCompute' Query. Allow users to execute without passing in DataConnect. */
+export function getCompute(dc: DataConnect, vars: GetComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetComputeData>>;
+/** Generated Node Admin SDK operation action function for the 'GetCompute' Query. Allow users to pass in custom DataConnect instances. */
+export function getCompute(vars: GetComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetComputeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListComputesByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listComputesByOrg(dc: DataConnect, vars: ListComputesByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListComputesByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListComputesByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listComputesByOrg(vars: ListComputesByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListComputesByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetProductConsume' Query. Allow users to execute without passing in DataConnect. */
+export function getProductConsume(dc: DataConnect, vars: GetProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductConsumeData>>;
+/** Generated Node Admin SDK operation action function for the 'GetProductConsume' Query. Allow users to pass in custom DataConnect instances. */
+export function getProductConsume(vars: GetProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductConsumeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListProductConsumesByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listProductConsumesByOrg(dc: DataConnect, vars: ListProductConsumesByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListProductConsumesByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListProductConsumesByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listProductConsumesByOrg(vars: ListProductConsumesByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListProductConsumesByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetPrice' Query. Allow users to execute without passing in DataConnect. */
+export function getPrice(dc: DataConnect, vars: GetPriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPriceData>>;
+/** Generated Node Admin SDK operation action function for the 'GetPrice' Query. Allow users to pass in custom DataConnect instances. */
+export function getPrice(vars: GetPriceVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPriceData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListPricesByProduct' Query. Allow users to execute without passing in DataConnect. */
+export function listPricesByProduct(dc: DataConnect, vars: ListPricesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPricesByProductData>>;
+/** Generated Node Admin SDK operation action function for the 'ListPricesByProduct' Query. Allow users to pass in custom DataConnect instances. */
+export function listPricesByProduct(vars: ListPricesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPricesByProductData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllPrices' Query. Allow users to execute without passing in DataConnect. */
+export function listAllPrices(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPricesData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllPrices' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllPrices(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPricesData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetCheckout' Query. Allow users to execute without passing in DataConnect. */
+export function getCheckout(dc: DataConnect, vars: GetCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetCheckoutData>>;
+/** Generated Node Admin SDK operation action function for the 'GetCheckout' Query. Allow users to pass in custom DataConnect instances. */
+export function getCheckout(vars: GetCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetCheckoutData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListCheckoutsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listCheckoutsByOrg(dc: DataConnect, vars: ListCheckoutsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListCheckoutsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListCheckoutsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listCheckoutsByOrg(vars: ListCheckoutsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListCheckoutsByOrgData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListAllCheckouts' Query. Allow users to execute without passing in DataConnect. */
+export function listAllCheckouts(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllCheckoutsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListAllCheckouts' Query. Allow users to pass in custom DataConnect instances. */
+export function listAllCheckouts(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllCheckoutsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetPayment' Query. Allow users to execute without passing in DataConnect. */
+export function getPayment(dc: DataConnect, vars: GetPaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPaymentData>>;
+/** Generated Node Admin SDK operation action function for the 'GetPayment' Query. Allow users to pass in custom DataConnect instances. */
+export function getPayment(vars: GetPaymentVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPaymentData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetProductDetails' Query. Allow users to execute without passing in DataConnect. */
+export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductDetailsData>>;
+/** Generated Node Admin SDK operation action function for the 'GetProductDetails' Query. Allow users to pass in custom DataConnect instances. */
+export function getProductDetails(vars: GetProductDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductDetailsData>>;
 

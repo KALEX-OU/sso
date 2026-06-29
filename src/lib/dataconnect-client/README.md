@@ -6350,7 +6350,22 @@ export interface GetProductDetailsData {
     options?: unknown | null;
     taxBehavior: string;
     aiSummary?: string | null;
-    descriptionEmbedding?: unknown | null;
+    prices_on_product: ({
+      priceId: string;
+      productId: string;
+      amount: number;
+      currency: string;
+      type: string;
+      billingScheme?: string | null;
+      recurringInterval?: string | null;
+      recurringUsageType?: string | null;
+      tier?: string | null;
+      isActive: boolean;
+      isTest: boolean;
+      taxBehavior?: string | null;
+      metadata?: unknown | null;
+      createdAt: TimestampString;
+    } & Prices_Key)[];
     createdAt: TimestampString;
   } & Products_Key;
 }

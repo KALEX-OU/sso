@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "src/lib/dataconnect-client/**",
     "src/lib/dataconnect-admin/**",
+    "src/framework/lib/dataconnect-client/**",
+    "src/framework/lib/dataconnect-admin/**",
     "functions/lib/**",
     "functions/node_modules/**",
     "functions/dataconnect-admin/**",

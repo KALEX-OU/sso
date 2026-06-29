@@ -11,7 +11,7 @@ export type ModalProps = React.ComponentProps<typeof HeroModal> & {
   tooltip?: string;
 };
 
-export const Modal: React.FC<ModalProps> = (
+const ModalBase: React.FC<ModalProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-modal-skeleton ${className}`} />;
@@ -44,3 +44,18 @@ export const ModalHeading = HeroModalHeading;
 export const ModalIcon = HeroModalIcon;
 export const ModalRoot = HeroModalRoot;
 export const ModalTrigger = HeroModalTrigger;
+
+// Supporto per la sintassi a punti (Compound Components)
+export const Modal = Object.assign(ModalBase, {
+  Backdrop: ModalBackdrop,
+  Body: ModalBody,
+  CloseTrigger: ModalCloseTrigger,
+  Container: ModalContainer,
+  Dialog: ModalDialog,
+  Footer: ModalFooter,
+  Header: ModalHeader,
+  Heading: ModalHeading,
+  Icon: ModalIcon,
+  Root: ModalRoot,
+  Trigger: ModalTrigger
+});

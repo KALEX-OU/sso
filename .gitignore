@@ -48,3 +48,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Shared framework local generated SDK copies
+src/framework/lib/dataconnect-client/
+src/framework/lib/dataconnect-admin/

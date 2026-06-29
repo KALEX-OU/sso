@@ -9,6 +9,7 @@ import { fetchAuthedClient } from "../../lib/api";
 import { Spinner } from "../ui/Spinner";
 import { Button } from "@heroui/react";
 import { ShieldAlert, RefreshCw, ArrowLeft } from "lucide-react";
+import { DebugWidget } from "../ui/DebugWidget";
 
 // Suppress the React 19 false-positive warning for inline script tags rendered by NextThemesProvider
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -486,7 +487,12 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <DebugWidget />
+    </>
+  );
 }
 
 // ---------------------------------------------------------
