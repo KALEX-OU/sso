@@ -720,10 +720,13 @@ function AuthPortal() {
         setNeedsVerification(true);
       }
     } catch (err) {
-      console.error("Login error:", err);
       const errCode = (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string")
         ? (err as { code: string }).code
         : "unknown";
+      
+      if (errCode !== "auth/multi-factor-auth-required") {
+        console.error("Login error:", err);
+      }
       
       // Gestione del secondo fattore (MFA) richiesto
       if (errCode === "auth/multi-factor-auth-required") {

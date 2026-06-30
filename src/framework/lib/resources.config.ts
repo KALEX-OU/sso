@@ -65,6 +65,8 @@ const userModule = {
     singular: "user",
     plural: "users"
   },
+  formFields: ["fullName", "email", "mobile", "locale", "theme", "avatarUrl"],
+  listFields: ["fullName", "email", "role", "createdAt"],
   fields: {
     userId: {
       type: "String",
@@ -79,7 +81,8 @@ const userModule = {
       type: "String",
       encrypted: false,
       render: true,
-      order: 2,
+      order: 3,
+      colSpan: 1,
       label: "fields.email.label",
       placeholder: "fields.email.placeholder",
       validation: { required: true, email: true },
@@ -89,7 +92,8 @@ const userModule = {
       type: "String",
       encrypted: false,
       render: true,
-      order: 3,
+      order: 2,
+      colSpan: 2,
       label: "fields.fullName.label",
       placeholder: "fields.fullName.placeholder",
       validation: { required: true, min: 1 },
@@ -99,7 +103,7 @@ const userModule = {
       type: "String",
       encrypted: false,
       render: true,
-      order: 4,
+      order: 10,
       label: "fields.role.label",
       placeholder: "fields.role.placeholder",
       validation: { required: true },
@@ -109,8 +113,10 @@ const userModule = {
     avatarUrl: {
       type: "String",
       encrypted: false,
-      render: false,
-      order: 5,
+      render: true,
+      hidden: true,
+      order: 9,
+      colSpan: 2,
       label: "fields.avatarUrl.label",
       placeholder: "fields.avatarUrl.placeholder",
       graphql: { nullable: true }
@@ -119,7 +125,8 @@ const userModule = {
       type: "String",
       encrypted: false,
       render: true,
-      order: 6,
+      order: 4,
+      colSpan: 1,
       label: "fields.mobile.label",
       placeholder: "fields.mobile.placeholder",
       graphql: { nullable: true }
@@ -128,7 +135,8 @@ const userModule = {
       type: "String",
       encrypted: false,
       render: true,
-      order: 7,
+      order: 5,
+      colSpan: 1,
       label: "fields.locale.label",
       placeholder: "fields.locale.placeholder",
       options: ["it", "en", "es"],
@@ -138,7 +146,8 @@ const userModule = {
       type: "String",
       encrypted: false,
       render: true,
-      order: 8,
+      order: 6,
+      colSpan: 1,
       label: "fields.theme.label",
       placeholder: "fields.theme.placeholder",
       options: ["light", "dark"],
@@ -149,8 +158,6 @@ const userModule = {
       encrypted: false,
       render: false,
       order: 9,
-      label: "fields.metadata.label",
-      placeholder: "fields.metadata.placeholder",
       graphql: { nullable: true }
     },
     createdAt: {
@@ -181,6 +188,8 @@ const teamModule = {
     singular: "team",
     plural: "teams"
   },
+  formFields: ["name", "description"],
+  listFields: ["name", "description", "createdAt"],
   fields: {
     teamId: {
       type: "String",
@@ -1343,6 +1352,8 @@ const thingModule = {
     singular: "thing",
     plural: "things"
   },
+  formFields: ["name", "type", "metadata"],
+  listFields: ["name", "type", "status", "createdAt"],
   fields: {
     thingId: {
       type: "String",
@@ -1464,75 +1475,6 @@ const thingModule = {
     }
   }
 } as const;
-
-const applicationModule = {
-  name: "Gestione Applicazioni",
-  icon: "AppWindow",
-  tableConfig: {
-    key: "appId",
-    name: "applications",
-    singular: "application",
-    plural: "applications"
-  },
-  fields: {
-    appId: {
-      type: "String",
-      encrypted: false,
-      render: false,
-      order: 1,
-      label: "fields.appId.label",
-      placeholder: "fields.appId.placeholder",
-      validation: { required: true, min: 3 },
-      graphql: { nullable: false }
-    },
-    name: {
-      type: "String",
-      encrypted: false,
-      render: true,
-      order: 2,
-      label: "fields.name.label",
-      placeholder: "fields.name.placeholder",
-      validation: { required: true, min: 1 },
-      graphql: { nullable: false }
-    },
-    description: {
-      type: "String",
-      encrypted: false,
-      render: true,
-      order: 3,
-      label: "fields.description.label",
-      placeholder: "fields.description.placeholder",
-      graphql: { nullable: true }
-    },
-    isActive: {
-      type: "Boolean",
-      encrypted: false,
-      render: true,
-      order: 4,
-      label: "fields.isActive.label",
-      placeholder: "fields.isActive.placeholder",
-      validation: { default: true },
-      graphql: { nullable: false, directive: "@default(value: true)" }
-    },
-    createdAt: {
-      type: "Timestamp",
-      encrypted: false,
-      render: false,
-      order: 5,
-      label: "fields.createdAt.label",
-      placeholder: "fields.createdAt.placeholder",
-      graphql: { nullable: false, directive: '@default(expr: "request.time")' }
-    }
-  },
-  rolePolicies: {
-    owner: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true, allowedFields: ["appId", "name", "description", "isActive", "createdAt"] },
-    admin: { canCreate: false, canRead: false, canList: false, canUpdate: false, canDelete: false, allowedFields: [] },
-    member: { canCreate: false, canRead: false, canList: false, canUpdate: false, canDelete: false, allowedFields: [] },
-    viewer: { canCreate: false, canRead: false, canList: false, canUpdate: false, canDelete: false, allowedFields: [] },
-    device: { canCreate: false, canRead: false, canList: false, canUpdate: false, canDelete: false, allowedFields: [] }
-  }
-} as const;
-
 const productModule = {
   name: "Catalogo Prodotti e Servizi",
   icon: "Package",
@@ -1935,6 +1877,8 @@ const organizationModule = {
     singular: "organization",
     plural: "organizations"
   },
+  formFields: ["name", "type", "country", "vatNumber", "fiscalCode", "address", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode"],
+  listFields: ["name", "type", "country", "createdAt"],
   fields: {
     orgId: {
       type: "String",
@@ -2163,16 +2107,25 @@ const organizationModule = {
       label: "fields.createdAt.label",
       placeholder: "fields.createdAt.placeholder",
       graphql: { nullable: false, directive: '@default(expr: "request.time")' }
+    },
+    apps: {
+      type: "Any",
+      encrypted: false,
+      render: false,
+      order: 25,
+      label: "fields.apps.label",
+      placeholder: "fields.apps.placeholder",
+      graphql: { nullable: true }
     }
   },
   rolePolicies: {
     owner: {
       canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true,
-      allowedFields: ["orgId", "name", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt"]
+      allowedFields: ["orgId", "name", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
     },
     admin: {
       canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true,
-      allowedFields: ["orgId", "name", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt"]
+      allowedFields: ["orgId", "name", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
     },
     member: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "type", "country", "address"] },
     viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "type", "country"] },
@@ -2278,7 +2231,6 @@ export const MODULE_REGISTRY = {
   product_consume: productConsumeModule,
   apikey: apikeyModule,
   thing: thingModule,
-  application: applicationModule,
   product: productModule,
   productprice: productpriceModule,
   organization: organizationModule,
@@ -2291,49 +2243,7 @@ export const APPLICATION_REGISTRY = {
     name: "KALEX SSO Console",
     enabled: true,
     supportedOrgRoles: ["admin"] as const,
-    modules: ["dashboard", "user", "team", "subscription", "checkout", "invoice", "payment", "compute", "product_consume", "apikey", "thing", "application", "product", "productprice"] as const
-  },
-  user: {
-    name: "KALEX Users",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["user"] as const
-  },
-  team: {
-    name: "KALEX Organization Teams",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["team"] as const
-  },
-  organization: {
-    name: "KALEX Organizations",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["organization"] as const
-  },
-  thing: {
-    name: "KALEX Thing (IoT)",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["thing"] as const
-  },
-  apikey: {
-    name: "KALEX API Keys",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["apikey"] as const
-  },
-  crm: {
-    name: "KALEX CRM",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["projects"] as const
-  },
-  geolocation: {
-    name: "KALEX Geolocation",
-    enabled: true,
-    supportedOrgRoles: ["admin"] as const,
-    modules: ["address"] as const
+    modules: ["dashboard", "user", "team", "subscription", "checkout", "invoice", "payment", "compute", "product_consume", "apikey", "thing", "product", "productprice", "organization"] as const
   },
   web: {
     name: "KALEX Web Portal",
@@ -2387,58 +2297,9 @@ export const RESOURCE_REGISTRY = {
       product_consume: productConsumeModule,
       apikey: apikeyModule,
       thing: thingModule,
-      application: applicationModule,
       product: productModule,
-      productprice: productpriceModule
-    }
-  },
-  user: {
-    name: APPLICATION_REGISTRY.user.name,
-    enabled: APPLICATION_REGISTRY.user.enabled,
-    modules: {
-      user: userModule
-    }
-  },
-  team: {
-    name: APPLICATION_REGISTRY.team.name,
-    enabled: APPLICATION_REGISTRY.team.enabled,
-    modules: {
-      team: teamModule
-    }
-  },
-  organization: {
-    name: APPLICATION_REGISTRY.organization.name,
-    enabled: APPLICATION_REGISTRY.organization.enabled,
-    modules: {
+      productprice: productpriceModule,
       organization: organizationModule
-    }
-  },
-  thing: {
-    name: APPLICATION_REGISTRY.thing.name,
-    enabled: APPLICATION_REGISTRY.thing.enabled,
-    modules: {
-      thing: thingModule
-    }
-  },
-  apikey: {
-    name: APPLICATION_REGISTRY.apikey.name,
-    enabled: APPLICATION_REGISTRY.apikey.enabled,
-    modules: {
-      apikey: apikeyModule
-    }
-  },
-  crm: {
-    name: APPLICATION_REGISTRY.crm.name,
-    enabled: APPLICATION_REGISTRY.crm.enabled,
-    modules: {
-      projects: projectsModule
-    }
-  },
-  geolocation: {
-    name: APPLICATION_REGISTRY.geolocation.name,
-    enabled: APPLICATION_REGISTRY.geolocation.enabled,
-    modules: {
-      address: addressModule
     }
   },
   web: {
@@ -2506,7 +2367,9 @@ export interface FieldConfig {
   readonly type: "String" | "Boolean" | "Float" | "Timestamp" | "Any";
   readonly encrypted?: boolean;
   readonly render?: boolean;
+  readonly hidden?: boolean;
   readonly order?: number;
+  readonly colSpan?: 1 | 2;
   readonly label?: string;
   readonly placeholder?: string;
   readonly options?: readonly string[] | string[];
@@ -2533,6 +2396,8 @@ export interface ModuleInfo {
   readonly icon?: LucideIconName;
   readonly fields: Record<string, FieldConfig>;
   readonly rolePolicies: Record<string, SecurityPolicy>;
+  readonly formFields?: readonly string[];
+  readonly listFields?: readonly string[];
 }
 
 // ==========================================
@@ -2540,7 +2405,7 @@ export interface ModuleInfo {
 // ==========================================
 
 export function listApplications(): AppInfo[] {
-  return Object.entries(RESOURCE_REGISTRY).map(([id, app]) => ({
+  return Object.entries(APPLICATION_REGISTRY).map(([id, app]) => ({
     id: id as AppIds,
     name: app.name,
     enabled: app.enabled
@@ -2558,13 +2423,13 @@ export function listModules(): ModuleInfo[] {
 }
 
 export function listAppModules(appId: AppIds): string[] {
-  const app = RESOURCE_REGISTRY[appId];
+  const app = APPLICATION_REGISTRY[appId];
   if (!app) return [];
-  return Object.keys(app.modules);
+  return [...app.modules];
 }
 
 export function getApplicationInfo(appId: AppIds): { readonly name: string; readonly enabled: boolean } | null {
-  const app = RESOURCE_REGISTRY[appId];
+  const app = APPLICATION_REGISTRY[appId];
   if (!app) return null;
   return {
     name: app.name,

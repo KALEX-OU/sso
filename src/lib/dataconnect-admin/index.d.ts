@@ -39,11 +39,6 @@ export interface ApiKeys_Key {
   __typename?: 'ApiKeys_Key';
 }
 
-export interface Applications_Key {
-  appId: string;
-  __typename?: 'Applications_Key';
-}
-
 export interface AuditLogs_Key {
   logId: string;
   __typename?: 'AuditLogs_Key';
@@ -100,17 +95,6 @@ export interface CreateApiKeyVariables {
   isActive?: boolean | null;
   expiresAt?: TimestampString | null;
   isTest?: boolean | null;
-}
-
-export interface CreateApplicationData {
-  application_insert: Applications_Key;
-}
-
-export interface CreateApplicationVariables {
-  appId: string;
-  name: string;
-  description?: string | null;
-  isActive?: boolean | null;
 }
 
 export interface CreateAuditLogData {
@@ -371,14 +355,6 @@ export interface DeleteApiKeyVariables {
   keyHash: string;
 }
 
-export interface DeleteApplicationData {
-  application_delete?: Applications_Key | null;
-}
-
-export interface DeleteApplicationVariables {
-  appId: string;
-}
-
 export interface DeleteAuditLogData {
   auditLog_delete?: AuditLogs_Key | null;
 }
@@ -530,9 +506,7 @@ export interface GetApiKeyData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     ipWhitelist: unknown;
@@ -562,20 +536,6 @@ export interface GetApiKeyPermissionsVariables {
 
 export interface GetApiKeyVariables {
   keyHash: string;
-}
-
-export interface GetApplicationData {
-  application?: {
-    appId: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: TimestampString;
-  } & Applications_Key;
-}
-
-export interface GetApplicationVariables {
-  appId: string;
 }
 
 export interface GetAuthCodeData {
@@ -632,10 +592,6 @@ export interface GetInvoiceDetailsData {
   invoice?: {
     invoiceId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -839,9 +795,7 @@ export interface GetProductDetailsData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -895,10 +849,6 @@ export interface GetSubscriptionData {
       orgId: string;
       name: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     status: string;
     items: unknown;
     cancelAtPeriodEnd?: boolean | null;
@@ -922,9 +872,7 @@ export interface GetThingByTokenHashData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -944,9 +892,7 @@ export interface GetThingData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -1008,6 +954,7 @@ export interface GetUserClaimsContextData {
         altitude?: number | null;
         addressDetails?: unknown | null;
         metadata?: unknown | null;
+        apps?: unknown | null;
         createdAt: TimestampString;
         subscriptions_on_buyer: ({
           subscriptionId: string;
@@ -1046,16 +993,6 @@ export interface ListAllApiKeysData {
   } & ApiKeys_Key)[];
 }
 
-export interface ListAllApplicationsData {
-  applications: ({
-    appId: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: TimestampString;
-  } & Applications_Key)[];
-}
-
 export interface ListAllAuditLogsData {
   auditLogs: ({
     logId: string;
@@ -1086,10 +1023,6 @@ export interface ListAllInvoicesData {
     amount: number;
     status: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
   } & Invoices_Key)[];
 }
 
@@ -1142,9 +1075,7 @@ export interface ListAllProductsData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -1208,9 +1139,7 @@ export interface ListAllProductsGlobalData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -1341,9 +1270,11 @@ export interface ListApiKeysByOrgData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    user?: {
+      userId: string;
+      email: string;
+    } & Users_Key;
+    appId: string;
     name: string;
     description?: string | null;
     isActive: boolean;
@@ -1421,10 +1352,6 @@ export interface ListInvoicesByOrgData {
     metadata?: unknown | null;
     createdAt: TimestampString;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -1456,10 +1383,6 @@ export interface ListInvoicesBySellerData {
     metadata?: unknown | null;
     createdAt: TimestampString;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -1505,10 +1428,6 @@ export interface ListPaymentsByOrgData {
   payments: ({
     paymentId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
     } & Organizations_Key;
@@ -1544,10 +1463,6 @@ export interface ListPaymentsBySellerData {
   payments: ({
     paymentId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
     } & Organizations_Key;
@@ -1632,9 +1547,7 @@ export interface ListTeamMembersVariables {
 export interface ListTeamsByOrgData {
   teams: ({
     teamId: string;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     rbac?: unknown | null;
@@ -1651,9 +1564,7 @@ export interface ListTeamsByOrgVariables {
 export interface ListThingsByOrgData {
   things: ({
     thingId: string;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -1748,17 +1659,6 @@ export interface Things_Key {
   __typename?: 'Things_Key';
 }
 
-export interface UpdateApplicationData {
-  application_update?: Applications_Key | null;
-}
-
-export interface UpdateApplicationVariables {
-  appId: string;
-  name?: string | null;
-  description?: string | null;
-  isActive?: boolean | null;
-}
-
 export interface UpdateCheckoutData {
   checkout_update?: Checkouts_Key | null;
 }
@@ -1786,6 +1686,15 @@ export interface UpdateInvoiceStatusData {
 export interface UpdateInvoiceStatusVariables {
   invoiceId: string;
   status: string;
+}
+
+export interface UpdateOrganizationAppsData {
+  organization_update?: Organizations_Key | null;
+}
+
+export interface UpdateOrganizationAppsVariables {
+  orgId: string;
+  apps?: unknown | null;
 }
 
 export interface UpdateOrganizationBillingData {
@@ -2044,6 +1953,11 @@ export function updateOrganizationVies(dc: DataConnect, vars: UpdateOrganization
 /** Generated Node Admin SDK operation action function for the 'UpdateOrganizationVies' Mutation. Allow users to pass in custom DataConnect instances. */
 export function updateOrganizationVies(vars: UpdateOrganizationViesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationViesData>>;
 
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationApps' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationApps(dc: DataConnect, vars: UpdateOrganizationAppsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationAppsData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationApps' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationApps(vars: UpdateOrganizationAppsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationAppsData>>;
+
 /** Generated Node Admin SDK operation action function for the 'UpsertPreRegistration' Mutation. Allow users to execute without passing in DataConnect. */
 export function upsertPreRegistration(dc: DataConnect, vars: UpsertPreRegistrationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertPreRegistrationData>>;
 /** Generated Node Admin SDK operation action function for the 'UpsertPreRegistration' Mutation. Allow users to pass in custom DataConnect instances. */
@@ -2198,21 +2112,6 @@ export function addUserToTeam(vars: AddUserToTeamVariables, options?: OperationO
 export function removeUserFromTeam(dc: DataConnect, vars: RemoveUserFromTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RemoveUserFromTeamData>>;
 /** Generated Node Admin SDK operation action function for the 'RemoveUserFromTeam' Mutation. Allow users to pass in custom DataConnect instances. */
 export function removeUserFromTeam(vars: RemoveUserFromTeamVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RemoveUserFromTeamData>>;
-
-/** Generated Node Admin SDK operation action function for the 'CreateApplication' Mutation. Allow users to execute without passing in DataConnect. */
-export function createApplication(dc: DataConnect, vars: CreateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateApplicationData>>;
-/** Generated Node Admin SDK operation action function for the 'CreateApplication' Mutation. Allow users to pass in custom DataConnect instances. */
-export function createApplication(vars: CreateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateApplicationData>>;
-
-/** Generated Node Admin SDK operation action function for the 'UpdateApplication' Mutation. Allow users to execute without passing in DataConnect. */
-export function updateApplication(dc: DataConnect, vars: UpdateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateApplicationData>>;
-/** Generated Node Admin SDK operation action function for the 'UpdateApplication' Mutation. Allow users to pass in custom DataConnect instances. */
-export function updateApplication(vars: UpdateApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateApplicationData>>;
-
-/** Generated Node Admin SDK operation action function for the 'DeleteApplication' Mutation. Allow users to execute without passing in DataConnect. */
-export function deleteApplication(dc: DataConnect, vars: DeleteApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApplicationData>>;
-/** Generated Node Admin SDK operation action function for the 'DeleteApplication' Mutation. Allow users to pass in custom DataConnect instances. */
-export function deleteApplication(vars: DeleteApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteApplicationData>>;
 
 /** Generated Node Admin SDK operation action function for the 'CreateCompute' Mutation. Allow users to execute without passing in DataConnect. */
 export function createCompute(dc: DataConnect, vars: CreateComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateComputeData>>;
@@ -2468,16 +2367,6 @@ export function listAuditLogsByOrg(vars: ListAuditLogsByOrgVariables, options?: 
 export function checkVatNumberExists(dc: DataConnect, vars: CheckVatNumberExistsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CheckVatNumberExistsData>>;
 /** Generated Node Admin SDK operation action function for the 'CheckVatNumberExists' Query. Allow users to pass in custom DataConnect instances. */
 export function checkVatNumberExists(vars: CheckVatNumberExistsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CheckVatNumberExistsData>>;
-
-/** Generated Node Admin SDK operation action function for the 'GetApplication' Query. Allow users to execute without passing in DataConnect. */
-export function getApplication(dc: DataConnect, vars: GetApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApplicationData>>;
-/** Generated Node Admin SDK operation action function for the 'GetApplication' Query. Allow users to pass in custom DataConnect instances. */
-export function getApplication(vars: GetApplicationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetApplicationData>>;
-
-/** Generated Node Admin SDK operation action function for the 'ListAllApplications' Query. Allow users to execute without passing in DataConnect. */
-export function listAllApplications(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApplicationsData>>;
-/** Generated Node Admin SDK operation action function for the 'ListAllApplications' Query. Allow users to pass in custom DataConnect instances. */
-export function listAllApplications(options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllApplicationsData>>;
 
 /** Generated Node Admin SDK operation action function for the 'GetCompute' Query. Allow users to execute without passing in DataConnect. */
 export function getCompute(dc: DataConnect, vars: GetComputeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetComputeData>>;

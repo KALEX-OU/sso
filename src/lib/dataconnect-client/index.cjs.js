@@ -175,6 +175,20 @@ exports.updateOrganizationVies = function updateOrganizationVies(dcOrVars, vars)
 }
 ;
 
+const updateOrganizationAppsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateOrganizationApps', inputVars);
+}
+updateOrganizationAppsRef.operationName = 'UpdateOrganizationApps';
+exports.updateOrganizationAppsRef = updateOrganizationAppsRef;
+
+exports.updateOrganizationApps = function updateOrganizationApps(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationAppsRef(dcInstance, inputVars));
+}
+;
+
 const upsertPreRegistrationRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -606,48 +620,6 @@ exports.removeUserFromTeamRef = removeUserFromTeamRef;
 exports.removeUserFromTeam = function removeUserFromTeam(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(removeUserFromTeamRef(dcInstance, inputVars));
-}
-;
-
-const createApplicationRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'CreateApplication', inputVars);
-}
-createApplicationRef.operationName = 'CreateApplication';
-exports.createApplicationRef = createApplicationRef;
-
-exports.createApplication = function createApplication(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(createApplicationRef(dcInstance, inputVars));
-}
-;
-
-const updateApplicationRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpdateApplication', inputVars);
-}
-updateApplicationRef.operationName = 'UpdateApplication';
-exports.updateApplicationRef = updateApplicationRef;
-
-exports.updateApplication = function updateApplication(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(updateApplicationRef(dcInstance, inputVars));
-}
-;
-
-const deleteApplicationRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'DeleteApplication', inputVars);
-}
-deleteApplicationRef.operationName = 'DeleteApplication';
-exports.deleteApplicationRef = deleteApplicationRef;
-
-exports.deleteApplication = function deleteApplication(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(deleteApplicationRef(dcInstance, inputVars));
 }
 ;
 
@@ -1401,36 +1373,6 @@ exports.checkVatNumberExists = function checkVatNumberExists(dcOrVars, varsOrOpt
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(checkVatNumberExistsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
-}
-;
-
-const getApplicationRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetApplication', inputVars);
-}
-getApplicationRef.operationName = 'GetApplication';
-exports.getApplicationRef = getApplicationRef;
-
-exports.getApplication = function getApplication(dcOrVars, varsOrOptions, options) {
-  
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getApplicationRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
-}
-;
-
-const listAllApplicationsRef = (dc) => {
-  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'ListAllApplications');
-}
-listAllApplicationsRef.operationName = 'ListAllApplications';
-exports.listAllApplicationsRef = listAllApplicationsRef;
-
-exports.listAllApplications = function listAllApplications(dcOrOptions, options) {
-  
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
-  return executeQuery(listAllApplicationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 

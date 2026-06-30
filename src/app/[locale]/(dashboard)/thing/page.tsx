@@ -143,28 +143,32 @@ export default function ThingManagementPage() {
     showToast("Token copiato!", "success");
   };
 
+  const canCreate = hasPermission("thing", "create");
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Registrazione */}
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-1">
-          <Card.Content className="p-2 space-y-4">
-            <div>
-              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Registra Dispositivo Thing</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{"Aggiungi un dispositivo IoT hardware all'organizzazione."}</p>
-            </div>
+        {canCreate && (
+          <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-1">
+            <Card.Content className="p-2 space-y-4">
+              <div>
+                <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Registra Dispositivo Thing</h3>
+                <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{"Aggiungi un dispositivo IoT hardware all'organizzazione."}</p>
+              </div>
 
-            <Form
-              moduleId="thing"
-              fieldsOrder={["name", "type", "metadata"]}
-              onSubmit={handleRegisterThing}
-              submitLabel="Registra Dispositivo"
-            />
-          </Card.Content>
-        </Card>
+              <Form
+                moduleId="thing"
+                fieldsOrder={["name", "type", "metadata"]}
+                onSubmit={handleRegisterThing}
+                submitLabel="Registra Dispositivo"
+              />
+            </Card.Content>
+          </Card>
+        )}
 
         {/* Elenco Cose */}
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-2">
+        <Card className={`border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 ${canCreate ? "lg:col-span-2" : "lg:col-span-3"}`}>
           <Card.Content className="p-2 space-y-4">
             <div>
               <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Dispositivi IoT Thing</h3>

@@ -59,8 +59,9 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   const hasPermission = useCallback((module: string, action: "read" | "create" | "update" | "delete"): boolean => {
     if (!authClaims) return false;
     
+    const userRoleRaw = authClaims.uRole || authClaims.role;
     // Bypass completo per l'owner
-    if (authClaims.role === "owner") return true;
+    if (userRoleRaw === "owner") return true;
 
     // Recupera la policy definita staticamente in RESOURCE_REGISTRY
     const registry = RESOURCE_REGISTRY as unknown as Record<string, RegistryApp>;
@@ -69,7 +70,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     const moduleConfig = appConfig.modules[module];
     if (!moduleConfig) return false;
 
-    const userRole = (authClaims.role?.toLowerCase() || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
+    const userRole = (userRoleRaw?.toLowerCase() || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
     const policy = moduleConfig.rolePolicies[userRole] || moduleConfig.rolePolicies["viewer"];
 
     if (!policy) return false;
@@ -126,10 +127,20 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
       
       if (res.success && res.data?.success) {
         // Forza il refresh del token Firebase a livello client per recepire i nuovi claims
-        const { auth } = await import("@/framework/lib/auth");
+        const { auth, forceCleanSession } = await import("@/framework/lib/auth");
         if (auth.currentUser) {
-          await auth.currentUser.getIdTokenResult(true);
-          refreshAttemptsRef.current = 0; // Reset
+          try {
+            await auth.currentUser.getIdTokenResult(true);
+            refreshAttemptsRef.current = 0; // Reset
+          } catch (tokenErr) {
+            console.warn("[Layout Claims Refresh] Token revocato o scaduto durante il refresh dei claims:", tokenErr);
+            const authErr = tokenErr as { code?: string };
+            if (authErr.code === "auth/user-token-expired" || authErr.code === "auth/token-expired" || authErr.code === "auth/requires-recent-login") {
+              void forceCleanSession();
+              return;
+            }
+            throw tokenErr;
+          }
         }
         await fetchAndSyncUserData();
       }
@@ -226,6 +237,57 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     }
   }, [firebaseUser, authClaims, onboardingPending, loading, refreshClaims]);
 
+  // Sincronizzazione automatica dei claims in caso di disallineamento rilevato con il database (es. dopo acquisti Stripe o cambi ruolo)
+  useEffect(() => {
+    if (loading || authLoading || !firebaseUser || !authClaims || !dbData || onboardingPending) {
+      return;
+    }
+
+    const activeOrg = dbData.userOrganizations_on_user?.[0]?.organization;
+    if (!activeOrg) return;
+
+    let needsClaimRefresh = false;
+
+    // 1. Controllo ruoli
+    const dbRole = dbData.userOrganizations_on_user?.[0]?.role;
+    const tokenRole = authClaims.uRole || authClaims.role;
+    if (dbRole && tokenRole && dbRole !== tokenRole) {
+      needsClaimRefresh = true;
+    }
+
+    // 2. Controllo stato delle applicazioni commerciali
+    if (!needsClaimRefresh) {
+      const orgApps = (activeOrg.apps || {}) as Record<string, unknown>;
+      for (const [appIdKey, appDetail] of Object.entries(orgApps)) {
+        if (appDetail && typeof appDetail === "object") {
+          const detail = appDetail as { status: string; mode: string };
+          const isActive = detail.status === "active" || detail.status === "trialing" || detail.status === "past_due";
+          const tokenApp = authClaims.rbac?.apps?.[appIdKey] as { mode?: string } | undefined;
+
+          if (isActive) {
+            if (!tokenApp || tokenApp.mode !== detail.mode) {
+              needsClaimRefresh = true;
+              break;
+            }
+          } else {
+            if (tokenApp && tokenApp.mode === "seller") {
+              needsClaimRefresh = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (needsClaimRefresh) {
+      console.log(`[Layout Claims Sync] Rilevato disallineamento nei claims dell'utente (Ruolo DB: ${dbRole}, Token: ${tokenRole}). Innesco refresh automatico...`);
+      const timer = setTimeout(() => {
+        void refreshClaims(activeOrg.orgId);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, authLoading, firebaseUser, authClaims, dbData, onboardingPending, refreshClaims]);
+
   // Controllo proattivo dei permessi di accesso alle rotte (RBAC Security)
   useEffect(() => {
     if (loading || !firebaseUser || !authClaims) return;
@@ -247,7 +309,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
         const matchedModule = modulesList.find(mod => cleanPath === mod || cleanPath.startsWith(mod + "/"));
 
         if (matchedModule && !hasPermission(matchedModule, "read")) {
-          console.warn(`[RBAC Guard] Accesso negato a '/${cleanPath}'. Ruolo '${authClaims.role}' non autorizzato. Reindirizzamento.`);
+          console.warn(`[RBAC Guard] Accesso negato a '/${cleanPath}'. Ruolo '${authClaims.uRole}' non autorizzato. Reindirizzamento.`);
           const dashboardRedirectPath = appId === "sso" ? "dashboard" : "";
           router.push(`/${locale}/${dashboardRedirectPath}`);
         }
@@ -282,13 +344,13 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
 
   return (
     <DashboardContext.Provider value={{ user: firebaseUser, claims: authClaims, loading, dbData, refreshClaims, hasPermission, showToast, setError }}>
-      <div className="min-h-screen flex bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-all duration-300">
+      <div className="h-screen overflow-hidden flex bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-all duration-300">
         
         {/* SIDEBAR A SINISTRA */}
         <Sidebar appId={appId} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
         {/* CONTENUTO PRINCIPALE A DESTRA */}
-        <main className="flex-1 overflow-y-auto min-h-screen relative flex flex-col p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto klx-scrollbar-minimalist h-full relative flex flex-col p-6 space-y-6">
           {/* Banner di errore globale */}
           {error && (
             <div className="bg-red-950/60 border border-[#ff00ff] text-white rounded-2xl p-4 text-xs font-bold shadow-xl flex items-center gap-3">

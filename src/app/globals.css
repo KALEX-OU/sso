@@ -354,3 +354,134 @@ body {
 .klx-toast-close-btn--info {
   @apply hover:bg-primary/10 text-primary;
 }
+
+/* ========================================== */
+/* PULSANTI DEL FRAMEWORK (BEM) - KALEX Tech */
+/* ========================================== */
+
+.klx-btn {
+  @apply rounded-2xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-11 px-5 border-none outline-none;
+}
+
+.klx-btn--primary {
+  @apply bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90;
+}
+
+.klx-btn--ghost {
+  @apply bg-transparent border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-900;
+}
+
+.klx-btn--sm {
+  @apply h-8 px-3.5 text-[10px];
+}
+
+.klx-btn--md {
+  @apply h-11 px-5 text-xs;
+}
+
+.klx-btn--lg {
+  @apply h-12 px-6 text-sm;
+}
+
+/* ========================================== */
+/* IMPOSTAZIONI ACCOUNT & AZIENDA (BEM) - KALEX Tech */
+/* ========================================== */
+
+.klx-settings-container {
+  @apply space-y-6 max-w-5xl mx-auto pb-16;
+}
+
+.klx-settings-header-title {
+  @apply text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2;
+}
+
+.klx-settings-header-desc {
+  @apply text-slate-500 dark:text-gray-400 text-xs mt-1;
+}
+
+.klx-settings-grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch;
+}
+
+.klx-settings-card {
+  @apply border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6;
+}
+
+.klx-settings-card--full {
+  @apply border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-8;
+}
+
+.klx-settings-card--danger {
+  @apply border border-red-500/20 dark:border-red-500/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-8;
+}
+
+.klx-settings-profile-avatar-wrapper {
+  @apply relative w-36 h-36 rounded-full flex items-center justify-center border-4 border-purple-500/20 overflow-hidden shadow-2xl;
+}
+
+.klx-settings-profile-avatar-wrapper:hover .klx-settings-avatar-hover-overlay {
+  @apply opacity-100;
+}
+
+.klx-settings-avatar-hover-overlay {
+  @apply absolute inset-0 bg-black/60 opacity-0 flex flex-col items-center justify-center text-white transition-opacity duration-300 cursor-pointer;
+}
+
+.klx-settings-profile-name {
+  @apply text-lg font-bold text-slate-900 dark:text-white mt-4;
+}
+
+.klx-settings-profile-email {
+  @apply text-xs text-slate-400 dark:text-gray-500 font-mono mt-1 break-all max-w-full;
+}
+
+.klx-settings-profile-badge {
+  @apply flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-500/10 text-purple-500 border border-purple-500/20 mt-3;
+}
+
+.klx-settings-avatar-input {
+  @apply hidden;
+}
+
+
+.klx-settings-strength-meter-container {
+  @apply w-full h-1.5 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden mt-3;
+}
+
+.klx-settings-strength-meter-bar {
+  @apply h-full transition-all duration-300;
+}
+
+/* Stili Premium per i Tab di Settings */
+.klx-settings-tabs-list {
+  @apply flex gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-950/60 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-white/5 mb-8 w-max;
+}
+
+.klx-settings-tab-trigger {
+  @apply px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-wider rounded-xl cursor-pointer outline-none transition-all duration-300 border-none select-none text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 data-[selected=true]:bg-purple-600 data-[selected=true]:text-white data-[selected=true]:shadow-lg;
+}
+
+/* Scrollbar Minimalista da 4px */
+.klx-scrollbar-minimalist::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.klx-scrollbar-minimalist::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.klx-scrollbar-minimalist::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.3);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.klx-scrollbar-minimalist::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.6);
+}
+
+.klx-scrollbar-minimalist {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(147, 51, 234, 0.3) transparent;
+}

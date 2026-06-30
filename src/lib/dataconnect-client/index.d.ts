@@ -41,11 +41,6 @@ export interface ApiKeys_Key {
   __typename?: 'ApiKeys_Key';
 }
 
-export interface Applications_Key {
-  appId: string;
-  __typename?: 'Applications_Key';
-}
-
 export interface AuditLogs_Key {
   logId: string;
   __typename?: 'AuditLogs_Key';
@@ -102,17 +97,6 @@ export interface CreateApiKeyVariables {
   isActive?: boolean | null;
   expiresAt?: TimestampString | null;
   isTest?: boolean | null;
-}
-
-export interface CreateApplicationData {
-  application_insert: Applications_Key;
-}
-
-export interface CreateApplicationVariables {
-  appId: string;
-  name: string;
-  description?: string | null;
-  isActive?: boolean | null;
 }
 
 export interface CreateAuditLogData {
@@ -373,14 +357,6 @@ export interface DeleteApiKeyVariables {
   keyHash: string;
 }
 
-export interface DeleteApplicationData {
-  application_delete?: Applications_Key | null;
-}
-
-export interface DeleteApplicationVariables {
-  appId: string;
-}
-
 export interface DeleteAuditLogData {
   auditLog_delete?: AuditLogs_Key | null;
 }
@@ -532,9 +508,7 @@ export interface GetApiKeyData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     ipWhitelist: unknown;
@@ -564,20 +538,6 @@ export interface GetApiKeyPermissionsVariables {
 
 export interface GetApiKeyVariables {
   keyHash: string;
-}
-
-export interface GetApplicationData {
-  application?: {
-    appId: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: TimestampString;
-  } & Applications_Key;
-}
-
-export interface GetApplicationVariables {
-  appId: string;
 }
 
 export interface GetAuthCodeData {
@@ -634,10 +594,6 @@ export interface GetInvoiceDetailsData {
   invoice?: {
     invoiceId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -841,9 +797,7 @@ export interface GetProductDetailsData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -897,10 +851,6 @@ export interface GetSubscriptionData {
       orgId: string;
       name: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     status: string;
     items: unknown;
     cancelAtPeriodEnd?: boolean | null;
@@ -924,9 +874,7 @@ export interface GetThingByTokenHashData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -946,9 +894,7 @@ export interface GetThingData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -1010,6 +956,7 @@ export interface GetUserClaimsContextData {
         altitude?: number | null;
         addressDetails?: unknown | null;
         metadata?: unknown | null;
+        apps?: unknown | null;
         createdAt: TimestampString;
         subscriptions_on_buyer: ({
           subscriptionId: string;
@@ -1048,16 +995,6 @@ export interface ListAllApiKeysData {
   } & ApiKeys_Key)[];
 }
 
-export interface ListAllApplicationsData {
-  applications: ({
-    appId: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: TimestampString;
-  } & Applications_Key)[];
-}
-
 export interface ListAllAuditLogsData {
   auditLogs: ({
     logId: string;
@@ -1088,10 +1025,6 @@ export interface ListAllInvoicesData {
     amount: number;
     status: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
   } & Invoices_Key)[];
 }
 
@@ -1144,9 +1077,7 @@ export interface ListAllProductsData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -1210,9 +1141,7 @@ export interface ListAllProductsGlobalData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -1343,9 +1272,11 @@ export interface ListApiKeysByOrgData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    user?: {
+      userId: string;
+      email: string;
+    } & Users_Key;
+    appId: string;
     name: string;
     description?: string | null;
     isActive: boolean;
@@ -1423,10 +1354,6 @@ export interface ListInvoicesByOrgData {
     metadata?: unknown | null;
     createdAt: TimestampString;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -1458,10 +1385,6 @@ export interface ListInvoicesBySellerData {
     metadata?: unknown | null;
     createdAt: TimestampString;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -1507,10 +1430,6 @@ export interface ListPaymentsByOrgData {
   payments: ({
     paymentId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
     } & Organizations_Key;
@@ -1546,10 +1465,6 @@ export interface ListPaymentsBySellerData {
   payments: ({
     paymentId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
     } & Organizations_Key;
@@ -1634,9 +1549,7 @@ export interface ListTeamMembersVariables {
 export interface ListTeamsByOrgData {
   teams: ({
     teamId: string;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     rbac?: unknown | null;
@@ -1653,9 +1566,7 @@ export interface ListTeamsByOrgVariables {
 export interface ListThingsByOrgData {
   things: ({
     thingId: string;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -1750,17 +1661,6 @@ export interface Things_Key {
   __typename?: 'Things_Key';
 }
 
-export interface UpdateApplicationData {
-  application_update?: Applications_Key | null;
-}
-
-export interface UpdateApplicationVariables {
-  appId: string;
-  name?: string | null;
-  description?: string | null;
-  isActive?: boolean | null;
-}
-
 export interface UpdateCheckoutData {
   checkout_update?: Checkouts_Key | null;
 }
@@ -1788,6 +1688,15 @@ export interface UpdateInvoiceStatusData {
 export interface UpdateInvoiceStatusVariables {
   invoiceId: string;
   status: string;
+}
+
+export interface UpdateOrganizationAppsData {
+  organization_update?: Organizations_Key | null;
+}
+
+export interface UpdateOrganizationAppsVariables {
+  orgId: string;
+  apps?: unknown | null;
 }
 
 export interface UpdateOrganizationBillingData {
@@ -2129,6 +2038,18 @@ export const updateOrganizationViesRef: UpdateOrganizationViesRef;
 
 export function updateOrganizationVies(vars: UpdateOrganizationViesVariables): MutationPromise<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
 export function updateOrganizationVies(dc: DataConnect, vars: UpdateOrganizationViesVariables): MutationPromise<UpdateOrganizationViesData, UpdateOrganizationViesVariables>;
+
+interface UpdateOrganizationAppsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationAppsVariables): MutationRef<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateOrganizationAppsVariables): MutationRef<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+  operationName: string;
+}
+export const updateOrganizationAppsRef: UpdateOrganizationAppsRef;
+
+export function updateOrganizationApps(vars: UpdateOrganizationAppsVariables): MutationPromise<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+export function updateOrganizationApps(dc: DataConnect, vars: UpdateOrganizationAppsVariables): MutationPromise<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
 
 interface UpsertPreRegistrationRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -2501,42 +2422,6 @@ export const removeUserFromTeamRef: RemoveUserFromTeamRef;
 
 export function removeUserFromTeam(vars: RemoveUserFromTeamVariables): MutationPromise<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
 export function removeUserFromTeam(dc: DataConnect, vars: RemoveUserFromTeamVariables): MutationPromise<RemoveUserFromTeamData, RemoveUserFromTeamVariables>;
-
-interface CreateApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateApplicationVariables): MutationRef<CreateApplicationData, CreateApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateApplicationVariables): MutationRef<CreateApplicationData, CreateApplicationVariables>;
-  operationName: string;
-}
-export const createApplicationRef: CreateApplicationRef;
-
-export function createApplication(vars: CreateApplicationVariables): MutationPromise<CreateApplicationData, CreateApplicationVariables>;
-export function createApplication(dc: DataConnect, vars: CreateApplicationVariables): MutationPromise<CreateApplicationData, CreateApplicationVariables>;
-
-interface UpdateApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateApplicationVariables): MutationRef<UpdateApplicationData, UpdateApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateApplicationVariables): MutationRef<UpdateApplicationData, UpdateApplicationVariables>;
-  operationName: string;
-}
-export const updateApplicationRef: UpdateApplicationRef;
-
-export function updateApplication(vars: UpdateApplicationVariables): MutationPromise<UpdateApplicationData, UpdateApplicationVariables>;
-export function updateApplication(dc: DataConnect, vars: UpdateApplicationVariables): MutationPromise<UpdateApplicationData, UpdateApplicationVariables>;
-
-interface DeleteApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteApplicationVariables): MutationRef<DeleteApplicationData, DeleteApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteApplicationVariables): MutationRef<DeleteApplicationData, DeleteApplicationVariables>;
-  operationName: string;
-}
-export const deleteApplicationRef: DeleteApplicationRef;
-
-export function deleteApplication(vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
-export function deleteApplication(dc: DataConnect, vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
 
 interface CreateComputeRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -3149,30 +3034,6 @@ export const checkVatNumberExistsRef: CheckVatNumberExistsRef;
 
 export function checkVatNumberExists(vars: CheckVatNumberExistsVariables, options?: ExecuteQueryOptions): QueryPromise<CheckVatNumberExistsData, CheckVatNumberExistsVariables>;
 export function checkVatNumberExists(dc: DataConnect, vars: CheckVatNumberExistsVariables, options?: ExecuteQueryOptions): QueryPromise<CheckVatNumberExistsData, CheckVatNumberExistsVariables>;
-
-interface GetApplicationRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApplicationVariables): QueryRef<GetApplicationData, GetApplicationVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetApplicationVariables): QueryRef<GetApplicationData, GetApplicationVariables>;
-  operationName: string;
-}
-export const getApplicationRef: GetApplicationRef;
-
-export function getApplication(vars: GetApplicationVariables, options?: ExecuteQueryOptions): QueryPromise<GetApplicationData, GetApplicationVariables>;
-export function getApplication(dc: DataConnect, vars: GetApplicationVariables, options?: ExecuteQueryOptions): QueryPromise<GetApplicationData, GetApplicationVariables>;
-
-interface ListAllApplicationsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApplicationsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllApplicationsData, undefined>;
-  operationName: string;
-}
-export const listAllApplicationsRef: ListAllApplicationsRef;
-
-export function listAllApplications(options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
-export function listAllApplications(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
 
 interface GetComputeRef {
   /* Allow users to create refs without passing in DataConnect */

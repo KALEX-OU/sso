@@ -5,6 +5,8 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import type { FirebaseApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User, Auth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+import type { FirebaseStorage } from "firebase/storage";
 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 import type { AppCheck } from "firebase/app-check";
@@ -25,14 +27,21 @@ const firebaseConfig = {
 // Inizializza l'istanza client-side Firebase (solo in ambiente browser/client)
 let app: FirebaseApp;
 let authInstance: Auth;
+let storageInstance: FirebaseStorage;
 let appCheckInstance: AppCheck | null = null;
 
 if (typeof window !== "undefined") {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   authInstance = getAuth(app);
+  // Disabilita la verifica reCAPTCHA per il login/enrollment MFA in locale (ambiente di sviluppo o localhost)
+  if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    authInstance.settings.appVerificationDisabledForTesting = true;
+  }
+  storageInstance = getStorage(app);
 }
 
 export const auth = typeof window !== "undefined" ? authInstance! : {} as Auth;
+export const storage = typeof window !== "undefined" ? storageInstance! : {} as FirebaseStorage;
 
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
 
@@ -193,15 +202,7 @@ export function useAuth() {
           // Forza il refresh del token per ottenere i Custom Claims aggiornati
           const tokenResult = await currentUser.getIdTokenResult(true);
           const customClaims = tokenResult.claims as CustomClaims;
-          setClaims({
-            orgId: customClaims.orgId,
-            role: customClaims.role,
-            confirmed: customClaims.confirmed,
-            loc: customClaims.loc,
-            thm: customClaims.thm,
-            seats: customClaims.seats || [],
-            perms: customClaims.perms || {}
-          });
+          setClaims(customClaims);
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : "Errore sconosciuto caricamento claims";
           console.error("[useKalexAuth] Errore caricamento claims:", errMsg);
@@ -288,10 +289,31 @@ export function useAuth() {
     window.location.href = `${ssoUrl}/auth?register=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}&state=${state}`;
   }, []);
 
-  const hasPermission = useCallback((resource: string, requiredLevel: number): boolean => {
-    if (claims?.role === "owner") return true; // L'owner scavalca FLS/RBAC
-    const userPerm = claims?.perms?.[resource];
-    return userPerm !== undefined && userPerm >= requiredLevel;
+  const hasPermission = useCallback((moduleId: string, actionOrLevel: "read" | "create" | "update" | "delete" | "list" | number): boolean => {
+    const userRole = claims?.uRole || claims?.role;
+    if (userRole === "owner") return true; // L'owner scavalca FLS/RBAC
+    const appConfig = claims?.rbac?.apps?.[APP_ID];
+    if (!appConfig) return false;
+
+    const mask = appConfig[moduleId];
+    if (typeof mask !== "number") return false;
+
+    let requiredMask = 0;
+    if (typeof actionOrLevel === "number") {
+      if (actionOrLevel === 1) requiredMask = 1; // Read
+      else if (actionOrLevel === 2) requiredMask = 2; // Create
+      else if (actionOrLevel === 3) requiredMask = 4; // Update
+      else if (actionOrLevel === 4) requiredMask = 8; // Delete
+      else requiredMask = actionOrLevel;
+    } else {
+      if (actionOrLevel === "read") requiredMask = 1;
+      else if (actionOrLevel === "create") requiredMask = 2;
+      else if (actionOrLevel === "update") requiredMask = 4;
+      else if (actionOrLevel === "delete") requiredMask = 8;
+      else if (actionOrLevel === "list") requiredMask = 16;
+    }
+
+    return (mask & requiredMask) === requiredMask;
   }, [claims]);
 
   return {
@@ -299,12 +321,10 @@ export function useAuth() {
     loading,
     claims,
     orgId: claims?.orgId,
-    role: claims?.role,
+    role: claims?.uRole,
     confirmed: claims?.confirmed,
     locale: claims?.loc,
     theme: claims?.thm,
-    seats: claims?.seats || [],
-    perms: claims?.perms || {},
     logout,
     loginRedirect,
     registerRedirect,
@@ -320,10 +340,8 @@ export function useClaims() {
     loading,
     isAuthenticated: !!user,
     orgId: claims?.orgId,
-    role: claims?.role,
+    role: claims?.uRole || claims?.role,
     confirmed: claims?.confirmed,
-    perms: claims?.perms || {},
-    seats: claims?.seats || [],
     hasPermission
   };
 }

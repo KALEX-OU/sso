@@ -155,14 +155,6 @@ export interface Thing {
   createdAt: string;
 }
 
-export interface Application {
-  appId: string;
-  name: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
 export interface Product {
   productId: string;
   orgId: string;
@@ -231,6 +223,7 @@ export interface Organization {
   addressDetails?: unknown;
   metadata?: unknown;
   createdAt: string;
+  apps?: unknown;
 }
 
 export interface Projects {

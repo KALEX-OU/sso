@@ -91,6 +91,13 @@ function updateOrganizationVies(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.updateOrganizationVies = updateOrganizationVies;
 
+function updateOrganizationApps(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateOrganizationApps', inputVars, inputOpts);
+}
+exports.updateOrganizationApps = updateOrganizationApps;
+
 function upsertPreRegistration(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -307,27 +314,6 @@ function removeUserFromTeam(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('RemoveUserFromTeam', inputVars, inputOpts);
 }
 exports.removeUserFromTeam = removeUserFromTeam;
-
-function createApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('CreateApplication', inputVars, inputOpts);
-}
-exports.createApplication = createApplication;
-
-function updateApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpdateApplication', inputVars, inputOpts);
-}
-exports.updateApplication = updateApplication;
-
-function deleteApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('DeleteApplication', inputVars, inputOpts);
-}
-exports.deleteApplication = deleteApplication;
 
 function createCompute(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
@@ -685,20 +671,6 @@ function checkVatNumberExists(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('CheckVatNumberExists', inputVars, inputOpts);
 }
 exports.checkVatNumberExists = checkVatNumberExists;
-
-function getApplication(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetApplication', inputVars, inputOpts);
-}
-exports.getApplication = getApplication;
-
-function listAllApplications(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllApplications', undefined, inputOpts);
-}
-exports.listAllApplications = listAllApplications;
 
 function getCompute(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);

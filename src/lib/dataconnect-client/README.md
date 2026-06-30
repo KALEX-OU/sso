@@ -47,8 +47,6 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListTeamMembers*](#listteammembers)
   - [*ListAuditLogsByOrg*](#listauditlogsbyorg)
   - [*CheckVatNumberExists*](#checkvatnumberexists)
-  - [*GetApplication*](#getapplication)
-  - [*ListAllApplications*](#listallapplications)
   - [*GetCompute*](#getcompute)
   - [*ListComputesByOrg*](#listcomputesbyorg)
   - [*GetProductConsume*](#getproductconsume)
@@ -74,6 +72,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpdateUserProfile*](#updateuserprofile)
   - [*UpdateOrganizationBilling*](#updateorganizationbilling)
   - [*UpdateOrganizationVies*](#updateorganizationvies)
+  - [*UpdateOrganizationApps*](#updateorganizationapps)
   - [*UpsertPreRegistration*](#upsertpreregistration)
   - [*DeletePreRegistration*](#deletepreregistration)
   - [*ConfirmOrganization*](#confirmorganization)
@@ -105,9 +104,6 @@ This README will guide you through the process of using the generated JavaScript
   - [*DeleteTeam*](#deleteteam)
   - [*AddUserToTeam*](#addusertoteam)
   - [*RemoveUserFromTeam*](#removeuserfromteam)
-  - [*CreateApplication*](#createapplication)
-  - [*UpdateApplication*](#updateapplication)
-  - [*DeleteApplication*](#deleteapplication)
   - [*CreateCompute*](#createcompute)
   - [*UpdateCompute*](#updatecompute)
   - [*DeleteCompute*](#deletecompute)
@@ -255,6 +251,7 @@ export interface GetUserClaimsContextData {
         altitude?: number | null;
         addressDetails?: unknown | null;
         metadata?: unknown | null;
+        apps?: unknown | null;
         createdAt: TimestampString;
         subscriptions_on_buyer: ({
           subscriptionId: string;
@@ -1253,10 +1250,6 @@ export interface GetSubscriptionData {
       orgId: string;
       name: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     status: string;
     items: unknown;
     cancelAtPeriodEnd?: boolean | null;
@@ -1482,9 +1475,7 @@ export interface GetApiKeyData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     ipWhitelist: unknown;
@@ -1724,9 +1715,7 @@ export interface GetThingData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -1848,9 +1837,7 @@ export interface GetThingByTokenHashData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -1969,9 +1956,7 @@ The `data` property is an object of type `ListThingsByOrgData`, which is defined
 export interface ListThingsByOrgData {
   things: ({
     thingId: string;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     type: string;
     status: string;
@@ -2095,9 +2080,11 @@ export interface ListApiKeysByOrgData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    user?: {
+      userId: string;
+      email: string;
+    } & Users_Key;
+    appId: string;
     name: string;
     description?: string | null;
     isActive: boolean;
@@ -2722,9 +2709,7 @@ export interface ListAllProductsData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -2887,9 +2872,7 @@ export interface ListAllProductsGlobalData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -3262,10 +3245,6 @@ export interface ListAllInvoicesData {
     amount: number;
     status: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
   } & Invoices_Key)[];
 }
 ```
@@ -3576,10 +3555,6 @@ export interface ListInvoicesByOrgData {
     metadata?: unknown | null;
     createdAt: TimestampString;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -3712,10 +3687,6 @@ export interface ListInvoicesBySellerData {
     metadata?: unknown | null;
     createdAt: TimestampString;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -3836,10 +3807,6 @@ export interface ListPaymentsByOrgData {
   payments: ({
     paymentId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
     } & Organizations_Key;
@@ -3976,10 +3943,6 @@ export interface ListPaymentsBySellerData {
   payments: ({
     paymentId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
     } & Organizations_Key;
@@ -4116,10 +4079,6 @@ export interface GetInvoiceDetailsData {
   invoice?: {
     invoiceId: string;
     appId: string;
-    app: {
-      appId: string;
-      name: string;
-    } & Applications_Key;
     buyer: {
       orgId: string;
       name: string;
@@ -4370,9 +4329,7 @@ The `data` property is an object of type `ListTeamsByOrgData`, which is defined 
 export interface ListTeamsByOrgData {
   teams: ({
     teamId: string;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     rbac?: unknown | null;
@@ -4787,218 +4744,6 @@ console.log(data.organizations);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.organizations);
-});
-```
-
-## GetApplication
-You can execute the `GetApplication` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
-```typescript
-getApplication(vars: GetApplicationVariables, options?: ExecuteQueryOptions): QueryPromise<GetApplicationData, GetApplicationVariables>;
-
-interface GetApplicationRef {
-  ...
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetApplicationVariables): QueryRef<GetApplicationData, GetApplicationVariables>;
-}
-export const getApplicationRef: GetApplicationRef;
-```
-You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
-```typescript
-getApplication(dc: DataConnect, vars: GetApplicationVariables, options?: ExecuteQueryOptions): QueryPromise<GetApplicationData, GetApplicationVariables>;
-
-interface GetApplicationRef {
-  ...
-  (dc: DataConnect, vars: GetApplicationVariables): QueryRef<GetApplicationData, GetApplicationVariables>;
-}
-export const getApplicationRef: GetApplicationRef;
-```
-
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getApplicationRef:
-```typescript
-const name = getApplicationRef.operationName;
-console.log(name);
-```
-
-### Variables
-The `GetApplication` query requires an argument of type `GetApplicationVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-
-```typescript
-export interface GetApplicationVariables {
-  appId: string;
-}
-```
-### Return Type
-Recall that executing the `GetApplication` query returns a `QueryPromise` that resolves to an object with a `data` property.
-
-The `data` property is an object of type `GetApplicationData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-```typescript
-export interface GetApplicationData {
-  application?: {
-    appId: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: TimestampString;
-  } & Applications_Key;
-}
-```
-### Using `GetApplication`'s action shortcut function
-
-```typescript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, getApplication, GetApplicationVariables } from '@kalex/dataconnect';
-
-// The `GetApplication` query requires an argument of type `GetApplicationVariables`:
-const getApplicationVars: GetApplicationVariables = {
-  appId: ..., 
-};
-
-// Call the `getApplication()` function to execute the query.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await getApplication(getApplicationVars);
-// Variables can be defined inline as well.
-const { data } = await getApplication({ appId: ..., });
-
-// You can also pass in a `DataConnect` instance to the action shortcut function.
-const dataConnect = getDataConnect(connectorConfig);
-const { data } = await getApplication(dataConnect, getApplicationVars);
-
-console.log(data.application);
-
-// Or, you can use the `Promise` API.
-getApplication(getApplicationVars).then((response) => {
-  const data = response.data;
-  console.log(data.application);
-});
-```
-
-### Using `GetApplication`'s `QueryRef` function
-
-```typescript
-import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, getApplicationRef, GetApplicationVariables } from '@kalex/dataconnect';
-
-// The `GetApplication` query requires an argument of type `GetApplicationVariables`:
-const getApplicationVars: GetApplicationVariables = {
-  appId: ..., 
-};
-
-// Call the `getApplicationRef()` function to get a reference to the query.
-const ref = getApplicationRef(getApplicationVars);
-// Variables can be defined inline as well.
-const ref = getApplicationRef({ appId: ..., });
-
-// You can also pass in a `DataConnect` instance to the `QueryRef` function.
-const dataConnect = getDataConnect(connectorConfig);
-const ref = getApplicationRef(dataConnect, getApplicationVars);
-
-// Call `executeQuery()` on the reference to execute the query.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await executeQuery(ref);
-
-console.log(data.application);
-
-// Or, you can use the `Promise` API.
-executeQuery(ref).then((response) => {
-  const data = response.data;
-  console.log(data.application);
-});
-```
-
-## ListAllApplications
-You can execute the `ListAllApplications` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
-```typescript
-listAllApplications(options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
-
-interface ListAllApplicationsRef {
-  ...
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllApplicationsData, undefined>;
-}
-export const listAllApplicationsRef: ListAllApplicationsRef;
-```
-You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
-```typescript
-listAllApplications(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllApplicationsData, undefined>;
-
-interface ListAllApplicationsRef {
-  ...
-  (dc: DataConnect): QueryRef<ListAllApplicationsData, undefined>;
-}
-export const listAllApplicationsRef: ListAllApplicationsRef;
-```
-
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listAllApplicationsRef:
-```typescript
-const name = listAllApplicationsRef.operationName;
-console.log(name);
-```
-
-### Variables
-The `ListAllApplications` query has no variables.
-### Return Type
-Recall that executing the `ListAllApplications` query returns a `QueryPromise` that resolves to an object with a `data` property.
-
-The `data` property is an object of type `ListAllApplicationsData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-```typescript
-export interface ListAllApplicationsData {
-  applications: ({
-    appId: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: TimestampString;
-  } & Applications_Key)[];
-}
-```
-### Using `ListAllApplications`'s action shortcut function
-
-```typescript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, listAllApplications } from '@kalex/dataconnect';
-
-
-// Call the `listAllApplications()` function to execute the query.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await listAllApplications();
-
-// You can also pass in a `DataConnect` instance to the action shortcut function.
-const dataConnect = getDataConnect(connectorConfig);
-const { data } = await listAllApplications(dataConnect);
-
-console.log(data.applications);
-
-// Or, you can use the `Promise` API.
-listAllApplications().then((response) => {
-  const data = response.data;
-  console.log(data.applications);
-});
-```
-
-### Using `ListAllApplications`'s `QueryRef` function
-
-```typescript
-import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, listAllApplicationsRef } from '@kalex/dataconnect';
-
-
-// Call the `listAllApplicationsRef()` function to get a reference to the query.
-const ref = listAllApplicationsRef();
-
-// You can also pass in a `DataConnect` instance to the `QueryRef` function.
-const dataConnect = getDataConnect(connectorConfig);
-const ref = listAllApplicationsRef(dataConnect);
-
-// Call `executeQuery()` on the reference to execute the query.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await executeQuery(ref);
-
-console.log(data.applications);
-
-// Or, you can use the `Promise` API.
-executeQuery(ref).then((response) => {
-  const data = response.data;
-  console.log(data.applications);
 });
 ```
 
@@ -6332,9 +6077,7 @@ export interface GetProductDetailsData {
     organization: {
       orgId: string;
     } & Organizations_Key;
-    app: {
-      appId: string;
-    } & Applications_Key;
+    appId: string;
     name: string;
     description?: string | null;
     mode: string;
@@ -7949,6 +7692,118 @@ const ref = updateOrganizationViesRef({ orgId: ..., viesValidated: ..., });
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = updateOrganizationViesRef(dataConnect, updateOrganizationViesVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.organization_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organization_update);
+});
+```
+
+## UpdateOrganizationApps
+You can execute the `UpdateOrganizationApps` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+updateOrganizationApps(vars: UpdateOrganizationAppsVariables): MutationPromise<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+
+interface UpdateOrganizationAppsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationAppsVariables): MutationRef<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+}
+export const updateOrganizationAppsRef: UpdateOrganizationAppsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateOrganizationApps(dc: DataConnect, vars: UpdateOrganizationAppsVariables): MutationPromise<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+
+interface UpdateOrganizationAppsRef {
+  ...
+  (dc: DataConnect, vars: UpdateOrganizationAppsVariables): MutationRef<UpdateOrganizationAppsData, UpdateOrganizationAppsVariables>;
+}
+export const updateOrganizationAppsRef: UpdateOrganizationAppsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateOrganizationAppsRef:
+```typescript
+const name = updateOrganizationAppsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateOrganizationApps` mutation requires an argument of type `UpdateOrganizationAppsVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateOrganizationAppsVariables {
+  orgId: string;
+  apps?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `UpdateOrganizationApps` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateOrganizationAppsData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateOrganizationAppsData {
+  organization_update?: Organizations_Key | null;
+}
+```
+### Using `UpdateOrganizationApps`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateOrganizationApps, UpdateOrganizationAppsVariables } from '@kalex/dataconnect';
+
+// The `UpdateOrganizationApps` mutation requires an argument of type `UpdateOrganizationAppsVariables`:
+const updateOrganizationAppsVars: UpdateOrganizationAppsVariables = {
+  orgId: ..., 
+  apps: ..., // optional
+};
+
+// Call the `updateOrganizationApps()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateOrganizationApps(updateOrganizationAppsVars);
+// Variables can be defined inline as well.
+const { data } = await updateOrganizationApps({ orgId: ..., apps: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateOrganizationApps(dataConnect, updateOrganizationAppsVars);
+
+console.log(data.organization_update);
+
+// Or, you can use the `Promise` API.
+updateOrganizationApps(updateOrganizationAppsVars).then((response) => {
+  const data = response.data;
+  console.log(data.organization_update);
+});
+```
+
+### Using `UpdateOrganizationApps`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateOrganizationAppsRef, UpdateOrganizationAppsVariables } from '@kalex/dataconnect';
+
+// The `UpdateOrganizationApps` mutation requires an argument of type `UpdateOrganizationAppsVariables`:
+const updateOrganizationAppsVars: UpdateOrganizationAppsVariables = {
+  orgId: ..., 
+  apps: ..., // optional
+};
+
+// Call the `updateOrganizationAppsRef()` function to get a reference to the mutation.
+const ref = updateOrganizationAppsRef(updateOrganizationAppsVars);
+// Variables can be defined inline as well.
+const ref = updateOrganizationAppsRef({ orgId: ..., apps: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateOrganizationAppsRef(dataConnect, updateOrganizationAppsVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -11729,351 +11584,6 @@ console.log(data.teamMember_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.teamMember_delete);
-});
-```
-
-## CreateApplication
-You can execute the `CreateApplication` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
-```typescript
-createApplication(vars: CreateApplicationVariables): MutationPromise<CreateApplicationData, CreateApplicationVariables>;
-
-interface CreateApplicationRef {
-  ...
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateApplicationVariables): MutationRef<CreateApplicationData, CreateApplicationVariables>;
-}
-export const createApplicationRef: CreateApplicationRef;
-```
-You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
-```typescript
-createApplication(dc: DataConnect, vars: CreateApplicationVariables): MutationPromise<CreateApplicationData, CreateApplicationVariables>;
-
-interface CreateApplicationRef {
-  ...
-  (dc: DataConnect, vars: CreateApplicationVariables): MutationRef<CreateApplicationData, CreateApplicationVariables>;
-}
-export const createApplicationRef: CreateApplicationRef;
-```
-
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createApplicationRef:
-```typescript
-const name = createApplicationRef.operationName;
-console.log(name);
-```
-
-### Variables
-The `CreateApplication` mutation requires an argument of type `CreateApplicationVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-
-```typescript
-export interface CreateApplicationVariables {
-  appId: string;
-  name: string;
-  description?: string | null;
-  isActive?: boolean | null;
-}
-```
-### Return Type
-Recall that executing the `CreateApplication` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
-
-The `data` property is an object of type `CreateApplicationData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-```typescript
-export interface CreateApplicationData {
-  application_insert: Applications_Key;
-}
-```
-### Using `CreateApplication`'s action shortcut function
-
-```typescript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, createApplication, CreateApplicationVariables } from '@kalex/dataconnect';
-
-// The `CreateApplication` mutation requires an argument of type `CreateApplicationVariables`:
-const createApplicationVars: CreateApplicationVariables = {
-  appId: ..., 
-  name: ..., 
-  description: ..., // optional
-  isActive: ..., // optional
-};
-
-// Call the `createApplication()` function to execute the mutation.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await createApplication(createApplicationVars);
-// Variables can be defined inline as well.
-const { data } = await createApplication({ appId: ..., name: ..., description: ..., isActive: ..., });
-
-// You can also pass in a `DataConnect` instance to the action shortcut function.
-const dataConnect = getDataConnect(connectorConfig);
-const { data } = await createApplication(dataConnect, createApplicationVars);
-
-console.log(data.application_insert);
-
-// Or, you can use the `Promise` API.
-createApplication(createApplicationVars).then((response) => {
-  const data = response.data;
-  console.log(data.application_insert);
-});
-```
-
-### Using `CreateApplication`'s `MutationRef` function
-
-```typescript
-import { getDataConnect, executeMutation } from 'firebase/data-connect';
-import { connectorConfig, createApplicationRef, CreateApplicationVariables } from '@kalex/dataconnect';
-
-// The `CreateApplication` mutation requires an argument of type `CreateApplicationVariables`:
-const createApplicationVars: CreateApplicationVariables = {
-  appId: ..., 
-  name: ..., 
-  description: ..., // optional
-  isActive: ..., // optional
-};
-
-// Call the `createApplicationRef()` function to get a reference to the mutation.
-const ref = createApplicationRef(createApplicationVars);
-// Variables can be defined inline as well.
-const ref = createApplicationRef({ appId: ..., name: ..., description: ..., isActive: ..., });
-
-// You can also pass in a `DataConnect` instance to the `MutationRef` function.
-const dataConnect = getDataConnect(connectorConfig);
-const ref = createApplicationRef(dataConnect, createApplicationVars);
-
-// Call `executeMutation()` on the reference to execute the mutation.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await executeMutation(ref);
-
-console.log(data.application_insert);
-
-// Or, you can use the `Promise` API.
-executeMutation(ref).then((response) => {
-  const data = response.data;
-  console.log(data.application_insert);
-});
-```
-
-## UpdateApplication
-You can execute the `UpdateApplication` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
-```typescript
-updateApplication(vars: UpdateApplicationVariables): MutationPromise<UpdateApplicationData, UpdateApplicationVariables>;
-
-interface UpdateApplicationRef {
-  ...
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateApplicationVariables): MutationRef<UpdateApplicationData, UpdateApplicationVariables>;
-}
-export const updateApplicationRef: UpdateApplicationRef;
-```
-You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
-```typescript
-updateApplication(dc: DataConnect, vars: UpdateApplicationVariables): MutationPromise<UpdateApplicationData, UpdateApplicationVariables>;
-
-interface UpdateApplicationRef {
-  ...
-  (dc: DataConnect, vars: UpdateApplicationVariables): MutationRef<UpdateApplicationData, UpdateApplicationVariables>;
-}
-export const updateApplicationRef: UpdateApplicationRef;
-```
-
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateApplicationRef:
-```typescript
-const name = updateApplicationRef.operationName;
-console.log(name);
-```
-
-### Variables
-The `UpdateApplication` mutation requires an argument of type `UpdateApplicationVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-
-```typescript
-export interface UpdateApplicationVariables {
-  appId: string;
-  name?: string | null;
-  description?: string | null;
-  isActive?: boolean | null;
-}
-```
-### Return Type
-Recall that executing the `UpdateApplication` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
-
-The `data` property is an object of type `UpdateApplicationData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-```typescript
-export interface UpdateApplicationData {
-  application_update?: Applications_Key | null;
-}
-```
-### Using `UpdateApplication`'s action shortcut function
-
-```typescript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, updateApplication, UpdateApplicationVariables } from '@kalex/dataconnect';
-
-// The `UpdateApplication` mutation requires an argument of type `UpdateApplicationVariables`:
-const updateApplicationVars: UpdateApplicationVariables = {
-  appId: ..., 
-  name: ..., // optional
-  description: ..., // optional
-  isActive: ..., // optional
-};
-
-// Call the `updateApplication()` function to execute the mutation.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await updateApplication(updateApplicationVars);
-// Variables can be defined inline as well.
-const { data } = await updateApplication({ appId: ..., name: ..., description: ..., isActive: ..., });
-
-// You can also pass in a `DataConnect` instance to the action shortcut function.
-const dataConnect = getDataConnect(connectorConfig);
-const { data } = await updateApplication(dataConnect, updateApplicationVars);
-
-console.log(data.application_update);
-
-// Or, you can use the `Promise` API.
-updateApplication(updateApplicationVars).then((response) => {
-  const data = response.data;
-  console.log(data.application_update);
-});
-```
-
-### Using `UpdateApplication`'s `MutationRef` function
-
-```typescript
-import { getDataConnect, executeMutation } from 'firebase/data-connect';
-import { connectorConfig, updateApplicationRef, UpdateApplicationVariables } from '@kalex/dataconnect';
-
-// The `UpdateApplication` mutation requires an argument of type `UpdateApplicationVariables`:
-const updateApplicationVars: UpdateApplicationVariables = {
-  appId: ..., 
-  name: ..., // optional
-  description: ..., // optional
-  isActive: ..., // optional
-};
-
-// Call the `updateApplicationRef()` function to get a reference to the mutation.
-const ref = updateApplicationRef(updateApplicationVars);
-// Variables can be defined inline as well.
-const ref = updateApplicationRef({ appId: ..., name: ..., description: ..., isActive: ..., });
-
-// You can also pass in a `DataConnect` instance to the `MutationRef` function.
-const dataConnect = getDataConnect(connectorConfig);
-const ref = updateApplicationRef(dataConnect, updateApplicationVars);
-
-// Call `executeMutation()` on the reference to execute the mutation.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await executeMutation(ref);
-
-console.log(data.application_update);
-
-// Or, you can use the `Promise` API.
-executeMutation(ref).then((response) => {
-  const data = response.data;
-  console.log(data.application_update);
-});
-```
-
-## DeleteApplication
-You can execute the `DeleteApplication` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
-```typescript
-deleteApplication(vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
-
-interface DeleteApplicationRef {
-  ...
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteApplicationVariables): MutationRef<DeleteApplicationData, DeleteApplicationVariables>;
-}
-export const deleteApplicationRef: DeleteApplicationRef;
-```
-You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
-```typescript
-deleteApplication(dc: DataConnect, vars: DeleteApplicationVariables): MutationPromise<DeleteApplicationData, DeleteApplicationVariables>;
-
-interface DeleteApplicationRef {
-  ...
-  (dc: DataConnect, vars: DeleteApplicationVariables): MutationRef<DeleteApplicationData, DeleteApplicationVariables>;
-}
-export const deleteApplicationRef: DeleteApplicationRef;
-```
-
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteApplicationRef:
-```typescript
-const name = deleteApplicationRef.operationName;
-console.log(name);
-```
-
-### Variables
-The `DeleteApplication` mutation requires an argument of type `DeleteApplicationVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-
-```typescript
-export interface DeleteApplicationVariables {
-  appId: string;
-}
-```
-### Return Type
-Recall that executing the `DeleteApplication` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
-
-The `data` property is an object of type `DeleteApplicationData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
-```typescript
-export interface DeleteApplicationData {
-  application_delete?: Applications_Key | null;
-}
-```
-### Using `DeleteApplication`'s action shortcut function
-
-```typescript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, deleteApplication, DeleteApplicationVariables } from '@kalex/dataconnect';
-
-// The `DeleteApplication` mutation requires an argument of type `DeleteApplicationVariables`:
-const deleteApplicationVars: DeleteApplicationVariables = {
-  appId: ..., 
-};
-
-// Call the `deleteApplication()` function to execute the mutation.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await deleteApplication(deleteApplicationVars);
-// Variables can be defined inline as well.
-const { data } = await deleteApplication({ appId: ..., });
-
-// You can also pass in a `DataConnect` instance to the action shortcut function.
-const dataConnect = getDataConnect(connectorConfig);
-const { data } = await deleteApplication(dataConnect, deleteApplicationVars);
-
-console.log(data.application_delete);
-
-// Or, you can use the `Promise` API.
-deleteApplication(deleteApplicationVars).then((response) => {
-  const data = response.data;
-  console.log(data.application_delete);
-});
-```
-
-### Using `DeleteApplication`'s `MutationRef` function
-
-```typescript
-import { getDataConnect, executeMutation } from 'firebase/data-connect';
-import { connectorConfig, deleteApplicationRef, DeleteApplicationVariables } from '@kalex/dataconnect';
-
-// The `DeleteApplication` mutation requires an argument of type `DeleteApplicationVariables`:
-const deleteApplicationVars: DeleteApplicationVariables = {
-  appId: ..., 
-};
-
-// Call the `deleteApplicationRef()` function to get a reference to the mutation.
-const ref = deleteApplicationRef(deleteApplicationVars);
-// Variables can be defined inline as well.
-const ref = deleteApplicationRef({ appId: ..., });
-
-// You can also pass in a `DataConnect` instance to the `MutationRef` function.
-const dataConnect = getDataConnect(connectorConfig);
-const ref = deleteApplicationRef(dataConnect, deleteApplicationVars);
-
-// Call `executeMutation()` on the reference to execute the mutation.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await executeMutation(ref);
-
-console.log(data.application_delete);
-
-// Or, you can use the `Promise` API.
-executeMutation(ref).then((response) => {
-  const data = response.data;
-  console.log(data.application_delete);
 });
 ```
 

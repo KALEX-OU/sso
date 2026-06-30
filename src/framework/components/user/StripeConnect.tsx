@@ -29,7 +29,7 @@ export function StripeConnect() {
   const [error, setError] = useState<string | null>(null);
 
   const orgId = claims?.orgId;
-  const role = claims?.role;
+  const role = claims?.uRole;
   const isOwner = role === "owner";
 
   useEffect(() => {

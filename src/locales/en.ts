@@ -418,4 +418,8 @@ export default {
   // Chiavi risorse autogenerate
   "fields.userId.label": "User Id",
   "fields.userId.placeholder": "Enter user id...",
+
+  // Chiavi risorse autogenerate
+  "fields.apps.label": "Apps",
+  "fields.apps.placeholder": "Enter apps...",
 } as const;

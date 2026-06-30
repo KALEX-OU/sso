@@ -1,15 +1,32 @@
 import type { User as FirebaseUser } from "firebase/auth";
 
 export interface CustomClaims {
+  uId?: string;
+  uName?: string;
+  uEmail?: string;
+  uAvatar?: string;
   orgId?: string;
+  orgName?: string;
+  uRole?: string;
   role?: string;
+  orgRoles?: Record<string, "buyer" | "seller" | "both">;
   confirmed?: boolean;
   loc?: string;
   thm?: string;
+  lat?: number | null;
+  lng?: number | null;
+  alt?: number | null;
   country?: string;
-  seats?: string[];
-  services?: Record<string, { status: string; tier: string | null }>;
-  perms?: Record<string, number>;
+  rbac?: {
+    apps: {
+      [appId: string]: {
+        mode: "buyer" | "seller" | "both";
+        expire: number;
+        onboarded: boolean;
+        [moduleName: string]: number | string | boolean;
+      };
+    };
+  };
   [key: string]: unknown;
 }
 

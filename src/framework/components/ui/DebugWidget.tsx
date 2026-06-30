@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth, forceCleanSession } from "../../lib/auth";
-import { Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalBody, ModalFooter, ModalHeading } from "./Modal";
+import { Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeading, ModalHeader, ModalBody, ModalFooter } from "./Modal";
 import { Tabs, Tab, TabList } from "./Tabs";
 import { Button } from "./Button";
 import { Bug, Copy, Check, LogOut, RefreshCw } from "lucide-react";
@@ -13,15 +13,19 @@ export function DebugWidget() {
   const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, claims } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
-  // Visualizza solo in modalità di sviluppo locale
-  const [isDev] = useState(() => {
-    if (typeof window !== "undefined") {
-      const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      return process.env.NODE_ENV === "development" || isLocalhost;
-    }
-    return false;
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!mounted) return null;
+
+  const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const isDev = process.env.NODE_ENV === "development" || isLocalhost;
 
   if (!isDev) return null;
 

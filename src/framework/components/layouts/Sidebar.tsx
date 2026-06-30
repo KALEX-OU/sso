@@ -72,22 +72,16 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   const [supportOpen, setSupportOpen] = React.useState(false);
   const [aiOpen, setAiOpen] = React.useState(false);
 
-  const userRole = (claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
+  const userRole = (claims?.uRole || claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
   const displayName = user?.displayName || user?.email?.split("@")[0] || "Utente";
-  const roleName = claims?.role ? claims.role.toUpperCase() : "VIEWER";
+  const roleName = (claims?.uRole || claims?.role) ? String(claims?.uRole || claims?.role).toUpperCase() : "VIEWER";
   
   // Recupera l'elenco moduli per l'appId corrente
   const registry = RESOURCE_REGISTRY as unknown as Record<string, RegistryApp>;
   const appConfig = registry[appId];
   
-  interface ExtendedClaims {
-    orgRoles?: Record<string, "buyer" | "seller" | "both">;
-    role?: string;
-  }
-  
-  // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims (se configurato)
-  const extendedClaims = claims as ExtendedClaims | undefined;
-  const orgRole = (extendedClaims?.orgRoles?.[appId] || "buyer") as "buyer" | "seller" | "both";
+  // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims rbac.apps
+  const orgRole = (claims?.rbac?.apps?.[appId]?.mode || "buyer") as "buyer" | "seller" | "both";
 
   // Estrae la lista dei moduli visibili sulla base del ruolo utente e ruolo organizzazione (SSOT)
   const visibleModules = getVisibleModulesForSidebar(appId as AppIds, userRole, orgRole);
@@ -304,7 +298,9 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         {/* Profilo utente */}
         <div className="klx-sidebar-profile-card">
           <Avatar className="klx-sidebar-profile-avatar">
-            {user?.photoURL && <Avatar.Image src={user.photoURL} alt={displayName} />}
+            {(claims?.uAvatar || user?.photoURL) && (
+              <Avatar.Image src={(claims?.uAvatar as string) || user?.photoURL || undefined} alt={displayName} />
+            )}
             <Avatar.Fallback className="text-white">{displayName.substring(0, 2).toUpperCase()}</Avatar.Fallback>
           </Avatar>
 

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, AlertCircle } from "lucide-react";
+import { Save, AlertCircle, Copy, Check } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { TextField } from "../ui/TextField";
@@ -13,30 +13,11 @@ import { Textarea } from "../ui/TextArea";
 import { Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui/Select";
 import { Checkbox } from "../ui/Checkbox";
 import { useClaims } from "../../lib/auth";
-import { MODULE_REGISTRY, getModulePolicyForContext } from "../../lib/resources.config";
+import { MODULE_REGISTRY, getModulePolicyForContext, FieldConfig, ModuleInfo } from "../../lib/resources.config";
 
 interface OptionItem {
   value: string;
   label: string;
-}
-
-interface FieldConfig {
-  type: string;
-  encrypted?: boolean;
-  render?: boolean;
-  order?: number;
-  label?: string;
-  placeholder?: string;
-  options?: readonly string[] | string[];
-  validation?: {
-    required?: boolean;
-    min?: number;
-    max?: number;
-    email?: boolean;
-    enum?: readonly string[];
-    format?: string;
-    default?: unknown;
-  };
 }
 
 // Dizionario di Traduzione e Localizzazione
@@ -272,7 +253,7 @@ function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: 
 
     if (field.type === "Boolean") {
       fieldSchema = z.boolean();
-    } else if (field.type === "Float" || field.type === "Int") {
+    } else if (field.type === "Float") {
       fieldSchema = z.number({ message: "Deve essere un numero" });
     } else if (field.type === "Timestamp") {
       fieldSchema = z.string().or(z.date());
@@ -329,6 +310,48 @@ function generateIdempotencyKey(): string {
   return typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : "idem_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
+interface DisabledFieldWrapperProps {
+  label: string;
+  value: string;
+}
+
+function DisabledFieldWrapper({ label, value }: DisabledFieldWrapperProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    void navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5 w-full">
+      <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
+        {label}
+      </Label>
+      <div className="bg-slate-100/30 dark:bg-slate-950/20 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] text-sm text-slate-800 dark:text-slate-200 select-none">
+        <span className="font-semibold truncate">{value || "-"}</span>
+        <div className="flex items-center gap-2">
+          {value && (
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="text-slate-400 hover:text-slate-200 p-1 hover:bg-white/5 rounded-lg active:scale-95 transition-all cursor-pointer border-none bg-transparent outline-none flex items-center justify-center"
+              title="Copia negli appunti"
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 interface FormProps {
@@ -424,32 +447,35 @@ export function Form({
     return true;
   };
 
-  // Ordina i campi autorizzati
+  // Filtra ed ordina i campi in base alle regole configurate
   const orderedFields = useMemo(() => {
     const visible = allowedFields.filter(isFieldVisible);
-    const sorted = [...visible];
-    const moduleConfig = MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY];
+    const moduleConfig = (MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY] as unknown) as ModuleInfo | undefined;
     
-    sorted.sort((a, b) => {
-      // 1. Priorità a fieldsOrder passato come prop
-      if (fieldsOrder && fieldsOrder.length > 0) {
-        const indexA = fieldsOrder.indexOf(a);
-        const indexB = fieldsOrder.indexOf(b);
-        if (indexA !== -1 || indexB !== -1) {
-          if (indexA === -1) return 1;
-          if (indexB === -1) return -1;
-          return indexA - indexB;
-        }
-      }
-      
-      // 2. Fallback all'ordinamento statico configurato sul registro risorse (order)
-      const fieldA = moduleConfig?.fields?.[a as keyof typeof moduleConfig.fields] as FieldConfig | undefined;
-      const fieldB = moduleConfig?.fields?.[b as keyof typeof moduleConfig.fields] as FieldConfig | undefined;
+    // 1. Se nel registro risorse sono specificati formFields, usiamo solo quelli (filtrati per autorizzazioni)
+    const configFormFields = moduleConfig?.formFields;
+    if (configFormFields && configFormFields.length > 0) {
+      return configFormFields.filter(fieldKey => visible.includes(fieldKey));
+    }
+    
+    // 2. Se non ci sono formFields ma viene passato fieldsOrder come prop, lo usiamo sia come filtro che come ordinamento
+    if (fieldsOrder && fieldsOrder.length > 0) {
+      return fieldsOrder.filter(fieldKey => visible.includes(fieldKey));
+    }
+    
+    // 3. Altrimenti (fallback), filtriamo i campi con render !== false e li ordiniamo per order
+    const filtered = visible.filter(fieldKey => {
+      const fieldConfig = moduleConfig?.fields?.[fieldKey];
+      return fieldConfig?.render !== false;
+    });
+    
+    return [...filtered].sort((a, b) => {
+      const fieldA = moduleConfig?.fields?.[a];
+      const fieldB = moduleConfig?.fields?.[b];
       const orderA = fieldA?.order ?? 999;
       const orderB = fieldB?.order ?? 999;
       return orderA - orderB;
     });
-    return sorted;
   }, [allowedFields, fieldsOrder, watchedValues, moduleId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (authLoading) {
@@ -526,32 +552,61 @@ export function Form({
             if (transPlaceholder !== keyPlaceholder) resolvedPlaceholder = transPlaceholder;
           }
 
-          if (field.type === "Boolean") {
+          const colSpanClass = field.colSpan === 2 ? "col-span-1 md:col-span-2" : "col-span-1";
+
+          // Rendering Premium per i campi disabilitati (eccetto Booleani)
+          if (disabledFields.includes(fieldKey) && field.type !== "Boolean") {
+            const staticValue = initialData && fieldKey in initialData && initialData[fieldKey] !== null && initialData[fieldKey] !== undefined
+              ? String(initialData[fieldKey])
+              : "-";
             return (
-              <div key={fieldKey} className="flex items-center gap-2 col-span-1 sm:col-span-2 pt-2">
-                <Controller
-                  name={fieldKey}
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Checkbox
-                      isSelected={!!value}
-                      onChange={onChange}
-                      isDisabled={disabledFields.includes(fieldKey) || isSubmitting || isPending}
-                    >
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <span className="text-xs font-semibold text-slate-700 dark:text-gray-300">
-                        {resolvedLabel}
-                      </span>
-                    </Checkbox>
-                  )}
+              <div key={fieldKey} className={colSpanClass}>
+                <DisabledFieldWrapper
+                  label={resolvedLabel}
+                  value={staticValue}
                 />
               </div>
             );
           }
 
-          if (field.validation?.enum || tLocal[fieldKey]?.options) {
+          let inputContent = null;
+
+          if (field.hidden) {
+            inputContent = (
+              <Controller
+                name={fieldKey}
+                control={control}
+                render={({ field: { value } }) => (
+                  <input
+                    type="hidden"
+                    value={value === undefined || value === null ? "" : String(value)}
+                  />
+                )}
+              />
+            );
+          } else if (field.type === "Boolean") {
+            inputContent = (
+              <Controller
+                name={fieldKey}
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox
+                    isSelected={!!value}
+                    onChange={onChange}
+                    isDisabled={isSubmitting || isPending}
+                    className="pt-2"
+                  >
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-gray-300">
+                      {resolvedLabel}
+                    </span>
+                  </Checkbox>
+                )}
+              />
+            );
+          } else if (field.validation?.enum || tLocal[fieldKey]?.options) {
             let resolvedOptions: OptionItem[] = [];
             if (t) {
               const enumValues = (field.validation?.enum || []) as string[];
@@ -568,9 +623,8 @@ export function Form({
               resolvedOptions = (tLocal[fieldKey]?.options || (field.validation?.enum || []).map((v: string) => ({ value: v, label: v }))) as OptionItem[];
             }
 
-            return (
+            inputContent = (
               <Controller
-                key={fieldKey}
                 name={fieldKey}
                 control={control}
                 render={({ field: { value, onChange } }) => (
@@ -578,7 +632,7 @@ export function Form({
                     selectedKey={value as string}
                     onSelectionChange={(key) => onChange((key as string) || "")}
                     className="flex flex-col gap-1.5 w-full"
-                    isDisabled={disabledFields.includes(fieldKey) || isSubmitting || isPending}
+                    isDisabled={isSubmitting || isPending}
                   >
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
                       {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
@@ -603,22 +657,19 @@ export function Form({
                 )}
               />
             );
-          }
-
-          if (field.type === "Any") {
-            return (
+          } else if (field.type === "Any") {
+            inputContent = (
               <Controller
-                key={fieldKey}
                 name={fieldKey}
                 control={control}
                 render={({ field: { value, onChange, onBlur } }) => (
-                  <TextField className="flex flex-col gap-1.5 w-full md:col-span-2">
+                  <TextField className="flex flex-col gap-1.5 w-full">
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
                       {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
                     </Label>
                     <Textarea
                       placeholder={resolvedPlaceholder}
-                      disabled={disabledFields.includes(fieldKey) || isSubmitting || isPending}
+                      disabled={isSubmitting || isPending}
                       value={value === undefined || value === null ? "" : (typeof value === "object" ? JSON.stringify(value) : (value as string))}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                         const val = e.target.value;
@@ -636,42 +687,47 @@ export function Form({
                 )}
               />
             );
+          } else {
+            inputContent = (
+              <Controller
+                name={fieldKey}
+                control={control}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <TextField className="flex flex-col gap-1.5 w-full">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
+                      {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
+                    </Label>
+                    <Input
+                      type={field.type === "Float" ? "number" : "text"}
+                      placeholder={resolvedPlaceholder}
+                      disabled={isSubmitting || isPending}
+                      value={value === undefined || value === null ? "" : (value as string)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const val = e.target.value;
+                        if (field.type === "Float") {
+                          onChange(val === "" ? "" : Number(val));
+                        } else {
+                          onChange(val);
+                        }
+                      }}
+                      onBlur={onBlur}
+                      className={`bg-white/50 dark:bg-slate-950/40 border ${errors[fieldKey] ? "border-red-500 focus:border-red-500" : "border-slate-200 dark:border-white/10 focus:border-primary"} rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all`}
+                    />
+                    {errors[fieldKey] && (
+                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
+                        {String(errors[fieldKey]?.message)}
+                      </span>
+                    )}
+                  </TextField>
+                )}
+              />
+            );
           }
 
           return (
-            <Controller
-              key={fieldKey}
-              name={fieldKey}
-              control={control}
-              render={({ field: { value, onChange, onBlur } }) => (
-                <TextField className="flex flex-col gap-1.5 w-full">
-                  <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                    {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
-                  </Label>
-                  <Input
-                    type={field.type === "Float" || field.type === "Int" ? "number" : "text"}
-                    placeholder={resolvedPlaceholder}
-                    disabled={disabledFields.includes(fieldKey) || isSubmitting || isPending}
-                    value={value === undefined || value === null ? "" : (value as string)}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const val = e.target.value;
-                      if (field.type === "Float" || field.type === "Int") {
-                        onChange(val === "" ? "" : Number(val));
-                      } else {
-                        onChange(val);
-                      }
-                    }}
-                    onBlur={onBlur}
-                    className={`bg-white/50 dark:bg-slate-950/40 border ${errors[fieldKey] ? "border-red-500 focus:border-red-500" : "border-slate-200 dark:border-white/10 focus:border-primary"} rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all`}
-                  />
-                  {errors[fieldKey] && (
-                    <span className="text-[10px] text-red-500 font-semibold mt-0.5">
-                      {String(errors[fieldKey]?.message)}
-                    </span>
-                  )}
-                </TextField>
-              )}
-            />
+            <div key={fieldKey} className={field.hidden ? "hidden" : colSpanClass}>
+              {inputContent}
+            </div>
           );
         })}
       </div>
@@ -680,7 +736,7 @@ export function Form({
         <Button
           type="submit"
           isDisabled={isSubmitting || isPending}
-          className="px-6 py-5 font-bold bg-gradient-to-r from-primary to-secondary text-white rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center gap-2 text-xs uppercase tracking-wider"
+          variant="primary"
         >
           {isSubmitting || isPending ? (
             <span className="flex items-center gap-2">

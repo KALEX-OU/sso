@@ -61,7 +61,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
   // Calcola il nome da visualizzare (predilige display name, poi email)
   const displayName = user.displayName || user.email?.split("@")[0] || "Utente";
   const userEmail = user.email || "";
-  const roleName = claims?.role ? claims.role.toUpperCase() : "UTENTE";
+  const roleName = claims?.uRole ? String(claims.uRole).toUpperCase() : "UTENTE";
 
   const handleLogout = async () => {
     try {
