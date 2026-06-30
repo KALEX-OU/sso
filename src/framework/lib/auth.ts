@@ -33,8 +33,13 @@ let appCheckInstance: AppCheck | null = null;
 if (typeof window !== "undefined") {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   authInstance = getAuth(app);
-  // Disabilita la verifica reCAPTCHA per il login/enrollment MFA in locale (ambiente di sviluppo o localhost)
-  if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  // Disabilita la verifica reCAPTCHA per il login/enrollment MFA in locale o se esplicitamente richiesto via env
+  if (
+    process.env.NODE_ENV === "development" || 
+    process.env.NEXT_PUBLIC_BYPASS_MFA_RECAPTCHA === "true" ||
+    window.location.hostname === "localhost" || 
+    window.location.hostname === "127.0.0.1"
+  ) {
     authInstance.settings.appVerificationDisabledForTesting = true;
   }
   storageInstance = getStorage(app);

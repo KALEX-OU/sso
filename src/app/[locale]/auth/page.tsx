@@ -12,7 +12,8 @@ import {
   PhoneAuthProvider,
   PhoneMultiFactorGenerator,
   RecaptchaVerifier,
-  MultiFactorResolver
+  MultiFactorResolver,
+  ApplicationVerifier
 } from "firebase/auth";
 
 interface GoogleAccountsIdInitializeOptions {
@@ -742,10 +743,19 @@ function AuthPortal() {
             setMfaPhoneHint("il tuo numero registrato");
           }
           
-          // Inizializza reCAPTCHA invisibile per inviare l'SMS
-          const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-            size: "invisible"
-          });
+          // Inizializza reCAPTCHA invisibile per inviare l'SMS (o un mock fittizio se in modalità test/bypass)
+          // Inizializza reCAPTCHA invisibile per inviare l'SMS (o un mock fittizio se in modalità test/bypass)
+          let applicationVerifier: ApplicationVerifier;
+          if (auth.settings.appVerificationDisabledForTesting) {
+            applicationVerifier = {
+              type: "recaptcha",
+              verify: async () => "mock-recaptcha-token"
+            };
+          } else {
+            applicationVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+              size: "invisible"
+            });
+          }
           
           const phoneAuthProvider = new PhoneAuthProvider(auth);
           const verificationId = await phoneAuthProvider.verifyPhoneNumber(
@@ -753,7 +763,7 @@ function AuthPortal() {
               multiFactorHint: phoneInfoOptions,
               session: resolver.session
             },
-            recaptchaVerifier
+            applicationVerifier
           );
           setMfaVerificationId(verificationId);
           setLoading(false);
