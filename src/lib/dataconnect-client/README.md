@@ -70,6 +70,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*CreateAuthCode*](#createauthcode)
   - [*DeleteAuthCode*](#deleteauthcode)
   - [*UpdateUserProfile*](#updateuserprofile)
+  - [*UpdateUserMetadata*](#updateusermetadata)
   - [*UpdateOrganizationBilling*](#updateorganizationbilling)
   - [*UpdateOrganizationVies*](#updateorganizationvies)
   - [*UpdateOrganizationApps*](#updateorganizationapps)
@@ -1467,6 +1468,12 @@ export interface GetApiKeyData {
     user?: {
       userId: string;
       email: string;
+      userOrganizations_on_user: ({
+        role: string;
+        organization: {
+          orgId: string;
+        } & Organizations_Key;
+      })[];
     } & Users_Key;
     thing?: {
       thingId: string;
@@ -7435,6 +7442,118 @@ const ref = updateUserProfileRef({ userId: ..., fullName: ..., locale: ..., them
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = updateUserProfileRef(dataConnect, updateUserProfileVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.user_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.user_update);
+});
+```
+
+## UpdateUserMetadata
+You can execute the `UpdateUserMetadata` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+updateUserMetadata(vars: UpdateUserMetadataVariables): MutationPromise<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+
+interface UpdateUserMetadataRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateUserMetadataVariables): MutationRef<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+}
+export const updateUserMetadataRef: UpdateUserMetadataRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateUserMetadata(dc: DataConnect, vars: UpdateUserMetadataVariables): MutationPromise<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+
+interface UpdateUserMetadataRef {
+  ...
+  (dc: DataConnect, vars: UpdateUserMetadataVariables): MutationRef<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+}
+export const updateUserMetadataRef: UpdateUserMetadataRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateUserMetadataRef:
+```typescript
+const name = updateUserMetadataRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateUserMetadata` mutation requires an argument of type `UpdateUserMetadataVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateUserMetadataVariables {
+  userId: string;
+  metadata?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `UpdateUserMetadata` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateUserMetadataData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateUserMetadataData {
+  user_update?: Users_Key | null;
+}
+```
+### Using `UpdateUserMetadata`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateUserMetadata, UpdateUserMetadataVariables } from '@kalex/dataconnect';
+
+// The `UpdateUserMetadata` mutation requires an argument of type `UpdateUserMetadataVariables`:
+const updateUserMetadataVars: UpdateUserMetadataVariables = {
+  userId: ..., 
+  metadata: ..., // optional
+};
+
+// Call the `updateUserMetadata()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateUserMetadata(updateUserMetadataVars);
+// Variables can be defined inline as well.
+const { data } = await updateUserMetadata({ userId: ..., metadata: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateUserMetadata(dataConnect, updateUserMetadataVars);
+
+console.log(data.user_update);
+
+// Or, you can use the `Promise` API.
+updateUserMetadata(updateUserMetadataVars).then((response) => {
+  const data = response.data;
+  console.log(data.user_update);
+});
+```
+
+### Using `UpdateUserMetadata`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateUserMetadataRef, UpdateUserMetadataVariables } from '@kalex/dataconnect';
+
+// The `UpdateUserMetadata` mutation requires an argument of type `UpdateUserMetadataVariables`:
+const updateUserMetadataVars: UpdateUserMetadataVariables = {
+  userId: ..., 
+  metadata: ..., // optional
+};
+
+// Call the `updateUserMetadataRef()` function to get a reference to the mutation.
+const ref = updateUserMetadataRef(updateUserMetadataVars);
+// Variables can be defined inline as well.
+const ref = updateUserMetadataRef({ userId: ..., metadata: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateUserMetadataRef(dataConnect, updateUserMetadataVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.

@@ -125,6 +125,18 @@ export function updateUserProfile(dcOrVars, vars) {
   return executeMutation(updateUserProfileRef(dcInstance, inputVars));
 }
 
+export const updateUserMetadataRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateUserMetadata', inputVars);
+}
+updateUserMetadataRef.operationName = 'UpdateUserMetadata';
+
+export function updateUserMetadata(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateUserMetadataRef(dcInstance, inputVars));
+}
+
 export const updateOrganizationBillingRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

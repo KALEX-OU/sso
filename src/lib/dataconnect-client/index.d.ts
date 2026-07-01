@@ -500,6 +500,12 @@ export interface GetApiKeyData {
     user?: {
       userId: string;
       email: string;
+      userOrganizations_on_user: ({
+        role: string;
+        organization: {
+          orgId: string;
+        } & Organizations_Key;
+      })[];
     } & Users_Key;
     thing?: {
       thingId: string;
@@ -1822,6 +1828,15 @@ export interface UpdateThingVariables {
   metadata?: unknown | null;
 }
 
+export interface UpdateUserMetadataData {
+  user_update?: Users_Key | null;
+}
+
+export interface UpdateUserMetadataVariables {
+  userId: string;
+  metadata?: unknown | null;
+}
+
 export interface UpdateUserOrganizationData {
   userOrganization_update?: UserOrganizations_Key | null;
 }
@@ -2014,6 +2029,18 @@ export const updateUserProfileRef: UpdateUserProfileRef;
 
 export function updateUserProfile(vars: UpdateUserProfileVariables): MutationPromise<UpdateUserProfileData, UpdateUserProfileVariables>;
 export function updateUserProfile(dc: DataConnect, vars: UpdateUserProfileVariables): MutationPromise<UpdateUserProfileData, UpdateUserProfileVariables>;
+
+interface UpdateUserMetadataRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateUserMetadataVariables): MutationRef<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateUserMetadataVariables): MutationRef<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+  operationName: string;
+}
+export const updateUserMetadataRef: UpdateUserMetadataRef;
+
+export function updateUserMetadata(vars: UpdateUserMetadataVariables): MutationPromise<UpdateUserMetadataData, UpdateUserMetadataVariables>;
+export function updateUserMetadata(dc: DataConnect, vars: UpdateUserMetadataVariables): MutationPromise<UpdateUserMetadataData, UpdateUserMetadataVariables>;
 
 interface UpdateOrganizationBillingRef {
   /* Allow users to create refs without passing in DataConnect */

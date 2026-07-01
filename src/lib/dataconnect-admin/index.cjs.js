@@ -77,6 +77,13 @@ function updateUserProfile(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.updateUserProfile = updateUserProfile;
 
+function updateUserMetadata(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateUserMetadata', inputVars, inputOpts);
+}
+exports.updateUserMetadata = updateUserMetadata;
+
 function updateOrganizationBilling(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);

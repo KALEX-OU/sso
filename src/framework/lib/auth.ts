@@ -165,13 +165,13 @@ export function initAppCheck(): AppCheck | null {
         (window as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = "D8C27232-65AF-4C05-8528-595936C2DA78";
         
         appCheckInstance = initializeAppCheck(app, {
-          provider: new ReCaptchaEnterpriseProvider("6LerwBwtAAAAAOPo8crSA1U9lRXbvBPCYU9XKFNn"),
+          provider: new ReCaptchaEnterpriseProvider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""),
           isTokenAutoRefreshEnabled: true
         });
       } else {
         // In produzione usiamo ReCaptcha Enterprise
         appCheckInstance = initializeAppCheck(app, {
-          provider: new ReCaptchaEnterpriseProvider("6LerwBwtAAAAAOPo8crSA1U9lRXbvBPCYU9XKFNn"),
+          provider: new ReCaptchaEnterpriseProvider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""),
           isTokenAutoRefreshEnabled: true
         });
       }

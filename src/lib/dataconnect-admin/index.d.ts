@@ -498,6 +498,12 @@ export interface GetApiKeyData {
     user?: {
       userId: string;
       email: string;
+      userOrganizations_on_user: ({
+        role: string;
+        organization: {
+          orgId: string;
+        } & Organizations_Key;
+      })[];
     } & Users_Key;
     thing?: {
       thingId: string;
@@ -1820,6 +1826,15 @@ export interface UpdateThingVariables {
   metadata?: unknown | null;
 }
 
+export interface UpdateUserMetadataData {
+  user_update?: Users_Key | null;
+}
+
+export interface UpdateUserMetadataVariables {
+  userId: string;
+  metadata?: unknown | null;
+}
+
 export interface UpdateUserOrganizationData {
   userOrganization_update?: UserOrganizations_Key | null;
 }
@@ -1942,6 +1957,11 @@ export function deleteAuthCode(vars: DeleteAuthCodeVariables, options?: Operatio
 export function updateUserProfile(dc: DataConnect, vars: UpdateUserProfileVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserProfileData>>;
 /** Generated Node Admin SDK operation action function for the 'UpdateUserProfile' Mutation. Allow users to pass in custom DataConnect instances. */
 export function updateUserProfile(vars: UpdateUserProfileVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserProfileData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateUserMetadata' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateUserMetadata(dc: DataConnect, vars: UpdateUserMetadataVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserMetadataData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateUserMetadata' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateUserMetadata(vars: UpdateUserMetadataVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserMetadataData>>;
 
 /** Generated Node Admin SDK operation action function for the 'UpdateOrganizationBilling' Mutation. Allow users to execute without passing in DataConnect. */
 export function updateOrganizationBilling(dc: DataConnect, vars: UpdateOrganizationBillingVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationBillingData>>;
