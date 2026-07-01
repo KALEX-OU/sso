@@ -408,6 +408,9 @@ export function Settings() {
       }
       setMfaStep("idle");
       showToast("2FA disattivata con successo.", "success");
+      if (user) {
+        await user.reload();
+      }
       await refreshClaims();
     } catch (err) {
       console.error(err);
@@ -631,7 +634,7 @@ export function Settings() {
                   moduleId="user"
                   initialData={userInitialData}
                   fieldsOrder={["fullName", "email", "mobile", "locale", "theme"]}
-                  disabledFields={["email"]}
+                  disabledFields={is2faActive ? ["email", "mobile"] : ["email"]}
                   onSubmit={handleUserSubmit}
                   submitLabel="Salva Profilo"
                 />
