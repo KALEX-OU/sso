@@ -8,7 +8,7 @@ import type { User, Auth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import type { FirebaseStorage } from "firebase/storage";
 
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, CustomProvider } from "firebase/app-check";
 import type { AppCheck } from "firebase/app-check";
 
 import type { CustomClaims } from "./types.js";
@@ -155,23 +155,26 @@ export function initAppCheck(): AppCheck | null {
     if (existingAppCheck) {
       appCheckInstance = existingAppCheck;
     } else {
-      // In ambiente locale (sviluppo o localhost), usiamo un CustomProvider fittizio
-      // che ritorna il debug token. Questo evita del tutto di caricare l'SDK di reCAPTCHA
-      // in locale, rimuovendo alla radice crash ed errori sui placeholder DOM.
-      if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+      if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || !siteKey) {
         // Impostiamo il debug token a livello globale prima dell'inizializzazione.
-        // Questo istruisce l'SDK Firebase App Check a scambiare il debug token locale
-        // con un vero token App Check (JWT) valido lato server senza caricare reCAPTCHA.
-        (window as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = "D8C27232-65AF-4C05-8528-595936C2DA78";
+        // Questo evita del tutto di caricare l'SDK di reCAPTCHA in locale, rimuovendo alla radice crash ed errori sui placeholder DOM.
+        const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN || "D8C27232-65AF-4C05-8528-595936C2DA78";
+        (window as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
         
         appCheckInstance = initializeAppCheck(app, {
-          provider: new ReCaptchaEnterpriseProvider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""),
+          provider: new CustomProvider({
+            getToken: () => Promise.resolve({
+              token: debugToken,
+              expireTimeMillis: Date.now() + 3600000
+            })
+          }),
           isTokenAutoRefreshEnabled: true
         });
       } else {
         // In produzione usiamo ReCaptcha Enterprise
         appCheckInstance = initializeAppCheck(app, {
-          provider: new ReCaptchaEnterpriseProvider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""),
+          provider: new ReCaptchaEnterpriseProvider(siteKey),
           isTokenAutoRefreshEnabled: true
         });
       }
