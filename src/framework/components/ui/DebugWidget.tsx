@@ -60,7 +60,7 @@ export function DebugWidget() {
       {/* Bottone flottante di debug */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-50 flex items-center justify-center w-12 h-12 rounded-full border border-purple-500/30 bg-slate-900/80 backdrop-blur-md text-purple-400 hover:text-purple-300 hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/10 cursor-pointer transition-all duration-200"
+        className="fixed bottom-4 right-4 z-50 flex items-center justify-center w-12 h-12 rounded-full border border-violet-500/30 bg-slate-900/80 backdrop-blur-md text-violet-400 hover:text-violet-300 hover:scale-105 active:scale-95 shadow-lg shadow-violet-500/10 cursor-pointer transition-all duration-200"
         title="Apri Pannello di Debug"
       >
         <Bug className="w-6 h-6 animate-pulse" />
@@ -73,7 +73,7 @@ export function DebugWidget() {
             <ModalDialog className="flex flex-col h-full overflow-hidden">
               
               <ModalHeader className="flex items-center gap-2 border-b border-white/5 pb-4">
-                <Bug className="text-purple-400 w-5 h-5" />
+                <Bug className="text-violet-400 w-5 h-5" />
                 <ModalHeading className="text-lg font-extrabold text-white">
                   KALEX Developer Debug Panel
                 </ModalHeading>
@@ -84,19 +84,19 @@ export function DebugWidget() {
                   <TabList className="border-b border-white/10 flex gap-4 mb-4">
                     <Tab
                       id="claims"
-                      className="pb-2 text-xs font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors border-b-2 border-transparent data-[selected=true]:border-purple-500 data-[selected=true]:text-purple-500 text-slate-400 hover:text-slate-200"
+                      className="pb-2 text-xs font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors border-b-2 border-transparent data-[selected=true]:border-violet-500 data-[selected=true]:text-violet-500 text-slate-400 hover:text-slate-200"
                     >
                       Custom Claims
                     </Tab>
                     <Tab
                       id="user"
-                      className="pb-2 text-xs font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors border-b-2 border-transparent data-[selected=true]:border-purple-500 data-[selected=true]:text-purple-500 text-slate-400 hover:text-slate-200"
+                      className="pb-2 text-xs font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors border-b-2 border-transparent data-[selected=true]:border-violet-500 data-[selected=true]:text-violet-500 text-slate-400 hover:text-slate-200"
                     >
                       User Info
                     </Tab>
                     <Tab
                       id="actions"
-                      className="pb-2 text-xs font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors border-b-2 border-transparent data-[selected=true]:border-purple-500 data-[selected=true]:text-purple-500 text-slate-400 hover:text-slate-200"
+                      className="pb-2 text-xs font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors border-b-2 border-transparent data-[selected=true]:border-violet-500 data-[selected=true]:text-violet-500 text-slate-400 hover:text-slate-200"
                     >
                       Azioni Staging
                     </Tab>
@@ -110,7 +110,7 @@ export function DebugWidget() {
                       I token JWT emessi da Firebase Auth contengono i seguenti claims configurati sul database Cloud:
                     </p>
                     {claims ? (
-                      <pre className="p-4 bg-slate-900 border border-white/5 rounded-2xl overflow-x-auto text-[11px] font-mono text-purple-300 leading-relaxed max-h-[300px]">
+                      <pre className="p-4 bg-slate-900 border border-white/5 rounded-2xl overflow-x-auto text-[11px] font-mono text-violet-300 leading-relaxed max-h-[300px]">
                         {JSON.stringify(claims, null, 2)}
                       </pre>
                     ) : (
@@ -174,7 +174,7 @@ export function DebugWidget() {
                           </>
                         ) : (
                           <>
-                            <Copy className="w-4 h-4 text-purple-400 shrink-0" />
+                            <Copy className="w-4 h-4 text-violet-400 shrink-0" />
                             Copia JWT Token
                           </>
                         )}
@@ -186,7 +186,7 @@ export function DebugWidget() {
                         variant="ghost"
                         className="flex items-center justify-start gap-2 p-3 text-xs font-bold uppercase border border-white/5 hover:bg-white/5 text-slate-300 hover:text-white rounded-xl transition-all"
                       >
-                        <RefreshCw className={`w-4 h-4 text-purple-400 shrink-0 ${isRefreshing ? "animate-spin" : ""}`} />
+                        <RefreshCw className={`w-4 h-4 text-violet-400 shrink-0 ${isRefreshing ? "animate-spin" : ""}`} />
                         Rinfresca Claims
                       </Button>
 

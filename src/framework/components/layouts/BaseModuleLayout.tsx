@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { Skeleton } from "@heroui/react";
-import { Card, CardHeader, CardBody } from "../ui/Card";
+import { Skeleton, Card, CardHeader, CardBody } from "../ui";
 import { AlertCircle } from "lucide-react";
 
 interface BaseModuleLayoutProps {

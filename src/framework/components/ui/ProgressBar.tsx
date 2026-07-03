@@ -34,3 +34,5 @@ export const ProgressBar: React.FC<ProgressBarProps> = (
   }
 );
 
+ProgressBar.displayName = "ProgressBar";
+

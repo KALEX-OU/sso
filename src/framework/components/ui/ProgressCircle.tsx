@@ -33,3 +33,5 @@ export const ProgressCircle: React.FC<ProgressCircleProps> = (
   }
 );
 
+ProgressCircle.displayName = "ProgressCircle";
+

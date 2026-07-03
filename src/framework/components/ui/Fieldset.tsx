@@ -34,5 +34,7 @@ export const Fieldset: React.FC<FieldsetProps> = (
   }
 );
 
+Fieldset.displayName = "Fieldset";
+
 export const FieldsetLegend = HeroFieldsetLegend;
 export const FieldsetActions = HeroFieldsetActions;

@@ -19,14 +19,21 @@ export interface ButtonProps extends Omit<React.ComponentProps<typeof HeroButton
   disabled?: boolean;
   isDisabled?: boolean;
   children?: React.ReactNode;
+  /**
+   * Escape hatch documentato per usi brand-specific (es. KalexLoginButton, schermate di errore):
+   * rende il Button HeroUI puro SENZA le classi `klx-btn*`, inoltrando `size`/`variant` nativi
+   * solo se passati esplicitamente (DOM identico all'uso diretto di @heroui/react, che resta
+   * comunque vietato fuori da ui/ — regola AGENTS.md). Il default resta lo stile klx.
+   */
+  unstyled?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className = "",
-      variant = "primary",
-      size = "md",
+      variant,
+      size,
       isLoading,
       isSkeleton,
       icon,
@@ -37,6 +44,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       isDisabled,
       onClick,
+      unstyled,
       ...props
     },
     ref
@@ -46,16 +54,38 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         sm: "h-8 w-20",
         md: "h-10 w-24",
         lg: "h-12 w-32"
-      }[size];
+      }[size ?? "md"];
       return <Skeleton className={`rounded-xl ${sizeClasses} ${className}`} />;
     }
+
+    // Modalità unstyled: passthrough puro verso HeroUI (nessuna classe klx; size/variant
+    // inoltrati SOLO se espliciti, così i default nativi di HeroUI restano invariati).
+    if (unstyled) {
+      const rawButton = (
+        <HeroButton
+          ref={ref}
+          className={className}
+          size={size}
+          isDisabled={disabled || isDisabled || isLoading}
+          variant={variant as "primary" | "secondary" | "danger" | "ghost" | "danger-soft" | "outline" | "tertiary" | undefined}
+          onClick={onClick ? (e) => onClick(e as React.MouseEvent<HTMLButtonElement>) : undefined}
+          {...props}
+        >
+          {label || children}
+        </HeroButton>
+      );
+      return tooltip ? <Tooltip content={tooltip}>{rawButton}</Tooltip> : rawButton;
+    }
+
+    const appliedVariant = variant ?? "primary";
+    const appliedSize = size ?? "md";
 
     const buttonContent = (
       <HeroButton
         ref={ref}
-        className={`klx-btn klx-btn--${variant} klx-btn--${size} ${className}`}
+        className={`klx-btn klx-btn--${appliedVariant} klx-btn--${appliedSize} ${className}`}
         isDisabled={disabled || isDisabled || isLoading}
-        variant={variant as "primary" | "secondary" | "danger" | "ghost" | "danger-soft" | "outline" | "tertiary" | undefined}
+        variant={appliedVariant as "primary" | "secondary" | "danger" | "ghost" | "danger-soft" | "outline" | "tertiary" | undefined}
         onClick={onClick ? (e) => onClick(e as React.MouseEvent<HTMLButtonElement>) : undefined}
         {...props}
       >

@@ -55,11 +55,11 @@ const BRAND_CONFIGS: Record<
   },
   default: {
     name: "KALEX",
-    bgGradientLight: "from-purple-100/40 via-slate-50 to-pink-100/20",
-    bgGradientDark: "from-purple-950/25 via-slate-950 to-pink-950/15",
-    glowColorLight: "bg-purple-500/5",
-    glowColorDark: "bg-purple-500/10",
-    logoColor: "from-purple-500 to-pink-500"
+    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
+    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
+    glowColorLight: "bg-violet-500/5",
+    glowColorDark: "bg-violet-500/10",
+    logoColor: "from-violet-500 to-accent"
   }
 };
 
@@ -270,7 +270,7 @@ function ResetPasswordPortal() {
           {/* VERIFYING CODE LOADER */}
           {verifyingCode && (
             <div className="text-center my-8">
-              <Loader2 className="w-10 h-10 text-purple-600 dark:text-purple-400 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-10 h-10 text-secondary dark:text-violet-400 animate-spin mx-auto mb-4" />
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Verifica del codice in corso...
               </p>
@@ -309,7 +309,7 @@ function ResetPasswordPortal() {
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                   {t("auth.email")}
                 </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                   <InputGroupPrefix className="flex items-center justify-center mr-2">
                     <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
                   </InputGroupPrefix>
@@ -337,7 +337,7 @@ function ResetPasswordPortal() {
               <button
                 type="button"
                 onClick={handleBackToLogin}
-                className="w-full text-center text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
+                className="w-full text-center text-xs font-semibold text-secondary dark:text-violet-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
               >
                 {t("auth.backToLogin")}
               </button>
@@ -381,7 +381,7 @@ function ResetPasswordPortal() {
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                   {t("auth.newPassword")}
                 </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                   <InputGroupPrefix className="flex items-center justify-center mr-2">
                     <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                   </InputGroupPrefix>
@@ -399,7 +399,7 @@ function ResetPasswordPortal() {
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                   {t("auth.confirmPassword")}
                 </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                   <InputGroupPrefix className="flex items-center justify-center mr-2">
                     <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                   </InputGroupPrefix>

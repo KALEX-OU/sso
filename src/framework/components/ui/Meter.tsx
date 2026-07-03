@@ -34,3 +34,5 @@ export const Meter: React.FC<MeterProps> = (
   }
 );
 
+Meter.displayName = "Meter";
+

@@ -59,6 +59,8 @@ export const Card: React.FC<CardProps> = (
   }
 );
 
+Card.displayName = "Card";
+
 export {
   HeroCardHeader as CardHeader,
   HeroCardContent as CardBody,

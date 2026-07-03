@@ -34,3 +34,5 @@ export const Surface: React.FC<SurfaceProps> = (
   }
 );
 
+Surface.displayName = "Surface";
+

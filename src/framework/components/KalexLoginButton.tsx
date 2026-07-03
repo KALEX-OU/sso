@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@heroui/react";
+import { Button } from "./ui";
 import { LogIn, User } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
@@ -32,6 +32,7 @@ export function KalexLoginButton({
   if (loading) {
     return (
       <Button
+        unstyled
         isDisabled
         size={size}
         variant={variant}
@@ -47,10 +48,11 @@ export function KalexLoginButton({
 
   return (
     <Button
+      unstyled
       onClick={handleAuth}
       size={size}
       variant={variant}
-      className={`font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 shadow-md active:scale-95 transition-all ${className}`}
+      className={`font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-secondary to-accent text-slate-950 shadow-md active:scale-95 transition-all ${className}`}
     >
       <span className="flex items-center gap-2">
         {user ? "Console" : "Accedi"}

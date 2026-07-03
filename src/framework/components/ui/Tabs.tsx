@@ -34,5 +34,7 @@ export const Tabs: React.FC<TabsProps> = (
   }
 );
 
+Tabs.displayName = "Tabs";
+
 export const Tab = HeroTab;
 export const TabList = HeroTabList;

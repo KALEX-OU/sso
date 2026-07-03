@@ -34,4 +34,6 @@ export const Radio: React.FC<RadioProps> = (
   }
 );
 
+Radio.displayName = "Radio";
+
 export const RadioGroup = HeroRadioGroup;

@@ -34,4 +34,6 @@ export const ColorSwatchPicker: React.FC<ColorSwatchPickerProps> = (
   }
 );
 
+ColorSwatchPicker.displayName = "ColorSwatchPicker";
+
 export const ColorSwatchPickerItem = HeroColorSwatchPickerItem;

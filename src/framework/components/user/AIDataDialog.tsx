@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Modal } from "@heroui/react";
+import { Modal } from "../ui";
 import { Cpu, Send, Bot, User, Sparkles, X } from "lucide-react";
 import { useDashboard } from "@/framework/components/layouts/DashboardContext";
 

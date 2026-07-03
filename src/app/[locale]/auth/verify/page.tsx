@@ -38,11 +38,11 @@ const BRAND_CONFIGS: Record<
   },
   default: {
     name: "KALEX",
-    bgGradientLight: "from-purple-100/40 via-slate-50 to-pink-100/20",
-    bgGradientDark: "from-purple-950/25 via-slate-950 to-pink-950/15",
-    glowColorLight: "bg-purple-500/5",
-    glowColorDark: "bg-purple-500/10",
-    logoColor: "from-purple-500 to-pink-500"
+    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
+    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
+    glowColorLight: "bg-violet-500/5",
+    glowColorDark: "bg-violet-500/10",
+    logoColor: "from-violet-500 to-accent"
   }
 };
 
@@ -287,7 +287,7 @@ export default function VerifyEmailPage() {
           {/* Loader / Stato */}
           {loading && (
             <div className="my-8">
-              <Loader2 className="w-12 h-12 text-purple-600 dark:text-purple-400 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-12 h-12 text-secondary dark:text-violet-400 animate-spin mx-auto mb-4" />
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{statusMessage}</p>
             </div>
           )}

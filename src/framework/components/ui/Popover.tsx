@@ -33,6 +33,8 @@ export const Popover: React.FC<PopoverProps> = (
   }
 );
 
+Popover.displayName = "Popover";
+
 export const PopoverTrigger = HeroPopoverTrigger;
 export const PopoverContent = HeroPopoverContent;
 export const PopoverRoot = HeroPopoverRoot;

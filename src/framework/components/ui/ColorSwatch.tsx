@@ -33,3 +33,5 @@ export const ColorSwatch: React.FC<ColorSwatchProps> = (
   }
 );
 
+ColorSwatch.displayName = "ColorSwatch";
+

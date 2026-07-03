@@ -2,9 +2,7 @@
 
 import React, { useSyncExternalStore } from "react";
 import { useAuth } from "../../../lib/auth";
-import { Button } from "../../ui/Button";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "../../ui/Dropdown";
-import { Avatar } from "../../ui/Avatar";
+import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from "../../ui";
 import { LogIn, UserPlus, LogOut, Settings, LayoutDashboard } from "lucide-react";
 
 interface UserMenuProps {
@@ -40,7 +38,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
           onClick={() => loginRedirect(clientId)}
           variant="ghost"
           size="sm"
-          className="font-extrabold uppercase tracking-wider rounded-2xl text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 active:scale-95 transition-all flex items-center gap-2"
+          className="font-extrabold uppercase tracking-wider rounded-2xl text-secondary dark:text-violet-400 hover:bg-violet-500/10 active:scale-95 transition-all flex items-center gap-2"
         >
           <LogIn className="w-4 h-4" />
           Accedi
@@ -49,7 +47,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
           onClick={() => registerRedirect(clientId)}
           variant="primary"
           size="sm"
-          className="font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 shadow-md active:scale-95 transition-all flex items-center gap-2"
+          className="font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-violet-500 to-accent text-slate-950 shadow-md active:scale-95 transition-all flex items-center gap-2"
         >
           <UserPlus className="w-4 h-4" />
           Registrati
@@ -86,7 +84,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
         <DropdownTrigger>
           <span className="flex items-center gap-2 outline-none cursor-pointer group active:scale-98 transition-transform">
             <Avatar
-              className="w-8 h-8 text-xs cursor-pointer ring-2 ring-purple-500/50 ring-offset-1 ring-offset-background"
+              className="w-8 h-8 text-xs cursor-pointer ring-2 ring-violet-500/50 ring-offset-1 ring-offset-background"
             >
               {user.photoURL ? (
                 React.createElement("img", { src: user.photoURL, alt: displayName, className: "w-full h-full object-cover rounded-full" })

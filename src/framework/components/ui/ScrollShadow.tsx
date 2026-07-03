@@ -34,3 +34,5 @@ export const ScrollShadow: React.FC<ScrollShadowProps> = (
   }
 );
 
+ScrollShadow.displayName = "ScrollShadow";
+

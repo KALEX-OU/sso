@@ -34,3 +34,5 @@ export const Toolbar: React.FC<ToolbarProps> = (
   }
 );
 
+Toolbar.displayName = "Toolbar";
+

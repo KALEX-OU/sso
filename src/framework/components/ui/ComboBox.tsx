@@ -34,6 +34,8 @@ export const ComboBox: React.FC<ComboBoxProps> = (
   }
 );
 
+ComboBox.displayName = "ComboBox";
+
 export const ComboBoxContext = HeroComboBoxContext;
 export const ComboBoxInputGroup = HeroComboBoxInputGroup;
 export const ComboBoxPopover = HeroComboBoxPopover;

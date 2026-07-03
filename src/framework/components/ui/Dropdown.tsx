@@ -33,6 +33,8 @@ export const Dropdown: React.FC<DropdownProps> = (
   }
 );
 
+Dropdown.displayName = "Dropdown";
+
 export const DropdownTrigger = HeroDropdownTrigger;
 export const DropdownMenu = HeroDropdownMenu;
 export const DropdownSection = HeroDropdownSection;

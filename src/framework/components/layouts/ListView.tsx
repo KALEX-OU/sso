@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import { TextField } from "../ui/TextField";
-import { Input } from "../ui/Input";
-import { InputGroup, InputGroupPrefix } from "../ui/InputGroup";
+import { TextField, Input, InputGroup, InputGroupPrefix } from "../ui";
 import { Filter, ActiveFilter } from "./Filter";
 import { Search } from "lucide-react";
 

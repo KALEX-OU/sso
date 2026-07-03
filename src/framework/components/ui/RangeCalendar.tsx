@@ -34,3 +34,5 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = (
   }
 );
 
+RangeCalendar.displayName = "RangeCalendar";
+

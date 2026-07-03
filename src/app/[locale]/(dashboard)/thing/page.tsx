@@ -176,7 +176,7 @@ export default function ThingManagementPage() {
             </div>
 
             {loadingData ? (
-              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500"></span></div>
+              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-violet-500"></span></div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -250,7 +250,7 @@ export default function ThingManagementPage() {
                     </div>
 
                     <div className="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-white/5 relative flex justify-between items-center gap-3">
-                      <code className="text-xs font-mono select-all text-purple-600 dark:text-purple-400 break-all pr-8">
+                      <code className="text-xs font-mono select-all text-secondary dark:text-violet-400 break-all pr-8">
                         {generatedThingToken}
                       </code>
                       <Button
@@ -265,7 +265,7 @@ export default function ThingManagementPage() {
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="pt-4 flex justify-end">
-                    <Button onClick={close} className="font-bold rounded-xl px-5 py-2.5 bg-purple-500 hover:bg-purple-600 text-white transition-colors cursor-pointer text-sm">
+                    <Button onClick={close} className="font-bold rounded-xl px-5 py-2.5 bg-violet-500 hover:bg-secondary text-white transition-colors cursor-pointer text-sm">
                       Ho memorizzato il token
                     </Button>
                   </Modal.Footer>

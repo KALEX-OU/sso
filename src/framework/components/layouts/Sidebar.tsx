@@ -10,10 +10,7 @@ import { useCurrentLocale } from "@/locales/client";
 import pkg from "@/../package.json";
 import { SupportDialog } from "@/framework/components/user/SupportDialog";
 import { AIDataDialog } from "@/framework/components/user/AIDataDialog";
-import { Avatar } from "@/framework/components/ui/Avatar";
-import { Button } from "@/framework/components/ui/Button";
-import { Tooltip } from "@/framework/components/ui/Tooltip";
-import { ScrollShadow } from "@/framework/components/ui/ScrollShadow";
+import { Avatar, Button, Tooltip, ScrollShadow } from "@/framework/components/ui";
 import * as LucideIcons from "lucide-react";
 import {
   LayoutDashboard,

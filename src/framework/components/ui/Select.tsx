@@ -149,8 +149,11 @@ Select.displayName = "Select";
 
 // NB: ListBox/ListBoxItem NON vengono ri-esportati da qui: la fonte canonica è ./ListBox
 // (evita simboli duplicati nel barrel ui/index.ts). Qui restano solo i sub-componenti propri di Select.
+// `SelectRoot` è il root nativo HeroUI SENZA il contenitore di campo del wrapper (`klx-field-container`):
+// da usare per composizioni inline/toolbar (es. filtri) dove il DOM deve restare piatto.
 export {
   HeroSelectTrigger as SelectTrigger,
   HeroSelectValue as SelectValue,
-  HeroSelectPopover as SelectPopover
+  HeroSelectPopover as SelectPopover,
+  HeroSelect as SelectRoot
 };

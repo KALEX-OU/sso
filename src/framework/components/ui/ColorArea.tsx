@@ -34,3 +34,5 @@ export const ColorArea: React.FC<ColorAreaProps> = (
   }
 );
 
+ColorArea.displayName = "ColorArea";
+

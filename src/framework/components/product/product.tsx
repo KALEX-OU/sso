@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView } from "../layouts/ListView";
-import { Table } from "../ui/Table";
+import { Table } from "../ui";
 
 interface Column<T> {
   key: string;
@@ -123,8 +123,8 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
       header: "Prodotto",
       render: (item: ProductItem) => (
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-500/10 rounded-xl flex items-center justify-center">
-            <ShoppingBag className="w-4 h-4 text-purple-500" />
+          <div className="p-2 bg-violet-500/10 rounded-xl flex items-center justify-center">
+            <ShoppingBag className="w-4 h-4 text-violet-500" />
           </div>
           <div>
             <div className="font-bold text-sm text-foreground">{item.name}</div>
@@ -167,7 +167,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
         <button
           onClick={() => handleBuyProduct(item.productId)}
           disabled={purchasingProduct !== null}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-500 to-accent text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {purchasingProduct === item.productId ? (
             "Elaborazione..."

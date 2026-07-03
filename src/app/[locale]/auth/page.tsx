@@ -114,11 +114,11 @@ const BRAND_CONFIGS: Record<
   default: {
     name: "KALEX",
     subtitleKey: "auth.subtitle",
-    logoColor: "from-purple-500 to-pink-500",
-    bgGradientLight: "from-purple-100/40 via-slate-50 to-pink-100/20",
-    bgGradientDark: "from-purple-950/25 via-slate-950 to-pink-950/15",
-    glowColorLight: "bg-purple-500/5",
-    glowColorDark: "bg-purple-500/10"
+    logoColor: "from-violet-500 to-accent",
+    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
+    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
+    glowColorLight: "bg-violet-500/5",
+    glowColorDark: "bg-violet-500/10"
   }
 };
 
@@ -744,17 +744,25 @@ function AuthPortal() {
           }
           
           // Inizializza reCAPTCHA invisibile per inviare l'SMS (o un mock fittizio se in modalità test/bypass)
-          // Inizializza reCAPTCHA invisibile per inviare l'SMS (o un mock fittizio se in modalità test/bypass)
           let applicationVerifier: ApplicationVerifier;
           if (auth.settings.appVerificationDisabledForTesting) {
-            applicationVerifier = {
+            // Oltre all'interfaccia pubblica, l'SDK Firebase invoca sempre il metodo interno
+            // _reset() nel finally di verifyPhoneNumber: il mock deve esporlo (no-op).
+            const mockVerifier: ApplicationVerifier & { _reset: () => void } = {
               type: "recaptcha",
-              verify: async () => "mock-recaptcha-token"
+              verify: async () => "mock-recaptcha-token",
+              _reset: () => undefined
             };
+            applicationVerifier = mockVerifier;
           } else {
-            applicationVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+            const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
               size: "invisible"
             });
+            const verifierWithReset = verifier as unknown as { _reset?: () => void };
+            if (typeof verifierWithReset._reset !== "function") {
+              verifierWithReset._reset = () => undefined;
+            }
+            applicationVerifier = verifier;
           }
           
           const phoneAuthProvider = new PhoneAuthProvider(auth);
@@ -932,7 +940,7 @@ function AuthPortal() {
       <div className={`flex flex-col items-center justify-center min-h-screen bg-gradient-to-br ${activeBgGradient} transition-all duration-700 text-foreground px-4`}>
         <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-2xl p-6 text-center">
           <Card.Content className="flex flex-col items-center justify-center">
-            <span className="animate-spin rounded-full h-12 w-12 border-2 border-slate-300 dark:border-white/25 border-t-purple-600 dark:border-t-purple-400 mb-6"></span>
+            <span className="animate-spin rounded-full h-12 w-12 border-2 border-slate-300 dark:border-white/25 border-t-secondary dark:border-t-violet-400 mb-6"></span>
             <h2 className="text-xl font-bold mb-2 tracking-wide text-slate-900 dark:text-white">{t("auth.success")}</h2>
             <p className="text-slate-500 dark:text-gray-400 text-sm">{t("auth.redirecting")}</p>
           </Card.Content>
@@ -976,7 +984,7 @@ function AuthPortal() {
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                         currentLocale === "it"
-                          ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                          ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                           : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                       }`}
                     >
@@ -990,7 +998,7 @@ function AuthPortal() {
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                         currentLocale === "en"
-                          ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                          ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                           : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                       }`}
                     >
@@ -1004,7 +1012,7 @@ function AuthPortal() {
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                         currentLocale === "es"
-                          ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                          ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                           : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                       }`}
                     >
@@ -1134,7 +1142,7 @@ function AuthPortal() {
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                       currentLocale === "it"
-                        ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                        ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                         : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
@@ -1148,7 +1156,7 @@ function AuthPortal() {
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                       currentLocale === "en"
-                        ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                        ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                         : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
@@ -1162,7 +1170,7 @@ function AuthPortal() {
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                       currentLocale === "es"
-                        ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                        ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                         : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
@@ -1219,7 +1227,7 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.mfaCode")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                     <Input
                       type="text"
                       maxLength={6}
@@ -1248,7 +1256,7 @@ function AuthPortal() {
                     setMfaResolver(null);
                     setError("");
                   }}
-                  className="w-full text-center text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
+                  className="w-full text-center text-xs font-semibold text-secondary dark:text-violet-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
                 >
                   {t("auth.backToLogin")}
                 </button>
@@ -1260,7 +1268,7 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.email")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                     <InputGroupPrefix className="flex items-center justify-center mr-2">
                       <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
@@ -1279,7 +1287,7 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.password")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                     <InputGroupPrefix className="flex items-center justify-center mr-2">
                       <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
@@ -1319,7 +1327,7 @@ function AuthPortal() {
                   <button
                     type="button"
                     onClick={() => router.push(`/${currentLocale}/auth/reset-password`)}
-                    className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer bg-transparent border-0 outline-none"
+                    className="text-xs font-semibold text-secondary dark:text-violet-400 hover:underline cursor-pointer bg-transparent border-0 outline-none"
                   >
                     {t("auth.forgotPassword")}
                   </button>
@@ -1360,7 +1368,7 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.name")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                     <InputGroupPrefix className="flex items-center justify-center mr-2">
                       <UserIcon className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
@@ -1384,7 +1392,7 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.email")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                     <InputGroupPrefix className="flex items-center justify-center mr-2">
                       <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
@@ -1405,7 +1413,7 @@ function AuthPortal() {
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                       {t("auth.password")}
                     </Label>
-                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                       <InputGroupPrefix className="flex items-center justify-center mr-2">
                         <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                       </InputGroupPrefix>
@@ -1467,7 +1475,7 @@ function AuthPortal() {
                         className="flex flex-col gap-1.5 w-full"
                       >
                         <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("auth.fiscalCountry")}</Label>
-                        <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                        <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
@@ -1500,7 +1508,7 @@ function AuthPortal() {
                         ? t("auth.vatNumberPersonalES")
                         : t("auth.vatNumberPersonalGeneric")}
                     </Label>
-                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full">
+                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full">
                       <Input
                         type="text"
                         placeholder={country === "IT"
@@ -1522,7 +1530,7 @@ function AuthPortal() {
                     <label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                       {t("auth.residenceAddress")}
                     </label>
-                    <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2.5 flex items-center h-[48px] transition-all w-full">
+                    <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2.5 flex items-center h-[48px] transition-all w-full">
                       <input
                         type="text"
                         placeholder={t("auth.addressPlaceholder")}
@@ -1534,7 +1542,7 @@ function AuthPortal() {
                         className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
                       />
                       {isAddressValidating && (
-                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent ml-2 shrink-0"></span>
+                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent ml-2 shrink-0"></span>
                       )}
                     </div>
                     
@@ -1595,7 +1603,7 @@ function AuthPortal() {
                               className="flex flex-col gap-1.5 w-full"
                             >
                               <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("auth.country")}</Label>
-                              <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                              <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
@@ -1632,7 +1640,7 @@ function AuthPortal() {
                               ? "border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)] focus-within:!border-emerald-500"
                               : isVatWarning
                               ? "border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.15)] focus-within:!border-amber-500"
-                              : "border-slate-200 dark:border-white/10 focus-within:!border-purple-500"
+                              : "border-slate-200 dark:border-white/10 focus-within:!border-violet-500"
                           }`}>
                             <Input
                               type="text"
@@ -1643,7 +1651,7 @@ function AuthPortal() {
                             {(isVatValidating || isVatVerified || isVatWarning) && (
                               <InputGroupSuffix className="flex items-center justify-center ml-2">
                                 {isVatValidating ? (
-                                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></span>
+                                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent"></span>
                                 ) : isVatVerified ? (
                                   <div className="flex items-center justify-center">
                                     <span className="flex h-2 w-2 relative mr-1">
@@ -1711,7 +1719,7 @@ function AuthPortal() {
                         <InputGroup className={`border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
                           (isVatVerified && isNameFromVies)
                             ? "bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/5 text-slate-500 cursor-not-allowed"
-                            : "bg-white/50 dark:bg-slate-950/40 border-slate-200 dark:border-white/10 focus-within:!border-purple-500"
+                            : "bg-white/50 dark:bg-slate-950/40 border-slate-200 dark:border-white/10 focus-within:!border-violet-500"
                         }`}>
                           <Controller
                             name="companyName"
@@ -1755,7 +1763,7 @@ function AuthPortal() {
                           />
                         ) : (
                           <>
-                            <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-xl px-3.5 py-2.5 flex items-center w-full">
+                            <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-xl px-3.5 py-2.5 flex items-center w-full">
                               <input
                                 type="text"
                                 placeholder={t("auth.addressPlaceholder")}
@@ -1767,7 +1775,7 @@ function AuthPortal() {
                                 className="bg-transparent border-0 outline-none w-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
                               />
                               {isAddressValidating && (
-                                <span className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent ml-2 shrink-0"></span>
+                                <span className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent ml-2 shrink-0"></span>
                               )}
                             </div>
                             
@@ -1808,7 +1816,7 @@ function AuthPortal() {
                               <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                 {t("auth.sdiCode")}
                               </Label>
-                              <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                              <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                 <Input
                                   type="text"
                                   placeholder={t("auth.sdiPlaceholder")}
@@ -1829,7 +1837,7 @@ function AuthPortal() {
                                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                   {t("auth.officeCode")}
                                 </Label>
-                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
                                     placeholder={t("auth.officePlaceholder")}
@@ -1847,7 +1855,7 @@ function AuthPortal() {
                                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                   {t("auth.cigCode")}
                                 </Label>
-                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
                                     placeholder="CIG"
@@ -1864,7 +1872,7 @@ function AuthPortal() {
                                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                   {t("auth.cupCode")}
                                 </Label>
-                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
                                     placeholder="CUP"

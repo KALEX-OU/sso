@@ -3,11 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import { Skeleton } from "../ui/Skeleton";
-import { Spinner } from "../ui/Spinner";
+import { stripeConnectStatusSchema, stripeUrlResponseSchema } from "../../lib/schemas";
+import { Button, Card, Badge, Skeleton, Spinner } from "../ui";
 import { ShieldAlert, CreditCard, ExternalLink, CheckCircle2, AlertTriangle, HelpCircle } from "lucide-react";
 
 interface ConnectStatus {
@@ -39,7 +36,9 @@ export function StripeConnect() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetchAuthedClient<ConnectStatus>("/api/stripe/connect/status");
+        const res = await fetchAuthedClient<ConnectStatus>("/api/stripe/connect/status", undefined, {
+          validate: (raw): ConnectStatus => stripeConnectStatusSchema.parse(raw)
+        });
         if (!res.success || !res.data) {
           throw new Error(res.error?.message || "Errore durante il recupero dello stato dell'account.");
         }
@@ -65,6 +64,8 @@ export function StripeConnect() {
         headers: {
           "Idempotency-Key": `connect_onboard_${orgId || "unknown"}_${Date.now()}`
         }
+      }, {
+        validate: (raw) => stripeUrlResponseSchema.parse(raw)
       });
       if (res.success && res.data?.url) {
         window.location.href = res.data.url;
@@ -85,6 +86,8 @@ export function StripeConnect() {
     try {
       const res = await fetchAuthedClient<{ success: boolean; url?: string }>("/api/stripe/connect/login-link", {
         method: "POST"
+      }, {
+        validate: (raw) => stripeUrlResponseSchema.parse(raw)
       });
       if (res.success && res.data?.url) {
         window.open(res.data.url, "_blank", "noopener,noreferrer");
@@ -172,7 +175,7 @@ export function StripeConnect() {
                   <Badge color="success" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-emerald-500/20 bg-emerald-500/8 text-emerald-400">Attivo</Badge>
                 </div>
                 <p className="text-slate-400 text-xs mt-1">
-                  ID Account: <code className="font-mono text-purple-400 font-semibold">{status?.stripeConnectAccountId}</code>
+                  ID Account: <code className="font-mono text-violet-400 font-semibold">{status?.stripeConnectAccountId}</code>
                 </p>
               </div>
             </div>
@@ -180,7 +183,7 @@ export function StripeConnect() {
             <Button
               isDisabled={actionLoading}
               onClick={handleLoginLink}
-              className="px-5 py-2.5 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-purple-500/20"
+              className="px-5 py-2.5 bg-violet-500 text-white font-bold rounded-xl hover:bg-secondary transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-violet-500/20"
             >
               {actionLoading ? (
                 <Spinner size="sm" color="current" />
@@ -273,7 +276,7 @@ export function StripeConnect() {
       {/* STATO 3: Non Configurata (Nessun account Connect associato) */}
       {!isConfigured && (
         <Card className="p-8 bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-3xl space-y-6 shadow-2xl flex flex-col md:flex-row items-start gap-6">
-          <div className="p-4 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-2xl flex-shrink-0">
+          <div className="p-4 bg-violet-500/10 border border-violet-500/20 text-violet-400 rounded-2xl flex-shrink-0">
             <CreditCard className="w-8 h-8" />
           </div>
           <div className="space-y-6 flex-grow">
@@ -286,7 +289,7 @@ export function StripeConnect() {
 
             <div className="p-4 bg-slate-950/40 border border-white/5 rounded-2xl text-slate-500 text-xs space-y-1.5">
               <div className="flex items-center gap-1.5 font-bold text-slate-300">
-                <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-violet-400" />
                 <span>Onboarding Semplice & Sicuro:</span>
               </div>
               <p className="leading-relaxed">
@@ -297,7 +300,7 @@ export function StripeConnect() {
             <Button
               isDisabled={actionLoading}
               onClick={handleOnboard}
-              className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-purple-500/20"
+              className="px-6 py-3 bg-violet-500 text-white font-bold rounded-xl hover:bg-secondary transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-violet-500/20"
             >
               {actionLoading && <Spinner size="sm" color="current" />}
               Attiva Stripe Connect

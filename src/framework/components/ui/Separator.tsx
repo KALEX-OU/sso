@@ -33,3 +33,5 @@ export const Separator: React.FC<SeparatorProps> = (
   }
 );
 
+Separator.displayName = "Separator";
+

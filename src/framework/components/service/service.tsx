@@ -134,8 +134,8 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
             return (
               <div key={service.serviceId} className="flex flex-col justify-between border border-divider rounded-2xl bg-content1 shadow-md hover:shadow-lg transition-all p-5 h-full">
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <div className="p-2.5 bg-purple-500/10 rounded-xl flex items-center justify-center">
-                    <IconComponent className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <div className="p-2.5 bg-violet-500/10 rounded-xl flex items-center justify-center">
+                    <IconComponent className="w-5 h-5 text-secondary dark:text-violet-400" />
                   </div>
                   {isActive && (
                     <span className="inline-flex items-center gap-1 bg-success-500/10 text-success-600 dark:text-success-400 border border-success-500/20 rounded-xl px-2.5 py-0.5 text-xs font-semibold">
@@ -174,7 +174,7 @@ export const ServiceModule: React.FC<ServiceModuleProps> = ({
                     <button
                       onClick={() => handleActivateService(service.serviceId)}
                       disabled={activatingService !== null}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full inline-flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-violet-500 to-accent text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {activatingService === service.serviceId ? (
                         "Attivazione..."

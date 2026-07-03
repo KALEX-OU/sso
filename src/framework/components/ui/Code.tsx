@@ -34,3 +34,5 @@ export const Code: React.FC<CodeProps> = (
   }
 );
 
+Code.displayName = "Code";
+

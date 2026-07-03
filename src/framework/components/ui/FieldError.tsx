@@ -34,3 +34,5 @@ export const FieldError: React.FC<FieldErrorProps> = (
   }
 );
 
+FieldError.displayName = "FieldError";
+

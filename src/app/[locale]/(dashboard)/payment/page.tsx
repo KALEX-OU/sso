@@ -134,7 +134,7 @@ export default function PaymentPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 inline-block mb-3"></span>
+          <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500 inline-block mb-3"></span>
           <p className="text-sm text-slate-500 dark:text-gray-400 font-semibold">
             Caricamento organizzazione attiva...
           </p>
@@ -157,8 +157,8 @@ export default function PaymentPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-5 shadow-xl">
           <Card.Content className="flex items-center gap-4">
-            <div className="p-3 bg-purple-500/10 rounded-2xl">
-              <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 bg-violet-500/10 rounded-2xl">
+              <TrendingUp className="w-6 h-6 text-secondary dark:text-violet-400" />
             </div>
             <div>
               <p className="text-slate-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Volume Transato</p>
@@ -204,7 +204,7 @@ export default function PaymentPage() {
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-12 text-center">
-              <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 inline-block mb-3"></span>
+              <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500 inline-block mb-3"></span>
               <p className="text-xs text-slate-500 dark:text-gray-400 font-semibold">Caricamento transazioni in corso...</p>
             </div>
           ) : payments.length === 0 ? (
@@ -263,7 +263,7 @@ export default function PaymentPage() {
                           href={p.receiptUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-extrabold text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                          className="inline-flex items-center gap-1 text-[11px] font-extrabold text-secondary hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
                         >
                           Apri <ExternalLink className="w-3.5 h-3.5" />
                         </a>

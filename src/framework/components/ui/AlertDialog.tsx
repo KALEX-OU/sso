@@ -33,6 +33,8 @@ export const AlertDialog: React.FC<AlertDialogProps> = (
   }
 );
 
+AlertDialog.displayName = "AlertDialog";
+
 export const AlertDialogBackdrop = HeroAlertDialogBackdrop;
 export const AlertDialogBody = HeroAlertDialogBody;
 export const AlertDialogCloseTrigger = HeroAlertDialogCloseTrigger;

@@ -266,7 +266,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
                   <div className="flex-1 flex flex-col gap-3">
                     <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Assegnazione Licenze (Seats)</h4>
                     {loadingMembers ? (
-                      <div className="w-8 h-8 rounded-full border-2 border-divider border-t-purple-500 animate-spin mx-auto my-4" />
+                      <div className="w-8 h-8 rounded-full border-2 border-divider border-t-violet-500 animate-spin mx-auto my-4" />
                     ) : (
                       <div className="flex flex-col gap-2">
                         {members.map(member => {
@@ -283,7 +283,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
                               <button
                                 onClick={() => toggleSeat(sub.service.serviceId, member.user!.uid, maxSeats)}
                                 disabled={isUpdating}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer active:scale-95 ${isAssigned ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20" : "bg-default-100 border border-divider hover:bg-default-200 text-foreground"}`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer active:scale-95 ${isAssigned ? "bg-violet-500/10 text-secondary dark:text-violet-400 border border-violet-500/20" : "bg-default-100 border border-divider hover:bg-default-200 text-foreground"}`}
                               >
                                 {isUpdating ? (
                                   "Aggiornamento..."

@@ -34,4 +34,6 @@ export const Accordion: React.FC<AccordionProps> = (
   }
 );
 
+Accordion.displayName = "Accordion";
+
 export const AccordionItem = HeroAccordionItem;

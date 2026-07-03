@@ -57,7 +57,7 @@ export default async function ConnectReturnPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-955/20 text-white p-6 font-sans">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-violet-950/40 via-slate-900 to-slate-955/20 text-white p-6 font-sans">
       <div className="bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full shadow-2xl text-center flex flex-col items-center">
         {onboarded ? (
           <>

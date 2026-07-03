@@ -20,6 +20,15 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 // Inizializza Firebase Auth
 const auth = getAuth(app);
 
+if (typeof window !== "undefined") {
+  const isLocalDev =
+    process.env.NODE_ENV !== "production" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  if (isLocalDev) {
+    auth.settings.appVerificationDisabledForTesting = true;
+  }
+}
+
 // Inizializza SQL Connect (Client SDK)
 const dataConnect = getDataConnect(connectorConfig);
 

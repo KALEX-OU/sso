@@ -110,7 +110,7 @@ export default function ComputePage() {
           <Card.Content className="p-2 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">Uso CPU (VM)</span>
-              <Zap className="w-4 h-4 text-purple-500" />
+              <Zap className="w-4 h-4 text-violet-500" />
             </div>
             <div>
               <p className="text-2xl font-black text-slate-900 dark:text-white">142.5 ore</p>
@@ -122,7 +122,7 @@ export default function ComputePage() {
               <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
                 <path
                   d="M0 15 Q 15 5, 30 12 T 60 4 T 90 14 L 100 10 L 100 20 L 0 20 Z"
-                  fill="url(#purple-gradient)"
+                  fill="url(#violet-gradient)"
                   opacity="0.3"
                 />
                 <path
@@ -132,8 +132,8 @@ export default function ComputePage() {
                   strokeWidth="2"
                 />
                 <defs>
-                  <linearGradient id="purple-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#a855f7" />
+                  <linearGradient id="violet-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" />
                     <stop offset="100%" stopColor="#ec4899" />
                   </linearGradient>
                 </defs>
@@ -146,7 +146,7 @@ export default function ComputePage() {
           <Card.Content className="p-2 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">Token Elaborati (AI)</span>
-              <Cpu className="w-4 h-4 text-pink-500" />
+              <Cpu className="w-4 h-4 text-accent" />
             </div>
             <div>
               <p className="text-2xl font-black text-slate-900 dark:text-white">1.2M token</p>
@@ -158,7 +158,7 @@ export default function ComputePage() {
               <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
                 <path
                   d="M0 10 Q 20 18, 40 8 T 70 12 T 100 3 L 100 20 L 0 20 Z"
-                  fill="url(#pink-gradient)"
+                  fill="url(#accent-gradient)"
                   opacity="0.3"
                 />
                 <path
@@ -168,7 +168,7 @@ export default function ComputePage() {
                   strokeWidth="2"
                 />
                 <defs>
-                  <linearGradient id="pink-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="accent-gradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#ec4899" />
                     <stop offset="100%" stopColor="#6366f1" />
                   </linearGradient>
@@ -206,7 +206,7 @@ export default function ComputePage() {
                 <defs>
                   <linearGradient id="blue-gradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#6366f1" />
-                    <stop offset="100%" stopColor="#a855f7" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -221,7 +221,7 @@ export default function ComputePage() {
           <Card.Content className="p-2 space-y-4">
             <div>
               <h3 className="text-md font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-purple-500" />
+                <Terminal className="w-5 h-5 text-violet-500" />
                 Simulatore Sandbox
               </h3>
               <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">
@@ -244,7 +244,7 @@ export default function ComputePage() {
                   className="flex flex-col gap-1.5 w-full"
                 >
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Servizio da Simulare</Label>
-                  <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                  <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
@@ -270,7 +270,7 @@ export default function ComputePage() {
                     step="any"
                     value={form.usage}
                     onChange={e => setForm({ ...form, usage: Number(e.target.value) || 0 })}
-                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                   />
                 </TextField>
 
@@ -285,7 +285,7 @@ export default function ComputePage() {
                 <Button
                   type="submit"
                   isDisabled={loading}
-                  className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-5 font-bold bg-gradient-to-r from-violet-500 to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-slate-950"></span>
@@ -320,7 +320,7 @@ export default function ComputePage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-950 border border-white/5 rounded-2xl p-4 font-mono text-[10px] text-purple-400 overflow-x-auto space-y-1">
+                <div className="bg-slate-950 border border-white/5 rounded-2xl p-4 font-mono text-[10px] text-violet-400 overflow-x-auto space-y-1">
                   <p className="text-slate-500">{"// Payload di risposta di Stripe Billing Meters"}</p>
                   <p>{"{"}</p>
                   <p className="pl-4">&quot;success&quot;: true,</p>

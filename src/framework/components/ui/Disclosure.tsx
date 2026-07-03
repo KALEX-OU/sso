@@ -34,6 +34,8 @@ export const Disclosure: React.FC<DisclosureProps> = (
   }
 );
 
+Disclosure.displayName = "Disclosure";
+
 export const DisclosureBody = HeroDisclosureBody;
 export const DisclosureContent = HeroDisclosureContent;
 export const DisclosureHeading = HeroDisclosureHeading;

@@ -34,4 +34,6 @@ export const DisclosureGroup: React.FC<DisclosureGroupProps> = (
   }
 );
 
+DisclosureGroup.displayName = "DisclosureGroup";
+
 export const DisclosureGroupRoot = HeroDisclosureGroupRoot;

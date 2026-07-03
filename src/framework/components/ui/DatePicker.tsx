@@ -34,3 +34,5 @@ export const DatePicker: React.FC<DatePickerProps> = (
   }
 );
 
+DatePicker.displayName = "DatePicker";
+

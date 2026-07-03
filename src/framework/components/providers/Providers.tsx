@@ -6,10 +6,8 @@ import { I18nProviderClient } from "@/locales/client";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, useAuth, forceCleanSession } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
-import { Spinner } from "../ui/Spinner";
-import { Button } from "@heroui/react";
+import { Button, Spinner, DebugWidget } from "../ui";
 import { ShieldAlert, RefreshCw, ArrowLeft } from "lucide-react";
-import { DebugWidget } from "../ui/DebugWidget";
 
 // Suppress the React 19 false-positive warning for inline script tags rendered by NextThemesProvider
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -67,11 +65,11 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center select-none relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full filter blur-[100px] md:blur-[150px] pointer-events-none bg-purple-500/10 transition-all duration-700"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full filter blur-[100px] md:blur-[150px] pointer-events-none bg-violet-500/10 transition-all duration-700"></div>
       
       <div className="relative z-10 max-w-md w-full p-8 border border-white/10 bg-slate-900/60 backdrop-blur-2xl rounded-3xl shadow-2xl space-y-6">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500/20 to-pink-500/20 flex items-center justify-center mx-auto border border-purple-500/30 animate-pulse">
-          <ShieldAlert className="w-8 h-8 text-purple-400" />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-500/20 to-accent/20 flex items-center justify-center mx-auto border border-violet-500/30 animate-pulse">
+          <ShieldAlert className="w-8 h-8 text-violet-400" />
         </div>
 
         <div className="space-y-2">
@@ -87,7 +85,7 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
         </div>
 
         {countdown > 0 ? (
-          <div className="py-2 px-4 rounded-xl bg-white/5 border border-white/5 inline-block text-xs font-bold text-purple-400">
+          <div className="py-2 px-4 rounded-xl bg-white/5 border border-white/5 inline-block text-xs font-bold text-violet-400">
             Attendi <span className="text-white text-sm font-black mx-1">{countdown}</span> secondi per riprovare
           </div>
         ) : (
@@ -98,12 +96,13 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
 
         <div className="flex flex-col gap-2 pt-2">
           <Button
+            unstyled
             size="md"
             variant="ghost"
             className={`w-full font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer ${
               countdown > 0 
-                ? "bg-purple-600/30 text-purple-400 cursor-not-allowed border border-purple-500/20" 
-                : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg"
+                ? "bg-secondary/30 text-violet-400 cursor-not-allowed border border-violet-500/20" 
+                : "bg-gradient-to-r from-secondary to-accent hover:from-violet-500 hover:to-accent text-white shadow-lg"
             }`}
             onClick={handleRetry}
             isDisabled={countdown > 0 || isRetrying}
@@ -119,6 +118,7 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
           </Button>
 
           <Button
+            unstyled
             size="md"
             variant="ghost"
             className="w-full font-bold text-xs uppercase tracking-wider rounded-xl border border-white/5 hover:bg-white/5 text-slate-400 hover:text-white cursor-pointer"
@@ -461,7 +461,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-4 gap-4">
         {isLoading && <Spinner size="lg" color="current" />}
         {!exchangeError && (
-          <span className="text-xs font-semibold text-purple-400 tracking-wider uppercase animate-pulse">
+          <span className="text-xs font-semibold text-violet-400 tracking-wider uppercase animate-pulse">
             {exchangeLoading ? "Sincronizzazione sessione SSO in corso..." : "Caricamento sessione in corso..."}
           </span>
         )}
@@ -475,8 +475,9 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
               <p className="text-slate-300 text-xs font-semibold leading-relaxed px-2">{exchangeError}</p>
             </div>
             <Button
+              unstyled
               size="sm"
-              className="mt-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
+              className="mt-2 bg-gradient-to-r from-red-600 to-accent hover:from-red-500 hover:to-accent text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
               onClick={forceCleanAndRedirect}
             >
               Pulisci Sessione e Riprova

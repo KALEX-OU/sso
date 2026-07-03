@@ -152,9 +152,9 @@ export default function ProductCatalogPage() {
     const id = (appId || productId || "").toLowerCase();
     if (id.includes("safety")) return { icon: ShieldCheck, color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" };
     if (id.includes("standlo")) return { icon: Activity, color: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20" };
-    if (id.includes("sso")) return { icon: Key, color: "text-purple-500 bg-purple-500/10 border-purple-500/20" };
+    if (id.includes("sso")) return { icon: Key, color: "text-violet-500 bg-violet-500/10 border-violet-500/20" };
     if (id.includes("web")) return { icon: Globe, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" };
-    if (id.includes("mobile")) return { icon: Smartphone, color: "text-pink-500 bg-pink-500/10 border-pink-500/20" };
+    if (id.includes("mobile")) return { icon: Smartphone, color: "text-accent bg-accent/10 border-accent/20" };
     if (id.includes("audit")) return { icon: FileText, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" };
     if (id.includes("consulting")) return { icon: HelpCircle, color: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20" };
     if (id.includes("esp32")) return { icon: Cpu, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" };
@@ -233,7 +233,7 @@ export default function ProductCatalogPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Package className="w-6 h-6 text-purple-500" />
+            <Package className="w-6 h-6 text-violet-500" />
             {t("sidebar.product")}
           </h1>
           <p className="text-slate-500 dark:text-gray-400 text-xs mt-1">
@@ -268,14 +268,14 @@ export default function ProductCatalogPage() {
                 onClick={() => setActiveFilter({ mode: tab.mode, route: tab.route })}
                 className={`pb-3 text-sm font-bold transition-all relative cursor-pointer flex items-center gap-2 ${
                   active 
-                    ? "text-purple-600 dark:text-purple-400" 
+                    ? "text-secondary dark:text-violet-400" 
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 {getTabLabel(tab)}
                 {active && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 rounded-full animate-fade-in" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500 rounded-full animate-fade-in" />
                 )}
               </button>
             );
@@ -319,7 +319,7 @@ export default function ProductCatalogPage() {
             return (
               <Card 
                 key={item.productId}
-                className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-purple-500/20 transition-all duration-300 min-h-[220px]"
+                className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-violet-500/20 transition-all duration-300 min-h-[220px]"
               >
                 <Card.Content className="p-0 space-y-3">
                   {/* Intestazione Card */}
@@ -332,7 +332,7 @@ export default function ProductCatalogPage() {
                         <h2 className="text-sm font-extrabold text-slate-900 dark:text-white line-clamp-1">
                           {item.name}
                         </h2>
-                        <span className="text-[9px] font-bold text-purple-500 dark:text-purple-400 uppercase tracking-wider block mt-0.5">
+                        <span className="text-[9px] font-bold text-violet-500 dark:text-violet-400 uppercase tracking-wider block mt-0.5">
                           {getTaxCodeLabel(item.type)}
                         </span>
                       </div>
@@ -401,7 +401,7 @@ export default function ProductCatalogPage() {
                   {canManage ? (
                     <Button 
                       isDisabled={!activePrice || isCheckingOut}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl shadow-md transition-all text-xs flex justify-between items-center px-3.5 py-4 h-10"
+                      className="w-full bg-secondary hover:bg-violet-700 text-white font-extrabold rounded-xl shadow-md transition-all text-xs flex justify-between items-center px-3.5 py-4 h-10"
                       onClick={() => activePrice && void handleStartCheckout(activePrice.priceId, qty, item.productId)}
                     >
                       <div className="flex items-center gap-1.5">
@@ -418,7 +418,7 @@ export default function ProductCatalogPage() {
                         </span>
                       </div>
                       {activePrice && !isCheckingOut && (
-                        <span className="bg-purple-700/50 px-2 py-0.5 rounded-lg font-black tracking-wide">
+                        <span className="bg-violet-700/50 px-2 py-0.5 rounded-lg font-black tracking-wide">
                           {formatCurrency(activePrice.amount * qty, activePrice.currency)}
                         </span>
                       )}
@@ -448,8 +448,8 @@ export default function ProductCatalogPage() {
       {/* Disclaimer Stripe Tax in fondo alla pagina */}
       <Card className="border border-slate-200 dark:border-white/10 bg-slate-500/5 dark:bg-slate-950/20 backdrop-blur-xl rounded-2xl p-4 shadow-md">
         <Card.Content className="flex gap-3">
-          <div className="p-2.5 bg-purple-500/10 rounded-xl h-fit">
-            <Info className="w-4 h-4 text-purple-500" />
+          <div className="p-2.5 bg-violet-500/10 rounded-xl h-fit">
+            <Info className="w-4 h-4 text-violet-500" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 dark:text-white">Indicazione sulle Imposte (Stripe Tax)</h3>

@@ -34,5 +34,7 @@ export const TagGroup: React.FC<TagGroupProps> = (
   }
 );
 
+TagGroup.displayName = "TagGroup";
+
 export const Tag = HeroTag;
 export const TagRemoveButton = HeroTagRemoveButton;

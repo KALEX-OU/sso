@@ -34,3 +34,5 @@ export const ToggleButtonGroup: React.FC<ToggleButtonGroupProps> = (
   }
 );
 
+ToggleButtonGroup.displayName = "ToggleButtonGroup";
+

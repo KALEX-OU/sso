@@ -269,13 +269,13 @@ export default function TeamManagementPage() {
                   placeholder="Es. Team Sicurezza"
                   value={newTeamName}
                   onChange={e => setNewTeamName(e.target.value)}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <Button
                 type="submit"
                 isDisabled={creating || !hasPermission("team", "create")}
-                className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                className="w-full py-5 font-bold bg-gradient-to-r from-violet-500 to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 {creating ? "Creazione..." : "Crea Team"}
@@ -292,7 +292,7 @@ export default function TeamManagementPage() {
             </div>
 
             {loading ? (
-              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500"></span></div>
+              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-violet-500"></span></div>
             ) : teams.length === 0 ? (
               <div className="p-6 text-center text-xs text-slate-500">Nessun team attivo trovato.</div>
             ) : (
@@ -300,7 +300,7 @@ export default function TeamManagementPage() {
                 {teams.map((team) => (
                   <div key={team.teamId} className="flex justify-between items-center bg-slate-100/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-200/50 dark:border-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-600 dark:text-purple-400">
+                      <div className="p-2.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-secondary dark:text-violet-400">
                         <Shield className="w-4 h-4" />
                       </div>
                       <div>
@@ -347,7 +347,7 @@ export default function TeamManagementPage() {
             <Modal.Dialog>
               <Modal.Header className="flex flex-col gap-1 border-b border-white/5 pb-4">
                 <h2 className="text-lg font-extrabold text-white flex items-center gap-2">
-                  <Shield className="text-purple-400 w-5 h-5" />
+                  <Shield className="text-violet-400 w-5 h-5" />
                   Matrice Permessi Ereditati - {selectedTeam?.name}
                 </h2>
                 <p className="text-slate-400 text-xs font-normal">
@@ -358,7 +358,7 @@ export default function TeamManagementPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-200">Matrice dei Permessi Applicativi</h3>
-                    <span className="text-[10px] text-purple-400 font-bold bg-purple-500/10 border border-purple-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                    <span className="text-[10px] text-violet-400 font-bold bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
                       <Lock className="w-3 h-3" /> Bitmask Team
                     </span>
                   </div>
@@ -495,7 +495,7 @@ export default function TeamManagementPage() {
                 <Button variant="ghost" className="rounded-xl font-bold cursor-pointer text-slate-300 hover:text-white" onClick={() => setIsPermModalOpen(false)}>
                   Annulla
                 </Button>
-                <Button className="rounded-xl font-bold cursor-pointer bg-purple-600 hover:bg-purple-500 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
+                <Button className="rounded-xl font-bold cursor-pointer bg-secondary hover:bg-violet-500 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
                   {savingPerms ? "Salvataggio..." : "Salva Modifiche"}
                 </Button>
               </Modal.Footer>

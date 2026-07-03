@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FileText, Download } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView, ActiveFilter } from "../layouts/ListView";
-import { Table } from "../ui/Table";
-import { Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "@heroui/react";
+import { Table, SelectRoot, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui";
 
 interface Column<T> {
   key: string;
@@ -119,7 +118,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       header: "Fattura ID / Riferimento",
       render: (item) => (
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-purple-500 flex-shrink-0" />
+          <FileText className="w-4 h-4 text-violet-500 flex-shrink-0" />
           <div className="font-mono text-[13px] font-semibold text-slate-900 dark:text-white" title={item.invoiceId}>
             {item.invoiceId.substring(0, 8)}...{item.invoiceId.substring(item.invoiceId.length - 4)}
           </div>
@@ -133,7 +132,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       render: (item) => (
         <span className={`inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
           item.type === "received" 
-            ? "bg-purple-500/8 text-purple-500 border border-purple-500/20" 
+            ? "bg-violet-500/8 text-violet-500 border border-violet-500/20" 
             : "bg-blue-500/8 text-blue-500 border border-blue-500/20"
         }`}>
           {item.type === "received" ? "Ricevuta" : "Emessa"}
@@ -211,7 +210,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
             href={item.pdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-500 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-violet-500/20 bg-violet-500/5 text-violet-500 hover:bg-violet-500 hover:text-white hover:border-violet-500 transition-all cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             Scarica
@@ -223,7 +222,8 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
 
   const filterContent = (
     <div className="flex items-center gap-4">
-      <Select
+      {/* SelectRoot (root nativo, senza contenitore di campo): filtro inline nella toolbar */}
+      <SelectRoot
         selectedKey={filterType}
         onSelectionChange={(key) => setFilterType(key as "all" | "received" | "issued")}
         aria-label="Filtro flusso fatture"
@@ -238,7 +238,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
             <ListBoxItem id="issued" textValue="Fatture Emesse">Fatture Emesse</ListBoxItem>
           </ListBox>
         </SelectPopover>
-      </Select>
+      </SelectRoot>
     </div>
   );
 

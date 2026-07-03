@@ -34,3 +34,5 @@ export const InputOTP: React.FC<InputOTPProps> = (
   }
 );
 
+InputOTP.displayName = "InputOTP";
+

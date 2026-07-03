@@ -34,5 +34,7 @@ export const Menu: React.FC<MenuProps> = (
   }
 );
 
+Menu.displayName = "Menu";
+
 export const MenuItem = HeroMenuItem;
 export const MenuSection = HeroMenuSection;

@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
 import { fetchAuthedClient } from "@/framework/lib/api";
+import { dashboardResponseSchema, refreshClaimsResponseSchema } from "@/framework/lib/schemas";
 import { getRegistryApp } from "@/framework/lib/resources.config";
 import { Sidebar } from "@/framework/components/layouts/Sidebar";
 import { ToastNotification } from "@/framework/components/layouts/ToastNotification";
@@ -85,8 +86,10 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   // Sincronizza i dati anagrafici dal backend /api/auth/dashboard
   const fetchAndSyncUserData = useCallback(async (): Promise<boolean> => {
     try {
-      const res = await fetchAuthedClient<DashboardData>("/api/auth/dashboard");
-      
+      const res = await fetchAuthedClient<DashboardData>("/api/auth/dashboard", undefined, {
+        validate: (raw): DashboardData => dashboardResponseSchema.parse(raw)
+      });
+
       if (res.success && res.data) {
         const data = res.data;
         if (data.status === "pending") {
@@ -96,7 +99,12 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
         setDbData(data);
         return false;
       }
-      
+
+      if (res.error?.code === "api/invalid-response") {
+        console.error("[Layout Load User Data] Risposta dashboard non conforme allo schema:", res.error.details);
+        setError("I dati ricevuti dal server non sono validi. Ricarica la pagina o contatta l'assistenza.");
+      }
+
       return false;
     } catch (err) {
       console.error("[Layout Load User Data] Errore caricamento:", err);
@@ -121,8 +129,14 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
       const res = await fetchAuthedClient<RefreshClaimsResponse>("/api/auth/claims/refresh", {
         method: "POST",
         body: JSON.stringify({ orgId: targetOrgId })
+      }, {
+        validate: (raw): RefreshClaimsResponse => refreshClaimsResponseSchema.parse(raw)
       });
-      
+
+      if (res.error?.code === "api/invalid-response") {
+        console.warn("[Layout Claims Refresh] Risposta non conforme allo schema:", res.error.details);
+      }
+
       if (res.success && res.data?.success) {
         // Forza il refresh del token Firebase a livello client per recepire i nuovi claims
         const { auth, forceCleanSession } = await import("@/framework/lib/auth");

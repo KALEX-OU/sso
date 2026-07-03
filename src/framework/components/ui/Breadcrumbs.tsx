@@ -34,4 +34,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = (
   }
 );
 
+Breadcrumbs.displayName = "Breadcrumbs";
+
 export const BreadcrumbsItem = HeroBreadcrumbsItem;

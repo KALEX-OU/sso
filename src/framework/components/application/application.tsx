@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Cloud, CheckCircle2, ArrowRight, Hammer, Layout, Navigation, Camera, UserCheck } from "lucide-react";
-import { Card } from "../ui/Card";
-import { Button } from "../ui/Button";
-import { Chip } from "../ui/Chip";
-import { Spinner } from "../ui/Spinner";
+import { Card, Button, Chip, Spinner } from "../ui";
 import { useAuth } from "@/framework/lib/auth";
+import { stripeUrlResponseSchema } from "@/framework/lib/schemas";
 
 interface ProductItem {
   productId: string;
@@ -120,7 +118,14 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
         })
       });
 
-      const data = await res.json();
+      const parsed = stripeUrlResponseSchema.safeParse(await res.json());
+      if (!parsed.success) {
+        console.error("[ApplicationModule] Risposta checkout non conforme allo schema:", parsed.error);
+        showToast("Risposta del server non conforme allo schema atteso.", "error");
+        setActionLoading(null);
+        return;
+      }
+      const data = parsed.data;
       if (data.success && data.url) {
         window.location.assign(data.url);
       } else {
@@ -145,7 +150,14 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
     try {
       showToast("Reindirizzamento al portale Stripe...", "info");
       const res = await fetchAuthed("/api/stripe/portal", { method: "POST" });
-      const data = await res.json();
+      const parsed = stripeUrlResponseSchema.safeParse(await res.json());
+      if (!parsed.success) {
+        console.error("[ApplicationModule] Risposta portale non conforme allo schema:", parsed.error);
+        showToast("Risposta del server non conforme allo schema atteso.", "error");
+        setActionLoading(null);
+        return;
+      }
+      const data = parsed.data;
       if (data.success && data.url) {
         window.location.assign(data.url);
       } else {
@@ -233,8 +245,8 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
                 <div className="flex flex-col h-full justify-between gap-5 p-5">
                   {/* Intestazione Card */}
                   <div className="flex items-center justify-between gap-3">
-                    <div className="p-2.5 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl flex items-center justify-center border border-purple-500/15">
-                      <IconComponent className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2.5 bg-gradient-to-br from-violet-500/10 to-accent/10 rounded-xl flex items-center justify-center border border-violet-500/15">
+                      <IconComponent className="w-5 h-5 text-secondary dark:text-violet-400" />
                     </div>
                     {isSubscribed ? (
                       <Chip
@@ -277,7 +289,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
                           </div>
                           <div className="flex justify-between items-center text-xs">
                             <span className="text-slate-400">Modalità:</span>
-                            <span className="font-extrabold uppercase text-[10px] text-purple-600 dark:text-purple-400 tracking-wider">
+                            <span className="font-extrabold uppercase text-[10px] text-secondary dark:text-violet-400 tracking-wider">
                               {appConfig.mode}
                             </span>
                           </div>
@@ -300,7 +312,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
                     <div className="border-t border-slate-200/40 dark:border-slate-800/40 pt-3 flex flex-col gap-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                          <UserCheck className="w-3.5 h-3.5 text-purple-500" />
+                          <UserCheck className="w-3.5 h-3.5 text-violet-500" />
                           Onboarding Utente:
                         </span>
                         {isOnboarded ? (
@@ -354,7 +366,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
                       <Button
                         variant="primary"
                         size="md"
-                        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all"
+                        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-violet-500 to-accent text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all"
                         isLoading={actionLoading === product.productId}
                         onClick={() => handleSubscribe(product.productId)}
                         icon={<ArrowRight className="w-4 h-4 text-slate-950" />}

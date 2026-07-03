@@ -146,7 +146,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
           <Card.Content className="p-2 space-y-4">
-            <span className="text-[10px] uppercase tracking-widest text-purple-600 dark:text-purple-400 font-extrabold block">
+            <span className="text-[10px] uppercase tracking-widest text-secondary dark:text-violet-400 font-extrabold block">
               {t("dashboard.title")}
             </span>
             <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
@@ -164,7 +164,7 @@ export default function DashboardPage() {
 
         <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
           <Card.Content className="p-2 space-y-4">
-            <span className="text-[10px] uppercase tracking-widest text-purple-600 dark:text-purple-400 font-extrabold block">
+            <span className="text-[10px] uppercase tracking-widest text-secondary dark:text-violet-400 font-extrabold block">
               Sottoscrizioni Suite
             </span>
             <div className="space-y-2">
@@ -197,7 +197,7 @@ export default function DashboardPage() {
         <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
           <Card.Content className="p-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-600 dark:text-purple-400">
+              <div className="p-2 bg-violet-500/10 border border-violet-500/20 rounded-xl text-secondary dark:text-violet-400">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
@@ -228,11 +228,11 @@ export default function DashboardPage() {
                 <p className="text-xs font-semibold">{t("dashboard.mfaSelectDesc")}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <button onClick={() => { setMfaMethod("sms"); setMfaStep("verify"); }} className="p-3 bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200 dark:border-white/5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer">
-                    <Smartphone className="w-5 h-5 text-purple-500" />
+                    <Smartphone className="w-5 h-5 text-violet-500" />
                     <span className="text-xs font-bold">{t("dashboard.mfaSms")}</span>
                   </button>
                   <button onClick={() => { setMfaMethod("app"); setMfaStep("verify"); }} className="p-3 bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200 dark:border-white/5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer">
-                    <QrCode className="w-5 h-5 text-purple-500" />
+                    <QrCode className="w-5 h-5 text-violet-500" />
                     <span className="text-xs font-bold">{t("dashboard.mfaApp")}</span>
                   </button>
                 </div>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
                 </TextField>
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" onClick={() => setMfaStep("select")} className="w-1/3 cursor-pointer">Indietro</Button>
-                  <Button size="sm" onClick={handleVerifyMFA} className="w-2/3 bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 font-bold cursor-pointer">Verifica</Button>
+                  <Button size="sm" onClick={handleVerifyMFA} className="w-2/3 bg-gradient-to-r from-violet-500 to-accent text-slate-950 font-bold cursor-pointer">Verifica</Button>
                 </div>
               </div>
             )}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
         <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
           <Card.Content className="p-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-600 dark:text-purple-400">
+              <div className="p-2 bg-violet-500/10 border border-violet-500/20 rounded-xl text-secondary dark:text-violet-400">
                 <Laptop className="w-5 h-5" />
               </div>
               <div>

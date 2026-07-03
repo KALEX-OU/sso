@@ -34,5 +34,7 @@ export const InputGroup: React.FC<InputGroupProps> = (
   }
 );
 
+InputGroup.displayName = "InputGroup";
+
 export const InputGroupPrefix = HeroInputGroupPrefix;
 export const InputGroupSuffix = HeroInputGroupSuffix;

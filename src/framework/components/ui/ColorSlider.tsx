@@ -34,3 +34,5 @@ export const ColorSlider: React.FC<ColorSliderProps> = (
   }
 );
 
+ColorSlider.displayName = "ColorSlider";
+

@@ -33,6 +33,8 @@ export const Drawer: React.FC<DrawerProps> = (
   }
 );
 
+Drawer.displayName = "Drawer";
+
 export const DrawerContent = HeroDrawerContent;
 export const DrawerHeader = HeroDrawerHeader;
 export const DrawerBody = HeroDrawerBody;

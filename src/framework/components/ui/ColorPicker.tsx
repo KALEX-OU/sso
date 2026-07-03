@@ -34,5 +34,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = (
   }
 );
 
+ColorPicker.displayName = "ColorPicker";
+
 export const ColorPickerTrigger = HeroColorPickerTrigger;
 export const ColorPickerPopover = HeroColorPickerPopover;

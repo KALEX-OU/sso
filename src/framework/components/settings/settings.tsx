@@ -4,12 +4,8 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import Image from "next/image";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
-import { Card, CardBody } from "../ui/Card";
-import { Tabs, Tab, TabList } from "../ui/Tabs";
+import { Card, CardBody, Tabs, Tab, TabList, Button, Input, Label } from "../ui";
 import { Form } from "../layouts/Form";
-import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
-import { Label } from "../ui/Label";
 import {
   User as UserIcon,
   Camera,
@@ -614,7 +610,7 @@ export function Settings() {
 
       <div>
         <h1 className="klx-settings-header-title">
-          <UserIcon className="w-5 h-5 text-purple-500" /> Impostazioni Account & Azienda
+          <UserIcon className="w-5 h-5 text-violet-500" /> Impostazioni Account & Azienda
         </h1>
         <p className="klx-settings-header-desc">
           Gestisci le preferenze di profilo, la sicurezza e la conformità legale dell&apos;account.
@@ -656,7 +652,7 @@ export function Settings() {
               <CardBody>
                 <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                   <div className="flex items-center gap-2">
-                    <UserIcon className="w-4 h-4 text-purple-500" />
+                    <UserIcon className="w-4 h-4 text-violet-500" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                       Informazioni Personali
                     </h2>
@@ -679,7 +675,7 @@ export function Settings() {
                 <div className="flex flex-col items-center w-full space-y-5">
                   <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4 w-full">
                     <div className="flex items-center gap-2">
-                      <Camera className="w-4 h-4 text-purple-500" />
+                      <Camera className="w-4 h-4 text-violet-500" />
                       <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                         Immagine del Profilo
                       </h2>
@@ -690,7 +686,7 @@ export function Settings() {
                   <div className="klx-settings-profile-avatar-wrapper">
                     {uploading ? (
                       <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2">
-                        <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-purple-500"></span>
+                        <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-violet-500"></span>
                         <span className="text-[9px] font-bold uppercase tracking-widest">Caricamento</span>
                       </div>
                     ) : (
@@ -704,7 +700,7 @@ export function Settings() {
                         )}
 
                         <label className="klx-settings-avatar-hover-overlay gap-1 select-none">
-                          <Camera className="w-5 h-5 text-purple-400" />
+                          <Camera className="w-5 h-5 text-violet-400" />
                           <span className="text-[8px] font-extrabold uppercase tracking-widest">Sfoglia</span>
                           <input type="file" accept="image/*" className="klx-settings-avatar-input" onChange={handleAvatarChange} />
                         </label>
@@ -764,7 +760,7 @@ export function Settings() {
             <Card className="klx-settings-card--full">
               <CardBody>
                 <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
-                  <Key className="w-4 h-4 text-purple-500" />
+                  <Key className="w-4 h-4 text-violet-500" />
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                     Sicurezza Password e Credenziali
                   </h2>
@@ -852,7 +848,7 @@ export function Settings() {
               <CardBody>
                 <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-purple-500" />
+                    <Shield className="w-4 h-4 text-violet-500" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                       Autenticazione a Due Fattori (2FA)
                     </h2>
@@ -957,7 +953,7 @@ export function Settings() {
                               setMfaStep("verify");
                               setMfaPhoneError("");
                             }}
-                            className="text-[10px] font-extrabold uppercase tracking-wider text-purple-500 hover:text-purple-400 text-left outline-none self-start bg-transparent border-none cursor-pointer mt-1"
+                            className="text-[10px] font-extrabold uppercase tracking-wider text-violet-500 hover:text-violet-400 text-left outline-none self-start bg-transparent border-none cursor-pointer mt-1"
                           >
                             Modifica Numero Telefono
                           </button>
@@ -975,7 +971,7 @@ export function Settings() {
             <CardBody>
               <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                 <div className="flex items-center gap-2">
-                  <Key className="w-4 h-4 text-purple-500" />
+                  <Key className="w-4 h-4 text-violet-500" />
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                     Chiave API Personale & Accesso Programmatico
                   </h2>
@@ -1026,7 +1022,7 @@ export function Settings() {
 
                 {loadingApiKey ? (
                   <div className="flex items-center gap-2 text-slate-400 py-2">
-                    <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-purple-500"></span>
+                    <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-violet-500"></span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Caricamento dettagli chiave...</span>
                   </div>
                 ) : apiKeyData?.hasKey ? (
@@ -1034,7 +1030,7 @@ export function Settings() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase">Hash Identificativo:</span>
-                        <code className="text-xs text-slate-800 dark:text-purple-400 font-mono font-bold break-all bg-white dark:bg-black/30 px-2 py-0.5 rounded border border-slate-200 dark:border-white/5">
+                        <code className="text-xs text-slate-800 dark:text-violet-400 font-mono font-bold break-all bg-white dark:bg-black/30 px-2 py-0.5 rounded border border-slate-200 dark:border-white/5">
                           {apiKeyData.keyHash}
                         </code>
                       </div>
@@ -1173,9 +1169,9 @@ export function Settings() {
       {/* ========================================== */}
       {showBackupCodesDialog && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border border-purple-500/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative text-center">
+          <Card className="max-w-md w-full border border-violet-500/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative text-center">
             <CardBody className="space-y-4 items-center">
-              <div className="mx-auto bg-purple-500/10 p-3 rounded-full w-12 h-12 flex items-center justify-center text-purple-500">
+              <div className="mx-auto bg-violet-500/10 p-3 rounded-full w-12 h-12 flex items-center justify-center text-violet-500">
                 <Shield className="w-6 h-6" />
               </div>
               <h3 className="text-base font-extrabold uppercase tracking-wider text-white">
@@ -1234,7 +1230,7 @@ export function Settings() {
                     await new Promise((resolve) => setTimeout(resolve, 800));
                     void forceCleanSession();
                   }}
-                  className="w-full px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-purple-600 hover:bg-purple-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center justify-center gap-1 shadow-lg cursor-pointer mt-2"
+                  className="w-full px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center justify-center gap-1 shadow-lg cursor-pointer mt-2"
                 >
                   <Check className="w-3.5 h-3.5 mr-1" />
                   Ho salvato i codici
@@ -1250,9 +1246,9 @@ export function Settings() {
       {/* ========================================== */}
       {reauthOpen && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border border-purple-500/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative">
+          <Card className="max-w-md w-full border border-violet-500/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative">
             <CardBody className="space-y-4">
-              <div className="flex items-center gap-3 text-purple-500">
+              <div className="flex items-center gap-3 text-violet-500">
                 <Lock className="w-5 h-5" />
                 <h3 className="text-base font-extrabold uppercase tracking-wider">
                   Riautenticazione Richiesta
@@ -1285,7 +1281,7 @@ export function Settings() {
                   <button
                     type="submit"
                     disabled={reauthPending || !reauthPassword}
-                    className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-purple-600 hover:bg-purple-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
+                    className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
                   >
                     {reauthPending ? "Verifica..." : "Riconferma"}
                   </button>

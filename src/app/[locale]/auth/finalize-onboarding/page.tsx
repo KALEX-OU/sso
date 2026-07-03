@@ -37,11 +37,11 @@ const BRAND_CONFIGS: Record<
   },
   default: {
     name: "KALEX",
-    bgGradientLight: "from-purple-100/40 via-slate-50 to-pink-100/20",
-    bgGradientDark: "from-purple-950/25 via-slate-950 to-pink-950/15",
-    glowColorLight: "bg-purple-500/5",
-    glowColorDark: "bg-purple-500/10",
-    logoColor: "from-purple-500 to-pink-500"
+    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
+    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
+    glowColorLight: "bg-violet-500/5",
+    glowColorDark: "bg-violet-500/10",
+    logoColor: "from-violet-500 to-accent"
   }
 };
 
@@ -202,7 +202,7 @@ export default function FinalizeOnboardingPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     disabled={!!emailParam}
-                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all disabled:opacity-60"
+                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all disabled:opacity-60"
                   />
                 </TextField>
 
@@ -213,7 +213,7 @@ export default function FinalizeOnboardingPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                   />
                 </TextField>
 
@@ -224,18 +224,18 @@ export default function FinalizeOnboardingPage() {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
-                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                   />
                 </TextField>
 
                 {statusMessage && (
-                  <p className="text-[10px] text-purple-400 font-semibold text-center mt-1 animate-pulse">{statusMessage}</p>
+                  <p className="text-[10px] text-violet-400 font-semibold text-center mt-1 animate-pulse">{statusMessage}</p>
                 )}
 
                 <Button
                   type="submit"
                   isDisabled={loading}
-                  className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 mt-6"
+                  className="w-full py-5 font-bold bg-gradient-to-r from-violet-500 to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 mt-6"
                 >
                   {loading ? (
                     <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-slate-950"></span>

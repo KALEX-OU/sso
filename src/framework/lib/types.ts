@@ -90,25 +90,9 @@ export interface ToastState {
   type: "success" | "error" | "info";
 }
 
-export interface RegistryModule {
-  name?: string;
-  rolePolicies: Record<
-    string,
-    {
-      canRead?: boolean;
-      canList?: boolean;
-      canCreate?: boolean;
-      canUpdate?: boolean;
-      canDelete?: boolean;
-    }
-  >;
-}
-
-export interface RegistryApp {
-  name: string;
-  enabled: boolean;
-  modules: Record<string, RegistryModule>;
-}
+// RegistryModule/RegistryApp sono definiti nella SSOT (resources/shared.ts): ri-esportati
+// da qui per retrocompatibilità dei consumer frontend.
+export type { RegistryApp, RegistryModule } from "./resources/shared";
 
 export interface RefreshClaimsResponse {
   success: boolean;

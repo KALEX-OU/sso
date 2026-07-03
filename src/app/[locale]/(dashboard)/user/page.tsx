@@ -351,7 +351,7 @@ export default function UserManagementPage() {
                   placeholder="Mario Rossi"
                   value={memberForm.fullName}
                   onChange={e => setMemberForm({ ...memberForm, fullName: e.target.value })}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <TextField isRequired className="flex flex-col gap-1.5 w-full">
@@ -361,7 +361,7 @@ export default function UserManagementPage() {
                   placeholder="mario.rossi@azienda.com"
                   value={memberForm.email}
                   onChange={e => setMemberForm({ ...memberForm, email: e.target.value })}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <Select
@@ -370,7 +370,7 @@ export default function UserManagementPage() {
                 className="flex flex-col gap-1.5 w-full"
               >
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Ruolo IAM</Label>
-                <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-purple-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
@@ -421,7 +421,7 @@ export default function UserManagementPage() {
               <Button
                 type="submit"
                 isDisabled={memberInviting || activeRole !== "owner" && activeRole !== "admin"}
-                className="w-full py-5 font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
+                className="w-full py-5 font-bold bg-gradient-to-r from-violet-500 to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
               >
                 {memberInviting ? "Invito in corso..." : "Invia Invito"}
               </Button>
@@ -438,7 +438,7 @@ export default function UserManagementPage() {
             </div>
 
             {loadingData ? (
-              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500"></span></div>
+              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-violet-500"></span></div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -479,7 +479,7 @@ export default function UserManagementPage() {
                               {memberTeams.length === 0 ? (
                                 <span className="text-[10px] text-slate-500 italic">-</span>
                               ) : (
-                                memberTeams.map((rel) => (                                   <Chip key={rel.team.teamId} size="sm" variant="soft" className="text-[9px] capitalize px-1 py-0.5 border border-purple-500/30 text-purple-400 bg-purple-500/5 font-semibold">
+                                memberTeams.map((rel) => (                                   <Chip key={rel.team.teamId} size="sm" variant="soft" className="text-[9px] capitalize px-1 py-0.5 border border-violet-500/30 text-violet-400 bg-violet-500/5 font-semibold">
                                     {rel.team.name}
                                   </Chip>
                                 ))
@@ -557,7 +557,7 @@ export default function UserManagementPage() {
             <Modal.Dialog>
               <Modal.Header className="flex flex-col gap-1 border-b border-white/5 pb-4">
                 <h2 className="text-lg font-extrabold text-white flex items-center gap-2">
-                  <Shield className="text-purple-400 w-5 h-5" />
+                  <Shield className="text-violet-400 w-5 h-5" />
                   Gestione Privilegi & RBAC
                 </h2>
                 <p className="text-slate-400 text-xs font-normal">
@@ -598,7 +598,7 @@ export default function UserManagementPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-200">Matrice dei Permessi Applicativi</h3>
-                    <span className="text-[10px] text-purple-400 font-bold bg-purple-500/10 border border-purple-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                    <span className="text-[10px] text-violet-400 font-bold bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
                       <Lock className="w-3 h-3" /> Bitmask Fine-Grained
                     </span>
                   </div>
@@ -735,7 +735,7 @@ export default function UserManagementPage() {
                 <Button variant="ghost" className="rounded-xl font-bold cursor-pointer text-slate-300 hover:text-white" onClick={() => setIsPermModalOpen(false)}>
                   Annulla
                 </Button>
-                <Button className="rounded-xl font-bold cursor-pointer bg-purple-600 hover:bg-purple-500 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
+                <Button className="rounded-xl font-bold cursor-pointer bg-secondary hover:bg-violet-500 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
                   {savingPerms ? "Salvataggio..." : "Salva Modifiche"}
                 </Button>
               </Modal.Footer>

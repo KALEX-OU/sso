@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white font-sans px-4">
-        <span className="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 dark:border-white/20 border-t-purple-600 dark:border-t-purple-400"></span>
+        <span className="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 dark:border-white/20 border-t-secondary dark:border-t-violet-400"></span>
       </div>
     }>
       <PrivacyContent />
@@ -47,7 +47,7 @@ function PrivacyContent() {
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-950 dark:to-black text-slate-800 dark:text-foreground relative overflow-hidden font-sans flex flex-col items-center p-6 sm:p-12 lg:p-20 transition-colors duration-500">
       {/* Ambient Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full filter blur-[120px] pointer-events-none bg-purple-600/5 dark:bg-purple-600/10 opacity-50"></div>
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full filter blur-[120px] pointer-events-none bg-secondary/5 dark:bg-secondary/10 opacity-50"></div>
 
       {/* Floating Header per selezione Tema & Lingua */}
       <div className="absolute top-6 right-6 flex items-center gap-2.5 z-50">
@@ -74,7 +74,7 @@ function PrivacyContent() {
                   }}
                   className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                     currentLocale === "it"
-                      ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                      ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                       : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                   }`}
                 >
@@ -88,7 +88,7 @@ function PrivacyContent() {
                   }}
                   className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                     currentLocale === "en"
-                      ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                      ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                       : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                   }`}
                 >
@@ -102,7 +102,7 @@ function PrivacyContent() {
                   }}
                   className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                     currentLocale === "es"
-                      ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                      ? "bg-violet-500/10 text-secondary dark:text-violet-400"
                       : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                   }`}
                 >
@@ -136,7 +136,7 @@ function PrivacyContent() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-purple-500" />
+            <Shield className="w-5 h-5 text-violet-500" />
             <span className="text-slate-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Centro Sicurezza</span>
           </div>
         </div>

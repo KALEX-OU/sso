@@ -34,3 +34,5 @@ export const Kbd: React.FC<KbdProps> = (
   }
 );
 
+Kbd.displayName = "Kbd";
+

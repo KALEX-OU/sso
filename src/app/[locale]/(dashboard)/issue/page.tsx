@@ -135,7 +135,7 @@ export default function SupportTicketsPage() {
                   placeholder="Es. Errore di checkout..."
                   value={newTitle}
                   onChange={e => setNewTitle(e.target.value)}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2 flex items-center h-[42px] text-xs text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-xl px-3.5 py-2 flex items-center h-[42px] text-xs text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <div className="space-y-1">
@@ -158,7 +158,7 @@ export default function SupportTicketsPage() {
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
                   rows={4}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white outline-none w-full transition-all min-h-[100px]"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white outline-none w-full transition-all min-h-[100px]"
                 />
               </TextField>
               <Button
