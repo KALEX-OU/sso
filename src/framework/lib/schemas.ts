@@ -9,55 +9,24 @@ import { z } from "zod";
  * `fetchAuthedClient` come errore `api/invalid-response` invece di propagarsi come dato.
  */
 
-/** Elemento di `organization.subscriptions` (da `subscriptions_on_buyer` in queries.gql). */
-const dashboardSubscriptionSchema = z.looseObject({
-  subscriptionId: z.string(),
-  appId: z.string(),
-  status: z.string(),
-  buyerId: z.string().optional(),
-  sellerId: z.string().optional(),
-  items: z.unknown().optional(),
-  expiresAt: z.string().nullable().optional(),
-  updatedAt: z.string().nullable().optional()
-});
-
-/** Risposta 202 di GET /api/auth/dashboard: onboarding ancora in corso. */
-const dashboardPendingSchema = z.looseObject({
-  success: z.boolean(),
-  status: z.literal("pending"),
-  message: z.string().optional(),
-  organization: z.null().optional()
-});
-
-/** Risposta 200 di GET /api/auth/dashboard: utente censito, organizzazione attiva (o null). */
-const dashboardReadySchema = z.looseObject({
-  success: z.boolean(),
+/**
+ * Risposta di GET /api/auth/dashboard.
+ *
+ * Il payload è volutamente AMPIO e consumato in modo lasco (`DashboardData` ha `[key]: unknown`)
+ * e cambia forma tra 200 (utente+org, con `user`/`organization`) e 202 (onboarding `pending`).
+ * Una validazione campo-per-campo qui è controproducente: farebbe fallire l'intera dashboard al
+ * minimo scostamento del backend. Il guard corretto per questo endpoint è quindi MINIMALE — deve
+ * solo garantire che la risposta sia un oggetto (non una stringa/array/null propagati come dato) —
+ * e i campi noti restano opzionali/lassi. La validazione stretta è appropriata solo per payload
+ * ristretti e stabili (vedi `refreshClaimsResponseSchema`, `stripeConnectStatusSchema`).
+ */
+export const dashboardResponseSchema = z.looseObject({
+  success: z.boolean().optional(),
   status: z.string().optional(),
   message: z.string().optional(),
-  user: z.looseObject({
-    uid: z.string(),
-    email: z.string(),
-    fullName: z.string().nullable(),
-    avatarUrl: z.string().nullable(),
-    mobile: z.string().nullable(),
-    locale: z.string(),
-    theme: z.string(),
-    emailVerified: z.boolean()
-  }),
-  organization: z.looseObject({
-    orgId: z.string(),
-    name: z.string(),
-    type: z.string(),
-    country: z.string(),
-    confirmed: z.boolean(),
-    role: z.string(),
-    isTest: z.boolean().optional(),
-    viesValidated: z.boolean().optional(),
-    subscriptions: z.array(dashboardSubscriptionSchema).optional()
-  }).nullable()
+  user: z.looseObject({}).nullable().optional(),
+  organization: z.looseObject({}).nullable().optional()
 });
-
-export const dashboardResponseSchema = z.union([dashboardPendingSchema, dashboardReadySchema]);
 
 /** Risposta di POST /api/auth/claims/refresh (il client legge solo `success`). */
 export const refreshClaimsResponseSchema = z.looseObject({

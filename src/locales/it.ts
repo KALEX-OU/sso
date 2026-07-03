@@ -108,6 +108,7 @@ export default {
   "auth.verifyLoading": "Verifica dell'email e attivazione account in corso...",
   "auth.mfaTitle": "Autenticazione a Due Fattori",
   "auth.mfaSmsSent": "Abbiamo inviato un codice di verifica a 6 cifre via SMS sul tuo numero {phone}.",
+  "auth.mfaTotpPrompt": "Inserisci il codice a 6 cifre generato da {factor}.",
   "auth.mfaCode": "Codice di verifica SMS",
   "auth.mfaSubmit": "Verifica codice",
   "auth.verifyEmailSubDesc": "Una volta completata la verifica, questa scheda si sbloccherà automaticamente.",

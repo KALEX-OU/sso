@@ -168,9 +168,18 @@ export default function VerifyEmailPage() {
         return;
       }
 
-      // Avvia il polling ogni 3 secondi
+      // Avvia il polling ogni 3 secondi, con un TETTO massimo (1.6): se il backend resta
+      // bloccato l'utente riceve un errore chiaro invece di uno spinner infinito.
+      const POLL_TIMEOUT_MS = 120000;
+      const pollStartedAt = Date.now();
       const intervalId = setInterval(async () => {
         try {
+          if (Date.now() - pollStartedAt > POLL_TIMEOUT_MS) {
+            clearInterval(intervalId);
+            setError(t("auth.verifyInitError"));
+            setLoading(false);
+            return;
+          }
           const res = await fetchWithAppCheck("/api/auth/dashboard", {
             method: "GET",
             headers: {

@@ -95,6 +95,21 @@ export async function getAppCheckToken(): Promise<string | null> {
   }
 }
 
+/**
+ * Token CSRF double-submit: sulle richieste che mutano stato, rispedisce il valore del cookie
+ * non-HttpOnly `kalex_csrf` nell'header `X-CSRF-Token`. Il server lo esige solo quando la richiesta
+ * è autenticata via cookie di sessione su endpoint dati (vedi middleware verifyCsrf lato api).
+ */
+function attachCsrfHeader(headers: Headers, method?: string): void {
+  const m = (method || "GET").toUpperCase();
+  if (m === "GET" || m === "HEAD") return;
+  if (typeof document === "undefined" || headers.has("X-CSRF-Token")) return;
+  const match = document.cookie.match(/(?:^|;\s*)kalex_csrf=([^;]+)/);
+  if (match) {
+    headers.set("X-CSRF-Token", decodeURIComponent(match[1]));
+  }
+}
+
 export async function fetchWithAppCheck(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const token = await getAppCheckToken();
   const headers = new Headers(init?.headers);
@@ -104,6 +119,7 @@ export async function fetchWithAppCheck(input: RequestInfo | URL, init?: Request
   if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN) {
     headers.set("X-Firebase-AppCheck-Debug", process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN);
   }
+  attachCsrfHeader(headers, init?.method);
   return fetch(input, {
     ...init,
     headers
@@ -125,6 +141,7 @@ export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit):
   if (idToken) {
     headers.set("Authorization", `Bearer ${idToken}`);
   }
+  attachCsrfHeader(headers, init?.method);
   if (!headers.has("x-app-id")) {
     headers.set("x-app-id", "sso");
   }

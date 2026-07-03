@@ -25,10 +25,20 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  multiFactor
+  multiFactor,
+  getMultiFactorResolver,
+  PhoneAuthProvider,
+  PhoneMultiFactorGenerator,
+  TotpMultiFactorGenerator,
+  RecaptchaVerifier,
+  type ApplicationVerifier,
+  type MultiFactorInfo,
+  type MultiFactorResolver,
+  type PhoneMultiFactorInfo,
+  type TotpSecret
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage, forceCleanSession } from "../../lib/auth";
+import { auth, storage, forceCleanSession } from "../../lib/auth";
 
 interface OrganizationData {
   orgId: string;
@@ -67,14 +77,17 @@ export function Settings() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordPending, setPasswordPending] = useState(false);
 
-  // Stati per la 2FA (MFA)
+  // Stati per la 2FA (MFA) — enrollment nativo Firebase via SMS (fattore telefono)
+  // e via app di autenticazione (fattore TOTP, piano Identity Center 0.7).
   const [mfaPhoneNumber, setMfaPhoneNumber] = useState("");
   const [mfaPhoneError, setMfaPhoneError] = useState("");
   const [mfaOtpCode, setMfaOtpCode] = useState("");
-  const [mfaStep, setMfaStep] = useState<"idle" | "verify" | "otp">("idle");
+  const [mfaStep, setMfaStep] = useState<"idle" | "sms-phone" | "sms-otp" | "totp-verify">("idle");
   const [mfaPending, setMfaPending] = useState(false);
-  const [backupCodes, setBackupCodes] = useState<string[]>([]);
-  const [showBackupCodesDialog, setShowBackupCodesDialog] = useState(false);
+  const [mfaVerificationId, setMfaVerificationId] = useState("");
+  const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
+  const [totpUri, setTotpUri] = useState("");
+  const [totpCode, setTotpCode] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Stati per il Dialog di Riautenticazione Generale
@@ -82,6 +95,15 @@ export function Settings() {
   const [reauthPassword, setReauthPassword] = useState("");
   const [reauthPending, setReauthPending] = useState(false);
   const [onReauthSuccess, setOnReauthSuccess] = useState<(() => Promise<void>) | null>(null);
+  // Se la reauth richiede il secondo fattore (utente con MFA già attiva), si risolve il fattore
+  // esistente prima di completare la riautenticazione: SMS se c'è un numero registrato,
+  // altrimenti codice TOTP dell'app di autenticazione.
+  const [reauthMfaResolver, setReauthMfaResolver] = useState<MultiFactorResolver | null>(null);
+  const [reauthMfaVerificationId, setReauthMfaVerificationId] = useState("");
+  const [reauthMfaCode, setReauthMfaCode] = useState("");
+  const [reauthMfaHint, setReauthMfaHint] = useState("");
+  const [reauthMfaFactorId, setReauthMfaFactorId] = useState<"phone" | "totp">("phone");
+  const [reauthMfaTotpUid, setReauthMfaTotpUid] = useState("");
 
   // Stati per l'Eliminazione GDPR
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -89,7 +111,12 @@ export function Settings() {
   const [deletePending, setDeletePending] = useState(false);
 
   const [uploading, setUploading] = useState(false);
-  const is2faActive = user ? multiFactor(user).enrolledFactors.length > 0 : false;
+  // Fattori MFA registrati (numeri SMS), letti dallo stato Firebase del client e ricalcolati ad
+  // ogni render: dopo enroll/unenroll il setState locale (mfaPending) forza il refresh della lista.
+  const enrolledFactors: MultiFactorInfo[] = user ? multiFactor(user).enrolledFactors : [];
+  const is2faActive = enrolledFactors.length > 0;
+  // Firebase consente al più UN fattore TOTP per utente: il pulsante di enrollment si nasconde se già presente
+  const hasTotpFactor = enrolledFactors.some((f) => f.factorId === TotpMultiFactorGenerator.FACTOR_ID);
 
   // Ruolo dell'utente loggato nell'organizzazione (uRole / role fallback)
   const activeRole = claims?.uRole || claims?.role;
@@ -148,9 +175,23 @@ export function Settings() {
   }, [newPassword]);
 
   // Challenge di Riautenticazione
+  const closeReauth = () => {
+    setReauthOpen(false);
+    setReauthPassword("");
+    setOnReauthSuccess(null);
+    setReauthMfaResolver(null);
+    setReauthMfaVerificationId("");
+    setReauthMfaCode("");
+    setReauthMfaHint("");
+  };
+
   const executeWithReauthChallenge = (action: () => Promise<void>) => {
     setOnReauthSuccess(() => action);
     setReauthPassword("");
+    setReauthMfaResolver(null);
+    setReauthMfaVerificationId("");
+    setReauthMfaCode("");
+    setReauthMfaHint("");
     setReauthOpen(true);
   };
 
@@ -162,15 +203,85 @@ export function Settings() {
       setReauthPending(true);
       const credential = EmailAuthProvider.credential(user.email, reauthPassword);
       await reauthenticateWithCredential(user, credential);
-      setReauthOpen(false);
+      // Reauth completata senza secondo fattore.
+      const pending = onReauthSuccess;
+      closeReauth();
       showToast("Riautenticazione completata con successo.", "success");
-      
-      if (onReauthSuccess) {
-        await onReauthSuccess();
-      }
+      if (pending) await pending();
     } catch (err) {
+      const authErr = err as { code?: string };
+      // Utente con MFA attiva: la reauth richiede il secondo fattore. Si preferisce l'SMS
+      // se c'è un numero registrato; altrimenti si risolve col codice TOTP dell'app.
+      if (authErr.code === "auth/multi-factor-auth-required") {
+        try {
+          const resolver = getMultiFactorResolver(auth, err as Parameters<typeof getMultiFactorResolver>[1]);
+          const phoneHint = resolver.hints.find((h) => h.factorId === PhoneMultiFactorGenerator.FACTOR_ID);
+          const totpHint = resolver.hints.find((h) => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
+
+          if (phoneHint) {
+            const provider = new PhoneAuthProvider(auth);
+            const verificationId = await provider.verifyPhoneNumber(
+              { multiFactorHint: phoneHint, session: resolver.session },
+              buildAppVerifier()
+            );
+            setReauthMfaResolver(resolver);
+            setReauthMfaFactorId("phone");
+            setReauthMfaVerificationId(verificationId);
+            setReauthMfaHint(phoneHint.displayName || "il tuo numero registrato");
+            setReauthMfaCode("");
+            showToast("Ti abbiamo inviato un codice SMS per confermare l'identità.", "info");
+          } else if (totpHint) {
+            setReauthMfaResolver(resolver);
+            setReauthMfaFactorId("totp");
+            setReauthMfaTotpUid(totpHint.uid);
+            setReauthMfaVerificationId("");
+            setReauthMfaHint(totpHint.displayName || "la tua app di autenticazione");
+            setReauthMfaCode("");
+            showToast("Inserisci il codice della tua app di autenticazione per confermare l'identità.", "info");
+          } else {
+            throw new Error("Nessun secondo fattore risolvibile disponibile.");
+          }
+        } catch (mfaErr) {
+          console.error("[Reauth MFA] Errore avvio secondo fattore:", mfaErr);
+          showToast("Impossibile avviare la verifica del secondo fattore.", "error");
+        }
+        return;
+      }
       console.error("[Reauth] Errore:", err);
-      showToast("Password attuale errata o non valida.", "error");
+      showToast(
+        authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential"
+          ? "Password attuale errata o non valida."
+          : "Riautenticazione non riuscita. Riprova.",
+        "error"
+      );
+    } finally {
+      setReauthPending(false);
+    }
+  };
+
+  // Secondo step della reauth: verifica il codice (SMS o TOTP) del fattore esistente
+  // e completa la riautenticazione.
+  const handleReauthMfaVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reauthMfaResolver || !reauthMfaCode) return;
+    if (reauthMfaFactorId === "phone" && !reauthMfaVerificationId) return;
+    try {
+      setReauthPending(true);
+      let assertion;
+      if (reauthMfaFactorId === "totp") {
+        assertion = TotpMultiFactorGenerator.assertionForSignIn(reauthMfaTotpUid, reauthMfaCode);
+      } else {
+        const cred = PhoneAuthProvider.credential(reauthMfaVerificationId, reauthMfaCode);
+        assertion = PhoneMultiFactorGenerator.assertion(cred);
+      }
+      await reauthMfaResolver.resolveSignIn(assertion);
+      const pending = onReauthSuccess;
+      closeReauth();
+      showToast("Identità confermata con successo.", "success");
+      if (pending) await pending();
+    } catch (err) {
+      console.error("[Reauth MFA] Errore verifica:", err);
+      showToast("Codice di verifica non valido o scaduto.", "error");
     } finally {
       setReauthPending(false);
     }
@@ -343,11 +454,67 @@ export function Settings() {
     }
   };
 
-  // 2FA - SMS OTP Verification
-  const startMfaEnrollment = async () => {
-    if (!user || !mfaPhoneNumber) return;
+  const resetMfaFlow = () => {
+    setMfaStep("idle");
+    setMfaPhoneNumber("");
+    setMfaPhoneError("");
+    setMfaOtpCode("");
+    setMfaVerificationId("");
+    setTotpSecret(null);
+    setTotpUri("");
+    setTotpCode("");
+  };
 
-    // Validazione del formato E.164 (+[1-9]\d{1,14})
+  // Verifier reCAPTCHA per l'invio dell'SMS: in dev locale (appVerificationDisabledForTesting)
+  // usa un mock che espone anche _reset() (l'SDK Firebase v12 lo invoca sempre); in prod usa
+  // reCAPTCHA Enterprise invisibile ancorato al container dedicato.
+  const buildAppVerifier = (): ApplicationVerifier => {
+    if (auth.settings.appVerificationDisabledForTesting) {
+      const mockVerifier: ApplicationVerifier & { _reset: () => void } = {
+        type: "recaptcha",
+        verify: async () => "mock-recaptcha-token",
+        _reset: () => undefined
+      };
+      return mockVerifier;
+    }
+    return new RecaptchaVerifier(auth, "mfa-recaptcha-container", { size: "invisible" });
+  };
+
+  // Gestione centralizzata degli errori MFA. Due casi richiedono una riautenticazione con la
+  // password prima di gestire i fattori, dopodiché l'azione viene ritentata:
+  //  - auth/requires-recent-login: Firebase esige un login recente per modificare i fattori;
+  //  - auth/unsupported-first-factor: la sessione client è stata stabilita via custom token
+  //    (bootstrap SSO), il cui first-factor "custom" non consente l'enrollment MFA. La reauth
+  //    con EmailAuthProvider porta il first-factor a email/password e sblocca l'operazione.
+  const handleMfaError = (err: unknown, retriableAction: () => Promise<void>) => {
+    const authErr = err as { code?: string; message?: string };
+    if (
+      authErr.code === "auth/requires-recent-login" ||
+      authErr.code === "auth/unsupported-first-factor"
+    ) {
+      showToast("Per sicurezza, conferma la password per gestire la 2FA.", "info");
+      executeWithReauthChallenge(retriableAction);
+      return;
+    }
+    console.error("[MFA]", err);
+    const msg =
+      authErr.code === "auth/invalid-verification-code"
+        ? "Codice di verifica non valido."
+        : authErr.code === "auth/code-expired"
+          ? "Codice scaduto. Richiedine uno nuovo."
+          : authErr.code === "auth/maximum-second-factor-count-exceeded"
+            ? "Hai raggiunto il numero massimo di fattori registrati."
+            : authErr.code === "auth/operation-not-allowed"
+              ? "Questo metodo di verifica non è abilitato sul progetto. Contatta l'amministratore."
+              : err instanceof Error
+                ? err.message
+                : "Errore durante l'operazione di autenticazione a due fattori.";
+    showToast(msg, "error");
+  };
+
+  // === 2FA VIA SMS (fattore telefono, nativo Firebase) ===
+  const startSmsEnrollment = async () => {
+    if (!user || !mfaPhoneNumber) return;
     const e164Regex = /^\+[1-9]\d{1,14}$/;
     if (!e164Regex.test(mfaPhoneNumber)) {
       setMfaPhoneError("Formato numero di telefono non valido (richiesto E.164, es. +393471234567)");
@@ -355,97 +522,120 @@ export function Settings() {
     }
     setMfaPhoneError("");
 
-    try {
+    const action = async () => {
       setMfaPending(true);
-
-      const res = await fetchAuthedClient<{ success: boolean; error?: string | { issues: Array<{ message: string }> }; message?: string }>(`/api/user/${user.uid}/mfa/send`, {
-        method: "POST",
-        body: JSON.stringify({ phoneNumber: mfaPhoneNumber })
-      });
-
-      if (!res.success) {
-        let serverErrorMsg = "Errore durante l'invio del codice di verifica.";
-        if (res.error) {
-          const errDetail: { message?: string; issues?: Array<{ message: string }> } = res.error;
-          if (errDetail.issues && errDetail.issues[0]?.message) {
-            serverErrorMsg = errDetail.issues[0].message;
-          } else if (errDetail.message) {
-            serverErrorMsg = errDetail.message;
-          }
-        }
-        throw new Error(serverErrorMsg);
+      try {
+        const session = await multiFactor(user).getSession();
+        const provider = new PhoneAuthProvider(auth);
+        const verificationId = await provider.verifyPhoneNumber(
+          { phoneNumber: mfaPhoneNumber, session },
+          buildAppVerifier()
+        );
+        setMfaVerificationId(verificationId);
+        setMfaStep("sms-otp");
+        showToast("Codice di verifica SMS inviato al telefono.", "success");
+      } catch (err) {
+        handleMfaError(err, action);
+      } finally {
+        setMfaPending(false);
       }
-
-      setMfaStep("otp");
-      showToast("Codice di verifica SMS inviato al telefono.", "success");
-    } catch (err) {
-      console.error(err);
-      const errMsg = err instanceof Error ? err.message : "Errore nell'invio dell'SMS. Controlla il formato (es. +393471234567).";
-      setMfaPhoneError(errMsg);
-      showToast(errMsg, "error");
-    } finally {
-      setMfaPending(false);
-    }
+    };
+    await action();
   };
 
-  const confirmMfaEnrollment = async () => {
-    if (!user || !mfaOtpCode) return;
-
-    try {
+  const confirmSmsEnrollment = async () => {
+    if (!user || !mfaOtpCode || !mfaVerificationId) return;
+    const action = async () => {
       setMfaPending(true);
-
-      const res = await fetchAuthedClient<{ success: boolean; error?: string; backupCodes?: string[] }>(`/api/user/${user.uid}/mfa/verify`, {
-        method: "POST",
-        body: JSON.stringify({ phoneNumber: mfaPhoneNumber, code: mfaOtpCode })
-      });
-
-      if (!res.success) {
-        throw new Error(res.error?.message || "Codice OTP non valido o scaduto.");
-      }
-
-      const generatedCodes = res.data?.backupCodes;
-      if (generatedCodes && generatedCodes.length > 0) {
-        setBackupCodes(generatedCodes);
-        setShowBackupCodesDialog(true);
-      }
-
-      setMfaStep("idle");
-      setMfaPhoneNumber("");
-      setMfaPhoneError("");
-      setMfaOtpCode("");
-      showToast("Autenticazione a due fattori (2FA) attivata correttamente.", "success");
-      if (!(generatedCodes && generatedCodes.length > 0)) {
-        await refreshClaims();
-      }
-    } catch (err) {
-      console.error(err);
-      showToast(err instanceof Error ? err.message : "Codice OTP non valido o scaduto.", "error");
-    } finally {
-      setMfaPending(false);
-    }
-  };
-
-  const disableMfa = async () => {
-    try {
-      setMfaPending(true);
-      const res = await fetchAuthedClient<{ success: boolean; error?: string }>(`/api/user/${user!.uid}/mfa/disable`, {
-        method: "POST"
-      });
-      if (!res.success) {
-        throw new Error(res.error?.message || "Impossibile disattivare la 2FA.");
-      }
-      setMfaStep("idle");
-      showToast("2FA disattivata con successo.", "success");
-      if (user) {
+      try {
+        const cred = PhoneAuthProvider.credential(mfaVerificationId, mfaOtpCode);
+        const assertion = PhoneMultiFactorGenerator.assertion(cred);
+        const factorName = multiFactor(user).enrolledFactors.length > 0 ? "Telefono di backup" : "Telefono principale";
+        await multiFactor(user).enroll(assertion, factorName);
         await user.reload();
+        resetMfaFlow();
+        showToast("Numero verificato: autenticazione in due passaggi via SMS attivata.", "success");
+        await refreshClaims();
+      } catch (err) {
+        handleMfaError(err, action);
+      } finally {
+        setMfaPending(false);
       }
-      await refreshClaims();
-    } catch (err) {
-      console.error(err);
-      showToast(err instanceof Error ? err.message : "Impossibile disattivare la 2FA.", "error");
-    } finally {
-      setMfaPending(false);
+    };
+    await action();
+  };
+
+  // === 2FA VIA APP DI AUTENTICAZIONE (fattore TOTP, nativo Firebase — 0.7) ===
+  // Il provider TOTP è abilitato a livello progetto via scripts/enable-totp-mfa.ts (Admin SDK;
+  // la console non espone il toggle). Enrollment: generateSecret → l'utente registra la chiave
+  // nella sua app (link otpauth o chiave manuale) → verifica del primo codice → enroll.
+  const startTotpEnrollment = async () => {
+    if (!user) return;
+    const action = async () => {
+      setMfaPending(true);
+      try {
+        const session = await multiFactor(user).getSession();
+        const secret = await TotpMultiFactorGenerator.generateSecret(session);
+        setTotpSecret(secret);
+        setTotpUri(secret.generateQrCodeUrl(user.email || "account KALEX", "KALEX"));
+        setTotpCode("");
+        setMfaStep("totp-verify");
+      } catch (err) {
+        handleMfaError(err, action);
+      } finally {
+        setMfaPending(false);
+      }
+    };
+    await action();
+  };
+
+  const confirmTotpEnrollment = async () => {
+    if (!user || !totpSecret || totpCode.length < 6) return;
+    const action = async () => {
+      setMfaPending(true);
+      try {
+        const assertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, totpCode);
+        await multiFactor(user).enroll(assertion, "App di autenticazione");
+        await user.reload();
+        resetMfaFlow();
+        showToast("App di autenticazione registrata: 2FA via codice TOTP attiva.", "success");
+        await refreshClaims();
+      } catch (err) {
+        handleMfaError(err, action);
+      } finally {
+        setMfaPending(false);
+      }
+    };
+    await action();
+  };
+
+  const copyTotpSecret = async () => {
+    if (!totpSecret) return;
+    try {
+      await navigator.clipboard.writeText(totpSecret.secretKey);
+      showToast("Chiave segreta copiata negli appunti.", "success");
+    } catch {
+      showToast("Impossibile copiare: seleziona e copia la chiave manualmente.", "error");
     }
+  };
+
+  // === DISATTIVAZIONE DI UN FATTORE (con re-auth imposta da Firebase) ===
+  const unenrollFactor = async (factor: MultiFactorInfo) => {
+    if (!user) return;
+    const action = async () => {
+      setMfaPending(true);
+      try {
+        await multiFactor(user).unenroll(factor);
+        await user.reload();
+        showToast("Fattore di autenticazione disattivato.", "success");
+        await refreshClaims();
+      } catch (err) {
+        handleMfaError(err, action);
+      } finally {
+        setMfaPending(false);
+      }
+    };
+    await action();
   };
 
   // Eliminazione GDPR Account
@@ -868,99 +1058,209 @@ export function Settings() {
 
                 <div className="space-y-4">
                   <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
-                    L&apos;autenticazione a due fattori (2FA) aggiunge un ulteriore livello di sicurezza al tuo account. All&apos;accesso, ti verrà richiesto un codice OTP inviato sul tuo numero di telefono principale.
+                    L&apos;autenticazione a due fattori (2FA) aggiunge un livello di sicurezza al tuo account: all&apos;accesso ti verrà chiesto un codice via <strong>SMS</strong> o dalla tua <strong>app di autenticazione</strong> (Google Authenticator, 1Password, Authy…). Consigliato: registra <strong>entrambi i metodi</strong> (o almeno un numero di backup), così non resti bloccato se perdi il telefono.
                   </p>
 
-                  {is2faActive ? (
-                    <div className="pt-2">
-                      <Button
-                        onClick={disableMfa}
-                        isDisabled={mfaPending}
-                        variant="danger-soft"
-                      >
-                        Disattiva 2FA
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {mfaStep === "idle" && (
-                        <div className="pt-2">
+                  {/* Fattori attualmente registrati */}
+                  {enrolledFactors.length > 0 && (
+                    <div className="space-y-2">
+                      {enrolledFactors.map((factor) => (
+                        <div
+                          key={factor.uid}
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-success" />
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-slate-800 dark:text-white">
+                                {factor.displayName || (factor.factorId === TotpMultiFactorGenerator.FACTOR_ID ? "App di autenticazione" : "Telefono principale")}
+                              </span>
+                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                {factor.factorId === PhoneMultiFactorGenerator.FACTOR_ID
+                                  ? `SMS · ${(factor as PhoneMultiFactorInfo).phoneNumber}`
+                                  : "Codice TOTP (app)"}
+                              </span>
+                            </div>
+                          </div>
                           <Button
-                            onClick={() => {
-                              setMfaStep("verify");
-                              setMfaPhoneError("");
-                            }}
-                            variant="primary"
+                            onClick={() => unenrollFactor(factor)}
+                            isDisabled={mfaPending}
+                            variant="danger-soft"
                           >
-                            Configura 2FA via SMS
+                            Rimuovi
                           </Button>
                         </div>
-                      )}
+                      ))}
+                    </div>
+                  )}
 
-                      {mfaStep === "verify" && (
-                        <div className="flex flex-col gap-3 pt-2">
-                          <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                            Inserisci Numero di Cellulare
-                          </Label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="tel"
-                              placeholder="E.g. +393471234567"
-                              value={mfaPhoneNumber}
-                              onChange={(e) => handlePhoneChange(e.target.value)}
-                              error={mfaPhoneError}
-                              className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full"
-                            />
-                            <Button
-                              onClick={startMfaEnrollment}
-                              isDisabled={mfaPending || !mfaPhoneNumber}
-                              variant="primary"
-                            >
-                              Invia SMS
-                            </Button>
-                          </div>
-                          <span className="text-[10px] text-slate-500 dark:text-gray-400">
-                            Inserisci il prefisso internazionale (es. +39 per l&apos;Italia).
-                          </span>
-                        </div>
-                      )}
+                  {/* Avviso anti-lockout con un solo fattore registrato */}
+                  {enrolledFactors.length === 1 && mfaStep === "idle" && (
+                    <div className="flex items-start gap-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3.5 py-2.5 text-amber-600 dark:text-amber-400">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span className="text-[11px] leading-relaxed">
+                        Hai un solo fattore registrato. Aggiungi un secondo metodo (numero di backup o app di autenticazione) per non rischiare di restare bloccato fuori dall&apos;account.
+                      </span>
+                    </div>
+                  )}
 
-                      {mfaStep === "otp" && (
-                        <div className="flex flex-col gap-3 pt-2">
-                          <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                            Inserisci Codice OTP Ricevuto
-                          </Label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="text"
-                              maxLength={6}
-                              placeholder="6 cifre"
-                              value={mfaOtpCode}
-                              onChange={(e) => setMfaOtpCode(e.target.value)}
-                              className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full text-center tracking-widest font-mono text-lg"
-                            />
-                            <Button
-                              onClick={confirmMfaEnrollment}
-                              isDisabled={mfaPending || mfaOtpCode.length < 6}
-                              variant="primary"
-                            >
-                              Conferma Codice
-                            </Button>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMfaStep("verify");
-                              setMfaPhoneError("");
-                            }}
-                            className="text-[10px] font-extrabold uppercase tracking-wider text-violet-500 hover:text-violet-400 text-left outline-none self-start bg-transparent border-none cursor-pointer mt-1"
-                          >
-                            Modifica Numero Telefono
-                          </button>
-                        </div>
+                  {/* Avvio enrollment: SMS oppure app di autenticazione (TOTP) */}
+                  {mfaStep === "idle" && (
+                    <div className="pt-2 flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => {
+                          setMfaStep("sms-phone");
+                          setMfaPhoneError("");
+                        }}
+                        variant="primary"
+                      >
+                        {enrolledFactors.length > 0 ? "Aggiungi un numero di backup" : "Attiva la 2FA via SMS"}
+                      </Button>
+                      {!hasTotpFactor && (
+                        <Button
+                          onClick={startTotpEnrollment}
+                          isDisabled={mfaPending}
+                          variant="outline"
+                        >
+                          {is2faActive ? "Aggiungi app di autenticazione" : "Attiva con app di autenticazione"}
+                        </Button>
                       )}
                     </div>
                   )}
+
+                  {mfaStep === "sms-phone" && (
+                    <div className="flex flex-col gap-3 pt-2">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
+                        Inserisci Numero di Cellulare
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="tel"
+                          placeholder="E.g. +393471234567"
+                          value={mfaPhoneNumber}
+                          onChange={(e) => handlePhoneChange(e.target.value)}
+                          error={mfaPhoneError}
+                          className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full"
+                        />
+                        <Button
+                          onClick={startSmsEnrollment}
+                          isDisabled={mfaPending || !mfaPhoneNumber}
+                          variant="primary"
+                        >
+                          Invia SMS
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-500 dark:text-gray-400">
+                          Inserisci il prefisso internazionale (es. +39 per l&apos;Italia).
+                        </span>
+                        <button
+                          type="button"
+                          onClick={resetMfaFlow}
+                          className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 hover:text-slate-500 outline-none bg-transparent border-none cursor-pointer"
+                        >
+                          Annulla
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {mfaStep === "sms-otp" && (
+                    <div className="flex flex-col gap-3 pt-2">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
+                        Inserisci Codice OTP Ricevuto
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          maxLength={6}
+                          placeholder="6 cifre"
+                          value={mfaOtpCode}
+                          onChange={(e) => setMfaOtpCode(e.target.value)}
+                          className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full text-center tracking-widest font-mono text-lg"
+                        />
+                        <Button
+                          onClick={confirmSmsEnrollment}
+                          isDisabled={mfaPending || mfaOtpCode.length < 6}
+                          variant="primary"
+                        >
+                          Conferma Codice
+                        </Button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMfaStep("sms-phone");
+                          setMfaPhoneError("");
+                        }}
+                        className="text-[10px] font-extrabold uppercase tracking-wider text-violet-500 hover:text-violet-400 text-left outline-none self-start bg-transparent border-none cursor-pointer mt-1"
+                      >
+                        Modifica Numero Telefono
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Enrollment app di autenticazione (TOTP): chiave manuale / link otpauth + verifica primo codice */}
+                  {mfaStep === "totp-verify" && totpSecret && (
+                    <div className="flex flex-col gap-3 pt-2">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
+                        Registra la chiave nella tua app di autenticazione
+                      </Label>
+                      <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">
+                        Apri la tua app (Google Authenticator, 1Password, Authy…) e aggiungi un account
+                        inserendo la <strong>chiave segreta</strong> qui sotto (oppure, da mobile, tocca il link diretto).
+                        Poi inserisci il codice a 6 cifre generato dall&apos;app per confermare.
+                      </p>
+                      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5">
+                        <code className="text-xs font-mono tracking-wider text-slate-800 dark:text-white break-all flex-1">
+                          {totpSecret.secretKey}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={copyTotpSecret}
+                          className="text-slate-400 hover:text-slate-600 dark:hover:text-white outline-none bg-transparent border-none cursor-pointer flex-shrink-0"
+                          aria-label="Copia chiave segreta"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {totpUri && (
+                        <a
+                          href={totpUri}
+                          className="text-[10px] font-extrabold uppercase tracking-wider text-violet-500 hover:text-violet-400 self-start"
+                        >
+                          Apri direttamente nell&apos;app di autenticazione
+                        </a>
+                      )}
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          maxLength={6}
+                          placeholder="6 cifre"
+                          value={totpCode}
+                          onChange={(e) => setTotpCode(e.target.value)}
+                          className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full text-center tracking-widest font-mono text-lg"
+                        />
+                        <Button
+                          onClick={confirmTotpEnrollment}
+                          isDisabled={mfaPending || totpCode.length < 6}
+                          variant="primary"
+                        >
+                          Conferma Codice
+                        </Button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={resetMfaFlow}
+                        className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 hover:text-slate-500 outline-none bg-transparent border-none cursor-pointer self-start"
+                      >
+                        Annulla
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Container invisibile per reCAPTCHA Enterprise (invio SMS) */}
+                  <div id="mfa-recaptcha-container" />
                 </div>
               </CardBody>
             </Card>
@@ -1165,83 +1465,6 @@ export function Settings() {
       )}
 
       {/* ========================================== */}
-      {/* DIALOG CODICI DI RECUPERO 2FA              */}
-      {/* ========================================== */}
-      {showBackupCodesDialog && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border border-violet-500/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative text-center">
-            <CardBody className="space-y-4 items-center">
-              <div className="mx-auto bg-violet-500/10 p-3 rounded-full w-12 h-12 flex items-center justify-center text-violet-500">
-                <Shield className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-extrabold uppercase tracking-wider text-white">
-                Codici di Recupero Generati
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Salva questi codici di backup in un luogo sicuro. Non saranno mostrati nuovamente. Puoi usarli per accedere al tuo account se perdi l&apos;accesso al telefono.
-              </p>
-              
-              <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 my-2 select-text">
-                <ul className="font-mono text-base text-slate-200 space-y-2 list-none p-0 m-0">
-                  {backupCodes.map((code) => (
-                    <li key={code} className="tracking-widest font-bold">
-                      {code}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex flex-col gap-2 w-full pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = backupCodes.join("\n");
-                    void navigator.clipboard.writeText(text);
-                    showToast("Codici di recupero copiati negli appunti.", "success");
-                  }}
-                  className="w-full px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white rounded-xl active:scale-95 transition-all border border-slate-800 flex items-center justify-center gap-1 shadow-lg cursor-pointer"
-                >
-                  <Copy className="w-3.5 h-3.5 mr-1" />
-                  Copia tutti i codici
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = `KALEX 2FA BACKUP CODES\nGenerati il: ${new Date().toLocaleString()}\n\n${backupCodes.join("\n")}`;
-                    const blob = new Blob([text], { type: "text/plain" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `kalex_backup_codes_${user?.email || "user"}.txt`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    showToast("File dei codici scaricato con successo.", "success");
-                  }}
-                  className="w-full px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white rounded-xl active:scale-95 transition-all border border-slate-800 flex items-center justify-center gap-1 shadow-lg cursor-pointer"
-                >
-                  Scarica come file .txt
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setShowBackupCodesDialog(false);
-                    setBackupCodes([]);
-                    showToast("Sessione in fase di aggiornamento. Reindirizzamento al login...", "success");
-                    await new Promise((resolve) => setTimeout(resolve, 800));
-                    void forceCleanSession();
-                  }}
-                  className="w-full px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center justify-center gap-1 shadow-lg cursor-pointer mt-2"
-                >
-                  <Check className="w-3.5 h-3.5 mr-1" />
-                  Ho salvato i codici
-                </button>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
-      )}
-
-      {/* ========================================== */}
       {/* DIALOG DI RIAUTENTICAZIONE MODALE          */}
       {/* ========================================== */}
       {reauthOpen && (
@@ -1254,39 +1477,75 @@ export function Settings() {
                   Riautenticazione Richiesta
                 </h3>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Per procedere con questa operazione sensibile sulla sicurezza, devi confermare la tua identità inserendo la tua password attuale.
-              </p>
-              <form onSubmit={handleReauthSubmit} className="space-y-4">
-                <Input
-                  type="password"
-                  placeholder="Password attuale"
-                  required
-                  value={reauthPassword}
-                  onChange={(e) => setReauthPassword(e.target.value)}
-                  className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full"
-                />
-                <div className="flex gap-3 justify-end pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReauthOpen(false);
-                      setReauthPassword("");
-                      setOnReauthSuccess(null);
-                    }}
-                    className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
-                  >
-                    Annulla
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={reauthPending || !reauthPassword}
-                    className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
-                  >
-                    {reauthPending ? "Verifica..." : "Riconferma"}
-                  </button>
-                </div>
-              </form>
+
+              {reauthMfaResolver ? (
+                <>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Hai la verifica in due passaggi attiva. {reauthMfaFactorId === "totp"
+                      ? <>Inserisci il codice generato da <strong>{reauthMfaHint}</strong> per confermare la tua identità.</>
+                      : <>Inserisci il codice SMS inviato a <strong>{reauthMfaHint}</strong> per confermare la tua identità.</>}
+                  </p>
+                  <form onSubmit={handleReauthMfaVerify} className="space-y-4">
+                    <Input
+                      type="text"
+                      maxLength={6}
+                      placeholder="Codice a 6 cifre"
+                      required
+                      value={reauthMfaCode}
+                      onChange={(e) => setReauthMfaCode(e.target.value)}
+                      className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full text-center tracking-widest font-mono text-lg"
+                    />
+                    <div className="flex gap-3 justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={closeReauth}
+                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
+                      >
+                        Annulla
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={reauthPending || reauthMfaCode.length < 6}
+                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
+                      >
+                        {reauthPending ? "Verifica..." : "Conferma codice"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Per procedere con questa operazione sensibile sulla sicurezza, devi confermare la tua identità inserendo la tua password attuale.
+                  </p>
+                  <form onSubmit={handleReauthSubmit} className="space-y-4">
+                    <Input
+                      type="password"
+                      placeholder="Password attuale"
+                      required
+                      value={reauthPassword}
+                      onChange={(e) => setReauthPassword(e.target.value)}
+                      className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full"
+                    />
+                    <div className="flex gap-3 justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={closeReauth}
+                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
+                      >
+                        Annulla
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={reauthPending || !reauthPassword}
+                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
+                      >
+                        {reauthPending ? "Verifica..." : "Riconferma"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
             </CardBody>
           </Card>
         </div>

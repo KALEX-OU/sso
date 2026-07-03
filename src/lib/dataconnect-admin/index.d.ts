@@ -9,7 +9,7 @@ export type DateString = string;
 
 
 export interface AddUserToOrganizationData {
-  userOrganization_insert: UserOrganizations_Key;
+  userOrganization_upsert: UserOrganizations_Key;
 }
 
 export interface AddUserToOrganizationVariables {
@@ -183,7 +183,7 @@ export interface CreateInvoiceVariables {
 }
 
 export interface CreateOrganizationData {
-  organization_insert: Organizations_Key;
+  organization_upsert: Organizations_Key;
 }
 
 export interface CreateOrganizationVariables {

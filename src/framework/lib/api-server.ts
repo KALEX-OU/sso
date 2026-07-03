@@ -100,6 +100,12 @@ export async function forwardProxyRequest(
     headers.set("x-firebase-appcheck-debug", appCheckDebugHeader);
   }
 
+  // Inoltra il token CSRF (double-submit) per le richieste cookie-autenticate
+  const csrfHeader = request.headers.get("x-csrf-token");
+  if (csrfHeader) {
+    headers.set("x-csrf-token", csrfHeader);
+  }
+
   // Inoltra l'IP reale del client per log, compliance e Geo-IP
   const forwardedFor = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");

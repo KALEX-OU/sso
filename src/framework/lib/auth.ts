@@ -115,6 +115,8 @@ export async function forceCleanSession(appId: string = APP_ID): Promise<void> {
     if (typeof document !== "undefined") {
       document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
       document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "kalex_csrf=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
+      document.cookie = "kalex_csrf=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
   } catch {
     // Silente

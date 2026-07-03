@@ -11,6 +11,7 @@ import {
   getMultiFactorResolver,
   PhoneAuthProvider,
   PhoneMultiFactorGenerator,
+  TotpMultiFactorGenerator,
   RecaptchaVerifier,
   MultiFactorResolver,
   ApplicationVerifier
@@ -169,6 +170,9 @@ function AuthPortal() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaPhoneHint, setMfaPhoneHint] = useState("");
   const [mfaLoading, setMfaLoading] = useState(false);
+  // Fattore usato per la risoluzione MFA: SMS se disponibile, altrimenti codice TOTP dell'app (0.7)
+  const [mfaFactorId, setMfaFactorId] = useState<"phone" | "totp">("phone");
+  const [mfaTotpUid, setMfaTotpUid] = useState("");
 
   const [isVatValidating, setIsVatValidating] = useState(false);
   const [viesAddress, setViesAddress] = useState("");
@@ -735,14 +739,31 @@ function AuthPortal() {
           const resolver = getMultiFactorResolver(auth, err as Parameters<typeof getMultiFactorResolver>[1]);
           setMfaResolver(resolver);
           setMfaRequired(true);
-          
-          const phoneInfoOptions = resolver.hints[0];
-          if (phoneInfoOptions && phoneInfoOptions.displayName) {
+
+          // Preferiamo l'SMS se c'è un numero registrato; in alternativa il fattore TOTP
+          // (app di autenticazione), che non richiede invio: si chiede subito il codice.
+          const phoneInfoOptions = resolver.hints.find((h) => h.factorId === PhoneMultiFactorGenerator.FACTOR_ID);
+          const totpInfoOptions = resolver.hints.find((h) => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
+
+          if (!phoneInfoOptions && totpInfoOptions) {
+            setMfaFactorId("totp");
+            setMfaTotpUid(totpInfoOptions.uid);
+            setMfaVerificationId("");
+            setMfaPhoneHint(totpInfoOptions.displayName || "la tua app di autenticazione");
+            setLoading(false);
+            return;
+          }
+          if (!phoneInfoOptions) {
+            throw new Error("Nessun secondo fattore risolvibile disponibile per questo account.");
+          }
+
+          setMfaFactorId("phone");
+          if (phoneInfoOptions.displayName) {
             setMfaPhoneHint(phoneInfoOptions.displayName);
           } else {
             setMfaPhoneHint("il tuo numero registrato");
           }
-          
+
           // Inizializza reCAPTCHA invisibile per inviare l'SMS (o un mock fittizio se in modalità test/bypass)
           let applicationVerifier: ApplicationVerifier;
           if (auth.settings.appVerificationDisabledForTesting) {
@@ -798,12 +819,18 @@ function AuthPortal() {
 
   const handleVerifyMfaCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mfaResolver || !mfaVerificationId || !mfaCode) return;
+    if (!mfaResolver || !mfaCode) return;
+    if (mfaFactorId === "phone" && !mfaVerificationId) return;
     setError("");
     setMfaLoading(true);
     try {
-      const cred = PhoneAuthProvider.credential(mfaVerificationId, mfaCode);
-      const multiFactorAssertion = PhoneMultiFactorGenerator.assertion(cred);
+      let multiFactorAssertion;
+      if (mfaFactorId === "totp") {
+        multiFactorAssertion = TotpMultiFactorGenerator.assertionForSignIn(mfaTotpUid, mfaCode);
+      } else {
+        const cred = PhoneAuthProvider.credential(mfaVerificationId, mfaCode);
+        multiFactorAssertion = PhoneMultiFactorGenerator.assertion(cred);
+      }
       const userCredential = await mfaResolver.resolveSignIn(multiFactorAssertion);
       
       setMfaRequired(false);
@@ -886,27 +913,39 @@ function AuthPortal() {
         throw errObj;
       }
 
-      // Attendi 3 secondi per permettere al task in background di completare la creazione dell'account
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Polling reale sulla creazione dell'account (1.6): il task in background crea l'utente
+      // Firebase in modo asincrono, quindi ritentiamo il login finché non riesce (con un tetto
+      // massimo) invece di affidarci a un'attesa fissa che fallisce in silenzio su backend lento.
+      const LOGIN_POLL_MAX_ATTEMPTS = 10;
+      const LOGIN_POLL_INTERVAL_MS = 2500;
+      let loggedIn = false;
+      for (let attempt = 1; attempt <= LOGIN_POLL_MAX_ATTEMPTS && !loggedIn; attempt++) {
+        try {
+          const loginResponse = await fetchWithAppCheck("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: data.email, password: data.password })
+          });
 
-      try {
-        const loginResponse = await fetchWithAppCheck("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: data.email, password: data.password })
-        });
-        
-        const loginResData = (await loginResponse.json()) as {
-          success: boolean;
-          customToken?: string;
-        };
+          const loginResData = (await loginResponse.json()) as {
+            success: boolean;
+            customToken?: string;
+          };
 
-        if (loginResponse.ok && loginResData.success && loginResData.customToken) {
-          const { signInWithCustomToken } = await import("firebase/auth");
-          await signInWithCustomToken(auth, loginResData.customToken);
+          if (loginResponse.ok && loginResData.success && loginResData.customToken) {
+            const { signInWithCustomToken } = await import("firebase/auth");
+            await signInWithCustomToken(auth, loginResData.customToken);
+            loggedIn = true;
+          }
+        } catch (loginErr) {
+          console.warn(`Account non ancora disponibile per il login (tentativo ${attempt}/${LOGIN_POLL_MAX_ATTEMPTS}):`, loginErr);
         }
-      } catch (loginErr) {
-        console.warn("Rilevato ritardo nella creazione dell'account in background. L'utente eseguirà il login manuale:", loginErr);
+        if (!loggedIn && attempt < LOGIN_POLL_MAX_ATTEMPTS) {
+          await new Promise(resolve => setTimeout(resolve, LOGIN_POLL_INTERVAL_MS));
+        }
+      }
+      if (!loggedIn) {
+        console.warn("Creazione account in background più lenta del previsto: l'utente eseguirà il login manuale dopo la verifica email.");
       }
 
       setNeedsVerification(true);
@@ -1219,7 +1258,9 @@ function AuthPortal() {
                     {t("auth.mfaTitle")}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-gray-400">
-                    {t("auth.mfaSmsSent", { phone: mfaPhoneHint })}
+                    {mfaFactorId === "totp"
+                      ? t("auth.mfaTotpPrompt", { factor: mfaPhoneHint })
+                      : t("auth.mfaSmsSent", { phone: mfaPhoneHint })}
                   </p>
                 </div>
 

@@ -143,6 +143,12 @@ interface ClientTokenResult {
   success: boolean;
   customToken?: string;
   isRateLimited?: boolean;
+  /**
+   * True SOLO quando l'errore indica che la sessione è genuinamente invalida (401: assente/scaduta/revocata).
+   * Per errori transitori/infrastrutturali (500, rete, signBlob mancante) resta falsy: in quel caso NON si deve
+   * fare clean-session/logout — la sessione col cookie può essere ancora valida (bootstrap resiliente, A2/R1).
+   */
+  sessionInvalid?: boolean;
 }
 
 // ---------------------------------------------------------
@@ -187,6 +193,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
         }
         
         // Se la sessione non è presente, è scaduta o revocata (401 Unauthorized), non eseguiamo i retry
+        // e segnaliamo che la sessione è genuinamente invalida (→ i chiamanti possono pulirla).
         if (
           response.error?.code === "auth/unauthorized" ||
           response.error?.code === "auth/invalid-session" ||
@@ -196,14 +203,15 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           response.error?.message?.includes("mancante") ||
           response.error?.message?.includes("non autorizzato")
         ) {
-          return { success: false };
+          return { success: false, sessionInvalid: true };
         }
-        
+
         if (attempt < retries) {
           await new Promise((resolve) => setTimeout(resolve, delay));
           delay *= 2;
           continue;
         }
+        // Retry esauriti su un errore NON di sessione (es. 500/signBlob): transitorio, NON invalida la sessione.
         return { success: false };
       } catch (err) {
         if (attempt < retries) {
@@ -276,12 +284,16 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           const response = await fetchClientTokenWithRetry();
           if (response.success && response.customToken) {
             await signInWithCustomToken(auth, response.customToken);
+            // Refresh scorrevole del cookie di sessione (48h) mentre l'utente è attivo (best-effort:
+            // un fallimento non tocca la sessione). Rinnova la finestra a ogni ciclo di attività.
+            void fetchAuthedClient("/api/auth/session", { method: "POST" });
           } else if (response.isRateLimited) {
             setRateLimited(true);
-          } else {
-            // Se fallisce il refresh (sessione scaduta o revocata), esegui l'auto-clean della sessione
+          } else if (response.sessionInvalid) {
+            // Solo se la sessione è genuinamente scaduta/revocata: auto-clean.
             await forceCleanSession(appId);
           }
+          // Altrimenti (errore transitorio/infrastrutturale): NON si tocca la sessione, si ritenta al prossimo ciclo.
         } catch {
           // Silent fallback
         }
@@ -299,9 +311,10 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
             await signInWithCustomToken(auth, response.customToken);
           } else if (response.isRateLimited) {
             setRateLimited(true);
-          } else {
+          } else if (response.sessionInvalid) {
             await forceCleanSession(appId);
           }
+          // Errore transitorio: si mantiene la sessione, riprova al prossimo evento/ciclo.
         } catch {
           // Silent fallback
         }

@@ -77,6 +77,16 @@ export async function fetchAuthedClient<T>(
     headers.set("Idempotency-Key", idempotencyKey);
   }
 
+  // 2b. Token CSRF (double-submit): sulle richieste che mutano stato, rispedisce il valore del
+  // cookie non-HttpOnly `kalex_csrf` nell'header `X-CSRF-Token`. Il server lo esige solo quando
+  // la richiesta è autenticata via cookie di sessione (vedi middleware verifyCsrf).
+  if (method !== "GET" && method !== "HEAD" && !headers.has("X-CSRF-Token")) {
+    const csrfMatch = document.cookie.match(/(?:^|;\s*)kalex_csrf=([^;]+)/);
+    if (csrfMatch) {
+      headers.set("X-CSRF-Token", decodeURIComponent(csrfMatch[1]));
+    }
+  }
+
   // 3. Inserisce il token di autenticazione Firebase se l'utente è loggato
   const { auth } = await import("./auth");
   const currentUser = auth.currentUser;

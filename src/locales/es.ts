@@ -108,6 +108,7 @@ export default {
   "auth.verifyLoading": "Verificando correo electrónico y activando cuenta...",
   "auth.mfaTitle": "Autenticación de Dos Factores",
   "auth.mfaSmsSent": "Hemos enviado un código de verificación de 6 dígitos por SMS a su número {phone}.",
+  "auth.mfaTotpPrompt": "Introduce el código de 6 dígitos generado por {factor}.",
   "auth.mfaCode": "Código de verificación SMS",
   "auth.mfaSubmit": "Verificar código",
   "auth.verifyEmailSubDesc": "Una vez completada la verificación, esta pestaña se desbloqueará automáticamente.",

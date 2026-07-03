@@ -87,7 +87,12 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   const fetchAndSyncUserData = useCallback(async (): Promise<boolean> => {
     try {
       const res = await fetchAuthedClient<DashboardData>("/api/auth/dashboard", undefined, {
-        validate: (raw): DashboardData => dashboardResponseSchema.parse(raw)
+        // Guard minimo: verifica che la risposta sia un oggetto (non stringa/array/null propagati
+        // come dato), poi restituisce il payload grezzo tipizzato come DashboardData (contratto lasco).
+        validate: (raw): DashboardData => {
+          dashboardResponseSchema.parse(raw);
+          return raw as DashboardData;
+        }
       });
 
       if (res.success && res.data) {

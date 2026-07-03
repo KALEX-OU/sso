@@ -6390,7 +6390,7 @@ Recall that executing the `CreateOrganization` mutation returns a `MutationPromi
 The `data` property is an object of type `CreateOrganizationData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface CreateOrganizationData {
-  organization_insert: Organizations_Key;
+  organization_upsert: Organizations_Key;
 }
 ```
 ### Using `CreateOrganization`'s action shortcut function
@@ -6433,12 +6433,12 @@ const { data } = await createOrganization({ orgId: ..., name: ..., stripeCustome
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await createOrganization(dataConnect, createOrganizationVars);
 
-console.log(data.organization_insert);
+console.log(data.organization_upsert);
 
 // Or, you can use the `Promise` API.
 createOrganization(createOrganizationVars).then((response) => {
   const data = response.data;
-  console.log(data.organization_insert);
+  console.log(data.organization_upsert);
 });
 ```
 
@@ -6485,12 +6485,12 @@ const ref = createOrganizationRef(dataConnect, createOrganizationVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.organization_insert);
+console.log(data.organization_upsert);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.organization_insert);
+  console.log(data.organization_upsert);
 });
 ```
 
@@ -6540,7 +6540,7 @@ Recall that executing the `AddUserToOrganization` mutation returns a `MutationPr
 The `data` property is an object of type `AddUserToOrganizationData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface AddUserToOrganizationData {
-  userOrganization_insert: UserOrganizations_Key;
+  userOrganization_upsert: UserOrganizations_Key;
 }
 ```
 ### Using `AddUserToOrganization`'s action shortcut function
@@ -6567,12 +6567,12 @@ const { data } = await addUserToOrganization({ userId: ..., orgId: ..., role: ..
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await addUserToOrganization(dataConnect, addUserToOrganizationVars);
 
-console.log(data.userOrganization_insert);
+console.log(data.userOrganization_upsert);
 
 // Or, you can use the `Promise` API.
 addUserToOrganization(addUserToOrganizationVars).then((response) => {
   const data = response.data;
-  console.log(data.userOrganization_insert);
+  console.log(data.userOrganization_upsert);
 });
 ```
 
@@ -6603,12 +6603,12 @@ const ref = addUserToOrganizationRef(dataConnect, addUserToOrganizationVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.userOrganization_insert);
+console.log(data.userOrganization_upsert);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.userOrganization_insert);
+  console.log(data.userOrganization_upsert);
 });
 ```
 
