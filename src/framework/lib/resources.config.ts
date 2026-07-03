@@ -1,6 +1,7 @@
 // framework/src/lib/resources.config.ts
 
 import type * as LucideIcons from "lucide-react";
+import type { RegistryApp } from "./types";
 export type LucideIconName = keyof typeof LucideIcons;
 
 const STRIPE_TAX_CODE_KEYS = [
@@ -2133,88 +2134,6 @@ const organizationModule = {
   }
 } as const;
 
-const projectsModule = {
-  name: "Progetti",
-  icon: "Folder",
-  fields: {
-    id: {
-      type: "String",
-      encrypted: false,
-      render: false,
-      order: 1,
-      label: "fields.id.label",
-      placeholder: "fields.id.placeholder"
-    },
-    name: {
-      type: "String",
-      encrypted: false,
-      render: true,
-      order: 2,
-      label: "fields.name.label",
-      placeholder: "fields.name.placeholder"
-    },
-    budget: {
-      type: "Float",
-      encrypted: true,
-      render: true,
-      order: 3,
-      label: "fields.budget.label",
-      placeholder: "fields.budget.placeholder"
-    },
-    location_lat: {
-      type: "Float",
-      encrypted: false,
-      render: false,
-      order: 4,
-      label: "fields.location_lat.label",
-      placeholder: "fields.location_lat.placeholder"
-    },
-    location_lng: {
-      type: "Float",
-      encrypted: false,
-      render: false,
-      order: 5,
-      label: "fields.location_lng.label",
-      placeholder: "fields.location_lng.placeholder"
-    }
-  },
-  rolePolicies: {
-    owner: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true, allowedFields: ["id", "name", "budget", "location_lat", "location_lng"] },
-    admin: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true, allowedFields: ["id", "name", "budget", "location_lat", "location_lng"] },
-    member: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: false, allowedFields: ["id", "name", "location_lat", "location_lng"] },
-    viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["id", "name"] }
-  }
-} as const;
-
-const addressModule = {
-  name: "Indirizzi",
-  icon: "MapPin",
-  fields: {
-    street: {
-      type: "String",
-      encrypted: false,
-      render: true,
-      order: 1,
-      label: "fields.street.label",
-      placeholder: "fields.street.placeholder"
-    },
-    coordinates: {
-      type: "String",
-      encrypted: true,
-      render: true,
-      order: 2,
-      label: "fields.coordinates.label",
-      placeholder: "fields.coordinates.placeholder"
-    }
-  },
-  rolePolicies: {
-    owner: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true, allowedFields: ["street", "coordinates"] },
-    admin: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true, allowedFields: ["street", "coordinates"] },
-    member: { canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: false, allowedFields: ["street"] },
-    viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["street"] }
-  }
-} as const;
-
 // ==========================================
 // REGISTRO GLOBAL DEGLI ELEMENTI (SSOT)
 // ==========================================
@@ -2233,9 +2152,7 @@ export const MODULE_REGISTRY = {
   thing: thingModule,
   product: productModule,
   productprice: productpriceModule,
-  organization: organizationModule,
-  projects: projectsModule,
-  address: addressModule
+  organization: organizationModule
 } as const;
 
 export const APPLICATION_REGISTRY = {
@@ -2437,16 +2354,29 @@ export function getApplicationInfo(appId: AppIds): { readonly name: string; read
   };
 }
 
-export function getModuleInfo(moduleId: keyof typeof MODULE_REGISTRY): ModuleInfo | null {
-  const mod = MODULE_REGISTRY[moduleId];
+export function getModuleInfo(moduleId: string): ModuleInfo | null {
+  const mod = MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY];
   if (!mod) return null;
   return {
-    id: moduleId,
+    id: moduleId as keyof typeof MODULE_REGISTRY,
     name: mod.name,
     icon: "icon" in mod ? (mod as { icon: LucideIconName }).icon : undefined,
     fields: mod.fields as Record<string, FieldConfig>,
-    rolePolicies: mod.rolePolicies as Record<string, SecurityPolicy>
+    rolePolicies: mod.rolePolicies as Record<string, SecurityPolicy>,
+    formFields: "formFields" in mod ? (mod as { formFields: readonly string[] }).formFields : undefined,
+    listFields: "listFields" in mod ? (mod as { listFields: readonly string[] }).listFields : undefined
   };
+}
+
+/**
+ * Restituisce la configurazione tipizzata di un'applicazione dal registro (nome, enabled, moduli).
+ * Concentra qui l'unica coercizione necessaria dalla forma `as const` di RESOURCE_REGISTRY,
+ * così i consumer (Sidebar, layout) non devono più usare cast `as unknown as`.
+ */
+export function getRegistryApp(appId: string): RegistryApp | undefined {
+  const app = RESOURCE_REGISTRY[appId as keyof typeof RESOURCE_REGISTRY];
+  if (!app) return undefined;
+  return app as unknown as RegistryApp;
 }
 
 export function hasModule(appId: AppIds, moduleId: string): boolean {

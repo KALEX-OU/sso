@@ -43,26 +43,19 @@ const TableComponent: React.FC<TableProps> = (
   }
 );
 
-export const Table = TableComponent as React.FC<TableProps> & {
-  Body: typeof HeroTableBody;
-  Cell: typeof HeroTableCell;
-  Column: typeof HeroTableColumn;
-  Content: typeof HeroTableContent;
-  Header: typeof HeroTableHeader;
-  Row: typeof HeroTableRow;
-  ScrollContainer: typeof HeroTableScrollContainer;
-  Footer: typeof HeroTableFooter;
-};
+TableComponent.displayName = "Table";
 
-Table.displayName = "Table";
-Table.Body = HeroTableBody;
-Table.Cell = HeroTableCell;
-Table.Column = HeroTableColumn;
-Table.Content = HeroTableContent;
-Table.Header = HeroTableHeader;
-Table.Row = HeroTableRow;
-Table.ScrollContainer = HeroTableScrollContainer;
-Table.Footer = HeroTableFooter;
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Table = Object.assign(TableComponent, {
+  Body: HeroTableBody,
+  Cell: HeroTableCell,
+  Column: HeroTableColumn,
+  Content: HeroTableContent,
+  Header: HeroTableHeader,
+  Row: HeroTableRow,
+  ScrollContainer: HeroTableScrollContainer,
+  Footer: HeroTableFooter
+});
 
 export const TableBody = HeroTableBody;
 export const TableCell = HeroTableCell;

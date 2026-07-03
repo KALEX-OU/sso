@@ -33,13 +33,13 @@ let appCheckInstance: AppCheck | null = null;
 if (typeof window !== "undefined") {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   authInstance = getAuth(app);
-  // Disabilita la verifica reCAPTCHA per il login/enrollment MFA in locale o se esplicitamente richiesto via env
-  if (
-    process.env.NODE_ENV === "development" || 
-    process.env.NEXT_PUBLIC_BYPASS_MFA_RECAPTCHA === "true" ||
-    window.location.hostname === "localhost" || 
-    window.location.hostname === "127.0.0.1"
-  ) {
+  // Disabilita la verifica reCAPTCHA per login/enrollment MFA SOLO in sviluppo locale.
+  // (T1.11) Rimosso l'escape via NEXT_PUBLIC_BYPASS_MFA_RECAPTCHA, che avrebbe potuto
+  // disattivare il 2FA anche in produzione.
+  const isLocalDev =
+    process.env.NODE_ENV !== "production" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  if (isLocalDev) {
     authInstance.settings.appVerificationDisabledForTesting = true;
   }
   storageInstance = getStorage(app);
@@ -141,6 +141,27 @@ export async function forceCleanSession(appId: string = APP_ID): Promise<void> {
   }
 }
 
+// --- Incapsulamento degli accessi a proprietà interne (App Check) ---
+// Firebase non espone né una cache dell'istanza App Check sull'app né un setter tipizzato per il
+// debug token globale del browser. Qui concentriamo e documentiamo gli UNICI cast necessari, così
+// il resto del modulo (e initAppCheck) resta type-safe e leggibile.
+interface AppCheckCache {
+  appCheck?: AppCheck;
+}
+interface AppCheckDebugGlobal {
+  FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
+}
+
+function getCachedAppCheck(firebaseApp: FirebaseApp): AppCheck | undefined {
+  return (firebaseApp as unknown as AppCheckCache).appCheck;
+}
+function setCachedAppCheck(firebaseApp: FirebaseApp, instance: AppCheck): void {
+  (firebaseApp as unknown as AppCheckCache).appCheck = instance;
+}
+function setAppCheckDebugToken(token: boolean | string): void {
+  (window as unknown as AppCheckDebugGlobal).FIREBASE_APPCHECK_DEBUG_TOKEN = token;
+}
+
 /**
  * Inizializza App Check in modo sicuro e pigro per evitare errori di caricamento precoce di reCAPTCHA.
  */
@@ -151,17 +172,21 @@ export function initAppCheck(): AppCheck | null {
   try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     
-    const existingAppCheck = (app as unknown as { appCheck?: AppCheck }).appCheck;
+    const existingAppCheck = getCachedAppCheck(app);
     if (existingAppCheck) {
       appCheckInstance = existingAppCheck;
     } else {
       const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-      if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || !siteKey) {
-        // Impostiamo il debug token a livello globale prima dell'inizializzazione.
-        // Questo evita del tutto di caricare l'SDK di reCAPTCHA in locale, rimuovendo alla radice crash ed errori sui placeholder DOM.
-        const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN || "D8C27232-65AF-4C05-8528-595936C2DA78";
-        (window as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
-        
+      // Debug provider consentito SOLO in sviluppo locale (mai in produzione) e senza token
+      // hardcoded: richiede NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN. In produzione si usa SEMPRE
+      // reCAPTCHA Enterprise reale: se manca la site key NON si ripiega sul debug (fail-loud).
+      const isLocalDev = process.env.NODE_ENV !== "production" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+      const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN;
+      if (isLocalDev && debugToken) {
+        // Impostiamo il debug token a livello globale prima dell'inizializzazione (evita di
+        // caricare l'SDK reCAPTCHA in locale, rimuovendo crash ed errori sui placeholder DOM).
+        setAppCheckDebugToken(debugToken);
+
         appCheckInstance = initializeAppCheck(app, {
           provider: new CustomProvider({
             getToken: () => Promise.resolve({
@@ -171,14 +196,18 @@ export function initAppCheck(): AppCheck | null {
           }),
           isTokenAutoRefreshEnabled: true
         });
-      } else {
-        // In produzione usiamo ReCaptcha Enterprise
+      } else if (siteKey) {
+        // Produzione/staging: reCAPTCHA Enterprise reale
         appCheckInstance = initializeAppCheck(app, {
           provider: new ReCaptchaEnterpriseProvider(siteKey),
           isTokenAutoRefreshEnabled: true
         });
+      } else {
+        console.error("[Framework Auth] NEXT_PUBLIC_RECAPTCHA_SITE_KEY mancante: App Check reale non inizializzato (nessun fallback debug in produzione).");
       }
-      (app as unknown as { appCheck: AppCheck }).appCheck = appCheckInstance;
+      if (appCheckInstance) {
+        setCachedAppCheck(app, appCheckInstance);
+      }
     }
   } catch (e) {
     console.warn("[Framework Auth] Impossibile inizializzare App Check:", e);

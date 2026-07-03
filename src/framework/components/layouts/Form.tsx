@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { Textarea } from "../ui/TextArea";
 import { Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui/Select";
 import { Checkbox } from "../ui/Checkbox";
 import { useClaims } from "../../lib/auth";
-import { MODULE_REGISTRY, getModulePolicyForContext, FieldConfig, ModuleInfo } from "../../lib/resources.config";
+import { MODULE_REGISTRY, getModulePolicyForContext, getModuleInfo } from "../../lib/resources.config";
 
 interface OptionItem {
   value: string;
@@ -236,7 +236,7 @@ const FIELD_DEPENDENCIES: Record<string, (values: Record<string, unknown>) => Re
 
 // Generatore Zod dinamico
 function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: string[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
-  const moduleConfig = MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY];
+  const moduleConfig = getModuleInfo(moduleId);
   if (!moduleConfig) return z.object({}) as z.ZodObject<Record<string, z.ZodTypeAny>>;
 
   const shape: Record<string, z.ZodTypeAny> = {};
@@ -246,7 +246,7 @@ function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: 
     : allowedFields;
 
   for (const fieldKey of fieldsToValidate) {
-    const field = (moduleConfig.fields as Record<string, FieldConfig>)[fieldKey];
+    const field = moduleConfig.fields[fieldKey];
     if (!field) continue;
 
     let fieldSchema: z.ZodTypeAny = z.string();
@@ -258,7 +258,7 @@ function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: 
     } else if (field.type === "Timestamp") {
       fieldSchema = z.string().or(z.date());
     } else if (field.type === "Any") {
-      fieldSchema = z.any();
+      fieldSchema = z.unknown();
     }
 
     const val = field.validation || {};
@@ -437,7 +437,7 @@ export function Form({
   const watchedValues = useWatch({ control });
 
   // Determina la visibilità di un campo in base alle dipendenze
-  const isFieldVisible = (fieldKey: string) => {
+  const isFieldVisible = useCallback((fieldKey: string) => {
     if (FIELD_DEPENDENCIES[moduleId]) {
       const visibilityMap = FIELD_DEPENDENCIES[moduleId](watchedValues);
       if (visibilityMap[fieldKey] === false) {
@@ -445,12 +445,12 @@ export function Form({
       }
     }
     return true;
-  };
+  }, [moduleId, watchedValues]);
 
   // Filtra ed ordina i campi in base alle regole configurate
   const orderedFields = useMemo(() => {
     const visible = allowedFields.filter(isFieldVisible);
-    const moduleConfig = (MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY] as unknown) as ModuleInfo | undefined;
+    const moduleConfig = getModuleInfo(moduleId);
     
     // 1. Se nel registro risorse sono specificati formFields, usiamo solo quelli (filtrati per autorizzazioni)
     const configFormFields = moduleConfig?.formFields;
@@ -476,7 +476,7 @@ export function Form({
       const orderB = fieldB?.order ?? 999;
       return orderA - orderB;
     });
-  }, [allowedFields, fieldsOrder, watchedValues, moduleId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [allowedFields, fieldsOrder, moduleId, isFieldVisible]);
 
   if (authLoading) {
     return (
@@ -518,7 +518,7 @@ export function Form({
     }
   };
 
-  const moduleConfig = MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY];
+  const moduleConfig = getModuleInfo(moduleId);
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={`space-y-6 ${className}`}>
@@ -531,7 +531,7 @@ export function Form({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {orderedFields.map((fieldKey) => {
-          const fields = moduleConfig?.fields as unknown as Record<string, FieldConfig>;
+          const fields = moduleConfig?.fields;
           const field = fields?.[fieldKey];
           if (!field) return null;
 

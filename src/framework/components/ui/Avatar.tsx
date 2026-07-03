@@ -38,16 +38,14 @@ const AvatarComponent: React.FC<AvatarProps> = (
   }
 );
 
-export const Avatar = AvatarComponent as React.FC<AvatarProps> & {
-  Fallback: typeof HeroAvatarFallback;
-  Image: typeof HeroAvatarImage;
-  Root: typeof HeroAvatarRoot;
-};
+AvatarComponent.displayName = "Avatar";
 
-Avatar.displayName = "Avatar";
-Avatar.Fallback = HeroAvatarFallback;
-Avatar.Image = HeroAvatarImage;
-Avatar.Root = HeroAvatarRoot;
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Avatar = Object.assign(AvatarComponent, {
+  Fallback: HeroAvatarFallback,
+  Image: HeroAvatarImage,
+  Root: HeroAvatarRoot
+});
 
 export const AvatarFallback = HeroAvatarFallback;
 export const AvatarImage = HeroAvatarImage;

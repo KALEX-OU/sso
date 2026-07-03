@@ -86,22 +86,17 @@ export async function verifySessionCookieServerSide(
       return !!(verifyData && verifyData.success);
     }
     
-    // Se lo status è espressamente 401 o 403, la sessione è sicuramente non valida/scaduta
-    if (verifyRes.status === 401 || verifyRes.status === 403) {
-      return false;
-    }
-    
-    // In caso di altri status (es. 500, 502, 503 per manutenzione o riavvio del server),
-    // consideriamo la sessione temporaneamente valida per evitare il redirect coercitivo
-    // e la conseguente cancellazione del cookie.
-    console.warn(`[Framework Proxy] Risposta non attesa dal server di verifica sessione (Status: ${verifyRes.status}). Sessione preservata.`);
-    return true;
+    // Qualsiasi status diverso da 200 (401, 403, ma anche 5xx) => sessione NON considerata valida.
+    // FAIL-CLOSED (T1.11): non si preserva la sessione su errore del server, per non lasciare
+    // passare un cookie non verificato quando l'API è degradata.
+    // Trade-off: un'indisponibilità temporanea dell'API può richiedere un nuovo login.
+    console.warn(`[Framework Proxy] Verifica sessione non riuscita (Status: ${verifyRes.status}). Sessione NON validata (fail-closed).`);
+    return false;
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : "Errore sconosciuto";
-    console.error("[Framework Proxy] Errore di rete/connessione durante la verifica sessione:", errMsg);
-    // In caso di errore di rete/connessione (es. server offline o in riavvio),
-    // preserviamo la sessione per evitare di sloggare forzatamente l'utente.
-    return true;
+    console.error("[Framework Proxy] Errore di rete/connessione durante la verifica sessione (fail-closed):", errMsg);
+    // FAIL-CLOSED: in caso di errore di rete non si preserva la sessione.
+    return false;
   }
 }
 

@@ -226,19 +226,6 @@ export interface Organization {
   apps?: unknown;
 }
 
-export interface Projects {
-  id?: string;
-  name?: string;
-  budget?: number;
-  location_lat?: number;
-  location_lng?: number;
-}
-
-export interface Address {
-  street?: string;
-  coordinates?: string;
-}
-
 export interface UserOrganization {
   userId: string;
   orgId: string;

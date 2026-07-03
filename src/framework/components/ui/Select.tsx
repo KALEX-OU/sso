@@ -34,6 +34,12 @@ export interface SelectProps extends Omit<React.ComponentProps<typeof HeroSelect
   isDisabled?: boolean;
 }
 
+/**
+ * Select del framework con doppio binding dei props (retrocompatibilità):
+ * - selezione: `value` ha priorità su `selectedKey` (se entrambi presenti vince `value`);
+ * - callback: `onChange` e `onSelectionChange` vengono invocate ENTRAMBE, in quest'ordine.
+ * Con `children` renderizza la composizione custom (Trigger/Popover); senza, genera le opzioni da `options`.
+ */
 export const Select = React.forwardRef<React.ElementRef<typeof HeroSelect>, SelectProps>(
   (
     {
@@ -141,10 +147,10 @@ export const Select = React.forwardRef<React.ElementRef<typeof HeroSelect>, Sele
 
 Select.displayName = "Select";
 
+// NB: ListBox/ListBoxItem NON vengono ri-esportati da qui: la fonte canonica è ./ListBox
+// (evita simboli duplicati nel barrel ui/index.ts). Qui restano solo i sub-componenti propri di Select.
 export {
   HeroSelectTrigger as SelectTrigger,
   HeroSelectValue as SelectValue,
-  HeroSelectPopover as SelectPopover,
-  HeroListBox as ListBox,
-  HeroListBoxItem as ListBoxItem
+  HeroSelectPopover as SelectPopover
 };

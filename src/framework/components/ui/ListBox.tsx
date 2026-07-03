@@ -34,5 +34,7 @@ export const ListBox: React.FC<ListBoxProps> = (
   }
 );
 
+ListBox.displayName = "ListBox";
+
 export const ListBoxItem = HeroListBoxItem;
 export const ListBoxSection = HeroListBoxSection;

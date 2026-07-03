@@ -15,6 +15,11 @@ export interface CheckboxProps extends Omit<React.ComponentProps<typeof HeroChec
   tooltip?: string;
 }
 
+/**
+ * Checkbox del framework con doppio binding dei props (retrocompatibilità):
+ * - stato: `checked` ha priorità su `isSelected` (se entrambi presenti vince `checked`);
+ * - callback: viene invocata SOLO la prima presente tra `onChange` e `onValueChange` (onChange vince).
+ */
 const CheckboxComponent = React.forwardRef<React.ElementRef<typeof HeroCheckbox>, CheckboxProps>(
   ({ className = "", label, checked, isSelected, onChange, onValueChange, isSkeleton, tooltip, children, ...props }, ref) => {
     if (isSkeleton) {
@@ -53,15 +58,11 @@ const CheckboxComponent = React.forwardRef<React.ElementRef<typeof HeroCheckbox>
 
 CheckboxComponent.displayName = "Checkbox";
 
-export const Checkbox = CheckboxComponent as React.ForwardRefExoticComponent<CheckboxProps & React.RefAttributes<React.ElementRef<typeof HeroCheckbox>>> & {
-  Control: typeof HeroCheckbox.Control;
-  Indicator: typeof HeroCheckbox.Indicator;
-  Content: typeof HeroCheckbox.Content;
-};
-
-Checkbox.displayName = "Checkbox";
-Checkbox.Control = HeroCheckbox.Control;
-Checkbox.Indicator = HeroCheckbox.Indicator;
-Checkbox.Content = HeroCheckbox.Content;
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Checkbox = Object.assign(CheckboxComponent, {
+  Control: HeroCheckbox.Control,
+  Indicator: HeroCheckbox.Indicator,
+  Content: HeroCheckbox.Content
+});
 
 export const CheckboxGroup = HeroCheckboxGroup;

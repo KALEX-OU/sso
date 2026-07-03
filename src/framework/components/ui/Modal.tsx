@@ -33,6 +33,8 @@ const ModalBase: React.FC<ModalProps> = (
   }
 );
 
+ModalBase.displayName = "Modal";
+
 export const ModalBackdrop = HeroModalBackdrop;
 export const ModalBody = HeroModalBody;
 export const ModalCloseTrigger = HeroModalCloseTrigger;

@@ -1,11 +1,6 @@
-import Stripe from "stripe";
 import { adminDataConnect } from "@/lib/firebase/admin";
-import { getOrganizationDetails, updateOrganizationStripeConnect } from "@/lib/dataconnect-admin";
+import { getOrganizationDetails } from "@/lib/dataconnect-admin";
 import Link from "next/link";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16" as never,
-});
 
 interface PageProps {
   searchParams: Promise<{ orgId?: string }>;
@@ -30,7 +25,9 @@ export default async function ConnectReturnPage({ searchParams }: PageProps) {
   let errorMsg: string | null = null;
 
   try {
-    // 1. Recupera l'organizzazione e il suo ID Connect dal database PostgreSQL
+    // La verifica dello stato KYC su Stripe è centralizzata nell'API (gateway Hono):
+    // SSO NON usa più la STRIPE_SECRET_KEY. Lo stato `stripeConnectOnboarded` è sincronizzato
+    // dal webhook `account.updated` (fonte di verità, T1.8). Qui leggiamo semplicemente il DB.
     const orgRes = await getOrganizationDetails(adminDataConnect, { orgId });
     const org = orgRes.data?.organization;
 
@@ -39,19 +36,7 @@ export default async function ConnectReturnPage({ searchParams }: PageProps) {
     }
 
     orgName = org.name;
-
-    // 2. Recupera l'account direttamente da Stripe per verificare lo stato di compilazione del KYC
-    const account = await stripe.accounts.retrieve(org.stripeConnectAccountId);
-    onboarded = account.details_submitted;
-
-    if (onboarded) {
-      // Aggiorna lo stato su PostgreSQL impostando stripeConnectOnboarded = true
-      await updateOrganizationStripeConnect(adminDataConnect, {
-        orgId,
-        stripeConnectAccountId: org.stripeConnectAccountId,
-        stripeConnectOnboarded: true
-      });
-    }
+    onboarded = !!org.stripeConnectOnboarded;
   } catch (error) {
     console.error("Errore durante verifica ritorno Connect:", error);
     errorMsg = error instanceof Error ? error.message : "Impossibile caricare i dati dell&apos;account Connect.";
@@ -101,7 +86,7 @@ export default async function ConnectReturnPage({ searchParams }: PageProps) {
               KYC non completato
             </h1>
             <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-              Non hai completato tutti i passaggi richiesti da Stripe per verificare il tuo conto. Completa la configurazione per poter abilitare i payout.
+              Se hai appena completato l&apos;onboarding, lo stato potrebbe richiedere qualche istante per aggiornarsi: ricarica la pagina tra poco. Se il problema persiste, completa i passaggi richiesti da Stripe per abilitare i payout.
             </p>
           </>
         )}

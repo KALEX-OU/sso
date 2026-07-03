@@ -91,4 +91,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
 TextArea.displayName = "TextArea";
 
+// Nome canonico: `TextArea` (nomenclatura ufficiale HeroUI v3). `Textarea` è un alias di
+// retrocompatibilità per i consumer esistenti: nei nuovi usi importare `TextArea`.
 export { TextArea as Textarea };

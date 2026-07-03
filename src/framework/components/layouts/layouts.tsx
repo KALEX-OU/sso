@@ -4,13 +4,12 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
 import { fetchAuthedClient } from "@/framework/lib/api";
-import { RESOURCE_REGISTRY } from "@/framework/lib/resources.config";
+import { getRegistryApp } from "@/framework/lib/resources.config";
 import { Sidebar } from "@/framework/components/layouts/Sidebar";
 import { ToastNotification } from "@/framework/components/layouts/ToastNotification";
 import type {
   ToastState,
   DashboardData,
-  RegistryApp,
   RefreshClaimsResponse
 } from "@/framework/lib/types";
 import { AlertCircle, X } from "lucide-react";
@@ -63,9 +62,8 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     // Bypass completo per l'owner
     if (userRoleRaw === "owner") return true;
 
-    // Recupera la policy definita staticamente in RESOURCE_REGISTRY
-    const registry = RESOURCE_REGISTRY as unknown as Record<string, RegistryApp>;
-    const appConfig = registry[appId];
+    // Recupera la policy definita staticamente nel registro (SSOT)
+    const appConfig = getRegistryApp(appId);
     if (!appConfig) return false;
     const moduleConfig = appConfig.modules[module];
     if (!moduleConfig) return false;
@@ -302,7 +300,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
       : (cleanPath === "" || cleanPath.startsWith("dashboard"));
 
     if (cleanPath && !isDashboardPath && !cleanPath.startsWith("auth") && !cleanPath.startsWith("support")) {
-      const appConfig = RESOURCE_REGISTRY[appId as keyof typeof RESOURCE_REGISTRY];
+      const appConfig = getRegistryApp(appId);
       if (appConfig) {
         // Cerca se la rotta corrisponde a un modulo registrato
         const modulesList = Object.keys(appConfig.modules);

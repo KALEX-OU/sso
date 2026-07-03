@@ -17,6 +17,15 @@ export interface KalexResponse<T> {
 }
 
 /**
+ * Opzioni della chiamata autenticata. `validate` abilita la validazione runtime della risposta
+ * (es. `(raw) => miaSchemaZod.parse(raw)`): se lo schema non combacia, viene restituito un errore
+ * tipizzato (`api/invalid-response`) invece di propagare un payload malformato come `T`.
+ */
+export interface FetchAuthedOptions<T> {
+  validate?: (raw: unknown) => T;
+}
+
+/**
  * Recupera in modo sicuro il token App Check se l'SDK è inizializzato ed è lato client.
  */
 async function getClientAppCheckToken(): Promise<string | null> {
@@ -43,7 +52,8 @@ async function getClientAppCheckToken(): Promise<string | null> {
  */
 export async function fetchAuthedClient<T>(
   pathname: string,
-  init?: RequestInit
+  init?: RequestInit,
+  options?: FetchAuthedOptions<T>
 ): Promise<KalexResponse<T>> {
   if (typeof window === "undefined") {
     throw new Error("fetchAuthedClient può essere invocato esclusivamente lato client.");
@@ -154,19 +164,62 @@ export async function fetchAuthedClient<T>(
     }
 
     if (!response.ok) {
-      return {
-        success: false,
-        error: json.error || { 
+      let errorObj: KalexError;
+      if (typeof json.error === "string") {
+        errorObj = { message: json.error };
+      } else if (json.error && typeof json.error === "object") {
+        const errObj = json.error as KalexError;
+        errorObj = {
+          message: errObj.message || json.message || "Errore sconosciuto nella chiamata API.",
+          code: errObj.code,
+          details: errObj.details || { correlationId }
+        };
+      } else {
+        errorObj = {
           message: json.message || "Errore sconosciuto nella chiamata API.",
           details: { correlationId }
-        }
+        };
+      }
+      return {
+        success: false,
+        error: errorObj
       };
     }
 
+    let errorObj: KalexError | undefined = undefined;
+    if (json.error) {
+      if (typeof json.error === "string") {
+        errorObj = { message: json.error };
+      } else if (typeof json.error === "object") {
+        errorObj = json.error as KalexError;
+      }
+    } else if (json.success === false) {
+      errorObj = { message: json.message || "Errore sconosciuto nella chiamata API." };
+    }
+
+    let data: T;
+    if (options?.validate) {
+      try {
+        data = options.validate(json);
+      } catch (validationError) {
+        const vMsg = validationError instanceof Error ? validationError.message : "Schema non conforme";
+        return {
+          success: false,
+          error: {
+            message: "Risposta del server non conforme allo schema atteso.",
+            code: "api/invalid-response",
+            details: { correlationId, validationError: vMsg }
+          }
+        };
+      }
+    } else {
+      // Nessuno schema fornito: si assume il tipo dichiarato dal chiamante (opt-out esplicito, non validato a runtime).
+      data = json as unknown as T;
+    }
     return {
       success: json.success !== false,
-      data: json as unknown as T,
-      error: json.error as KalexError | undefined
+      data,
+      error: errorObj
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Errore di rete durante la connessione.";

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
 import { Card, CardBody } from "../ui/Card";
@@ -72,6 +73,7 @@ export function Settings() {
 
   // Stati per la 2FA (MFA)
   const [mfaPhoneNumber, setMfaPhoneNumber] = useState("");
+  const [mfaPhoneError, setMfaPhoneError] = useState("");
   const [mfaOtpCode, setMfaOtpCode] = useState("");
   const [mfaStep, setMfaStep] = useState<"idle" | "verify" | "otp">("idle");
   const [mfaPending, setMfaPending] = useState(false);
@@ -335,27 +337,56 @@ export function Settings() {
     }
   };
 
+  const handlePhoneChange = (val: string) => {
+    setMfaPhoneNumber(val);
+    if (mfaPhoneError) {
+      const e164Regex = /^\+[1-9]\d{1,14}$/;
+      if (e164Regex.test(val)) {
+        setMfaPhoneError("");
+      }
+    }
+  };
+
   // 2FA - SMS OTP Verification
   const startMfaEnrollment = async () => {
     if (!user || !mfaPhoneNumber) return;
 
+    // Validazione del formato E.164 (+[1-9]\d{1,14})
+    const e164Regex = /^\+[1-9]\d{1,14}$/;
+    if (!e164Regex.test(mfaPhoneNumber)) {
+      setMfaPhoneError("Formato numero di telefono non valido (richiesto E.164, es. +393471234567)");
+      return;
+    }
+    setMfaPhoneError("");
+
     try {
       setMfaPending(true);
 
-      const res = await fetchAuthedClient<{ success: boolean; error?: string; message?: string }>(`/api/user/${user.uid}/mfa/send`, {
+      const res = await fetchAuthedClient<{ success: boolean; error?: string | { issues: Array<{ message: string }> }; message?: string }>(`/api/user/${user.uid}/mfa/send`, {
         method: "POST",
         body: JSON.stringify({ phoneNumber: mfaPhoneNumber })
       });
 
       if (!res.success) {
-        throw new Error(res.error?.message || "Errore durante l'invio del codice di verifica.");
+        let serverErrorMsg = "Errore durante l'invio del codice di verifica.";
+        if (res.error) {
+          const errDetail: { message?: string; issues?: Array<{ message: string }> } = res.error;
+          if (errDetail.issues && errDetail.issues[0]?.message) {
+            serverErrorMsg = errDetail.issues[0].message;
+          } else if (errDetail.message) {
+            serverErrorMsg = errDetail.message;
+          }
+        }
+        throw new Error(serverErrorMsg);
       }
 
       setMfaStep("otp");
       showToast("Codice di verifica SMS inviato al telefono.", "success");
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore nell'invio dell'SMS. Controlla il formato (es. +393471234567).", "error");
+      const errMsg = err instanceof Error ? err.message : "Errore nell'invio dell'SMS. Controlla il formato (es. +393471234567).";
+      setMfaPhoneError(errMsg);
+      showToast(errMsg, "error");
     } finally {
       setMfaPending(false);
     }
@@ -384,6 +415,7 @@ export function Settings() {
 
       setMfaStep("idle");
       setMfaPhoneNumber("");
+      setMfaPhoneError("");
       setMfaOtpCode("");
       showToast("Autenticazione a due fattori (2FA) attivata correttamente.", "success");
       if (!(generatedCodes && generatedCodes.length > 0)) {
@@ -664,8 +696,7 @@ export function Settings() {
                     ) : (
                       <>
                         {avatarPreview ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                          <Image src={avatarPreview} alt="Avatar" fill sizes="144px" unoptimized className="object-cover" />
                         ) : (
                           <span className="text-4xl font-black text-slate-400 dark:text-slate-600 select-none">
                             {displayName.substring(0, 2).toUpperCase()}
@@ -859,7 +890,10 @@ export function Settings() {
                       {mfaStep === "idle" && (
                         <div className="pt-2">
                           <Button
-                            onClick={() => setMfaStep("verify")}
+                            onClick={() => {
+                              setMfaStep("verify");
+                              setMfaPhoneError("");
+                            }}
                             variant="primary"
                           >
                             Configura 2FA via SMS
@@ -877,7 +911,8 @@ export function Settings() {
                               type="tel"
                               placeholder="E.g. +393471234567"
                               value={mfaPhoneNumber}
-                              onChange={(e) => setMfaPhoneNumber(e.target.value)}
+                              onChange={(e) => handlePhoneChange(e.target.value)}
+                              error={mfaPhoneError}
                               className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full"
                             />
                             <Button
@@ -918,7 +953,10 @@ export function Settings() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => setMfaStep("verify")}
+                            onClick={() => {
+                              setMfaStep("verify");
+                              setMfaPhoneError("");
+                            }}
                             className="text-[10px] font-extrabold uppercase tracking-wider text-purple-500 hover:text-purple-400 text-left outline-none self-start bg-transparent border-none cursor-pointer mt-1"
                           >
                             Modifica Numero Telefono

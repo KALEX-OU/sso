@@ -56,7 +56,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={`klx-btn klx-btn--${variant} klx-btn--${size} ${className}`}
         isDisabled={disabled || isDisabled || isLoading}
         variant={variant as "primary" | "secondary" | "danger" | "ghost" | "danger-soft" | "outline" | "tertiary" | undefined}
-        onClick={onClick ? (e) => onClick(e as unknown as React.MouseEvent<HTMLButtonElement>) : undefined}
+        onClick={onClick ? (e) => onClick(e as React.MouseEvent<HTMLButtonElement>) : undefined}
         {...props}
       >
         {isLoading && <Spinner size="sm" className="mr-1.5" />}

@@ -36,10 +36,14 @@ export function initAppCheck(): AppCheck | null {
       appCheckInstance = existingAppCheck;
     } else {
       const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-      if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || !siteKey) {
-        const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN || "D8C27232-65AF-4C05-8528-595936C2DA78";
+      // Debug provider consentito SOLO in sviluppo locale (mai in produzione), e senza token
+      // hardcoded: richiede NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN. In produzione si usa SEMPRE
+      // reCAPTCHA Enterprise reale: se manca la site key, NON si ripiega sul debug (fail-loud).
+      const isLocalDev = process.env.NODE_ENV !== "production" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+      const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN;
+      if (isLocalDev && debugToken) {
         (window as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
-        
+
         appCheckInstance = initializeAppCheck(app, {
           provider: new CustomProvider({
             getToken: () => Promise.resolve({
@@ -49,14 +53,18 @@ export function initAppCheck(): AppCheck | null {
           }),
           isTokenAutoRefreshEnabled: true
         });
-      } else {
-        // In produzione usiamo reCAPTCHA Enterprise
+      } else if (siteKey) {
+        // Produzione/staging: reCAPTCHA Enterprise reale
         appCheckInstance = initializeAppCheck(app, {
           provider: new ReCaptchaEnterpriseProvider(siteKey),
           isTokenAutoRefreshEnabled: true,
         });
+      } else {
+        console.error("[SSO Client] NEXT_PUBLIC_RECAPTCHA_SITE_KEY mancante: App Check reale non inizializzato (nessun fallback debug in produzione).");
       }
-      (app as unknown as { appCheck: AppCheck }).appCheck = appCheckInstance;
+      if (appCheckInstance) {
+        (app as unknown as { appCheck: AppCheck }).appCheck = appCheckInstance;
+      }
     }
   } catch (e) {
     console.warn("[SSO Client] Impossibile inizializzare App Check:", e);
@@ -84,8 +92,8 @@ export async function fetchWithAppCheck(input: RequestInfo | URL, init?: Request
   if (token) {
     headers.set("X-Firebase-AppCheck", token);
   }
-  if (process.env.NODE_ENV === "development") {
-    headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
+  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN) {
+    headers.set("X-Firebase-AppCheck-Debug", process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN);
   }
   return fetch(input, {
     ...init,
@@ -102,8 +110,8 @@ export async function fetchAuthed(input: RequestInfo | URL, init?: RequestInit):
   if (token) {
     headers.set("X-Firebase-AppCheck", token);
   }
-  if (process.env.NODE_ENV === "development") {
-    headers.set("X-Firebase-AppCheck-Debug", "D8C27232-65AF-4C05-8528-595936C2DA78");
+  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN) {
+    headers.set("X-Firebase-AppCheck-Debug", process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN);
   }
   if (idToken) {
     headers.set("Authorization", `Bearer ${idToken}`);

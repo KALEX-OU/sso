@@ -100,7 +100,11 @@ export default function VerifyEmailPage() {
         });
         const data = await response.json();
         if (data.success && data.code) {
-          window.location.href = `${redirectUri}?code=${data.code}&state=${encodeURIComponent(state)}`;
+          // Costruzione sicura dell'URL (preserva eventuali query esistenti, no concatenazione).
+          const redirectUrl = new URL(redirectUri);
+          redirectUrl.searchParams.set("code", data.code);
+          redirectUrl.searchParams.set("state", state);
+          window.location.href = redirectUrl.toString();
           return;
         }
       } catch (err) {

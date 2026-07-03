@@ -13,10 +13,7 @@ export interface TooltipProps extends React.ComponentProps<typeof HeroTooltip> {
   onOpenChange?: (isOpen: boolean) => void;
 }
 
-export const Tooltip: React.FC<TooltipProps> & {
-  Trigger: typeof HeroTooltipTrigger;
-  Content: typeof HeroTooltipContent;
-} = ({
+const TooltipBase: React.FC<TooltipProps> = ({
   content,
   children,
   className = "",
@@ -44,6 +41,10 @@ export const Tooltip: React.FC<TooltipProps> & {
   );
 };
 
-Tooltip.Trigger = HeroTooltipTrigger;
-Tooltip.Content = HeroTooltipContent;
-Tooltip.displayName = "Tooltip";
+TooltipBase.displayName = "Tooltip";
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Tooltip = Object.assign(TooltipBase, {
+  Trigger: HeroTooltipTrigger,
+  Content: HeroTooltipContent
+});

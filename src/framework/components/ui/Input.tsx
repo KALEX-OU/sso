@@ -19,6 +19,11 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   tooltip?: string;
 }
 
+/**
+ * Input del framework con doppio binding dei props (retrocompatibilità):
+ * - callback: `onChange(event)` e `onValueChange(value)` vengono invocate ENTRAMBE, in quest'ordine.
+ * Componente controllato: `value` ha default `""`.
+ */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {

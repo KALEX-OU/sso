@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
-import { RESOURCE_REGISTRY, getVisibleModulesForSidebar, AppIds, MODULE_REGISTRY, LucideIconName } from "@/framework/lib/resources.config";
+import { getVisibleModulesForSidebar, AppIds, LucideIconName, getModuleInfo } from "@/framework/lib/resources.config";
 import { useTheme } from "next-themes";
 import { useCurrentLocale } from "@/locales/client";
 import pkg from "@/../package.json";
@@ -37,26 +37,6 @@ const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ clas
   return IconComponent || LayoutDashboard;
 };
 
-interface RegistryModule {
-  name?: string;
-  rolePolicies: Record<
-    string,
-    {
-      canRead?: boolean;
-      canList?: boolean;
-      canCreate?: boolean;
-      canUpdate?: boolean;
-      canDelete?: boolean;
-    }
-  >;
-}
-
-interface RegistryApp {
-  name: string;
-  enabled: boolean;
-  modules: Record<string, RegistryModule>;
-}
-
 interface SidebarProps {
   appId: string;
   collapsed: boolean;
@@ -75,10 +55,6 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   const userRole = (claims?.uRole || claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
   const displayName = user?.displayName || user?.email?.split("@")[0] || "Utente";
   const roleName = (claims?.uRole || claims?.role) ? String(claims?.uRole || claims?.role).toUpperCase() : "VIEWER";
-  
-  // Recupera l'elenco moduli per l'appId corrente
-  const registry = RESOURCE_REGISTRY as unknown as Record<string, RegistryApp>;
-  const appConfig = registry[appId];
   
   // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims rbac.apps
   const orgRole = (claims?.rbac?.apps?.[appId]?.mode || "buyer") as "buyer" | "seller" | "both";
@@ -146,10 +122,9 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
       {/* 2. MENU MODULI (Middle) */}
       <ScrollShadow hideScrollBar className="klx-sidebar-menu">
         {visibleModules.map((moduleId) => {
-          const moduleConfig = MODULE_REGISTRY[moduleId as keyof typeof MODULE_REGISTRY];
-          const Icon = getIconComponent(moduleConfig?.icon);
-          const config = appConfig.modules[moduleId];
-          const label = config?.name || moduleId;
+          const moduleInfo = getModuleInfo(moduleId);
+          const Icon = getIconComponent(moduleInfo?.icon);
+          const label = moduleInfo?.name || moduleId;
           
           const modulePath = moduleId === "dashboard" ? "/dashboard" : `/${moduleId}`;
           const localizedPath = `/${currentLocale}${modulePath}`;
