@@ -370,7 +370,8 @@ body {
 
 /* ToastNotification */
 .klx-toast {
-  @apply fixed bottom-6 left-6 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300;
+  /* z-[60]: sopra i modal (backdrop z-50) così il toast non resta nascosto dietro il velo */
+  @apply fixed bottom-6 left-6 z-[60] animate-in fade-in slide-in-from-bottom-5 duration-300;
   @apply bg-white dark:bg-slate-950/95 backdrop-blur-xl border rounded-2xl p-4 shadow-2xl flex items-center gap-3.5 max-w-sm;
 }
 .klx-toast--success {

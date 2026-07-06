@@ -110,6 +110,8 @@ export function Settings() {
   const [reauthMfaCode, setReauthMfaCode] = useState("");
   const [reauthMfaHint, setReauthMfaHint] = useState("");
   const [reauthMfaTotpUid, setReauthMfaTotpUid] = useState("");
+  // Errore mostrato INLINE nel dialog di reauth: un toast finirebbe dietro il backdrop del modal.
+  const [reauthError, setReauthError] = useState("");
 
   // Stati per l'Eliminazione GDPR
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -188,6 +190,7 @@ export function Settings() {
     setReauthMfaResolver(null);
     setReauthMfaCode("");
     setReauthMfaHint("");
+    setReauthError("");
   };
 
   const executeWithReauthChallenge = (action: () => Promise<void>) => {
@@ -196,6 +199,7 @@ export function Settings() {
     setReauthMfaResolver(null);
     setReauthMfaCode("");
     setReauthMfaHint("");
+    setReauthError("");
     setReauthOpen(true);
   };
 
@@ -226,6 +230,7 @@ export function Settings() {
           setReauthMfaTotpUid(totpHint.uid);
           setReauthMfaHint(totpHint.displayName || t("settings.reauth.defaultHint"));
           setReauthMfaCode("");
+          setReauthError("");
           showToast(t("settings.toast.mfaEnterCode"), "info");
         } catch (mfaErr) {
           console.error("[Reauth MFA] Errore avvio secondo fattore:", mfaErr);
@@ -234,12 +239,11 @@ export function Settings() {
         return;
       }
       console.error("[Reauth] Errore:", err);
-      showToast(
-        authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential"
-          ? t("settings.toast.reauthWrongPw")
-          : t("settings.toast.reauthFail"),
-        "error"
-      );
+      const reauthMsg = authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential"
+        ? t("settings.toast.reauthWrongPw")
+        : t("settings.toast.reauthFail");
+      setReauthError(reauthMsg);
+      showToast(reauthMsg, "error");
     } finally {
       setReauthPending(false);
     }
@@ -259,6 +263,7 @@ export function Settings() {
       if (pending) await pending();
     } catch (err) {
       console.error("[Reauth MFA] Errore verifica:", err);
+      setReauthError(t("settings.toast.codeInvalidExpired"));
       showToast(t("settings.toast.codeInvalidExpired"), "error");
     } finally {
       setReauthPending(false);
@@ -1405,6 +1410,13 @@ export function Settings() {
                 </h3>
               </div>
 
+              {reauthError && (
+                <div className="flex items-start gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 px-3.5 py-2.5 text-red-400">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span className="text-[11px] leading-relaxed">{reauthError}</span>
+                </div>
+              )}
+
               {reauthMfaResolver ? (
                 <>
                   <p className="text-xs text-slate-300 leading-relaxed">
@@ -1417,7 +1429,7 @@ export function Settings() {
                       placeholder={t("settings.reauth.codePlaceholder")}
                       required
                       value={reauthMfaCode}
-                      onChange={(e) => setReauthMfaCode(e.target.value)}
+                      onChange={(e) => { setReauthMfaCode(e.target.value); if (reauthError) setReauthError(""); }}
                       className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full text-center tracking-widest font-mono text-lg"
                     />
                     <div className="flex gap-3 justify-end pt-2">
@@ -1449,7 +1461,7 @@ export function Settings() {
                       placeholder={t("settings.reauth.passwordPlaceholder")}
                       required
                       value={reauthPassword}
-                      onChange={(e) => setReauthPassword(e.target.value)}
+                      onChange={(e) => { setReauthPassword(e.target.value); if (reauthError) setReauthError(""); }}
                       className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full"
                     />
                     <div className="flex gap-3 justify-end pt-2">
