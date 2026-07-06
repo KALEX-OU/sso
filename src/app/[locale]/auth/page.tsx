@@ -145,6 +145,10 @@ function AuthPortal() {
   const searchParams = useSearchParams();
   const clientId = searchParams.get("client_id") || "default";
   const redirectUri = searchParams.get("redirect_uri");
+  // PKCE (3.1): challenge generato dalla RP, va inoltrato tale e quale a /api/auth/code
+  const codeChallenge = searchParams.get("code_challenge");
+  // Suffisso per i link interni (privacy/termini) che devono preservare i parametri OAuth
+  const pkcePreserveParams = codeChallenge ? `&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256` : "";
   const state = searchParams.get("state") || "";
 
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
@@ -550,7 +554,12 @@ function AuthPortal() {
       const response = await fetchWithAppCheck("/api/auth/code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken, clientId, redirectUri })
+        body: JSON.stringify({
+          idToken,
+          clientId,
+          redirectUri,
+          ...(codeChallenge ? { codeChallenge, codeChallengeMethod: "S256" } : {})
+        })
       });
       const data = (await response.json()) as { 
         success?: boolean; 
@@ -576,7 +585,7 @@ function AuthPortal() {
       setError(message);
       setRedirecting(false);
     }
-  }, [redirectUri, clientId, state]);
+  }, [redirectUri, clientId, state, codeChallenge]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -1137,8 +1146,8 @@ function AuthPortal() {
             <p>© 2026 {brand.name === "KALEX" ? "KALEX CLOUD OÜ" : brand.name}. Tutti i diritti riservati.</p>
             <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
             <div className="flex gap-3">
-              <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
-              <a href={`/${currentLocale}/terms?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}`} className="hover:text-white dark:hover:text-white transition-colors">Termini</a>
+              <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
+              <a href={`/${currentLocale}/terms?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-white dark:hover:text-white transition-colors">Termini</a>
             </div>
           </div>
         </div>
@@ -2000,8 +2009,8 @@ function AuthPortal() {
           <p>© 2026 {brand.name === "KALEX" ? "KALEX CLOUD OÜ" : brand.name}. Tutti i diritti riservati.</p>
           <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
           <div className="flex gap-3">
-            <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
-            <a href={`/${currentLocale}/terms?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Termini</a>
+            <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
+            <a href={`/${currentLocale}/terms?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Termini</a>
           </div>
         </div>
       </div>

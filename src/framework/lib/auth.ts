@@ -101,10 +101,11 @@ export async function forceCleanSession(appId: string = APP_ID): Promise<void> {
     console.error("[forceCleanSession] Errore durante il signOut di Firebase:", err);
   }
 
-  // 5. Pulisce sessionStorage (in particolare lo stato CSRF dell'SSO)
+  // 5. Pulisce sessionStorage (stato CSRF dell'SSO e verifier PKCE)
   try {
     if (typeof sessionStorage !== "undefined") {
       sessionStorage.removeItem("sso_auth_state");
+      sessionStorage.removeItem("sso_pkce_verifier");
     }
   } catch {
     // Silente
@@ -219,6 +220,64 @@ export function initAppCheck(): AppCheck | null {
 }
 
 // Hook principale per monitorare lo stato di autenticazione e caricare i claims di KALEX
+// PKCE (piano Identity Center 3.1, RFC 7636): la Relying Party genera un code_verifier
+// casuale (base64url, 43 caratteri) e ne deriva il challenge S256. Il verifier resta in
+// sessionStorage della RP e viene presentato solo allo scambio /auth/token: un code
+// intercettato sul redirect non è spendibile senza il verifier.
+function base64UrlEncode(bytes: Uint8Array): string {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function redirectToSso(clientId: string, register: boolean): Promise<void> {
+  const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+  let currentUrlStr = typeof window !== "undefined" ? window.location.href : "";
+
+  // State univoco anti-CSRF, conservato nella RP e confrontato al ritorno
+  const state = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).substring(2, 15);
+
+  // Coppia PKCE: se Web Crypto non è disponibile si procede senza (il server accetta
+  // ancora i code legacy senza challenge — retrocompatibilità durante il rollout)
+  let challenge = "";
+  try {
+    if (typeof crypto !== "undefined" && crypto.subtle) {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      const verifier = base64UrlEncode(bytes);
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+      challenge = base64UrlEncode(new Uint8Array(digest));
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem("sso_pkce_verifier", verifier);
+      }
+    }
+  } catch (e) {
+    console.warn("[SSO Redirect] PKCE non disponibile, procedo senza challenge:", e);
+    challenge = "";
+  }
+
+  if (typeof sessionStorage !== "undefined") {
+    sessionStorage.setItem("sso_auth_state", state);
+  }
+
+  if (currentUrlStr) {
+    try {
+      const url = new URL(currentUrlStr);
+      url.searchParams.delete("code");
+      url.searchParams.delete("state");
+      currentUrlStr = url.toString();
+    } catch (e) {
+      console.error("Errore parsing URL in redirectToSso", e);
+    }
+  }
+
+  const registerParam = register ? "register=true&" : "";
+  const pkceParams = challenge ? `&code_challenge=${challenge}&code_challenge_method=S256` : "";
+  window.location.href = `${ssoUrl}/auth?${registerParam}client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}&state=${state}${pkceParams}`;
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(typeof window !== "undefined" && !!authInstance);
@@ -277,55 +336,11 @@ export function useAuth() {
   }, []);
 
   const loginRedirect = useCallback((clientId: string) => {
-    const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
-    let currentUrlStr = typeof window !== "undefined" ? window.location.href : "";
-    
-    // Genera uno state univoco per prevenire attacchi CSRF
-    const state = typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 15);
-    
-    if (typeof sessionStorage !== "undefined") {
-      sessionStorage.setItem("sso_auth_state", state);
-    }
-
-    if (currentUrlStr) {
-      try {
-        const url = new URL(currentUrlStr);
-        url.searchParams.delete("code");
-        url.searchParams.delete("state");
-        currentUrlStr = url.toString();
-      } catch (e) {
-        console.error("Errore parsing URL in loginRedirect", e);
-      }
-    }
-    window.location.href = `${ssoUrl}/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}&state=${state}`;
+    void redirectToSso(clientId, false);
   }, []);
 
   const registerRedirect = useCallback((clientId: string) => {
-    const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
-    let currentUrlStr = typeof window !== "undefined" ? window.location.href : "";
-    
-    // Genera uno state univoco per prevenire attacchi CSRF
-    const state = typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 15);
-    
-    if (typeof sessionStorage !== "undefined") {
-      sessionStorage.setItem("sso_auth_state", state);
-    }
-
-    if (currentUrlStr) {
-      try {
-        const url = new URL(currentUrlStr);
-        url.searchParams.delete("code");
-        url.searchParams.delete("state");
-        currentUrlStr = url.toString();
-      } catch (e) {
-        console.error("Errore parsing URL in registerRedirect", e);
-      }
-    }
-    window.location.href = `${ssoUrl}/auth?register=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrlStr)}&state=${state}`;
+    void redirectToSso(clientId, true);
   }, []);
 
   const hasPermission = useCallback((moduleId: string, actionOrLevel: "read" | "create" | "update" | "delete" | "list" | number): boolean => {

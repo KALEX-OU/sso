@@ -56,6 +56,8 @@ export default function VerifyEmailPage() {
   const clientId = searchParams.get("client_id") || "default";
   const redirectUri = searchParams.get("redirect_uri");
   const state = searchParams.get("state") || "";
+  // PKCE (3.1): challenge generato dalla RP, inoltrato tale e quale a /api/auth/code
+  const codeChallenge = searchParams.get("code_challenge");
 
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
   const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
@@ -96,7 +98,12 @@ export default function VerifyEmailPage() {
         const response = await fetchWithAppCheck("/api/auth/code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idToken, clientId, redirectUri })
+          body: JSON.stringify({
+            idToken,
+            clientId,
+            redirectUri,
+            ...(codeChallenge ? { codeChallenge, codeChallengeMethod: "S256" } : {})
+          })
         });
         const data = await response.json();
         if (data.success && data.code) {
@@ -123,7 +130,7 @@ export default function VerifyEmailPage() {
     } else {
       router.push(`/${currentLocale}/dashboard`);
     }
-  }, [clientId, currentLocale, redirectUri, router, state, t, searchParams]);
+  }, [clientId, currentLocale, redirectUri, router, state, t, searchParams, codeChallenge]);
 
   // Avvio dell'onboarding in PostgreSQL e Stripe
   const handleOnboarding = useCallback(async (user: User) => {

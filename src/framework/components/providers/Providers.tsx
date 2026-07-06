@@ -399,9 +399,13 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
             return;
           }
 
-          // Pulisce lo state consumato
+          // Pulisce lo state consumato e recupera il verifier PKCE (3.1): monouso, va
+          // rimosso qualunque sia l'esito dello scambio.
+          let codeVerifier: string | null = null;
           if (typeof sessionStorage !== "undefined") {
             sessionStorage.removeItem("sso_auth_state");
+            codeVerifier = sessionStorage.getItem("sso_pkce_verifier");
+            sessionStorage.removeItem("sso_pkce_verifier");
           }
 
           const response = await fetchAuthedClient<{ success: boolean; customToken: string }>("/api/auth/token", {
@@ -409,7 +413,8 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
             body: JSON.stringify({
               code,
               clientId: appId,
-              redirectUri
+              redirectUri,
+              ...(codeVerifier ? { codeVerifier } : {})
             })
           });
 

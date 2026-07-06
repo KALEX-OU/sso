@@ -12,8 +12,11 @@ export const apikeyModule = {
   },
   fields: {
     keyHash: {
+      // Digest HMAC/SHA-256 della chiave (T3.3): NON va ri-cifrato (doppia cifratura inutile,
+      // lookup per digest impossibile). Resta negli allowedFields perché è la PK usata dalla
+      // UI per gestire/revocare la chiave — il digest non è la credenziale.
       type: "String",
-      encrypted: true,
+      encrypted: false,
       render: false,
       order: 1,
       label: "fields.keyHash.label",

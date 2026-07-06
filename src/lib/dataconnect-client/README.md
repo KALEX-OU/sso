@@ -11526,7 +11526,7 @@ Recall that executing the `AddUserToTeam` mutation returns a `MutationPromise` t
 The `data` property is an object of type `AddUserToTeamData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface AddUserToTeamData {
-  teamMember_insert: TeamMembers_Key;
+  teamMember_upsert: TeamMembers_Key;
 }
 ```
 ### Using `AddUserToTeam`'s action shortcut function
@@ -11551,12 +11551,12 @@ const { data } = await addUserToTeam({ userId: ..., teamId: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await addUserToTeam(dataConnect, addUserToTeamVars);
 
-console.log(data.teamMember_insert);
+console.log(data.teamMember_upsert);
 
 // Or, you can use the `Promise` API.
 addUserToTeam(addUserToTeamVars).then((response) => {
   const data = response.data;
-  console.log(data.teamMember_insert);
+  console.log(data.teamMember_upsert);
 });
 ```
 
@@ -11585,12 +11585,12 @@ const ref = addUserToTeamRef(dataConnect, addUserToTeamVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.teamMember_insert);
+console.log(data.teamMember_upsert);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.teamMember_insert);
+  console.log(data.teamMember_upsert);
 });
 ```
 

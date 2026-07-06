@@ -97,7 +97,7 @@ export function validateVatNumber(vat: string, country: EUCountryCode): boolean 
 export const RegisterSchema = z.object({
   fullName: z.string().min(1, { message: "validation.fullNameRequired" }),
   email: z.string().email({ message: "validation.emailInvalid" }),
-  password: z.string().min(6, { message: "validation.passwordMin" }),
+  password: z.string().min(8, { message: "validation.passwordMin" }),
   acceptTerms: z.literal(true, {
     message: "validation.acceptTermsRequired"
   }),

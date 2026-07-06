@@ -22,7 +22,7 @@ export interface AddUserToOrganizationVariables {
 }
 
 export interface AddUserToTeamData {
-  teamMember_insert: TeamMembers_Key;
+  teamMember_upsert: TeamMembers_Key;
 }
 
 export interface AddUserToTeamVariables {

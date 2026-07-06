@@ -88,6 +88,19 @@ export function Settings() {
   const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
   const [totpUri, setTotpUri] = useState("");
   const [totpCode, setTotpCode] = useState("");
+
+  // Stati per la gestione sessioni/dispositivi (3.2)
+  interface DeviceSession {
+    id: string;
+    createdAt: string;
+    lastSeenAt: string;
+    userAgent: string;
+    ip: string;
+    current: boolean;
+  }
+  const [deviceSessions, setDeviceSessions] = useState<DeviceSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [sessionRevokePending, setSessionRevokePending] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Stati per il Dialog di Riautenticazione Generale
@@ -617,6 +630,63 @@ export function Settings() {
     } catch {
       showToast("Impossibile copiare: seleziona e copia la chiave manualmente.", "error");
     }
+  };
+
+  // === SESSIONI / DISPOSITIVI ATTIVI (3.2) ===
+  const loadDeviceSessions = useCallback(async () => {
+    setSessionsLoading(true);
+    try {
+      const res = await fetchAuthedClient<{ success: boolean; sessions: DeviceSession[] }>("/api/auth/sessions", { method: "GET" });
+      if (res.success && res.data && Array.isArray(res.data.sessions)) {
+        setDeviceSessions(res.data.sessions);
+      }
+    } catch (err) {
+      console.warn("[Settings] Impossibile caricare le sessioni attive:", err);
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Deferred per evitare setState sincrono nell'effect (cascading renders)
+    void Promise.resolve().then(() => loadDeviceSessions());
+  }, [loadDeviceSessions]);
+
+  const revokeDeviceSession = async (session: DeviceSession) => {
+    setSessionRevokePending(session.id);
+    try {
+      const res = await fetchAuthedClient<Record<string, unknown>>(`/api/auth/sessions/${session.id}`, { method: "DELETE" });
+      if (!res.success) {
+        throw new Error(res.error?.message || "Impossibile disconnettere il dispositivo.");
+      }
+      if (session.current) {
+        // Disconnessa la sessione di QUESTO device: si completa con un logout pulito
+        await forceCleanSession();
+        window.location.assign("/auth");
+        return;
+      }
+      showToast("Dispositivo disconnesso.", "success");
+      await loadDeviceSessions();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Impossibile disconnettere il dispositivo.", "error");
+    } finally {
+      setSessionRevokePending("");
+    }
+  };
+
+  // Etichetta leggibile del device a partire dallo user agent (best-effort, solo display)
+  const describeDevice = (userAgent: string): string => {
+    const ua = userAgent.toLowerCase();
+    const os = ua.includes("android") ? "Android"
+      : (ua.includes("iphone") || ua.includes("ipad")) ? "iOS"
+        : ua.includes("mac os") ? "macOS"
+          : ua.includes("windows") ? "Windows"
+            : ua.includes("linux") ? "Linux" : "Dispositivo";
+    const browser = ua.includes("edg/") ? "Edge"
+      : ua.includes("chrome/") ? "Chrome"
+        : ua.includes("safari/") && !ua.includes("chrome/") ? "Safari"
+          : ua.includes("firefox/") ? "Firefox" : "Browser";
+    return `${browser} · ${os}`;
   };
 
   // === DISATTIVAZIONE DI UN FATTORE (con re-auth imposta da Firebase) ===
@@ -1265,6 +1335,61 @@ export function Settings() {
               </CardBody>
             </Card>
           </div>
+
+          {/* SEC 3B: SESSIONI / DISPOSITIVI ATTIVI (3.2) */}
+          <Card className="klx-settings-card--full">
+            <CardBody>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+                    Sessioni attive
+                  </h3>
+                </div>
+                <Button onClick={() => void loadDeviceSessions()} isDisabled={sessionsLoading} variant="ghost">
+                  Aggiorna
+                </Button>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+                I dispositivi con una sessione KALEX attiva. Se non riconosci un dispositivo, disconnettilo e cambia subito la password.
+              </p>
+              {sessionsLoading && deviceSessions.length === 0 ? (
+                <p className="text-xs text-slate-400">Caricamento sessioni…</p>
+              ) : deviceSessions.length === 0 ? (
+                <p className="text-xs text-slate-400">Nessuna sessione registrata (le sessioni precedenti a questa funzione compariranno al prossimo accesso).</p>
+              ) : (
+                <div className="space-y-2">
+                  {deviceSessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5"
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                          {describeDevice(session.userAgent)}
+                          {session.current && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full">
+                              Questo dispositivo
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[10px] text-slate-400 truncate">
+                          IP {session.ip} · ultimo accesso {session.lastSeenAt ? new Date(session.lastSeenAt).toLocaleString() : "—"}
+                        </span>
+                      </div>
+                      <Button
+                        onClick={() => void revokeDeviceSession(session)}
+                        isDisabled={sessionRevokePending === session.id}
+                        variant="danger-soft"
+                      >
+                        {sessionRevokePending === session.id ? "Disconnessione…" : "Disconnetti"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardBody>
+          </Card>
 
           {/* SEC 4: CHIAVE API PERSONALE */}
           <Card className="klx-settings-card--full">

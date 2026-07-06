@@ -211,8 +211,11 @@ export const organizationModule = {
       order: 21,
       label: "fields.confirmed.label",
       placeholder: "fields.confirmed.placeholder",
+      // Default FAIL-CLOSED coerente su validazione E colonna DB (T3.3): le org
+      // government/education richiedono approvazione; l'onboarding passa comunque
+      // sempre il valore esplicito, il default vale solo per insert fuori pipeline.
       validation: { default: false },
-      graphql: { nullable: false, directive: "@default(value: true)" }
+      graphql: { nullable: false, directive: "@default(value: false)" }
     },
     addressDetails: {
       type: "Any",

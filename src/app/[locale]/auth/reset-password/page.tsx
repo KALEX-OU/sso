@@ -71,8 +71,8 @@ type RequestResetInput = z.infer<typeof RequestResetSchema>;
 
 const NewPasswordSchema = z
   .object({
-    password: z.string().min(6, { message: "La password deve contenere almeno 6 caratteri." }),
-    confirmPassword: z.string().min(6, { message: "La password deve contenere almeno 6 caratteri." })
+    password: z.string().min(8, { message: "La password deve contenere almeno 8 caratteri." }),
+    confirmPassword: z.string().min(8, { message: "La password deve contenere almeno 8 caratteri." })
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
