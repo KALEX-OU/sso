@@ -33,7 +33,9 @@ import {
   type TotpSecret
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import QRCode from "react-qr-code";
 import { auth, storage, forceCleanSession } from "../../lib/auth";
+import { useI18n } from "@/locales/client";
 
 interface OrganizationData {
   orgId: string;
@@ -53,6 +55,7 @@ interface OrganizationData {
 
 export function Settings() {
   const { user, dbData, showToast, claims, refreshClaims } = useDashboard();
+  const t = useI18n();
   const [activeTab, setActiveTab] = useState("user");
 
   // Stato per l'avatar
@@ -491,7 +494,7 @@ export function Settings() {
         await multiFactor(user).enroll(assertion, "App di autenticazione");
         await user.reload();
         resetMfaFlow();
-        showToast("App di autenticazione registrata: 2FA via codice TOTP attiva.", "success");
+        showToast(t("settings.mfa.toastEnrolled"), "success");
         await refreshClaims();
       } catch (err) {
         handleMfaError(err, action);
@@ -506,9 +509,9 @@ export function Settings() {
     if (!totpSecret) return;
     try {
       await navigator.clipboard.writeText(totpSecret.secretKey);
-      showToast("Chiave segreta copiata negli appunti.", "success");
+      showToast(t("settings.mfa.toastCopied"), "success");
     } catch {
-      showToast("Impossibile copiare: seleziona e copia la chiave manualmente.", "error");
+      showToast(t("settings.mfa.toastCopyError"), "error");
     }
   };
 
@@ -577,7 +580,7 @@ export function Settings() {
       try {
         await multiFactor(user).unenroll(factor);
         await user.reload();
-        showToast("Fattore di autenticazione disattivato.", "success");
+        showToast(t("settings.mfa.toastFactorRemoved"), "success");
         await refreshClaims();
       } catch (err) {
         handleMfaError(err, action);
@@ -987,17 +990,17 @@ export function Settings() {
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-violet-500" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
-                      Autenticazione a Due Fattori (2FA)
+                      {t("settings.mfa.title")}
                     </h2>
                   </div>
                   <div>
                     {is2faActive ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full animate-pulse">
-                        <Check className="w-3 h-3" /> Attiva
+                        <Check className="w-3 h-3" /> {t("settings.mfa.badgeActive")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-400 rounded-full">
-                        Disattivata
+                        {t("settings.mfa.badgeInactive")}
                       </span>
                     )}
                   </div>
@@ -1005,7 +1008,7 @@ export function Settings() {
 
                 <div className="space-y-4">
                   <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
-                    L&apos;autenticazione a due fattori (2FA) aggiunge un livello di sicurezza al tuo account: all&apos;accesso ti verrà chiesto un codice generato dalla tua <strong>app di autenticazione</strong> (Google Authenticator, 1Password, Authy…). Conserva la chiave segreta in un luogo sicuro: se perdi l&apos;accesso all&apos;app, potrai recuperare l&apos;account tramite un amministratore.
+                    {t("settings.mfa.intro")}
                   </p>
 
                   {/* Fattori attualmente registrati */}
@@ -1020,10 +1023,10 @@ export function Settings() {
                             <Shield className="w-4 h-4 text-success" />
                             <div className="flex flex-col">
                               <span className="text-xs font-bold text-slate-800 dark:text-white">
-                                {factor.displayName || (factor.factorId === TotpMultiFactorGenerator.FACTOR_ID ? "App di autenticazione" : "Fattore 2FA")}
+                                {factor.displayName || (factor.factorId === TotpMultiFactorGenerator.FACTOR_ID ? t("settings.mfa.factorAppName") : t("settings.mfa.factorGeneric"))}
                               </span>
                               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                {factor.factorId === TotpMultiFactorGenerator.FACTOR_ID ? "Codice TOTP (app)" : "Fattore legacy"}
+                                {factor.factorId === TotpMultiFactorGenerator.FACTOR_ID ? t("settings.mfa.factorTotpLabel") : t("settings.mfa.factorLegacyLabel")}
                               </span>
                             </div>
                           </div>
@@ -1032,7 +1035,7 @@ export function Settings() {
                             isDisabled={mfaPending}
                             variant="danger-soft"
                           >
-                            Rimuovi
+                            {t("settings.mfa.remove")}
                           </Button>
                         </div>
                       ))}
@@ -1047,22 +1050,37 @@ export function Settings() {
                         isDisabled={mfaPending}
                         variant="primary"
                       >
-                        Attiva con app di autenticazione
+                        {t("settings.mfa.enrollCta")}
                       </Button>
                     </div>
                   )}
 
-                  {/* Enrollment app di autenticazione (TOTP): chiave manuale / link otpauth + verifica primo codice */}
+                  {/* Enrollment app di autenticazione (TOTP): QR + chiave manuale + verifica primo codice */}
                   {mfaStep === "totp-verify" && totpSecret && (
                     <div className="flex flex-col gap-3 pt-2">
                       <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                        Registra la chiave nella tua app di autenticazione
+                        {t("settings.mfa.enrollTitle")}
                       </Label>
                       <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">
-                        Apri la tua app (Google Authenticator, 1Password, Authy…) e aggiungi un account
-                        inserendo la <strong>chiave segreta</strong> qui sotto (oppure, da mobile, tocca il link diretto).
-                        Poi inserisci il codice a 6 cifre generato dall&apos;app per confermare.
+                        {t("settings.mfa.enrollInstructions")}
                       </p>
+
+                      {/* QR code da scansionare con l'app mobile (sfondo bianco per la leggibilità anche in dark) */}
+                      {totpUri && (
+                        <div className="flex flex-col items-center gap-2 py-1">
+                          <div className="rounded-2xl bg-white p-3 shadow-sm">
+                            <QRCode value={totpUri} size={160} />
+                          </div>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                            {t("settings.mfa.scanHint")}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Chiave manuale: alternativa allo scan del QR */}
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 self-start">
+                        {t("settings.mfa.manualKeyLabel")}
+                      </span>
                       <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5">
                         <code className="text-xs font-mono tracking-wider text-slate-800 dark:text-white break-all flex-1">
                           {totpSecret.secretKey}
@@ -1071,7 +1089,7 @@ export function Settings() {
                           type="button"
                           onClick={copyTotpSecret}
                           className="text-slate-400 hover:text-slate-600 dark:hover:text-white outline-none bg-transparent border-none cursor-pointer flex-shrink-0"
-                          aria-label="Copia chiave segreta"
+                          aria-label={t("settings.mfa.copyAria")}
                         >
                           <Copy className="w-4 h-4" />
                         </button>
@@ -1081,14 +1099,14 @@ export function Settings() {
                           href={totpUri}
                           className="text-[10px] font-extrabold uppercase tracking-wider text-violet-500 hover:text-violet-400 self-start"
                         >
-                          Apri direttamente nell&apos;app di autenticazione
+                          {t("settings.mfa.openInApp")}
                         </a>
                       )}
                       <div className="flex gap-2">
                         <Input
                           type="text"
                           maxLength={6}
-                          placeholder="6 cifre"
+                          placeholder={t("settings.mfa.codePlaceholder")}
                           value={totpCode}
                           onChange={(e) => setTotpCode(e.target.value)}
                           className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full text-center tracking-widest font-mono text-lg"
@@ -1098,7 +1116,7 @@ export function Settings() {
                           isDisabled={mfaPending || totpCode.length < 6}
                           variant="primary"
                         >
-                          Conferma Codice
+                          {t("settings.mfa.confirm")}
                         </Button>
                       </div>
                       <button
@@ -1106,7 +1124,7 @@ export function Settings() {
                         onClick={resetMfaFlow}
                         className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 hover:text-slate-500 outline-none bg-transparent border-none cursor-pointer self-start"
                       >
-                        Annulla
+                        {t("settings.mfa.cancel")}
                       </button>
                     </div>
                   )}
