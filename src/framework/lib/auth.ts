@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import type { FirebaseApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, signOut, initializeRecaptchaConfig } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User, Auth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import type { FirebaseStorage } from "firebase/storage";
@@ -291,17 +291,6 @@ export function useAuth() {
     // Pre-warm non bloccante di App Check dopo 1.5 secondi per ottimizzare l'INP/LCP
     const timer = setTimeout(() => {
       initAppCheck();
-      // Carica la config reCAPTCHA Enterprise per i flussi auth (phone/MFA) all'avvio: senza
-      // questa chiamata il SDK avvia i flussi SENZA reCAPTCHA e, quando serve (ENFORCE), la
-      // carica "al volo" ricadendo sul reCAPTCHA classico api.js — che, con solo enterprise.js
-      // caricato da App Check, dà "Invalid site key or not loaded in api.js". Precaricandola qui,
-      // il phone auth usa il flusso Enterprise (score, invisibile) fin da subito, coesistendo
-      // con App Check. Non bloccante.
-      if (authInstance) {
-        void initializeRecaptchaConfig(authInstance).catch((e) => {
-          console.warn("[Framework Auth] initializeRecaptchaConfig non riuscita:", e instanceof Error ? e.message : String(e));
-        });
-      }
     }, 1500);
 
     const unsubscribe = onAuthStateChanged(authInstance, async (currentUser) => {
