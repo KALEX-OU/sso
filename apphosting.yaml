@@ -7,3 +7,14 @@ runConfig:
   minInstances: 1
   maxInstances: 50
   concurrency: 80
+
+env:
+  # reCAPTCHA Enterprise site key: PUBBLICA (viaggia nel bundle client), necessaria a BUILD per
+  # inizializzare App Check. Era impostata SOLO nella console App Hosting e lì mancava → nel
+  # bundle di prod non finiva → App Check non partiva → login/registrazione 401 (App Check enforced).
+  # Versionata qui per evitare il ripetersi del problema (config riproducibile).
+  - variable: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+    value: 6LerwBwtAAAAAOPo8crSA1U9lRXbvBPCYU9XKFNn
+    availability:
+      - BUILD
+      - RUNTIME
