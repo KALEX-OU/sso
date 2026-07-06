@@ -9,11 +9,8 @@ import {
   signOut,
   signInWithEmailAndPassword,
   getMultiFactorResolver,
-  PhoneAuthProvider,
-  PhoneMultiFactorGenerator,
   TotpMultiFactorGenerator,
-  MultiFactorResolver,
-  ApplicationVerifier
+  MultiFactorResolver
 } from "firebase/auth";
 
 interface GoogleAccountsIdInitializeOptions {
@@ -166,15 +163,14 @@ function AuthPortal() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState("");
 
-  // Stati per Multi-Factor Authentication (MFA)
+  // Stati per Multi-Factor Authentication (MFA) — solo TOTP (app di autenticazione).
+  // L'SMS è stato rimosso: reCAPTCHA Enterprise (App Check) e il phone auth di Firebase non
+  // coesistono sul web, e il TOTP è comunque il metodo 2FA raccomandato (NIST scoraggia l'SMS).
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
-  const [mfaVerificationId, setMfaVerificationId] = useState("");
   const [mfaCode, setMfaCode] = useState("");
-  const [mfaPhoneHint, setMfaPhoneHint] = useState("");
+  const [mfaHint, setMfaHint] = useState("");
   const [mfaLoading, setMfaLoading] = useState(false);
-  // Fattore usato per la risoluzione MFA: SMS se disponibile, altrimenti codice TOTP dell'app (0.7)
-  const [mfaFactorId, setMfaFactorId] = useState<"phone" | "totp">("phone");
   const [mfaTotpUid, setMfaTotpUid] = useState("");
 
   const [isVatValidating, setIsVatValidating] = useState(false);
@@ -745,63 +741,21 @@ function AuthPortal() {
       if (errCode === "auth/multi-factor-auth-required") {
         try {
           const resolver = getMultiFactorResolver(auth, err as Parameters<typeof getMultiFactorResolver>[1]);
+
+          // Solo fattore TOTP (app di autenticazione): non richiede invio, si chiede subito il codice.
+          const totpInfoOptions = resolver.hints.find((h) => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
+          if (!totpInfoOptions) {
+            throw new Error("Nessun secondo fattore TOTP risolvibile disponibile per questo account.");
+          }
+
           setMfaResolver(resolver);
           setMfaRequired(true);
-
-          // Preferiamo l'SMS se c'è un numero registrato; in alternativa il fattore TOTP
-          // (app di autenticazione), che non richiede invio: si chiede subito il codice.
-          const phoneInfoOptions = resolver.hints.find((h) => h.factorId === PhoneMultiFactorGenerator.FACTOR_ID);
-          const totpInfoOptions = resolver.hints.find((h) => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
-
-          if (!phoneInfoOptions && totpInfoOptions) {
-            setMfaFactorId("totp");
-            setMfaTotpUid(totpInfoOptions.uid);
-            setMfaVerificationId("");
-            setMfaPhoneHint(totpInfoOptions.displayName || "la tua app di autenticazione");
-            setLoading(false);
-            return;
-          }
-          if (!phoneInfoOptions) {
-            throw new Error("Nessun secondo fattore risolvibile disponibile per questo account.");
-          }
-
-          setMfaFactorId("phone");
-          if (phoneInfoOptions.displayName) {
-            setMfaPhoneHint(phoneInfoOptions.displayName);
-          } else {
-            setMfaPhoneHint("il tuo numero registrato");
-          }
-
-          // Verifier per l'SMS. In dev (appVerificationDisabledForTesting) un mock con _reset()
-          // (l'SDK v12 lo invoca sempre) → numeri di test. In prod si OMETTE l'applicationVerifier:
-          // con reCAPTCHA Enterprise in ENFORCE il flusso è score-based/invisibile e non usa il
-          // RecaptchaVerifier classico, evitando il conflitto con la reCAPTCHA Enterprise di App
-          // Check ("Invalid site key or not loaded in api.js"). Richiede phoneEnforcementState=ENFORCE.
-          let applicationVerifier: ApplicationVerifier | undefined;
-          if (auth.settings.appVerificationDisabledForTesting) {
-            const mockVerifier: ApplicationVerifier & { _reset: () => void } = {
-              type: "recaptcha",
-              verify: async () => "mock-recaptcha-token",
-              _reset: () => undefined
-            };
-            applicationVerifier = mockVerifier;
-          } else {
-            applicationVerifier = undefined;
-          }
-
-          const phoneAuthProvider = new PhoneAuthProvider(auth);
-          const verificationId = await phoneAuthProvider.verifyPhoneNumber(
-            {
-              multiFactorHint: phoneInfoOptions,
-              session: resolver.session
-            },
-            applicationVerifier
-          );
-          setMfaVerificationId(verificationId);
+          setMfaTotpUid(totpInfoOptions.uid);
+          setMfaHint(totpInfoOptions.displayName || "la tua app di autenticazione");
           setLoading(false);
           return;
         } catch (mfaErr) {
-          console.error("Error initializing MFA SMS:", mfaErr);
+          console.error("Error initializing MFA:", mfaErr);
           setError("Errore durante l'inizializzazione del secondo fattore di autenticazione.");
           setLoading(false);
           return;
@@ -823,17 +777,10 @@ function AuthPortal() {
   const handleVerifyMfaCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mfaResolver || !mfaCode) return;
-    if (mfaFactorId === "phone" && !mfaVerificationId) return;
     setError("");
     setMfaLoading(true);
     try {
-      let multiFactorAssertion;
-      if (mfaFactorId === "totp") {
-        multiFactorAssertion = TotpMultiFactorGenerator.assertionForSignIn(mfaTotpUid, mfaCode);
-      } else {
-        const cred = PhoneAuthProvider.credential(mfaVerificationId, mfaCode);
-        multiFactorAssertion = PhoneMultiFactorGenerator.assertion(cred);
-      }
+      const multiFactorAssertion = TotpMultiFactorGenerator.assertionForSignIn(mfaTotpUid, mfaCode);
       const userCredential = await mfaResolver.resolveSignIn(multiFactorAssertion);
       
       setMfaRequired(false);
@@ -1254,16 +1201,14 @@ function AuthPortal() {
             )}
 
             {mfaRequired ? (
-              /* FORM DI VERIFICA CODICE MFA SMS */
+              /* FORM DI VERIFICA CODICE MFA (app di autenticazione — TOTP) */
               <form onSubmit={handleVerifyMfaCode} className="space-y-5">
                 <div className="text-center mb-4">
                   <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1">
                     {t("auth.mfaTitle")}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-gray-400">
-                    {mfaFactorId === "totp"
-                      ? t("auth.mfaTotpPrompt", { factor: mfaPhoneHint })
-                      : t("auth.mfaSmsSent", { phone: mfaPhoneHint })}
+                    {t("auth.mfaTotpPrompt", { factor: mfaHint })}
                   </p>
                 </div>
 
@@ -2011,7 +1956,6 @@ function AuthPortal() {
 
       {/* Right Column (Marketing panel) */}
       {renderMarketingPanel(brand, t, isDark)}
-      <div id="recaptcha-container"></div>
     </div>
   );
 }
