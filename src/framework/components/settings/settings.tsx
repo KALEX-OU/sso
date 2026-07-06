@@ -129,7 +129,7 @@ export function Settings() {
   const isOrgManager = activeRole === "owner" || activeRole === "admin";
   const currentTab = isOrgManager ? activeTab : "user";
 
-  const displayName = dbData?.user?.fullName || user?.displayName || user?.email?.split("@")[0] || "Utente";
+  const displayName = dbData?.user?.fullName || user?.displayName || user?.email?.split("@")[0] || t("settings.profile.defaultUser");
   const roleName = activeRole ? String(activeRole).toUpperCase() : "VIEWER";
 
   // Inizializzazione Dati Form
@@ -168,16 +168,16 @@ export function Settings() {
   // Funzione per validare la forza della password
   const passwordStrength = useMemo(() => {
     if (!newPassword) return null;
-    if (newPassword.length < 6) return { text: "Corta (Min 6)", color: "text-danger bg-danger/10 border-danger/20", width: "w-1/4" };
-    
+    if (newPassword.length < 6) return { level: "short" as const, color: "text-danger bg-danger/10 border-danger/20", width: "w-1/4" };
+
     let score = 0;
     if (/[A-Z]/.test(newPassword)) score++;
     if (/[0-9]/.test(newPassword)) score++;
     if (/[^A-Za-z0-9]/.test(newPassword)) score++;
-    
-    if (score === 0) return { text: "Debole", color: "text-orange-500 bg-orange-500/10 border-orange-500/20", width: "w-2/4" };
-    if (score === 1 || score === 2) return { text: "Media", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", width: "w-3/4" };
-    return { text: "Forte", color: "text-success bg-success/10 border-success/20", width: "w-full" };
+
+    if (score === 0) return { level: "weak" as const, color: "text-orange-500 bg-orange-500/10 border-orange-500/20", width: "w-2/4" };
+    if (score === 1 || score === 2) return { level: "medium" as const, color: "text-amber-500 bg-amber-500/10 border-amber-500/20", width: "w-3/4" };
+    return { level: "strong" as const, color: "text-success bg-success/10 border-success/20", width: "w-full" };
   }, [newPassword]);
 
   // Challenge di Riautenticazione
@@ -210,7 +210,7 @@ export function Settings() {
       // Reauth completata senza secondo fattore.
       const pending = onReauthSuccess;
       closeReauth();
-      showToast("Riautenticazione completata con successo.", "success");
+      showToast(t("settings.toast.reauthOk"), "success");
       if (pending) await pending();
     } catch (err) {
       const authErr = err as { code?: string };
@@ -224,20 +224,20 @@ export function Settings() {
           }
           setReauthMfaResolver(resolver);
           setReauthMfaTotpUid(totpHint.uid);
-          setReauthMfaHint(totpHint.displayName || "la tua app di autenticazione");
+          setReauthMfaHint(totpHint.displayName || t("settings.reauth.defaultHint"));
           setReauthMfaCode("");
-          showToast("Inserisci il codice della tua app di autenticazione per confermare l'identità.", "info");
+          showToast(t("settings.toast.mfaEnterCode"), "info");
         } catch (mfaErr) {
           console.error("[Reauth MFA] Errore avvio secondo fattore:", mfaErr);
-          showToast("Impossibile avviare la verifica del secondo fattore.", "error");
+          showToast(t("settings.toast.mfaStartFail"), "error");
         }
         return;
       }
       console.error("[Reauth] Errore:", err);
       showToast(
         authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential"
-          ? "Password attuale errata o non valida."
-          : "Riautenticazione non riuscita. Riprova.",
+          ? t("settings.toast.reauthWrongPw")
+          : t("settings.toast.reauthFail"),
         "error"
       );
     } finally {
@@ -255,11 +255,11 @@ export function Settings() {
       await reauthMfaResolver.resolveSignIn(assertion);
       const pending = onReauthSuccess;
       closeReauth();
-      showToast("Identità confermata con successo.", "success");
+      showToast(t("settings.toast.identityConfirmed"), "success");
       if (pending) await pending();
     } catch (err) {
       console.error("[Reauth MFA] Errore verifica:", err);
-      showToast("Codice di verifica non valido o scaduto.", "error");
+      showToast(t("settings.toast.codeInvalidExpired"), "error");
     } finally {
       setReauthPending(false);
     }
@@ -269,7 +269,7 @@ export function Settings() {
   const handleUserSubmit = async (data: Record<string, unknown>, idempotencyKey: string) => {
     try {
       const userId = claims?.uId || user?.uid;
-      if (!userId) throw new Error("Utente non identificato.");
+      if (!userId) throw new Error(t("settings.toast.userNotIdentified"));
 
       const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}`, {
         method: "POST",
@@ -278,11 +278,11 @@ export function Settings() {
       });
 
       if (!resData.success) {
-        throw new Error(resData.error?.message || "Errore durante l'aggiornamento del profilo.");
+        throw new Error(resData.error?.message || t("settings.toast.profileUpdateError"));
       }
 
       await refreshClaims();
-      showToast("Profilo utente aggiornato con successo.", "success");
+      showToast(t("settings.toast.profileUpdated"), "success");
     } catch (err) {
       console.error(err);
       throw err;
@@ -295,14 +295,14 @@ export function Settings() {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      showToast("L'immagine supera la dimensione massima consentita di 2MB.", "error");
+      showToast(t("settings.toast.imgTooLarge"), "error");
       return;
     }
 
     try {
       setUploading(true);
       const userId = claims?.uId || user?.uid;
-      if (!userId) throw new Error("Utente non identificato.");
+      if (!userId) throw new Error(t("settings.toast.userNotIdentified"));
 
       const organizationId = claims?.orgId || dbData?.user?.organizationId || "default";
       const storageRef = ref(storage, `organizations/${organizationId}/users/${userId}/avatar_${Date.now()}`);
@@ -327,10 +327,10 @@ export function Settings() {
 
       setAvatarPreview(downloadUrl);
       await refreshClaims();
-      showToast("Avatar del profilo caricato ed allineato con successo.", "success");
+      showToast(t("settings.toast.avatarUploaded"), "success");
     } catch (err) {
       console.error(err);
-      showToast("Impossibile caricare l'immagine dell'avatar.", "error");
+      showToast(t("settings.toast.avatarUploadFail"), "error");
     } finally {
       setUploading(false);
     }
@@ -340,7 +340,7 @@ export function Settings() {
     try {
       setUploading(true);
       const userId = claims?.uId || user?.uid;
-      if (!userId) throw new Error("Utente non identificato.");
+      if (!userId) throw new Error(t("settings.toast.userNotIdentified"));
 
       const { updateProfile } = await import("firebase/auth");
       if (user) {
@@ -360,10 +360,10 @@ export function Settings() {
 
       setAvatarPreview(null);
       await refreshClaims();
-      showToast("Avatar rimosso correttamente.", "success");
+      showToast(t("settings.toast.avatarRemoved"), "success");
     } catch (err) {
       console.error(err);
-      showToast("Impossibile rimuovere l'avatar.", "error");
+      showToast(t("settings.toast.avatarRemoveFail"), "error");
     } finally {
       setUploading(false);
     }
@@ -375,7 +375,7 @@ export function Settings() {
     if (!user) return;
 
     if (newPassword !== confirmPassword) {
-      showToast("Le nuove password inserite non corrispondono.", "error");
+      showToast(t("settings.toast.pwdMismatch"), "error");
       return;
     }
 
@@ -386,14 +386,14 @@ export function Settings() {
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
-        showToast("Password aggiornata con successo.", "success");
+        showToast(t("settings.toast.pwdUpdated"), "success");
       } catch (err) {
         const authErr = err as { code?: string };
         if (authErr.code === "auth/requires-recent-login") {
           executeWithReauthChallenge(action);
         } else {
           console.error(err);
-          showToast("Errore durante il cambio password. Riprova.", "error");
+          showToast(t("settings.toast.pwdChangeFail"), "error");
         }
       } finally {
         setPasswordPending(false);
@@ -409,11 +409,11 @@ export function Settings() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      showToast("Password aggiornata con successo.", "success");
+      showToast(t("settings.toast.pwdUpdated"), "success");
     } catch (err) {
       const authErr = err as { code?: string };
       if (authErr.code === "auth/requires-recent-login" || authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential") {
-        showToast("Credenziali non corrette per procedere al cambio password.", "error");
+        showToast(t("settings.toast.pwdCredWrong"), "error");
       } else {
         await action();
       }
@@ -441,23 +441,23 @@ export function Settings() {
       authErr.code === "auth/requires-recent-login" ||
       authErr.code === "auth/unsupported-first-factor"
     ) {
-      showToast("Per sicurezza, conferma la password per gestire la 2FA.", "info");
+      showToast(t("settings.toast.mfaManagePwd"), "info");
       executeWithReauthChallenge(retriableAction);
       return;
     }
     console.error("[MFA]", err);
     const msg =
       authErr.code === "auth/invalid-verification-code"
-        ? "Codice di verifica non valido."
+        ? t("settings.toast.mfaCodeInvalid")
         : authErr.code === "auth/code-expired"
-          ? "Codice scaduto. Richiedine uno nuovo."
+          ? t("settings.toast.mfaCodeExpired")
           : authErr.code === "auth/maximum-second-factor-count-exceeded"
-            ? "Hai raggiunto il numero massimo di fattori registrati."
+            ? t("settings.toast.mfaMaxFactors")
             : authErr.code === "auth/operation-not-allowed"
-              ? "Questo metodo di verifica non è abilitato sul progetto. Contatta l'amministratore."
+              ? t("settings.toast.mfaNotAllowed")
               : err instanceof Error
                 ? err.message
-                : "Errore durante l'operazione di autenticazione a due fattori.";
+                : t("settings.toast.mfaGenericError");
     showToast(msg, "error");
   };
 
@@ -491,7 +491,7 @@ export function Settings() {
       setMfaPending(true);
       try {
         const assertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, totpCode);
-        await multiFactor(user).enroll(assertion, "App di autenticazione");
+        await multiFactor(user).enroll(assertion, t("settings.mfa.factorAppName"));
         await user.reload();
         resetMfaFlow();
         showToast(t("settings.mfa.toastEnrolled"), "success");
@@ -540,7 +540,7 @@ export function Settings() {
     try {
       const res = await fetchAuthedClient<Record<string, unknown>>(`/api/auth/sessions/${session.id}`, { method: "DELETE" });
       if (!res.success) {
-        throw new Error(res.error?.message || "Impossibile disconnettere il dispositivo.");
+        throw new Error(res.error?.message || t("settings.toast.deviceDisconnectFail"));
       }
       if (session.current) {
         // Disconnessa la sessione di QUESTO device: si completa con un logout pulito
@@ -548,10 +548,10 @@ export function Settings() {
         window.location.assign("/auth");
         return;
       }
-      showToast("Dispositivo disconnesso.", "success");
+      showToast(t("settings.toast.deviceDisconnected"), "success");
       await loadDeviceSessions();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Impossibile disconnettere il dispositivo.", "error");
+      showToast(err instanceof Error ? err.message : t("settings.toast.deviceDisconnectFail"), "error");
     } finally {
       setSessionRevokePending("");
     }
@@ -593,8 +593,8 @@ export function Settings() {
 
   // Eliminazione GDPR Account
   const handlePurgeAccount = async () => {
-    if (deleteConfirmText !== "ELIMINA") {
-      showToast("Digita 'ELIMINA' per confermare.", "error");
+    if (deleteConfirmText !== t("settings.deleteDialog.confirmWord")) {
+      showToast(t("settings.deleteDialog.typeConfirm", { word: t("settings.deleteDialog.confirmWord") }), "error");
       return;
     }
 
@@ -602,7 +602,7 @@ export function Settings() {
       try {
         setDeletePending(true);
         const userId = claims?.uId || user?.uid;
-        if (!userId) throw new Error("Utente non identificato.");
+        if (!userId) throw new Error(t("settings.toast.userNotIdentified"));
 
         // 1. Chiama l'endpoint del backend per eliminare i dati da PostgreSQL, team e Firestore
         const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}`, {
@@ -610,7 +610,7 @@ export function Settings() {
         });
 
         if (!resData.success) {
-          throw new Error(resData.error?.message || "Errore nel backend durante l'autocancellazione.");
+          throw new Error(resData.error?.message || t("settings.toast.selfDeleteError"));
         }
 
         // 2. Rimuove l'utente client-side da Firebase Auth
@@ -618,7 +618,7 @@ export function Settings() {
           await user.delete();
         }
 
-        showToast("Account e dati eliminati con successo.", "success");
+        showToast(t("settings.toast.accountDeleted"), "success");
         setDeleteOpen(false);
         
         // 3. Pulisce la sessione locale e cookie
@@ -630,7 +630,7 @@ export function Settings() {
           executeWithReauthChallenge(action);
         } else {
           console.error(err);
-          showToast(err instanceof Error ? err.message : "Errore durante l'eliminazione dell'account.", "error");
+          showToast(err instanceof Error ? err.message : t("settings.toast.accountDeleteFail"), "error");
         }
       } finally {
         setDeletePending(false);
@@ -655,10 +655,10 @@ export function Settings() {
       });
 
       if (!resData.success) {
-        throw new Error(resData.error?.message || "Errore durante l'aggiornamento dell'organizzazione.");
+        throw new Error(resData.error?.message || t("settings.toast.orgUpdateError"));
       }
 
-      showToast("Impostazioni dell'organizzazione salvate con successo. Ricalcolo claims in corso...", "success");
+      showToast(t("settings.toast.orgSaved"), "success");
       
       if (user) {
         await user.getIdTokenResult(true);
@@ -725,14 +725,14 @@ export function Settings() {
       });
       if (res.success && res.data) {
         setGeneratedKey(res.data.apiKey);
-        showToast("Chiave API personale generata con successo.", "success");
+        showToast(t("settings.toast.apiKeyGenerated"), "success");
         await fetchUserApiKey();
       } else {
-        showToast("Errore durante la generazione della chiave API.", "error");
+        showToast(t("settings.toast.apiKeyGenError"), "error");
       }
     } catch (err) {
       console.error(err);
-      showToast("Impossibile generare la chiave API.", "error");
+      showToast(t("settings.toast.apiKeyGenFail"), "error");
     } finally {
       setLoadingApiKey(false);
     }
@@ -750,10 +750,10 @@ export function Settings() {
     <div className="klx-settings-container">
       <div>
         <h1 className="klx-settings-header-title">
-          <UserIcon className="w-5 h-5 text-violet-500" /> Impostazioni Account & Azienda
+          <UserIcon className="w-5 h-5 text-violet-500" /> {t("settings.header.title")}
         </h1>
         <p className="klx-settings-header-desc">
-          Gestisci le preferenze di profilo, la sicurezza e la conformità legale dell&apos;account.
+          {t("settings.header.desc")}
         </p>
       </div>
 
@@ -761,7 +761,7 @@ export function Settings() {
         <Tabs
           selectedKey={currentTab}
           onSelectionChange={(key) => setActiveTab(key as string)}
-          aria-label="Impostazioni"
+          aria-label={t("settings.tabs.ariaLabel")}
           className="w-full"
         >
           <TabList className="klx-settings-tabs-list">
@@ -769,13 +769,13 @@ export function Settings() {
               id="user"
               className="klx-settings-tab-trigger"
             >
-              Profilo & Sicurezza
+              {t("settings.tabs.profile")}
             </Tab>
             <Tab
               id="organization"
               className="klx-settings-tab-trigger"
             >
-              Dati Organizzazione
+              {t("settings.tabs.organization")}
             </Tab>
           </TabList>
         </Tabs>
@@ -794,7 +794,7 @@ export function Settings() {
                   <div className="flex items-center gap-2">
                     <UserIcon className="w-4 h-4 text-violet-500" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
-                      Informazioni Personali
+                      {t("settings.profile.personalInfo")}
                     </h2>
                   </div>
                 </div>
@@ -804,7 +804,7 @@ export function Settings() {
                   fieldsOrder={["fullName", "email", "mobile", "locale", "theme"]}
                   disabledFields={is2faActive ? ["email", "mobile"] : ["email"]}
                   onSubmit={handleUserSubmit}
-                  submitLabel="Salva Profilo"
+                  submitLabel={t("settings.profile.submit")}
                 />
               </CardBody>
             </Card>
@@ -817,7 +817,7 @@ export function Settings() {
                     <div className="flex items-center gap-2">
                       <Camera className="w-4 h-4 text-violet-500" />
                       <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
-                        Immagine del Profilo
+                        {t("settings.profile.imageTitle")}
                       </h2>
                     </div>
                   </div>
@@ -827,7 +827,7 @@ export function Settings() {
                     {uploading ? (
                       <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2">
                         <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-violet-500"></span>
-                        <span className="text-[9px] font-bold uppercase tracking-widest">Caricamento</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest">{t("settings.profile.uploading")}</span>
                       </div>
                     ) : (
                       <>
@@ -841,7 +841,7 @@ export function Settings() {
 
                         <label className="klx-settings-avatar-hover-overlay gap-1 select-none">
                           <Camera className="w-5 h-5 text-violet-400" />
-                          <span className="text-[8px] font-extrabold uppercase tracking-widest">Sfoglia</span>
+                          <span className="text-[8px] font-extrabold uppercase tracking-widest">{t("settings.profile.browse")}</span>
                           <input type="file" accept="image/*" className="klx-settings-avatar-input" onChange={handleAvatarChange} />
                         </label>
                       </>
@@ -854,7 +854,7 @@ export function Settings() {
                       {displayName}
                     </h4>
                     <p className="klx-settings-profile-email truncate">
-                      {user?.email || "Nessuna email associata"}
+                      {user?.email || t("settings.profile.noEmail")}
                     </p>
                     <div className="klx-settings-profile-badge">
                       <Shield className="w-3 h-3" /> {roleName}
@@ -870,7 +870,7 @@ export function Settings() {
                     variant="primary"
                     icon={<Upload className="w-3.5 h-3.5" />}
                   >
-                    Carica
+                    {t("settings.profile.upload")}
                   </Button>
                   <input
                     type="file"
@@ -887,7 +887,7 @@ export function Settings() {
                       icon={<Trash2 className="w-3.5 h-3.5" />}
                       className="text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20 hover:border-red-500/30"
                     >
-                      Rimuovi
+                      {t("settings.profile.removeAvatar")}
                     </Button>
                   )}
                 </div>
@@ -902,19 +902,19 @@ export function Settings() {
                 <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                   <Key className="w-4 h-4 text-violet-500" />
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
-                    Sicurezza Password e Credenziali
+                    {t("settings.pwd.title")}
                   </h2>
                 </div>
 
                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
                   <div className="flex flex-col gap-1.5 w-full">
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                      Password Corrente
+                      {t("settings.pwd.current")}
                     </Label>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Digita la password attuale"
+                        placeholder={t("settings.pwd.currentPlaceholder")}
                         required
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
@@ -932,11 +932,11 @@ export function Settings() {
 
                   <div className="flex flex-col gap-1.5 w-full">
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                      Nuova Password
+                      {t("settings.pwd.new")}
                     </Label>
                     <Input
                       type="password"
-                      placeholder="Minimo 6 caratteri"
+                      placeholder={t("settings.pwd.newPlaceholder")}
                       required
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
@@ -946,11 +946,16 @@ export function Settings() {
                       <div className="space-y-1.5 mt-1">
                         <div className="klx-settings-strength-meter-container">
                           <div className={`klx-settings-strength-meter-bar ${passwordStrength.width} ${
-                            passwordStrength.text === "Forte" ? "bg-success" : passwordStrength.text === "Media" ? "bg-amber-500" : "bg-danger"
+                            passwordStrength.level === "strong" ? "bg-success" : passwordStrength.level === "medium" ? "bg-amber-500" : "bg-danger"
                           }`} />
                         </div>
                         <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded border ${passwordStrength.color}`}>
-                          Robustezza: {passwordStrength.text}
+                          {t("settings.pwd.strengthLabel")}: {
+                            passwordStrength.level === "short" ? t("settings.pwd.strengthShort")
+                              : passwordStrength.level === "weak" ? t("settings.pwd.strengthWeak")
+                                : passwordStrength.level === "medium" ? t("settings.pwd.strengthMedium")
+                                  : t("settings.pwd.strengthStrong")
+                          }
                         </span>
                       </div>
                     )}
@@ -958,11 +963,11 @@ export function Settings() {
 
                   <div className="flex flex-col gap-1.5 w-full">
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                      Conferma Nuova Password
+                      {t("settings.pwd.confirm")}
                     </Label>
                     <Input
                       type="password"
-                      placeholder="Ripeti la nuova password"
+                      placeholder={t("settings.pwd.confirmPlaceholder")}
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -976,7 +981,7 @@ export function Settings() {
                       isDisabled={passwordPending}
                       variant="primary"
                     >
-                      {passwordPending ? "Salvataggio..." : "Aggiorna Password"}
+                      {passwordPending ? t("settings.pwd.saving") : t("settings.pwd.submit")}
                     </Button>
                   </div>
                 </form>
@@ -1140,20 +1145,20 @@ export function Settings() {
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-primary" />
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
-                    Sessioni attive
+                    {t("settings.sessions.title")}
                   </h3>
                 </div>
                 <Button onClick={() => void loadDeviceSessions()} isDisabled={sessionsLoading} variant="ghost">
-                  Aggiorna
+                  {t("settings.sessions.refresh")}
                 </Button>
               </div>
               <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
-                I dispositivi con una sessione KALEX attiva. Se non riconosci un dispositivo, disconnettilo e cambia subito la password.
+                {t("settings.sessions.desc")}
               </p>
               {sessionsLoading && deviceSessions.length === 0 ? (
-                <p className="text-xs text-slate-400">Caricamento sessioni…</p>
+                <p className="text-xs text-slate-400">{t("settings.sessions.loading")}</p>
               ) : deviceSessions.length === 0 ? (
-                <p className="text-xs text-slate-400">Nessuna sessione registrata (le sessioni precedenti a questa funzione compariranno al prossimo accesso).</p>
+                <p className="text-xs text-slate-400">{t("settings.sessions.empty")}</p>
               ) : (
                 <div className="space-y-2">
                   {deviceSessions.map((session) => (
@@ -1166,12 +1171,12 @@ export function Settings() {
                           {describeDevice(session.userAgent)}
                           {session.current && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full">
-                              Questo dispositivo
+                              {t("settings.sessions.thisDevice")}
                             </span>
                           )}
                         </span>
                         <span className="text-[10px] text-slate-400 truncate">
-                          IP {session.ip} · ultimo accesso {session.lastSeenAt ? new Date(session.lastSeenAt).toLocaleString() : "—"}
+                          {t("settings.sessions.ipLine", { ip: session.ip, when: session.lastSeenAt ? new Date(session.lastSeenAt).toLocaleString() : "—" })}
                         </span>
                       </div>
                       <Button
@@ -1179,7 +1184,7 @@ export function Settings() {
                         isDisabled={sessionRevokePending === session.id}
                         variant="danger-soft"
                       >
-                        {sessionRevokePending === session.id ? "Disconnessione…" : "Disconnetti"}
+                        {sessionRevokePending === session.id ? t("settings.sessions.disconnecting") : t("settings.sessions.disconnect")}
                       </Button>
                     </div>
                   ))}
@@ -1195,19 +1200,19 @@ export function Settings() {
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4 text-violet-500" />
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
-                    Chiave API Personale & Accesso Programmatico
+                    {t("settings.apikey.title")}
                   </h2>
                 </div>
                 {apiKeyData?.hasKey && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full">
-                    <Check className="w-3 h-3" /> Attiva
+                    <Check className="w-3 h-3" /> {t("settings.apikey.active")}
                   </span>
                 )}
               </div>
 
               <div className="space-y-6">
                 <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed max-w-3xl">
-                  Una chiave API personale ti consente di autenticarti e consumare le API centralizzate di KALEX tramite script esterni, cURL o client IoT. La chiave erediterà automaticamente lo stesso livello di permessi (RBAC) e la stessa associazione aziendale del tuo utente reale.
+                  {t("settings.apikey.desc")}
                 </p>
 
                 {/* Banner di visualizzazione della chiave in chiaro appena generata */}
@@ -1215,10 +1220,10 @@ export function Settings() {
                   <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-3">
                     <div className="flex items-center gap-2 text-amber-500">
                       <AlertTriangle className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">CONSERVA LA CHIAVE API ADESSO!</span>
+                      <span className="text-xs font-bold uppercase tracking-wider">{t("settings.apikey.saveNowTitle")}</span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-gray-300 leading-relaxed">
-                      Per motivi di sicurezza, questa chiave viene mostrata in chiaro <strong>solo adesso</strong>. Copiala immediatamente e conservala in un password manager o in un luogo sicuro. Non sarà possibile recuperarla successivamente.
+                      {t("settings.apikey.saveNowDesc")}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 w-full">
                       <input
@@ -1230,13 +1235,13 @@ export function Settings() {
                       <Button
                         onClick={() => {
                           navigator.clipboard.writeText(generatedKey);
-                          showToast("Chiave API copiata negli appunti.", "success");
+                          showToast(t("settings.toast.apiKeyCopied"), "success");
                         }}
                         variant="primary"
                         icon={<Copy className="w-3.5 h-3.5" />}
                         className="shrink-0"
                       >
-                        Copia
+                        {t("settings.apikey.copy")}
                       </Button>
                     </div>
                   </div>
@@ -1245,19 +1250,19 @@ export function Settings() {
                 {loadingApiKey ? (
                   <div className="flex items-center gap-2 text-slate-400 py-2">
                     <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-violet-500"></span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Caricamento dettagli chiave...</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{t("settings.apikey.loadingDetails")}</span>
                   </div>
                 ) : apiKeyData?.hasKey ? (
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-5 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 rounded-2xl">
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase">Hash Identificativo:</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase">{t("settings.apikey.hashLabel")}</span>
                         <code className="text-xs text-slate-800 dark:text-violet-400 font-mono font-bold break-all bg-white dark:bg-black/30 px-2 py-0.5 rounded border border-slate-200 dark:border-white/5">
                           {apiKeyData.keyHash}
                         </code>
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-gray-400">
-                        Generata il: <span className="font-bold">{apiKeyData.createdAt ? new Date(apiKeyData.createdAt).toLocaleDateString() : "-"}</span>
+                        {t("settings.apikey.generatedOn")} <span className="font-bold">{apiKeyData.createdAt ? new Date(apiKeyData.createdAt).toLocaleDateString() : "-"}</span>
                       </div>
                     </div>
 
@@ -1268,7 +1273,7 @@ export function Settings() {
                         variant="ghost"
                         icon={<Key className="w-3.5 h-3.5" />}
                       >
-                        Rigenera Chiave
+                        {t("settings.apikey.regenerate")}
                       </Button>
                     </div>
                   </div>
@@ -1280,7 +1285,7 @@ export function Settings() {
                       variant="primary"
                       icon={<Key className="w-3.5 h-3.5" />}
                     >
-                      Genera Chiave API Personale
+                      {t("settings.apikey.generate")}
                     </Button>
                   </div>
                 )}
@@ -1294,16 +1299,16 @@ export function Settings() {
               <div className="flex items-center gap-2 mb-6 border-b border-red-500/20 pb-4">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
                 <h2 className="text-sm font-extrabold uppercase tracking-wider text-red-700 dark:text-red-400">
-                  Zona Pericolosa - Rimozione Account (GDPR EU)
+                  {t("settings.danger.title")}
                 </h2>
               </div>
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="space-y-1 max-w-2xl">
                   <p className="text-xs font-bold text-red-800 dark:text-red-400">
-                    Questa azione è irreversibile.
+                    {t("settings.danger.irreversible")}
                   </p>
                   <p className="text-xs text-red-600/80 dark:text-red-400/60 leading-relaxed">
-                    In conformità con il Regolamento Generale sulla Protezione dei Dati (GDPR Art. 17 - Diritto all&apos;oblio), l&apos;eliminazione cancellerà permanentemente tutti i tuoi dati da PostgreSQL, team e file in cloud. L&apos;azione non può essere annullata.
+                    {t("settings.danger.desc")}
                   </p>
                 </div>
                 <Button
@@ -1311,7 +1316,7 @@ export function Settings() {
                   variant="danger"
                   icon={<Trash className="w-3.5 h-3.5" />}
                 >
-                  Elimina Account
+                  {t("settings.danger.deleteBtn")}
                 </Button>
               </div>
             </CardBody>
@@ -1330,7 +1335,7 @@ export function Settings() {
               initialData={orgInitialData}
               fieldsOrder={["name", "type", "country", "vatNumber", "fiscalCode", "address", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode"]}
               onSubmit={handleOrgSubmit}
-              submitLabel="Salva Organizzazione"
+              submitLabel={t("settings.org.submit")}
             />
           </CardBody>
         </Card>
@@ -1346,16 +1351,16 @@ export function Settings() {
               <div className="flex items-center gap-3 text-red-500">
                 <AlertTriangle className="w-6 h-6" />
                 <h3 className="text-base font-extrabold uppercase tracking-wider">
-                  Cancellazione Definitiva
+                  {t("settings.deleteDialog.title")}
                 </h3>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Tutti i tuoi dati personali, l&apos;accesso ai servizi e la configurazione associata verranno eliminati permanentemente. Per confermare, digita <span className="font-bold text-white uppercase tracking-widest font-mono bg-red-950 px-1 rounded">ELIMINA</span> nello spazio sottostante.
+                {t("settings.deleteDialog.bodyBefore")} <span className="font-bold text-white uppercase tracking-widest font-mono bg-red-950 px-1 rounded">{t("settings.deleteDialog.confirmWord")}</span> {t("settings.deleteDialog.bodyAfter")}
               </p>
               <div className="space-y-2">
                 <Input
                   type="text"
-                  placeholder="Digita ELIMINA per confermare"
+                  placeholder={t("settings.deleteDialog.placeholder", { word: t("settings.deleteDialog.confirmWord") })}
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full text-center font-bold tracking-widest"
@@ -1370,15 +1375,15 @@ export function Settings() {
                   }}
                   className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
                 >
-                  Annulla
+                  {t("settings.common.cancel")}
                 </button>
                 <button
                   type="button"
                   onClick={handlePurgeAccount}
-                  disabled={deletePending || deleteConfirmText !== "ELIMINA"}
+                  disabled={deletePending || deleteConfirmText !== t("settings.deleteDialog.confirmWord")}
                   className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-red-600 hover:bg-red-700 disabled:bg-red-900/50 disabled:text-red-400/50 disabled:cursor-not-allowed text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg"
                 >
-                  {deletePending ? "Eliminazione..." : "Conferma Eliminazione"}
+                  {deletePending ? t("settings.deleteDialog.deleting") : t("settings.deleteDialog.confirmDelete")}
                 </button>
               </div>
             </CardBody>
@@ -1396,20 +1401,20 @@ export function Settings() {
               <div className="flex items-center gap-3 text-violet-500">
                 <Lock className="w-5 h-5" />
                 <h3 className="text-base font-extrabold uppercase tracking-wider">
-                  Riautenticazione Richiesta
+                  {t("settings.reauth.title")}
                 </h3>
               </div>
 
               {reauthMfaResolver ? (
                 <>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Hai la verifica in due passaggi attiva. Inserisci il codice generato da <strong>{reauthMfaHint}</strong> per confermare la tua identità.
+                    {t("settings.reauth.mfaPromptBefore")} <strong>{reauthMfaHint}</strong> {t("settings.reauth.mfaPromptAfter")}
                   </p>
                   <form onSubmit={handleReauthMfaVerify} className="space-y-4">
                     <Input
                       type="text"
                       maxLength={6}
-                      placeholder="Codice a 6 cifre"
+                      placeholder={t("settings.reauth.codePlaceholder")}
                       required
                       value={reauthMfaCode}
                       onChange={(e) => setReauthMfaCode(e.target.value)}
@@ -1421,14 +1426,14 @@ export function Settings() {
                         onClick={closeReauth}
                         className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
                       >
-                        Annulla
+                        {t("settings.common.cancel")}
                       </button>
                       <button
                         type="submit"
                         disabled={reauthPending || reauthMfaCode.length < 6}
                         className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
                       >
-                        {reauthPending ? "Verifica..." : "Conferma codice"}
+                        {reauthPending ? t("settings.reauth.verifying") : t("settings.reauth.confirmCode")}
                       </button>
                     </div>
                   </form>
@@ -1436,12 +1441,12 @@ export function Settings() {
               ) : (
                 <>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Per procedere con questa operazione sensibile sulla sicurezza, devi confermare la tua identità inserendo la tua password attuale.
+                    {t("settings.reauth.passwordPrompt")}
                   </p>
                   <form onSubmit={handleReauthSubmit} className="space-y-4">
                     <Input
                       type="password"
-                      placeholder="Password attuale"
+                      placeholder={t("settings.reauth.passwordPlaceholder")}
                       required
                       value={reauthPassword}
                       onChange={(e) => setReauthPassword(e.target.value)}
@@ -1453,14 +1458,14 @@ export function Settings() {
                         onClick={closeReauth}
                         className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
                       >
-                        Annulla
+                        {t("settings.common.cancel")}
                       </button>
                       <button
                         type="submit"
                         disabled={reauthPending || !reauthPassword}
                         className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
                       >
-                        {reauthPending ? "Verifica..." : "Riconferma"}
+                        {reauthPending ? t("settings.reauth.verifying") : t("settings.reauth.reconfirm")}
                       </button>
                     </div>
                   </form>
