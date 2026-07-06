@@ -30,7 +30,6 @@ import {
   PhoneAuthProvider,
   PhoneMultiFactorGenerator,
   TotpMultiFactorGenerator,
-  RecaptchaVerifier,
   type ApplicationVerifier,
   type MultiFactorInfo,
   type MultiFactorResolver,
@@ -478,10 +477,16 @@ export function Settings() {
     setTotpCode("");
   };
 
-  // Verifier reCAPTCHA per l'invio dell'SMS: in dev locale (appVerificationDisabledForTesting)
-  // usa un mock che espone anche _reset() (l'SDK Firebase v12 lo invoca sempre); in prod usa
-  // reCAPTCHA Enterprise invisibile ancorato al container dedicato.
-  const buildAppVerifier = (): ApplicationVerifier => {
+  // Verifier per l'invio dell'SMS (MFA telefono).
+  // - Dev locale (appVerificationDisabledForTesting): mock con _reset() (l'SDK v12 lo invoca
+  //   sempre) → i numeri di test Firebase bypassano reCAPTCHA.
+  // - Prod: si OMETTE l'applicationVerifier (verifyPhoneNumber lo accetta `undefined`). Con
+  //   reCAPTCHA Enterprise in ENFORCE sul provider phone, il flusso è score-based/invisibile e
+  //   NON usa il RecaptchaVerifier classico (challenge). Questo elimina il conflitto con la
+  //   reCAPTCHA Enterprise caricata da App Check (bug "Invalid site key or not loaded in
+  //   api.js": la key SCORE di App Check non è usabile in un challenge classico).
+  //   ⚠️ Richiede phoneEnforcementState=ENFORCE nella config Identity Platform del progetto.
+  const buildAppVerifier = (): ApplicationVerifier | undefined => {
     if (auth.settings.appVerificationDisabledForTesting) {
       const mockVerifier: ApplicationVerifier & { _reset: () => void } = {
         type: "recaptcha",
@@ -490,7 +495,7 @@ export function Settings() {
       };
       return mockVerifier;
     }
-    return new RecaptchaVerifier(auth, "mfa-recaptcha-container", { size: "invisible" });
+    return undefined;
   };
 
   // Gestione centralizzata degli errori MFA. Due casi richiedono una riautenticazione con la

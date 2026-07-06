@@ -12,7 +12,6 @@ import {
   PhoneAuthProvider,
   PhoneMultiFactorGenerator,
   TotpMultiFactorGenerator,
-  RecaptchaVerifier,
   MultiFactorResolver,
   ApplicationVerifier
 } from "firebase/auth";
@@ -773,11 +772,13 @@ function AuthPortal() {
             setMfaPhoneHint("il tuo numero registrato");
           }
 
-          // Inizializza reCAPTCHA invisibile per inviare l'SMS (o un mock fittizio se in modalità test/bypass)
-          let applicationVerifier: ApplicationVerifier;
+          // Verifier per l'SMS. In dev (appVerificationDisabledForTesting) un mock con _reset()
+          // (l'SDK v12 lo invoca sempre) → numeri di test. In prod si OMETTE l'applicationVerifier:
+          // con reCAPTCHA Enterprise in ENFORCE il flusso è score-based/invisibile e non usa il
+          // RecaptchaVerifier classico, evitando il conflitto con la reCAPTCHA Enterprise di App
+          // Check ("Invalid site key or not loaded in api.js"). Richiede phoneEnforcementState=ENFORCE.
+          let applicationVerifier: ApplicationVerifier | undefined;
           if (auth.settings.appVerificationDisabledForTesting) {
-            // Oltre all'interfaccia pubblica, l'SDK Firebase invoca sempre il metodo interno
-            // _reset() nel finally di verifyPhoneNumber: il mock deve esporlo (no-op).
             const mockVerifier: ApplicationVerifier & { _reset: () => void } = {
               type: "recaptcha",
               verify: async () => "mock-recaptcha-token",
@@ -785,16 +786,9 @@ function AuthPortal() {
             };
             applicationVerifier = mockVerifier;
           } else {
-            const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-              size: "invisible"
-            });
-            const verifierWithReset = verifier as unknown as { _reset?: () => void };
-            if (typeof verifierWithReset._reset !== "function") {
-              verifierWithReset._reset = () => undefined;
-            }
-            applicationVerifier = verifier;
+            applicationVerifier = undefined;
           }
-          
+
           const phoneAuthProvider = new PhoneAuthProvider(auth);
           const verificationId = await phoneAuthProvider.verifyPhoneNumber(
             {
