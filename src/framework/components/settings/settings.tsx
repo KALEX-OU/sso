@@ -277,7 +277,7 @@ export function Settings() {
       const userId = claims?.uId || user?.uid;
       if (!userId) throw new Error(t("settings.toast.userNotIdentified"));
 
-      const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}`, {
+      const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}/profile`, {
         method: "POST",
         headers: { "Idempotency-Key": idempotencyKey },
         body: JSON.stringify({ ...data, avatarUrl: avatarPreview || "" })
@@ -320,7 +320,7 @@ export function Settings() {
         await updateProfile(user, { photoURL: downloadUrl });
       }
 
-      await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}`, {
+      await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}/profile`, {
         method: "POST",
         body: JSON.stringify({
           fullName: dbData?.user?.fullName || "",
@@ -353,7 +353,7 @@ export function Settings() {
         await updateProfile(user, { photoURL: "" });
       }
 
-      await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}`, {
+      await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}/profile`, {
         method: "POST",
         body: JSON.stringify({
           fullName: dbData?.user?.fullName || "",
@@ -635,7 +635,7 @@ export function Settings() {
         if (!userId) throw new Error(t("settings.toast.userNotIdentified"));
 
         // 1. Chiama l'endpoint del backend per eliminare i dati da PostgreSQL, team e Firestore
-        const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}`, {
+        const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}/account`, {
           method: "DELETE"
         });
 

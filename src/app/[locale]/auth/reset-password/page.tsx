@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase/client";
+import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import {
-  sendPasswordResetEmail,
-  confirmPasswordReset,
   verifyPasswordResetCode
 } from "firebase/auth";
 import {
@@ -85,13 +83,6 @@ const NewPasswordSchema = z
   });
 type NewPasswordInput = z.infer<typeof NewPasswordSchema>;
 
-function getFirebaseErrorCode(err: unknown): string {
-  if (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string") {
-    return (err as { code: string }).code;
-  }
-  return "unknown";
-}
-
 function ResetPasswordPortal() {
   const t = useI18n();
   const currentLocale = useCurrentLocale();
@@ -165,16 +156,20 @@ function ResetPasswordPortal() {
       setLoading(true);
       setGlobalError("");
       try {
-        await sendPasswordResetEmail(auth, data.email);
+        // Backend indurito: anti-enumeration (risposta SEMPRE 200, invio in background via SMTP
+        // KALEX). Nessun ramo user-not-found lato client, che rivelerebbe quali account esistono.
+        const res = await fetchWithAppCheck("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: data.email })
+        });
+        if (!res.ok) {
+          throw new Error("forgot-password request failed");
+        }
         setEmailSent(true);
       } catch (err) {
-        console.error("[Reset Password] sendPasswordResetEmail error:", err);
-        const errorCode = getFirebaseErrorCode(err);
-        if (errorCode === "auth/user-not-found") {
-          setGlobalError("Nessun utente trovato con questo indirizzo email.");
-        } else {
-          setGlobalError("Si è verificato un errore durante l'invio dell'email. Riprova.");
-        }
+        console.error("[Reset Password] forgot-password error:", err);
+        setGlobalError("Si è verificato un errore durante l'invio dell'email. Riprova.");
       } finally {
         setLoading(false);
       }
@@ -189,20 +184,28 @@ function ResetPasswordPortal() {
       setLoading(true);
       setGlobalError("");
       try {
-        await confirmPasswordReset(auth, oobCode, data.password);
+        // Backend indurito: applica HIBP + policy KALEX e consuma l'oobCode via Identity Toolkit.
+        const res = await fetchWithAppCheck("/api/auth/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ oobCode, newPassword: data.password })
+        });
+        const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: { code?: string; message?: string } };
+        if (!res.ok || !body.success) {
+          const code = body.error?.code;
+          if (code === "auth/password-breached") {
+            setGlobalError("Questa password è comparsa in violazioni di dati note: scegline una diversa.");
+          } else if (code === "auth/invalid-oobcode") {
+            setGlobalError("Il codice di verifica è scaduto o non è valido. Richiedi un nuovo link.");
+          } else {
+            setGlobalError("Errore durante il salvataggio della password. Riprova.");
+          }
+          return;
+        }
         setResetSuccess(true);
       } catch (err) {
-        console.error("[Reset Password] confirmPasswordReset error:", err);
-        const errorCode = getFirebaseErrorCode(err);
-        if (errorCode === "auth/expired-action-code") {
-          setGlobalError("Il codice di verifica è scaduto. Richiedi un nuovo link.");
-        } else if (errorCode === "auth/invalid-action-code") {
-          setGlobalError("Il codice di verifica non è valido o è già stato utilizzato.");
-        } else if (errorCode === "auth/weak-password") {
-          setGlobalError("La password inserita è troppo debole.");
-        } else {
-          setGlobalError("Errore durante il salvataggio della password. Riprova.");
-        }
+        console.error("[Reset Password] reset-password error:", err);
+        setGlobalError("Errore durante il salvataggio della password. Riprova.");
       } finally {
         setLoading(false);
       }
