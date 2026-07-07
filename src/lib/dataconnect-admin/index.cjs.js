@@ -133,6 +133,13 @@ function deleteUser(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.deleteUser = deleteUser;
 
+function updateOrganizationVatHash(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateOrganizationVatHash', inputVars, inputOpts);
+}
+exports.updateOrganizationVatHash = updateOrganizationVatHash;
+
 function deleteOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -531,6 +538,20 @@ function listMembersByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('ListMembersByOrg', inputVars, inputOpts);
 }
 exports.listMembersByOrg = listMembersByOrg;
+
+function getOrgMember(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrgMember', inputVars, inputOpts);
+}
+exports.getOrgMember = getOrgMember;
+
+function getOrgOwner(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrgOwner', inputVars, inputOpts);
+}
+exports.getOrgOwner = getOrgOwner;
 
 function listAllThings(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);

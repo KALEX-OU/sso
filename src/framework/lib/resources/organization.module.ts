@@ -73,6 +73,18 @@ export const organizationModule = {
       validation: { format: "vat" },
       graphql: { nullable: true }
     },
+    // Hash deterministico (HMAC) della P.IVA per il controllo di UNICITÀ (P2-110): la colonna
+    // `vatNumber` è cifrata a IV random → non confrontabile. Campo INTERNO: non renderizzato,
+    // non in `allowedFields` (non esposto via FLS ai client).
+    vatNumberHash: {
+      type: "String",
+      encrypted: false,
+      render: false,
+      order: 99,
+      label: "fields.vatNumberHash.label",
+      placeholder: "fields.vatNumberHash.placeholder",
+      graphql: { nullable: true }
+    },
     fiscalCode: {
       type: "String",
       encrypted: false,

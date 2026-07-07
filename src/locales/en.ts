@@ -559,4 +559,8 @@ export default {
   "settings.sessions.revokeOthers": "Disconnect the others",
   "settings.sessions.othersRevoked": "Other sessions disconnected: {count}.",
   "settings.sessions.othersRevokeFail": "Unable to disconnect the other sessions.",
+
+  // Chiavi risorse autogenerate
+  "fields.vatNumberHash.label": "Vat Number Hash",
+  "fields.vatNumberHash.placeholder": "Enter vat number hash...",
 } as const;

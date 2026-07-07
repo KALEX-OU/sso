@@ -59,7 +59,7 @@ export interface CheckVatNumberExistsData {
 }
 
 export interface CheckVatNumberExistsVariables {
-  vatNumber: string;
+  vatNumberHash: string;
 }
 
 export interface Checkouts_Key {
@@ -195,6 +195,7 @@ export interface CreateOrganizationVariables {
   type?: string | null;
   country?: string | null;
   vatNumber?: string | null;
+  vatNumberHash?: string | null;
   fiscalCode?: string | null;
   billingAddress?: string | null;
   sdiCode?: string | null;
@@ -626,6 +627,49 @@ export interface GetInvoiceDetailsData {
 
 export interface GetInvoiceDetailsVariables {
   invoiceId: string;
+}
+
+export interface GetOrgMemberData {
+  userOrganization?: {
+    role: string;
+    rbac?: unknown | null;
+    joinedAt: TimestampString;
+    user: {
+      userId: string;
+      email: string;
+      fullName: string;
+      avatarUrl?: string | null;
+      metadata?: unknown | null;
+      locale: string;
+      teamMembers_on_user: ({
+        team: {
+          teamId: string;
+          name: string;
+        } & Teams_Key;
+      })[];
+    } & Users_Key;
+  };
+}
+
+export interface GetOrgMemberVariables {
+  orgId: string;
+  userId: string;
+}
+
+export interface GetOrgOwnerData {
+  userOrganizations: ({
+    role: string;
+    user: {
+      userId: string;
+      email: string;
+      fullName: string;
+      locale: string;
+    } & Users_Key;
+  })[];
+}
+
+export interface GetOrgOwnerVariables {
+  orgId: string;
 }
 
 export interface GetOrganizationByStripeCustomerData {
@@ -1694,6 +1738,7 @@ export interface UpdateInvoiceStatusData {
 export interface UpdateInvoiceStatusVariables {
   invoiceId: string;
   status: string;
+  metadata?: unknown | null;
 }
 
 export interface UpdateOrganizationAppsData {
@@ -1744,6 +1789,15 @@ export interface UpdateOrganizationStripeCustomerVariables {
   stripeCustomerId?: string | null;
 }
 
+export interface UpdateOrganizationVatHashData {
+  organization_update?: Organizations_Key | null;
+}
+
+export interface UpdateOrganizationVatHashVariables {
+  orgId: string;
+  vatNumberHash?: string | null;
+}
+
 export interface UpdateOrganizationViesData {
   organization_update?: Organizations_Key | null;
 }
@@ -1761,6 +1815,7 @@ export interface UpdatePaymentStatusVariables {
   paymentId: string;
   status: string;
   errorMessage?: string | null;
+  metadata?: unknown | null;
 }
 
 export interface UpdatePriceData {
@@ -2125,6 +2180,18 @@ export const deleteUserRef: DeleteUserRef;
 
 export function deleteUser(vars: DeleteUserVariables): MutationPromise<DeleteUserData, DeleteUserVariables>;
 export function deleteUser(dc: DataConnect, vars: DeleteUserVariables): MutationPromise<DeleteUserData, DeleteUserVariables>;
+
+interface UpdateOrganizationVatHashRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationVatHashVariables): MutationRef<UpdateOrganizationVatHashData, UpdateOrganizationVatHashVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateOrganizationVatHashVariables): MutationRef<UpdateOrganizationVatHashData, UpdateOrganizationVatHashVariables>;
+  operationName: string;
+}
+export const updateOrganizationVatHashRef: UpdateOrganizationVatHashRef;
+
+export function updateOrganizationVatHash(vars: UpdateOrganizationVatHashVariables): MutationPromise<UpdateOrganizationVatHashData, UpdateOrganizationVatHashVariables>;
+export function updateOrganizationVatHash(dc: DataConnect, vars: UpdateOrganizationVatHashVariables): MutationPromise<UpdateOrganizationVatHashData, UpdateOrganizationVatHashVariables>;
 
 interface DeleteOrganizationRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -2809,6 +2876,30 @@ export const listMembersByOrgRef: ListMembersByOrgRef;
 
 export function listMembersByOrg(vars: ListMembersByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
 export function listMembersByOrg(dc: DataConnect, vars: ListMembersByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListMembersByOrgData, ListMembersByOrgVariables>;
+
+interface GetOrgMemberRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrgMemberVariables): QueryRef<GetOrgMemberData, GetOrgMemberVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrgMemberVariables): QueryRef<GetOrgMemberData, GetOrgMemberVariables>;
+  operationName: string;
+}
+export const getOrgMemberRef: GetOrgMemberRef;
+
+export function getOrgMember(vars: GetOrgMemberVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrgMemberData, GetOrgMemberVariables>;
+export function getOrgMember(dc: DataConnect, vars: GetOrgMemberVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrgMemberData, GetOrgMemberVariables>;
+
+interface GetOrgOwnerRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrgOwnerVariables): QueryRef<GetOrgOwnerData, GetOrgOwnerVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrgOwnerVariables): QueryRef<GetOrgOwnerData, GetOrgOwnerVariables>;
+  operationName: string;
+}
+export const getOrgOwnerRef: GetOrgOwnerRef;
+
+export function getOrgOwner(vars: GetOrgOwnerVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrgOwnerData, GetOrgOwnerVariables>;
+export function getOrgOwner(dc: DataConnect, vars: GetOrgOwnerVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrgOwnerData, GetOrgOwnerVariables>;
 
 interface ListAllThingsRef {
   /* Allow users to create refs without passing in DataConnect */

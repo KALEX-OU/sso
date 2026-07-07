@@ -205,6 +205,7 @@ export interface Organization {
   country: string;
   viesValidated: boolean;
   vatNumber?: string;
+  vatNumberHash?: string;
   fiscalCode?: string;
   billingAddress?: string;
   sdiCode?: string;

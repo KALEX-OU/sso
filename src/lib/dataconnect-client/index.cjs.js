@@ -259,6 +259,20 @@ exports.deleteUser = function deleteUser(dcOrVars, vars) {
 }
 ;
 
+const updateOrganizationVatHashRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateOrganizationVatHash', inputVars);
+}
+updateOrganizationVatHashRef.operationName = 'UpdateOrganizationVatHash';
+exports.updateOrganizationVatHashRef = updateOrganizationVatHashRef;
+
+exports.updateOrganizationVatHash = function updateOrganizationVatHash(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationVatHashRef(dcInstance, inputVars));
+}
+;
+
 const deleteOrganizationRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -1072,6 +1086,36 @@ exports.listMembersByOrg = function listMembersByOrg(dcOrVars, varsOrOptions, op
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listMembersByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getOrgMemberRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetOrgMember', inputVars);
+}
+getOrgMemberRef.operationName = 'GetOrgMember';
+exports.getOrgMemberRef = getOrgMemberRef;
+
+exports.getOrgMember = function getOrgMember(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrgMemberRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getOrgOwnerRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetOrgOwner', inputVars);
+}
+getOrgOwnerRef.operationName = 'GetOrgOwner';
+exports.getOrgOwnerRef = getOrgOwnerRef;
+
+exports.getOrgOwner = function getOrgOwner(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrgOwnerRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 
