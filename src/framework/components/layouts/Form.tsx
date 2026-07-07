@@ -41,32 +41,38 @@ function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: 
     const val = field.validation || {};
 
     if (fieldSchema instanceof z.ZodString) {
-      if (val.required) {
-        fieldSchema = fieldSchema.min(1, "Campo obbligatorio");
-      } else {
-        fieldSchema = fieldSchema.optional().or(z.literal(""));
-      }
+      // Applica PRIMA tutte le rifiniture di stringa (mentre è ancora una ZodString),
+      // POI required/optional. Se si rendesse optional prima, `fieldSchema` diventerebbe
+      // una ZodUnion e le successive .regex()/.min()/.email() lancerebbero
+      // "TypeError: regex is not a function" (crash su campi opzionali con format, es. P.IVA/SDI).
+      let strSchema: z.ZodString = fieldSchema;
 
       if (val.min) {
-        fieldSchema = (fieldSchema as z.ZodString).min(val.min, `Minimo ${val.min} caratteri`);
+        strSchema = strSchema.min(val.min, `Minimo ${val.min} caratteri`);
       }
       if (val.max) {
-        fieldSchema = (fieldSchema as z.ZodString).max(val.max, `Massimo ${val.max} caratteri`);
+        strSchema = strSchema.max(val.max, `Massimo ${val.max} caratteri`);
       }
       if (val.email) {
-        fieldSchema = (fieldSchema as z.ZodString).email("Email non valida");
-      }
-      if (val.enum) {
-        fieldSchema = z.enum(val.enum as [string, ...string[]]);
+        strSchema = strSchema.email("Email non valida");
       }
       if (val.format === "vat") {
-        fieldSchema = (fieldSchema as z.ZodString).regex(/^[A-Z0-9]{2,15}$/i, "Partita IVA non valida");
+        strSchema = strSchema.regex(/^[A-Z0-9]{2,15}$/i, "Partita IVA non valida");
       }
       if (val.format === "personal_id") {
-        fieldSchema = (fieldSchema as z.ZodString).regex(/^[A-Z0-9]{16}$/i, "Codice Fiscale non valido (16 caratteri)");
+        strSchema = strSchema.regex(/^[A-Z0-9]{16}$/i, "Codice Fiscale non valido (16 caratteri)");
       }
       if (val.format === "sdi") {
-        fieldSchema = (fieldSchema as z.ZodString).regex(/^[A-Z0-9]{7}$/i, "Codice SDI non valido (7 caratteri)");
+        strSchema = strSchema.regex(/^[A-Z0-9]{7}$/i, "Codice SDI non valido (7 caratteri)");
+      }
+
+      // required/optional/enum vanno applicati PER ULTIMI (cambiano il tipo dello schema).
+      if (val.enum) {
+        fieldSchema = z.enum(val.enum as [string, ...string[]]);
+      } else if (val.required) {
+        fieldSchema = strSchema.min(1, "Campo obbligatorio");
+      } else {
+        fieldSchema = strSchema.optional().or(z.literal(""));
       }
     } else {
       if (val.required) {
