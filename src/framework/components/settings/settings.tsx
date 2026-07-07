@@ -35,7 +35,8 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import QRCode from "react-qr-code";
 import { auth, storage, forceCleanSession } from "../../lib/auth";
-import { useI18n } from "@/locales/client";
+import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
+import { useTheme } from "next-themes";
 
 interface OrganizationData {
   orgId: string;
@@ -56,6 +57,10 @@ interface OrganizationData {
 export function Settings() {
   const { user, dbData, showToast, claims, refreshClaims } = useDashboard();
   const t = useI18n();
+  // P1-91: setter reali per applicare theme/locale scelti nelle impostazioni (prima "dead settings").
+  const changeLocale = useChangeLocale();
+  const currentLocale = useCurrentLocale();
+  const { setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("user");
 
   // Stato per l'avatar
@@ -288,7 +293,21 @@ export function Settings() {
       }
 
       await refreshClaims();
+
+      // P1-91: applica SUBITO theme e locale scelti (prima erano salvati ma non applicati).
+      // - next-themes: setTheme persiste su localStorage e lo script SSR lo riapplica al reload.
+      // - next-international: changeLocale imposta il cookie Next-Locale (onorato dal middleware
+      //   i18n in proxy.ts) e REDIRIGE alla lingua scelta → va chiamato per ultimo.
+      const newTheme = typeof data.theme === "string" ? data.theme : undefined;
+      if (newTheme === "light" || newTheme === "dark") {
+        setTheme(newTheme);
+      }
       showToast(t("settings.toast.profileUpdated"), "success");
+
+      const newLocale = typeof data.locale === "string" ? data.locale : undefined;
+      if ((newLocale === "it" || newLocale === "en" || newLocale === "es") && newLocale !== currentLocale) {
+        changeLocale(newLocale);
+      }
     } catch (err) {
       console.error(err);
       throw err;
