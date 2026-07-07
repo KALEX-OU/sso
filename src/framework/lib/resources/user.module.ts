@@ -85,6 +85,7 @@ export const userModule = {
       label: "fields.locale.label",
       placeholder: "fields.locale.placeholder",
       options: ["it", "en", "es"],
+      validation: { enum: ["it", "en", "es"] },
       graphql: { nullable: false, directive: '@default(value: "en")' }
     },
     theme: {
@@ -96,6 +97,7 @@ export const userModule = {
       label: "fields.theme.label",
       placeholder: "fields.theme.placeholder",
       options: ["light", "dark"],
+      validation: { enum: ["light", "dark"] },
       graphql: { nullable: false, directive: '@default(value: "dark")' }
     },
     metadata: {
