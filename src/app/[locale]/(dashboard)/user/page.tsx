@@ -252,6 +252,37 @@ export default function UserManagementPage() {
     }
   };
 
+  // Reset 2FA assistito (P1-94): l'owner resetta la verifica in due passaggi di un membro
+  // (recovery quando l'utente perde il dispositivo TOTP). Motivo obbligatorio per l'audit.
+  const handleMfaReset = async (targetUserId: string, email: string) => {
+    if (!activeOrg || !user) return;
+    if (!confirm(`Resettare la verifica in due passaggi (2FA) di '${email}'? Dovrà riconfigurarla al prossimo accesso.`)) return;
+    const reason = prompt("Motivo del reset 2FA (min. 10 caratteri, richiesto per l'audit):", "");
+    if (reason === null) return;
+    if (reason.trim().length < 10) {
+      showToast("Il motivo deve contenere almeno 10 caratteri.", "error");
+      return;
+    }
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetchWithAppCheck(`/api/user/${targetUserId}/mfa/admin-reset`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${idToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reason.trim() })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        showToast("Verifica in due passaggi resettata con successo.", "success");
+        void loadMembers(activeOrg.orgId);
+      } else {
+        throw new Error(data.error || "Errore durante il reset 2FA.");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err instanceof Error ? err.message : "Errore reset 2FA.", "error");
+    }
+  };
+
   // Apertura modale di configurazione permessi
   const handleOpenPermModal = (member: MemberItem) => {
     setSelectedMember(member);
@@ -527,6 +558,14 @@ export default function UserManagementPage() {
                                   >
                                     <Settings className="w-4 h-4" />
                                   </Button>
+                                  {activeRole === "owner" && member.role !== "owner" && (
+                                    <Button
+                                      className="font-bold text-[9px] rounded-lg cursor-pointer px-2.5 py-1.5 border border-amber-500/30 hover:bg-amber-500/10 text-amber-500 transition-colors"
+                                      onClick={() => void handleMfaReset(u.userId, u.email)}
+                                    >
+                                      Reset 2FA
+                                    </Button>
+                                  )}
                                   <Button
                                     isIconOnly
                                     variant="ghost"
