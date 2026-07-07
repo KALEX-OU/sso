@@ -863,12 +863,16 @@ function AuthPortal() {
         throw errObj;
       }
 
-      // Polling reale sulla creazione dell'account (1.6): il task in background crea l'utente
-      // Firebase in modo asincrono, quindi ritentiamo il login finché non riesce (con un tetto
-      // massimo) invece di affidarci a un'attesa fissa che fallisce in silenzio su backend lento.
-      const LOGIN_POLL_MAX_ATTEMPTS = 10;
-      const LOGIN_POLL_INTERVAL_MS = 2500;
+      // Warm-up post-registrazione (P1-98): l'utente Firebase è creato ASINCRONA-mente dal task
+      // in background. Prima ritentavamo /login fino a 10× ravvicinati (2.5s) → si ESAURIVA il
+      // rate-limiter del login (10/10min), bloccando il login reale e i successivi. Ora:
+      //  - attesa iniziale (il task tipicamente crea l'utente in pochi secondi) → nel caso comune
+      //    UN solo /login riesce;
+      //  - pochi tentativi (5 < 10) con backoff ESPONENZIALE → le chiamate restano sotto il rate-limit.
+      const LOGIN_POLL_MAX_ATTEMPTS = 5;
+      const LOGIN_POLL_BASE_MS = 3000;
       let loggedIn = false;
+      await new Promise(resolve => setTimeout(resolve, LOGIN_POLL_BASE_MS));
       for (let attempt = 1; attempt <= LOGIN_POLL_MAX_ATTEMPTS && !loggedIn; attempt++) {
         try {
           const loginResponse = await fetchWithAppCheck("/api/auth/login", {
@@ -891,7 +895,8 @@ function AuthPortal() {
           console.warn(`Account non ancora disponibile per il login (tentativo ${attempt}/${LOGIN_POLL_MAX_ATTEMPTS}):`, loginErr);
         }
         if (!loggedIn && attempt < LOGIN_POLL_MAX_ATTEMPTS) {
-          await new Promise(resolve => setTimeout(resolve, LOGIN_POLL_INTERVAL_MS));
+          // Backoff esponenziale (6s → 12s → 24s → 48s): spread sotto il rate-limit del login.
+          await new Promise(resolve => setTimeout(resolve, LOGIN_POLL_BASE_MS * Math.pow(2, attempt)));
         }
       }
       if (!loggedIn) {
