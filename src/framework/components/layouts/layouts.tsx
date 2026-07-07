@@ -6,6 +6,7 @@ import { useAuth } from "@/framework/lib/auth";
 import { fetchAuthedClient } from "@/framework/lib/api";
 import { dashboardResponseSchema, refreshClaimsResponseSchema } from "@/framework/lib/schemas";
 import { getRegistryApp } from "@/framework/lib/resources.config";
+import { usePersistentToggle } from "@/framework/lib/use-persistent-toggle";
 import { Sidebar } from "@/framework/components/layouts/Sidebar";
 import { ToastNotification } from "@/framework/components/layouts/ToastNotification";
 import type {
@@ -35,7 +36,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   const [dbData, setDbData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentToggle("klx-sidebar-collapsed", false);
   const [onboardingPending, setOnboardingPending] = useState(false);
   const [onboardingMessage, setOnboardingMessage] = useState("");
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
 import { getVisibleModulesForSidebar, AppIds, LucideIconName, getModuleInfo } from "@/framework/lib/resources.config";
+import { getModuleLabel } from "@/framework/lib/module-labels";
 import { useTheme } from "next-themes";
 import { useCurrentLocale } from "@/locales/client";
 import pkg from "@/../package.json";
@@ -121,7 +122,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         {visibleModules.map((moduleId) => {
           const moduleInfo = getModuleInfo(moduleId);
           const Icon = getIconComponent(moduleInfo?.icon);
-          const label = moduleInfo?.name || moduleId;
+          const label = getModuleLabel(moduleId, currentLocale);
           
           const modulePath = moduleId === "dashboard" ? "/dashboard" : `/${moduleId}`;
           const localizedPath = `/${currentLocale}${modulePath}`;
