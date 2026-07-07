@@ -97,6 +97,7 @@ export function Settings() {
   const [deviceSessions, setDeviceSessions] = useState<DeviceSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionRevokePending, setSessionRevokePending] = useState("");
+  const [revokeOthersPending, setRevokeOthersPending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Stati per il Dialog di Riautenticazione Generale
@@ -501,6 +502,9 @@ export function Settings() {
         resetMfaFlow();
         showToast(t("settings.mfa.toastEnrolled"), "success");
         await refreshClaims();
+        // Sicurezza: appena la 2FA è attiva, disconnette le ALTRE sessioni (device pre-2FA),
+        // così vengono forzate a riautenticarsi col nuovo fattore. Silenzioso (best-effort).
+        await revokeOtherDeviceSessions(true);
       } catch (err) {
         handleMfaError(err, action);
       } finally {
@@ -559,6 +563,27 @@ export function Settings() {
       showToast(err instanceof Error ? err.message : t("settings.toast.deviceDisconnectFail"), "error");
     } finally {
       setSessionRevokePending("");
+    }
+  };
+
+  // Disconnette tutte le ALTRE sessioni (non quella corrente). Azione manuale e, in automatico,
+  // all'attivazione della 2FA: ogni device stabilito PRIMA viene forzato a riautenticarsi.
+  // silent=true evita il toast (es. dopo l'enroll, dove il toast di enrollment ha la priorità).
+  const revokeOtherDeviceSessions = async (silent = false) => {
+    setRevokeOthersPending(true);
+    try {
+      const res = await fetchAuthedClient<{ success: boolean; revoked: number }>("/api/auth/sessions/revoke-others", { method: "POST" });
+      if (!res.success) {
+        throw new Error(res.error?.message || t("settings.sessions.othersRevokeFail"));
+      }
+      if (!silent) {
+        showToast(t("settings.sessions.othersRevoked", { count: String(res.data?.revoked ?? 0) }), "success");
+      }
+      await loadDeviceSessions();
+    } catch (err) {
+      if (!silent) showToast(err instanceof Error ? err.message : t("settings.sessions.othersRevokeFail"), "error");
+    } finally {
+      setRevokeOthersPending(false);
     }
   };
 
@@ -1153,9 +1178,16 @@ export function Settings() {
                     {t("settings.sessions.title")}
                   </h3>
                 </div>
-                <Button onClick={() => void loadDeviceSessions()} isDisabled={sessionsLoading} variant="ghost">
-                  {t("settings.sessions.refresh")}
-                </Button>
+                <div className="flex items-center gap-2">
+                  {deviceSessions.length > 1 && (
+                    <Button onClick={() => void revokeOtherDeviceSessions(false)} isDisabled={revokeOthersPending} variant="danger-soft">
+                      {t("settings.sessions.revokeOthers")}
+                    </Button>
+                  )}
+                  <Button onClick={() => void loadDeviceSessions()} isDisabled={sessionsLoading} variant="ghost">
+                    {t("settings.sessions.refresh")}
+                  </Button>
+                </div>
               </div>
               <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
                 {t("settings.sessions.desc")}

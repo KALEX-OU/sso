@@ -555,4 +555,8 @@ export default {
   // === Impostazioni · testo completo (i18n) ===
   "settings.profile.defaultUser": "Usuario",
   "settings.toast.userNotIdentified": "Usuario no identificado.",
+  // === Impostazioni · testo completo (i18n) ===
+  "settings.sessions.revokeOthers": "Desconectar las demás",
+  "settings.sessions.othersRevoked": "Otras sesiones desconectadas: {count}.",
+  "settings.sessions.othersRevokeFail": "No se pudieron desconectar las demás sesiones.",
 } as const;
