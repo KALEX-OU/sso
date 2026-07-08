@@ -20,18 +20,19 @@ interface DeviceSession {
   type: "desktop" | "mobile";
 }
 
-interface ServiceItem {
-  serviceId: string;
-  seats: number;
-  assignedSeats?: Array<{ userId: string; assignedAt: string }> | null;
-  tier?: string | null;
+interface SubscriptionItem {
+  productId?: string | null;
+  priceId?: string | null;
+  seats?: number | null;
+  quantity?: number | null;
+  assignedSeats?: Array<{ uid: string; assignedAt: string }> | null;
 }
 
 interface SubscriptionData {
   subscriptionId: string;
   appId: string;
   status: string;
-  services: ServiceItem[];
+  items?: SubscriptionItem[] | null;
   expiresAt?: string | null;
 }
 
@@ -170,11 +171,11 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {activeOrg?.subscriptions && activeOrg.subscriptions.length > 0 ? (
                 (activeOrg.subscriptions as unknown as SubscriptionData[]).flatMap((sub) => {
-                  const servicesList = Array.isArray(sub.services) ? sub.services : [];
-                  return servicesList.map((srv) => ({
-                    serviceId: srv.serviceId,
+                  const itemsList = Array.isArray(sub.items) ? sub.items : [];
+                  return itemsList.map((item) => ({
+                    serviceId: item.productId || sub.appId,
                     status: sub.status,
-                    tier: srv.tier || "default"
+                    tier: item.priceId || "default"
                   }));
                 }).map((srvItem) => (
                   <div key={srvItem.serviceId} className="flex justify-between items-center bg-slate-100/50 dark:bg-slate-950/20 p-3 rounded-2xl border border-slate-200/50 dark:border-white/5">
