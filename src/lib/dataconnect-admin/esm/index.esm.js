@@ -523,7 +523,7 @@ export function listAllProducts(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 
 export function listAllProductsGlobal(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, false);
   dcInstance.useGen(true);
   return dcInstance.executeQuery('ListAllProductsGlobal', inputVars, inputOpts);
 }
@@ -655,7 +655,7 @@ export function listPricesByProduct(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 
 export function listAllPrices(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, false);
   dcInstance.useGen(true);
   return dcInstance.executeQuery('ListAllPrices', inputVars, inputOpts);
 }

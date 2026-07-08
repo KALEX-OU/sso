@@ -1149,9 +1149,9 @@ export interface ListAllPricesData {
 }
 
 export interface ListAllPricesVariables {
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListAllProductBatchesData {
@@ -1300,16 +1300,16 @@ export interface ListAllProductsGlobalData {
 }
 
 export interface ListAllProductsGlobalVariables {
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListAllProductsVariables {
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListAllSubscriptionsData {
@@ -1398,9 +1398,9 @@ export interface ListApiKeysByOrgData {
 export interface ListApiKeysByOrgVariables {
   orgId: string;
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListAuditLogsByOrgData {
@@ -1431,9 +1431,9 @@ export interface ListCheckoutsByOrgData {
 
 export interface ListCheckoutsByOrgVariables {
   buyerId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListComputesByOrgData {
@@ -1451,9 +1451,9 @@ export interface ListComputesByOrgData {
 
 export interface ListComputesByOrgVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListInvoicesByOrgData {
@@ -1485,9 +1485,9 @@ export interface ListInvoicesByOrgData {
 
 export interface ListInvoicesByOrgVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListInvoicesBySellerData {
@@ -1519,9 +1519,9 @@ export interface ListInvoicesBySellerData {
 
 export interface ListInvoicesBySellerVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListMembersByOrgData {
@@ -1583,9 +1583,9 @@ export interface ListPaymentsByOrgData {
 
 export interface ListPaymentsByOrgVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListPaymentsBySellerData {
@@ -1621,9 +1621,9 @@ export interface ListPaymentsBySellerData {
 
 export interface ListPaymentsBySellerVariables {
   sellerOrgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListPricesByProductData {
@@ -1641,9 +1641,9 @@ export interface ListPricesByProductData {
 
 export interface ListPricesByProductVariables {
   productId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListProductConsumesByOrgData {
@@ -1694,9 +1694,9 @@ export interface ListTeamsByOrgData {
 export interface ListTeamsByOrgVariables {
   orgId: string;
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface ListThingsByOrgData {
@@ -1715,9 +1715,9 @@ export interface ListThingsByOrgData {
 export interface ListThingsByOrgVariables {
   orgId: string;
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 
 export interface MigrateInviteeMembershipData {
@@ -2502,9 +2502,9 @@ export function listAllProducts(dc: DataConnect, vars: ListAllProductsVariables,
 export function listAllProducts(vars: ListAllProductsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListAllProductsGlobal' Query. Allow users to execute without passing in DataConnect. */
-export function listAllProductsGlobal(dc: DataConnect, vars: ListAllProductsGlobalVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsGlobalData>>;
+export function listAllProductsGlobal(dc: DataConnect, vars?: ListAllProductsGlobalVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsGlobalData>>;
 /** Generated Node Admin SDK operation action function for the 'ListAllProductsGlobal' Query. Allow users to pass in custom DataConnect instances. */
-export function listAllProductsGlobal(vars: ListAllProductsGlobalVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsGlobalData>>;
+export function listAllProductsGlobal(vars?: ListAllProductsGlobalVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductsGlobalData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListAllProductBatches' Query. Allow users to execute without passing in DataConnect. */
 export function listAllProductBatches(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllProductBatchesData>>;
@@ -2612,9 +2612,9 @@ export function listPricesByProduct(dc: DataConnect, vars: ListPricesByProductVa
 export function listPricesByProduct(vars: ListPricesByProductVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPricesByProductData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListAllPrices' Query. Allow users to execute without passing in DataConnect. */
-export function listAllPrices(dc: DataConnect, vars: ListAllPricesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPricesData>>;
+export function listAllPrices(dc: DataConnect, vars?: ListAllPricesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPricesData>>;
 /** Generated Node Admin SDK operation action function for the 'ListAllPrices' Query. Allow users to pass in custom DataConnect instances. */
-export function listAllPrices(vars: ListAllPricesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPricesData>>;
+export function listAllPrices(vars?: ListAllPricesVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListAllPricesData>>;
 
 /** Generated Node Admin SDK operation action function for the 'GetCheckout' Query. Allow users to execute without passing in DataConnect. */
 export function getCheckout(dc: DataConnect, vars: GetCheckoutVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetCheckoutData>>;

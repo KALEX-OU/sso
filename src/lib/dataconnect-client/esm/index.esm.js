@@ -1063,7 +1063,7 @@ export function listAllProducts(dcOrVars, varsOrOptions, options) {
 }
 
 export const listAllProductsGlobalRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
   dcInstance._useGeneratedSdk();
   return queryRef(dcInstance, 'ListAllProductsGlobal', inputVars);
 }
@@ -1071,7 +1071,7 @@ listAllProductsGlobalRef.operationName = 'ListAllProductsGlobal';
 
 export function listAllProductsGlobal(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listAllProductsGlobalRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
@@ -1349,7 +1349,7 @@ export function listPricesByProduct(dcOrVars, varsOrOptions, options) {
 }
 
 export const listAllPricesRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
   dcInstance._useGeneratedSdk();
   return queryRef(dcInstance, 'ListAllPrices', inputVars);
 }
@@ -1357,7 +1357,7 @@ listAllPricesRef.operationName = 'ListAllPrices';
 
 export function listAllPrices(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listAllPricesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

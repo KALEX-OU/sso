@@ -1959,9 +1959,9 @@ The `ListThingsByOrg` query requires an argument of type `ListThingsByOrgVariabl
 export interface ListThingsByOrgVariables {
   orgId: string;
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -1992,9 +1992,9 @@ import { connectorConfig, listThingsByOrg, ListThingsByOrgVariables } from '@kal
 const listThingsByOrgVars: ListThingsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listThingsByOrg()` function to execute the query.
@@ -2026,9 +2026,9 @@ import { connectorConfig, listThingsByOrgRef, ListThingsByOrgVariables } from '@
 const listThingsByOrgVars: ListThingsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listThingsByOrgRef()` function to get a reference to the query.
@@ -2089,9 +2089,9 @@ The `ListApiKeysByOrg` query requires an argument of type `ListApiKeysByOrgVaria
 export interface ListApiKeysByOrgVariables {
   orgId: string;
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -2129,9 +2129,9 @@ import { connectorConfig, listApiKeysByOrg, ListApiKeysByOrgVariables } from '@k
 const listApiKeysByOrgVars: ListApiKeysByOrgVariables = {
   orgId: ..., 
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listApiKeysByOrg()` function to execute the query.
@@ -2163,9 +2163,9 @@ import { connectorConfig, listApiKeysByOrgRef, ListApiKeysByOrgVariables } from 
 const listApiKeysByOrgVars: ListApiKeysByOrgVariables = {
   orgId: ..., 
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listApiKeysByOrgRef()` function to get a reference to the query.
@@ -2974,9 +2974,9 @@ The `ListAllProducts` query requires an argument of type `ListAllProductsVariabl
 ```typescript
 export interface ListAllProductsVariables {
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -3057,9 +3057,9 @@ import { connectorConfig, listAllProducts, ListAllProductsVariables } from '@kal
 // The `ListAllProducts` query requires an argument of type `ListAllProductsVariables`:
 const listAllProductsVars: ListAllProductsVariables = {
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listAllProducts()` function to execute the query.
@@ -3090,9 +3090,9 @@ import { connectorConfig, listAllProductsRef, ListAllProductsVariables } from '@
 // The `ListAllProducts` query requires an argument of type `ListAllProductsVariables`:
 const listAllProductsVars: ListAllProductsVariables = {
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listAllProductsRef()` function to get a reference to the query.
@@ -3120,22 +3120,22 @@ executeQuery(ref).then((response) => {
 ## ListAllProductsGlobal
 You can execute the `ListAllProductsGlobal` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
 ```typescript
-listAllProductsGlobal(vars: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
+listAllProductsGlobal(vars?: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 
 interface ListAllProductsGlobalRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
+  (vars?: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 }
 export const listAllProductsGlobalRef: ListAllProductsGlobalRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listAllProductsGlobal(dc: DataConnect, vars: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
+listAllProductsGlobal(dc: DataConnect, vars?: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 
 interface ListAllProductsGlobalRef {
   ...
-  (dc: DataConnect, vars: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
+  (dc: DataConnect, vars?: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 }
 export const listAllProductsGlobalRef: ListAllProductsGlobalRef;
 ```
@@ -3147,13 +3147,13 @@ console.log(name);
 ```
 
 ### Variables
-The `ListAllProductsGlobal` query requires an argument of type `ListAllProductsGlobalVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+The `ListAllProductsGlobal` query has an optional argument of type `ListAllProductsGlobalVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
 export interface ListAllProductsGlobalVariables {
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -3231,11 +3231,11 @@ export interface ListAllProductsGlobalData {
 import { getDataConnect } from 'firebase/data-connect';
 import { connectorConfig, listAllProductsGlobal, ListAllProductsGlobalVariables } from '@kalex/dataconnect';
 
-// The `ListAllProductsGlobal` query requires an argument of type `ListAllProductsGlobalVariables`:
+// The `ListAllProductsGlobal` query has an optional argument of type `ListAllProductsGlobalVariables`:
 const listAllProductsGlobalVars: ListAllProductsGlobalVariables = {
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listAllProductsGlobal()` function to execute the query.
@@ -3243,6 +3243,8 @@ const listAllProductsGlobalVars: ListAllProductsGlobalVariables = {
 const { data } = await listAllProductsGlobal(listAllProductsGlobalVars);
 // Variables can be defined inline as well.
 const { data } = await listAllProductsGlobal({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
+// Since all variables are optional for this query, you can omit the `ListAllProductsGlobalVariables` argument.
+const { data } = await listAllProductsGlobal();
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3263,17 +3265,19 @@ listAllProductsGlobal(listAllProductsGlobalVars).then((response) => {
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
 import { connectorConfig, listAllProductsGlobalRef, ListAllProductsGlobalVariables } from '@kalex/dataconnect';
 
-// The `ListAllProductsGlobal` query requires an argument of type `ListAllProductsGlobalVariables`:
+// The `ListAllProductsGlobal` query has an optional argument of type `ListAllProductsGlobalVariables`:
 const listAllProductsGlobalVars: ListAllProductsGlobalVariables = {
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listAllProductsGlobalRef()` function to get a reference to the query.
 const ref = listAllProductsGlobalRef(listAllProductsGlobalVars);
 // Variables can be defined inline as well.
 const ref = listAllProductsGlobalRef({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
+// Since all variables are optional for this query, you can omit the `ListAllProductsGlobalVariables` argument.
+const ref = listAllProductsGlobalRef();
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3843,9 +3847,9 @@ The `ListInvoicesByOrg` query requires an argument of type `ListInvoicesByOrgVar
 ```typescript
 export interface ListInvoicesByOrgVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -3889,9 +3893,9 @@ import { connectorConfig, listInvoicesByOrg, ListInvoicesByOrgVariables } from '
 // The `ListInvoicesByOrg` query requires an argument of type `ListInvoicesByOrgVariables`:
 const listInvoicesByOrgVars: ListInvoicesByOrgVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listInvoicesByOrg()` function to execute the query.
@@ -3922,9 +3926,9 @@ import { connectorConfig, listInvoicesByOrgRef, ListInvoicesByOrgVariables } fro
 // The `ListInvoicesByOrg` query requires an argument of type `ListInvoicesByOrgVariables`:
 const listInvoicesByOrgVars: ListInvoicesByOrgVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listInvoicesByOrgRef()` function to get a reference to the query.
@@ -3984,9 +3988,9 @@ The `ListInvoicesBySeller` query requires an argument of type `ListInvoicesBySel
 ```typescript
 export interface ListInvoicesBySellerVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -4030,9 +4034,9 @@ import { connectorConfig, listInvoicesBySeller, ListInvoicesBySellerVariables } 
 // The `ListInvoicesBySeller` query requires an argument of type `ListInvoicesBySellerVariables`:
 const listInvoicesBySellerVars: ListInvoicesBySellerVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listInvoicesBySeller()` function to execute the query.
@@ -4063,9 +4067,9 @@ import { connectorConfig, listInvoicesBySellerRef, ListInvoicesBySellerVariables
 // The `ListInvoicesBySeller` query requires an argument of type `ListInvoicesBySellerVariables`:
 const listInvoicesBySellerVars: ListInvoicesBySellerVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listInvoicesBySellerRef()` function to get a reference to the query.
@@ -4125,9 +4129,9 @@ The `ListPaymentsByOrg` query requires an argument of type `ListPaymentsByOrgVar
 ```typescript
 export interface ListPaymentsByOrgVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -4175,9 +4179,9 @@ import { connectorConfig, listPaymentsByOrg, ListPaymentsByOrgVariables } from '
 // The `ListPaymentsByOrg` query requires an argument of type `ListPaymentsByOrgVariables`:
 const listPaymentsByOrgVars: ListPaymentsByOrgVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listPaymentsByOrg()` function to execute the query.
@@ -4208,9 +4212,9 @@ import { connectorConfig, listPaymentsByOrgRef, ListPaymentsByOrgVariables } fro
 // The `ListPaymentsByOrg` query requires an argument of type `ListPaymentsByOrgVariables`:
 const listPaymentsByOrgVars: ListPaymentsByOrgVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listPaymentsByOrgRef()` function to get a reference to the query.
@@ -4270,9 +4274,9 @@ The `ListPaymentsBySeller` query requires an argument of type `ListPaymentsBySel
 ```typescript
 export interface ListPaymentsBySellerVariables {
   sellerOrgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -4320,9 +4324,9 @@ import { connectorConfig, listPaymentsBySeller, ListPaymentsBySellerVariables } 
 // The `ListPaymentsBySeller` query requires an argument of type `ListPaymentsBySellerVariables`:
 const listPaymentsBySellerVars: ListPaymentsBySellerVariables = {
   sellerOrgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listPaymentsBySeller()` function to execute the query.
@@ -4353,9 +4357,9 @@ import { connectorConfig, listPaymentsBySellerRef, ListPaymentsBySellerVariables
 // The `ListPaymentsBySeller` query requires an argument of type `ListPaymentsBySellerVariables`:
 const listPaymentsBySellerVars: ListPaymentsBySellerVariables = {
   sellerOrgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listPaymentsBySellerRef()` function to get a reference to the query.
@@ -4666,9 +4670,9 @@ The `ListTeamsByOrg` query requires an argument of type `ListTeamsByOrgVariables
 export interface ListTeamsByOrgVariables {
   orgId: string;
   appId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -4698,9 +4702,9 @@ import { connectorConfig, listTeamsByOrg, ListTeamsByOrgVariables } from '@kalex
 const listTeamsByOrgVars: ListTeamsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listTeamsByOrg()` function to execute the query.
@@ -4732,9 +4736,9 @@ import { connectorConfig, listTeamsByOrgRef, ListTeamsByOrgVariables } from '@ka
 const listTeamsByOrgVars: ListTeamsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listTeamsByOrgRef()` function to get a reference to the query.
@@ -5256,9 +5260,9 @@ The `ListComputesByOrg` query requires an argument of type `ListComputesByOrgVar
 ```typescript
 export interface ListComputesByOrgVariables {
   orgId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -5288,9 +5292,9 @@ import { connectorConfig, listComputesByOrg, ListComputesByOrgVariables } from '
 // The `ListComputesByOrg` query requires an argument of type `ListComputesByOrgVariables`:
 const listComputesByOrgVars: ListComputesByOrgVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listComputesByOrg()` function to execute the query.
@@ -5321,9 +5325,9 @@ import { connectorConfig, listComputesByOrgRef, ListComputesByOrgVariables } fro
 // The `ListComputesByOrg` query requires an argument of type `ListComputesByOrgVariables`:
 const listComputesByOrgVars: ListComputesByOrgVariables = {
   orgId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listComputesByOrgRef()` function to get a reference to the query.
@@ -5743,9 +5747,9 @@ The `ListPricesByProduct` query requires an argument of type `ListPricesByProduc
 ```typescript
 export interface ListPricesByProductVariables {
   productId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -5775,9 +5779,9 @@ import { connectorConfig, listPricesByProduct, ListPricesByProductVariables } fr
 // The `ListPricesByProduct` query requires an argument of type `ListPricesByProductVariables`:
 const listPricesByProductVars: ListPricesByProductVariables = {
   productId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listPricesByProduct()` function to execute the query.
@@ -5808,9 +5812,9 @@ import { connectorConfig, listPricesByProductRef, ListPricesByProductVariables }
 // The `ListPricesByProduct` query requires an argument of type `ListPricesByProductVariables`:
 const listPricesByProductVars: ListPricesByProductVariables = {
   productId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listPricesByProductRef()` function to get a reference to the query.
@@ -5838,22 +5842,22 @@ executeQuery(ref).then((response) => {
 ## ListAllPrices
 You can execute the `ListAllPrices` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
 ```typescript
-listAllPrices(vars: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
+listAllPrices(vars?: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
 
 interface ListAllPricesRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
+  (vars?: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
 }
 export const listAllPricesRef: ListAllPricesRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listAllPrices(dc: DataConnect, vars: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
+listAllPrices(dc: DataConnect, vars?: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
 
 interface ListAllPricesRef {
   ...
-  (dc: DataConnect, vars: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
+  (dc: DataConnect, vars?: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
 }
 export const listAllPricesRef: ListAllPricesRef;
 ```
@@ -5865,13 +5869,13 @@ console.log(name);
 ```
 
 ### Variables
-The `ListAllPrices` query requires an argument of type `ListAllPricesVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+The `ListAllPrices` query has an optional argument of type `ListAllPricesVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
 export interface ListAllPricesVariables {
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -5898,11 +5902,11 @@ export interface ListAllPricesData {
 import { getDataConnect } from 'firebase/data-connect';
 import { connectorConfig, listAllPrices, ListAllPricesVariables } from '@kalex/dataconnect';
 
-// The `ListAllPrices` query requires an argument of type `ListAllPricesVariables`:
+// The `ListAllPrices` query has an optional argument of type `ListAllPricesVariables`:
 const listAllPricesVars: ListAllPricesVariables = {
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listAllPrices()` function to execute the query.
@@ -5910,6 +5914,8 @@ const listAllPricesVars: ListAllPricesVariables = {
 const { data } = await listAllPrices(listAllPricesVars);
 // Variables can be defined inline as well.
 const { data } = await listAllPrices({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
+// Since all variables are optional for this query, you can omit the `ListAllPricesVariables` argument.
+const { data } = await listAllPrices();
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5930,17 +5936,19 @@ listAllPrices(listAllPricesVars).then((response) => {
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
 import { connectorConfig, listAllPricesRef, ListAllPricesVariables } from '@kalex/dataconnect';
 
-// The `ListAllPrices` query requires an argument of type `ListAllPricesVariables`:
+// The `ListAllPrices` query has an optional argument of type `ListAllPricesVariables`:
 const listAllPricesVars: ListAllPricesVariables = {
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listAllPricesRef()` function to get a reference to the query.
 const ref = listAllPricesRef(listAllPricesVars);
 // Variables can be defined inline as well.
 const ref = listAllPricesRef({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
+// Since all variables are optional for this query, you can omit the `ListAllPricesVariables` argument.
+const ref = listAllPricesRef();
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6114,9 +6122,9 @@ The `ListCheckoutsByOrg` query requires an argument of type `ListCheckoutsByOrgV
 ```typescript
 export interface ListCheckoutsByOrgVariables {
   buyerId: string;
-  limit: number;
-  beforeCreatedAt: TimestampString;
-  beforeId: string;
+  limit?: number;
+  beforeCreatedAt?: TimestampString;
+  beforeId?: string;
 }
 ```
 ### Return Type
@@ -6147,9 +6155,9 @@ import { connectorConfig, listCheckoutsByOrg, ListCheckoutsByOrgVariables } from
 // The `ListCheckoutsByOrg` query requires an argument of type `ListCheckoutsByOrgVariables`:
 const listCheckoutsByOrgVars: ListCheckoutsByOrgVariables = {
   buyerId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listCheckoutsByOrg()` function to execute the query.
@@ -6180,9 +6188,9 @@ import { connectorConfig, listCheckoutsByOrgRef, ListCheckoutsByOrgVariables } f
 // The `ListCheckoutsByOrg` query requires an argument of type `ListCheckoutsByOrgVariables`:
 const listCheckoutsByOrgVars: ListCheckoutsByOrgVariables = {
   buyerId: ..., 
-  limit: ..., 
-  beforeCreatedAt: ..., 
-  beforeId: ..., 
+  limit: ..., // optional
+  beforeCreatedAt: ..., // optional
+  beforeId: ..., // optional
 };
 
 // Call the `listCheckoutsByOrgRef()` function to get a reference to the query.

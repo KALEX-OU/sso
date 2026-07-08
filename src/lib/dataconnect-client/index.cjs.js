@@ -1237,7 +1237,7 @@ exports.listAllProducts = function listAllProducts(dcOrVars, varsOrOptions, opti
 ;
 
 const listAllProductsGlobalRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
   dcInstance._useGeneratedSdk();
   return queryRef(dcInstance, 'ListAllProductsGlobal', inputVars);
 }
@@ -1246,7 +1246,7 @@ exports.listAllProductsGlobalRef = listAllProductsGlobalRef;
 
 exports.listAllProductsGlobal = function listAllProductsGlobal(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listAllProductsGlobalRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
@@ -1567,7 +1567,7 @@ exports.listPricesByProduct = function listPricesByProduct(dcOrVars, varsOrOptio
 ;
 
 const listAllPricesRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
   dcInstance._useGeneratedSdk();
   return queryRef(dcInstance, 'ListAllPrices', inputVars);
 }
@@ -1576,7 +1576,7 @@ exports.listAllPricesRef = listAllPricesRef;
 
 exports.listAllPrices = function listAllPrices(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listAllPricesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
