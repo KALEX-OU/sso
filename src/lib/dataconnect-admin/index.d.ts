@@ -182,6 +182,21 @@ export interface CreateInvoiceVariables {
   isTest?: boolean | null;
 }
 
+export interface CreateMemberWithUserData {
+  user_upsert: Users_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+
+export interface CreateMemberWithUserVariables {
+  userId: string;
+  email: string;
+  fullName?: string | null;
+  userMetadata?: unknown | null;
+  orgId: string;
+  role: string;
+  rbac?: unknown | null;
+}
+
 export interface CreateOrgWithOwnerData {
   organization_upsert: Organizations_Key;
   userOrganization_upsert: UserOrganizations_Key;
@@ -1660,6 +1675,23 @@ export interface ListThingsByOrgVariables {
   appId: string;
 }
 
+export interface MigrateInviteeMembershipData {
+  userOrganization_delete?: UserOrganizations_Key | null;
+  user_upsert: Users_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+
+export interface MigrateInviteeMembershipVariables {
+  tempUserId: string;
+  orgId: string;
+  realUserId: string;
+  email: string;
+  fullName?: string | null;
+  userMetadata?: unknown | null;
+  role: string;
+  rbac?: unknown | null;
+}
+
 export interface Organizations_Key {
   orgId: string;
   __typename?: 'Organizations_Key';
@@ -2013,6 +2045,16 @@ export function addUserToOrganization(vars: AddUserToOrganizationVariables, opti
 export function createOrgWithOwner(dc: DataConnect, vars: CreateOrgWithOwnerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrgWithOwnerData>>;
 /** Generated Node Admin SDK operation action function for the 'CreateOrgWithOwner' Mutation. Allow users to pass in custom DataConnect instances. */
 export function createOrgWithOwner(vars: CreateOrgWithOwnerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrgWithOwnerData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateMemberWithUser' Mutation. Allow users to execute without passing in DataConnect. */
+export function createMemberWithUser(dc: DataConnect, vars: CreateMemberWithUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateMemberWithUserData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateMemberWithUser' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createMemberWithUser(vars: CreateMemberWithUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateMemberWithUserData>>;
+
+/** Generated Node Admin SDK operation action function for the 'MigrateInviteeMembership' Mutation. Allow users to execute without passing in DataConnect. */
+export function migrateInviteeMembership(dc: DataConnect, vars: MigrateInviteeMembershipVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MigrateInviteeMembershipData>>;
+/** Generated Node Admin SDK operation action function for the 'MigrateInviteeMembership' Mutation. Allow users to pass in custom DataConnect instances. */
+export function migrateInviteeMembership(vars: MigrateInviteeMembershipVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MigrateInviteeMembershipData>>;
 
 /** Generated Node Admin SDK operation action function for the 'UpdateUserOrganization' Mutation. Allow users to execute without passing in DataConnect. */
 export function updateUserOrganization(dc: DataConnect, vars: UpdateUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserOrganizationData>>;

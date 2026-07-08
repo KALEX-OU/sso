@@ -184,6 +184,21 @@ export interface CreateInvoiceVariables {
   isTest?: boolean | null;
 }
 
+export interface CreateMemberWithUserData {
+  user_upsert: Users_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+
+export interface CreateMemberWithUserVariables {
+  userId: string;
+  email: string;
+  fullName?: string | null;
+  userMetadata?: unknown | null;
+  orgId: string;
+  role: string;
+  rbac?: unknown | null;
+}
+
 export interface CreateOrgWithOwnerData {
   organization_upsert: Organizations_Key;
   userOrganization_upsert: UserOrganizations_Key;
@@ -1662,6 +1677,23 @@ export interface ListThingsByOrgVariables {
   appId: string;
 }
 
+export interface MigrateInviteeMembershipData {
+  userOrganization_delete?: UserOrganizations_Key | null;
+  user_upsert: Users_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+
+export interface MigrateInviteeMembershipVariables {
+  tempUserId: string;
+  orgId: string;
+  realUserId: string;
+  email: string;
+  fullName?: string | null;
+  userMetadata?: unknown | null;
+  role: string;
+  rbac?: unknown | null;
+}
+
 export interface Organizations_Key {
   orgId: string;
   __typename?: 'Organizations_Key';
@@ -2043,6 +2075,30 @@ export const createOrgWithOwnerRef: CreateOrgWithOwnerRef;
 
 export function createOrgWithOwner(vars: CreateOrgWithOwnerVariables): MutationPromise<CreateOrgWithOwnerData, CreateOrgWithOwnerVariables>;
 export function createOrgWithOwner(dc: DataConnect, vars: CreateOrgWithOwnerVariables): MutationPromise<CreateOrgWithOwnerData, CreateOrgWithOwnerVariables>;
+
+interface CreateMemberWithUserRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateMemberWithUserVariables): MutationRef<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateMemberWithUserVariables): MutationRef<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+  operationName: string;
+}
+export const createMemberWithUserRef: CreateMemberWithUserRef;
+
+export function createMemberWithUser(vars: CreateMemberWithUserVariables): MutationPromise<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+export function createMemberWithUser(dc: DataConnect, vars: CreateMemberWithUserVariables): MutationPromise<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+
+interface MigrateInviteeMembershipRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: MigrateInviteeMembershipVariables): MutationRef<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: MigrateInviteeMembershipVariables): MutationRef<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+  operationName: string;
+}
+export const migrateInviteeMembershipRef: MigrateInviteeMembershipRef;
+
+export function migrateInviteeMembership(vars: MigrateInviteeMembershipVariables): MutationPromise<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+export function migrateInviteeMembership(dc: DataConnect, vars: MigrateInviteeMembershipVariables): MutationPromise<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
 
 interface UpdateUserOrganizationRef {
   /* Allow users to create refs without passing in DataConnect */

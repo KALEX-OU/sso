@@ -66,6 +66,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*CreateOrganization*](#createorganization)
   - [*AddUserToOrganization*](#addusertoorganization)
   - [*CreateOrgWithOwner*](#createorgwithowner)
+  - [*CreateMemberWithUser*](#creatememberwithuser)
+  - [*MigrateInviteeMembership*](#migrateinviteemembership)
   - [*UpdateUserOrganization*](#updateuserorganization)
   - [*UpdateSubscriptionStatus*](#updatesubscriptionstatus)
   - [*UpdateOrganizationStripeConnect*](#updateorganizationstripeconnect)
@@ -7042,6 +7044,278 @@ console.log(data.userOrganization_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.organization_upsert);
+  console.log(data.userOrganization_upsert);
+});
+```
+
+## CreateMemberWithUser
+You can execute the `CreateMemberWithUser` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+createMemberWithUser(vars: CreateMemberWithUserVariables): MutationPromise<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+
+interface CreateMemberWithUserRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateMemberWithUserVariables): MutationRef<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+}
+export const createMemberWithUserRef: CreateMemberWithUserRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createMemberWithUser(dc: DataConnect, vars: CreateMemberWithUserVariables): MutationPromise<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+
+interface CreateMemberWithUserRef {
+  ...
+  (dc: DataConnect, vars: CreateMemberWithUserVariables): MutationRef<CreateMemberWithUserData, CreateMemberWithUserVariables>;
+}
+export const createMemberWithUserRef: CreateMemberWithUserRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createMemberWithUserRef:
+```typescript
+const name = createMemberWithUserRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateMemberWithUser` mutation requires an argument of type `CreateMemberWithUserVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateMemberWithUserVariables {
+  userId: string;
+  email: string;
+  fullName?: string | null;
+  userMetadata?: unknown | null;
+  orgId: string;
+  role: string;
+  rbac?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `CreateMemberWithUser` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateMemberWithUserData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateMemberWithUserData {
+  user_upsert: Users_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+```
+### Using `CreateMemberWithUser`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createMemberWithUser, CreateMemberWithUserVariables } from '@kalex/dataconnect';
+
+// The `CreateMemberWithUser` mutation requires an argument of type `CreateMemberWithUserVariables`:
+const createMemberWithUserVars: CreateMemberWithUserVariables = {
+  userId: ..., 
+  email: ..., 
+  fullName: ..., // optional
+  userMetadata: ..., // optional
+  orgId: ..., 
+  role: ..., 
+  rbac: ..., // optional
+};
+
+// Call the `createMemberWithUser()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createMemberWithUser(createMemberWithUserVars);
+// Variables can be defined inline as well.
+const { data } = await createMemberWithUser({ userId: ..., email: ..., fullName: ..., userMetadata: ..., orgId: ..., role: ..., rbac: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createMemberWithUser(dataConnect, createMemberWithUserVars);
+
+console.log(data.user_upsert);
+console.log(data.userOrganization_upsert);
+
+// Or, you can use the `Promise` API.
+createMemberWithUser(createMemberWithUserVars).then((response) => {
+  const data = response.data;
+  console.log(data.user_upsert);
+  console.log(data.userOrganization_upsert);
+});
+```
+
+### Using `CreateMemberWithUser`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createMemberWithUserRef, CreateMemberWithUserVariables } from '@kalex/dataconnect';
+
+// The `CreateMemberWithUser` mutation requires an argument of type `CreateMemberWithUserVariables`:
+const createMemberWithUserVars: CreateMemberWithUserVariables = {
+  userId: ..., 
+  email: ..., 
+  fullName: ..., // optional
+  userMetadata: ..., // optional
+  orgId: ..., 
+  role: ..., 
+  rbac: ..., // optional
+};
+
+// Call the `createMemberWithUserRef()` function to get a reference to the mutation.
+const ref = createMemberWithUserRef(createMemberWithUserVars);
+// Variables can be defined inline as well.
+const ref = createMemberWithUserRef({ userId: ..., email: ..., fullName: ..., userMetadata: ..., orgId: ..., role: ..., rbac: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createMemberWithUserRef(dataConnect, createMemberWithUserVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.user_upsert);
+console.log(data.userOrganization_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.user_upsert);
+  console.log(data.userOrganization_upsert);
+});
+```
+
+## MigrateInviteeMembership
+You can execute the `MigrateInviteeMembership` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+migrateInviteeMembership(vars: MigrateInviteeMembershipVariables): MutationPromise<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+
+interface MigrateInviteeMembershipRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: MigrateInviteeMembershipVariables): MutationRef<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+}
+export const migrateInviteeMembershipRef: MigrateInviteeMembershipRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+migrateInviteeMembership(dc: DataConnect, vars: MigrateInviteeMembershipVariables): MutationPromise<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+
+interface MigrateInviteeMembershipRef {
+  ...
+  (dc: DataConnect, vars: MigrateInviteeMembershipVariables): MutationRef<MigrateInviteeMembershipData, MigrateInviteeMembershipVariables>;
+}
+export const migrateInviteeMembershipRef: MigrateInviteeMembershipRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the migrateInviteeMembershipRef:
+```typescript
+const name = migrateInviteeMembershipRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `MigrateInviteeMembership` mutation requires an argument of type `MigrateInviteeMembershipVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface MigrateInviteeMembershipVariables {
+  tempUserId: string;
+  orgId: string;
+  realUserId: string;
+  email: string;
+  fullName?: string | null;
+  userMetadata?: unknown | null;
+  role: string;
+  rbac?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `MigrateInviteeMembership` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `MigrateInviteeMembershipData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface MigrateInviteeMembershipData {
+  userOrganization_delete?: UserOrganizations_Key | null;
+  user_upsert: Users_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+```
+### Using `MigrateInviteeMembership`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, migrateInviteeMembership, MigrateInviteeMembershipVariables } from '@kalex/dataconnect';
+
+// The `MigrateInviteeMembership` mutation requires an argument of type `MigrateInviteeMembershipVariables`:
+const migrateInviteeMembershipVars: MigrateInviteeMembershipVariables = {
+  tempUserId: ..., 
+  orgId: ..., 
+  realUserId: ..., 
+  email: ..., 
+  fullName: ..., // optional
+  userMetadata: ..., // optional
+  role: ..., 
+  rbac: ..., // optional
+};
+
+// Call the `migrateInviteeMembership()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await migrateInviteeMembership(migrateInviteeMembershipVars);
+// Variables can be defined inline as well.
+const { data } = await migrateInviteeMembership({ tempUserId: ..., orgId: ..., realUserId: ..., email: ..., fullName: ..., userMetadata: ..., role: ..., rbac: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await migrateInviteeMembership(dataConnect, migrateInviteeMembershipVars);
+
+console.log(data.userOrganization_delete);
+console.log(data.user_upsert);
+console.log(data.userOrganization_upsert);
+
+// Or, you can use the `Promise` API.
+migrateInviteeMembership(migrateInviteeMembershipVars).then((response) => {
+  const data = response.data;
+  console.log(data.userOrganization_delete);
+  console.log(data.user_upsert);
+  console.log(data.userOrganization_upsert);
+});
+```
+
+### Using `MigrateInviteeMembership`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, migrateInviteeMembershipRef, MigrateInviteeMembershipVariables } from '@kalex/dataconnect';
+
+// The `MigrateInviteeMembership` mutation requires an argument of type `MigrateInviteeMembershipVariables`:
+const migrateInviteeMembershipVars: MigrateInviteeMembershipVariables = {
+  tempUserId: ..., 
+  orgId: ..., 
+  realUserId: ..., 
+  email: ..., 
+  fullName: ..., // optional
+  userMetadata: ..., // optional
+  role: ..., 
+  rbac: ..., // optional
+};
+
+// Call the `migrateInviteeMembershipRef()` function to get a reference to the mutation.
+const ref = migrateInviteeMembershipRef(migrateInviteeMembershipVars);
+// Variables can be defined inline as well.
+const ref = migrateInviteeMembershipRef({ tempUserId: ..., orgId: ..., realUserId: ..., email: ..., fullName: ..., userMetadata: ..., role: ..., rbac: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = migrateInviteeMembershipRef(dataConnect, migrateInviteeMembershipVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.userOrganization_delete);
+console.log(data.user_upsert);
+console.log(data.userOrganization_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.userOrganization_delete);
+  console.log(data.user_upsert);
   console.log(data.userOrganization_upsert);
 });
 ```

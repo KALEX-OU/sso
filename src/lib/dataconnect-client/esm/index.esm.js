@@ -53,6 +53,30 @@ export function createOrgWithOwner(dcOrVars, vars) {
   return executeMutation(createOrgWithOwnerRef(dcInstance, inputVars));
 }
 
+export const createMemberWithUserRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateMemberWithUser', inputVars);
+}
+createMemberWithUserRef.operationName = 'CreateMemberWithUser';
+
+export function createMemberWithUser(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createMemberWithUserRef(dcInstance, inputVars));
+}
+
+export const migrateInviteeMembershipRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'MigrateInviteeMembership', inputVars);
+}
+migrateInviteeMembershipRef.operationName = 'MigrateInviteeMembership';
+
+export function migrateInviteeMembership(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(migrateInviteeMembershipRef(dcInstance, inputVars));
+}
+
 export const updateUserOrganizationRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

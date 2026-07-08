@@ -35,6 +35,20 @@ function createOrgWithOwner(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.createOrgWithOwner = createOrgWithOwner;
 
+function createMemberWithUser(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateMemberWithUser', inputVars, inputOpts);
+}
+exports.createMemberWithUser = createMemberWithUser;
+
+function migrateInviteeMembership(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('MigrateInviteeMembership', inputVars, inputOpts);
+}
+exports.migrateInviteeMembership = migrateInviteeMembership;
+
 function updateUserOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
