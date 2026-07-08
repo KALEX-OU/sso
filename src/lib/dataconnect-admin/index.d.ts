@@ -1145,6 +1145,7 @@ export interface ListAllPricesData {
     isActive: boolean;
     tier?: string | null;
     isTest: boolean;
+    createdAt: TimestampString;
   } & Prices_Key)[];
 }
 
@@ -1636,6 +1637,7 @@ export interface ListPricesByProductData {
     isActive: boolean;
     tier?: string | null;
     isTest: boolean;
+    createdAt: TimestampString;
   } & Prices_Key)[];
 }
 
