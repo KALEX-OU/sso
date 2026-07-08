@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertUser, createOrganization, addUserToOrganization, updateUserOrganization, updateSubscriptionStatus, updateOrganizationStripeConnect, updateOrganizationStripeCustomer, createAuthCode, deleteAuthCode, updateUserProfile } from '@kalex/dataconnect';
+import { upsertUser, createOrganization, addUserToOrganization, createOrgWithOwner, updateUserOrganization, updateSubscriptionStatus, updateOrganizationStripeConnect, updateOrganizationStripeCustomer, createAuthCode, deleteAuthCode } from '@kalex/dataconnect';
 
 
 // Operation UpsertUser:  For variables, look at type UpsertUserVars in ../index.d.ts
@@ -25,6 +25,9 @@ const { data } = await CreateOrganization(dataConnect, createOrganizationVars);
 
 // Operation AddUserToOrganization:  For variables, look at type AddUserToOrganizationVars in ../index.d.ts
 const { data } = await AddUserToOrganization(dataConnect, addUserToOrganizationVars);
+
+// Operation CreateOrgWithOwner:  For variables, look at type CreateOrgWithOwnerVars in ../index.d.ts
+const { data } = await CreateOrgWithOwner(dataConnect, createOrgWithOwnerVars);
 
 // Operation UpdateUserOrganization:  For variables, look at type UpdateUserOrganizationVars in ../index.d.ts
 const { data } = await UpdateUserOrganization(dataConnect, updateUserOrganizationVars);
@@ -43,9 +46,6 @@ const { data } = await CreateAuthCode(dataConnect, createAuthCodeVars);
 
 // Operation DeleteAuthCode:  For variables, look at type DeleteAuthCodeVars in ../index.d.ts
 const { data } = await DeleteAuthCode(dataConnect, deleteAuthCodeVars);
-
-// Operation UpdateUserProfile:  For variables, look at type UpdateUserProfileVars in ../index.d.ts
-const { data } = await UpdateUserProfile(dataConnect, updateUserProfileVars);
 
 
 ```

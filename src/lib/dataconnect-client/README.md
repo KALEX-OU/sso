@@ -65,6 +65,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertUser*](#upsertuser)
   - [*CreateOrganization*](#createorganization)
   - [*AddUserToOrganization*](#addusertoorganization)
+  - [*CreateOrgWithOwner*](#createorgwithowner)
   - [*UpdateUserOrganization*](#updateuserorganization)
   - [*UpdateSubscriptionStatus*](#updatesubscriptionstatus)
   - [*UpdateOrganizationStripeConnect*](#updateorganizationstripeconnect)
@@ -6861,6 +6862,186 @@ console.log(data.userOrganization_upsert);
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
+  console.log(data.userOrganization_upsert);
+});
+```
+
+## CreateOrgWithOwner
+You can execute the `CreateOrgWithOwner` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+createOrgWithOwner(vars: CreateOrgWithOwnerVariables): MutationPromise<CreateOrgWithOwnerData, CreateOrgWithOwnerVariables>;
+
+interface CreateOrgWithOwnerRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateOrgWithOwnerVariables): MutationRef<CreateOrgWithOwnerData, CreateOrgWithOwnerVariables>;
+}
+export const createOrgWithOwnerRef: CreateOrgWithOwnerRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createOrgWithOwner(dc: DataConnect, vars: CreateOrgWithOwnerVariables): MutationPromise<CreateOrgWithOwnerData, CreateOrgWithOwnerVariables>;
+
+interface CreateOrgWithOwnerRef {
+  ...
+  (dc: DataConnect, vars: CreateOrgWithOwnerVariables): MutationRef<CreateOrgWithOwnerData, CreateOrgWithOwnerVariables>;
+}
+export const createOrgWithOwnerRef: CreateOrgWithOwnerRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createOrgWithOwnerRef:
+```typescript
+const name = createOrgWithOwnerRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateOrgWithOwner` mutation requires an argument of type `CreateOrgWithOwnerVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateOrgWithOwnerVariables {
+  orgId: string;
+  name: string;
+  stripeCustomerId?: string | null;
+  type?: string | null;
+  country?: string | null;
+  vatNumber?: string | null;
+  vatNumberHash?: string | null;
+  fiscalCode?: string | null;
+  billingAddress?: string | null;
+  sdiCode?: string | null;
+  officeCode?: string | null;
+  cigCode?: string | null;
+  cupCode?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  altitude?: number | null;
+  addressDetails?: unknown | null;
+  confirmed?: boolean | null;
+  viesValidated?: boolean | null;
+  metadata?: unknown | null;
+  ownerId: string;
+  ownerRbac?: unknown | null;
+}
+```
+### Return Type
+Recall that executing the `CreateOrgWithOwner` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateOrgWithOwnerData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateOrgWithOwnerData {
+  organization_upsert: Organizations_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+```
+### Using `CreateOrgWithOwner`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createOrgWithOwner, CreateOrgWithOwnerVariables } from '@kalex/dataconnect';
+
+// The `CreateOrgWithOwner` mutation requires an argument of type `CreateOrgWithOwnerVariables`:
+const createOrgWithOwnerVars: CreateOrgWithOwnerVariables = {
+  orgId: ..., 
+  name: ..., 
+  stripeCustomerId: ..., // optional
+  type: ..., // optional
+  country: ..., // optional
+  vatNumber: ..., // optional
+  vatNumberHash: ..., // optional
+  fiscalCode: ..., // optional
+  billingAddress: ..., // optional
+  sdiCode: ..., // optional
+  officeCode: ..., // optional
+  cigCode: ..., // optional
+  cupCode: ..., // optional
+  address: ..., // optional
+  latitude: ..., // optional
+  longitude: ..., // optional
+  altitude: ..., // optional
+  addressDetails: ..., // optional
+  confirmed: ..., // optional
+  viesValidated: ..., // optional
+  metadata: ..., // optional
+  ownerId: ..., 
+  ownerRbac: ..., // optional
+};
+
+// Call the `createOrgWithOwner()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createOrgWithOwner(createOrgWithOwnerVars);
+// Variables can be defined inline as well.
+const { data } = await createOrgWithOwner({ orgId: ..., name: ..., stripeCustomerId: ..., type: ..., country: ..., vatNumber: ..., vatNumberHash: ..., fiscalCode: ..., billingAddress: ..., sdiCode: ..., officeCode: ..., cigCode: ..., cupCode: ..., address: ..., latitude: ..., longitude: ..., altitude: ..., addressDetails: ..., confirmed: ..., viesValidated: ..., metadata: ..., ownerId: ..., ownerRbac: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createOrgWithOwner(dataConnect, createOrgWithOwnerVars);
+
+console.log(data.organization_upsert);
+console.log(data.userOrganization_upsert);
+
+// Or, you can use the `Promise` API.
+createOrgWithOwner(createOrgWithOwnerVars).then((response) => {
+  const data = response.data;
+  console.log(data.organization_upsert);
+  console.log(data.userOrganization_upsert);
+});
+```
+
+### Using `CreateOrgWithOwner`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createOrgWithOwnerRef, CreateOrgWithOwnerVariables } from '@kalex/dataconnect';
+
+// The `CreateOrgWithOwner` mutation requires an argument of type `CreateOrgWithOwnerVariables`:
+const createOrgWithOwnerVars: CreateOrgWithOwnerVariables = {
+  orgId: ..., 
+  name: ..., 
+  stripeCustomerId: ..., // optional
+  type: ..., // optional
+  country: ..., // optional
+  vatNumber: ..., // optional
+  vatNumberHash: ..., // optional
+  fiscalCode: ..., // optional
+  billingAddress: ..., // optional
+  sdiCode: ..., // optional
+  officeCode: ..., // optional
+  cigCode: ..., // optional
+  cupCode: ..., // optional
+  address: ..., // optional
+  latitude: ..., // optional
+  longitude: ..., // optional
+  altitude: ..., // optional
+  addressDetails: ..., // optional
+  confirmed: ..., // optional
+  viesValidated: ..., // optional
+  metadata: ..., // optional
+  ownerId: ..., 
+  ownerRbac: ..., // optional
+};
+
+// Call the `createOrgWithOwnerRef()` function to get a reference to the mutation.
+const ref = createOrgWithOwnerRef(createOrgWithOwnerVars);
+// Variables can be defined inline as well.
+const ref = createOrgWithOwnerRef({ orgId: ..., name: ..., stripeCustomerId: ..., type: ..., country: ..., vatNumber: ..., vatNumberHash: ..., fiscalCode: ..., billingAddress: ..., sdiCode: ..., officeCode: ..., cigCode: ..., cupCode: ..., address: ..., latitude: ..., longitude: ..., altitude: ..., addressDetails: ..., confirmed: ..., viesValidated: ..., metadata: ..., ownerId: ..., ownerRbac: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createOrgWithOwnerRef(dataConnect, createOrgWithOwnerVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.organization_upsert);
+console.log(data.userOrganization_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organization_upsert);
   console.log(data.userOrganization_upsert);
 });
 ```

@@ -182,6 +182,37 @@ export interface CreateInvoiceVariables {
   isTest?: boolean | null;
 }
 
+export interface CreateOrgWithOwnerData {
+  organization_upsert: Organizations_Key;
+  userOrganization_upsert: UserOrganizations_Key;
+}
+
+export interface CreateOrgWithOwnerVariables {
+  orgId: string;
+  name: string;
+  stripeCustomerId?: string | null;
+  type?: string | null;
+  country?: string | null;
+  vatNumber?: string | null;
+  vatNumberHash?: string | null;
+  fiscalCode?: string | null;
+  billingAddress?: string | null;
+  sdiCode?: string | null;
+  officeCode?: string | null;
+  cigCode?: string | null;
+  cupCode?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  altitude?: number | null;
+  addressDetails?: unknown | null;
+  confirmed?: boolean | null;
+  viesValidated?: boolean | null;
+  metadata?: unknown | null;
+  ownerId: string;
+  ownerRbac?: unknown | null;
+}
+
 export interface CreateOrganizationData {
   organization_upsert: Organizations_Key;
 }
@@ -1977,6 +2008,11 @@ export function createOrganization(vars: CreateOrganizationVariables, options?: 
 export function addUserToOrganization(dc: DataConnect, vars: AddUserToOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToOrganizationData>>;
 /** Generated Node Admin SDK operation action function for the 'AddUserToOrganization' Mutation. Allow users to pass in custom DataConnect instances. */
 export function addUserToOrganization(vars: AddUserToOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AddUserToOrganizationData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateOrgWithOwner' Mutation. Allow users to execute without passing in DataConnect. */
+export function createOrgWithOwner(dc: DataConnect, vars: CreateOrgWithOwnerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrgWithOwnerData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateOrgWithOwner' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createOrgWithOwner(vars: CreateOrgWithOwnerVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrgWithOwnerData>>;
 
 /** Generated Node Admin SDK operation action function for the 'UpdateUserOrganization' Mutation. Allow users to execute without passing in DataConnect. */
 export function updateUserOrganization(dc: DataConnect, vars: UpdateUserOrganizationVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateUserOrganizationData>>;

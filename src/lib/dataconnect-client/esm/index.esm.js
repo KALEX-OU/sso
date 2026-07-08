@@ -41,6 +41,18 @@ export function addUserToOrganization(dcOrVars, vars) {
   return executeMutation(addUserToOrganizationRef(dcInstance, inputVars));
 }
 
+export const createOrgWithOwnerRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateOrgWithOwner', inputVars);
+}
+createOrgWithOwnerRef.operationName = 'CreateOrgWithOwner';
+
+export function createOrgWithOwner(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createOrgWithOwnerRef(dcInstance, inputVars));
+}
+
 export const updateUserOrganizationRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

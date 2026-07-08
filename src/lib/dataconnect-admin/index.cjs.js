@@ -28,6 +28,13 @@ function addUserToOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.addUserToOrganization = addUserToOrganization;
 
+function createOrgWithOwner(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateOrgWithOwner', inputVars, inputOpts);
+}
+exports.createOrgWithOwner = createOrgWithOwner;
+
 function updateUserOrganization(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
