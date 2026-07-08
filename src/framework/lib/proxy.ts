@@ -115,7 +115,7 @@ export async function verifySessionCookieServerSide(
   }
 
   try {
-    const verifyRes = await fetch(`${baseUrl}/auth/verify-session`, {
+    const verifyRes = await fetch(`${baseUrl}/v1/auth/verify-session`, {
       method: "POST",
       headers: {
         "Cookie": `kalex_session=${sessionCookie}`,

@@ -55,10 +55,10 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ mo
   const { module, path } = resolvedParams;
   const pathString = path ? path.join("/") : "";
   
-  // Costruisce l'URL di destinazione sul server API Hono (es. http://localhost:3001/service/...)
-  const targetUrl = pathString 
-    ? new URL(`/${module}/${pathString}`, API_BASE_URL)
-    : new URL(`/${module}`, API_BASE_URL);
+  // Costruisce l'URL di destinazione sul gateway API versionato (es. http://localhost:3001/v1/thing/...)
+  const targetUrl = pathString
+    ? new URL(`/v1/${module}/${pathString}`, API_BASE_URL)
+    : new URL(`/v1/${module}`, API_BASE_URL);
   
   // Copia i query parameters dalla richiesta originale
   const { searchParams } = new URL(request.url);

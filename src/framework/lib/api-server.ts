@@ -63,7 +63,8 @@ export async function forwardProxyRequest(
   subPath: string[]
 ): Promise<Response> {
   const pathString = subPath.join("/");
-  const targetUrl = new URL(`/${moduleName}/${pathString}`, API_BASE_URL);
+  // Contratto API pubblico versionato: tutte le rotte modulo vivono sotto /v1.
+  const targetUrl = new URL(`/v1/${moduleName}/${pathString}`, API_BASE_URL);
 
   // Copia i parametri di ricerca (query params)
   const reqUrl = new URL(request.url);
