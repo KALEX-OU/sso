@@ -89,6 +89,11 @@ export function Settings() {
   const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
   const [totpUri, setTotpUri] = useState("");
   const [totpCode, setTotpCode] = useState("");
+  // Codici di backup MFA (173): recovery self-service. `backupCodes` è popolato SOLO subito dopo
+  // la generazione (mostrati una volta); `backupStatus` è il conteggio residuo letto dal server.
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [backupStatus, setBackupStatus] = useState<{ total: number; remaining: number } | null>(null);
+  const [backupPending, setBackupPending] = useState(false);
 
   // Stati per la gestione sessioni/dispositivi (3.2)
   interface DeviceSession {
@@ -541,6 +546,53 @@ export function Settings() {
       showToast(t("settings.mfa.toastCopyError"), "error");
     }
   };
+
+  // === CODICI DI BACKUP MFA (173) — recovery self-service ===
+  const loadBackupCodesStatus = useCallback(async () => {
+    try {
+      const res = await fetchAuthedClient<{ total: number; remaining: number; generatedAt: string | null }>("/api/user/mfa/backup-codes", { method: "GET" });
+      if (res.success && res.data) {
+        setBackupStatus({ total: res.data.total, remaining: res.data.remaining });
+      }
+    } catch {
+      // Silenzioso: lo stato dei codici non è bloccante per la pagina.
+    }
+  }, []);
+
+  const generateBackupCodes = async () => {
+    setBackupPending(true);
+    try {
+      const res = await fetchAuthedClient<{ success: boolean; codes: string[] }>("/api/user/mfa/backup-codes", { method: "POST" });
+      if (res.success && res.data?.codes) {
+        setBackupCodes(res.data.codes);
+        await loadBackupCodesStatus();
+        showToast(t("settings.mfa.backupToastGenerated"), "success");
+      } else {
+        throw new Error(res.error?.message || t("settings.mfa.backupToastError"));
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t("settings.mfa.backupToastError"), "error");
+    } finally {
+      setBackupPending(false);
+    }
+  };
+
+  const copyBackupCodes = async () => {
+    try {
+      await navigator.clipboard.writeText(backupCodes.join("\n"));
+      showToast(t("settings.mfa.toastCopied"), "success");
+    } catch {
+      showToast(t("settings.mfa.toastCopyError"), "error");
+    }
+  };
+
+  // Carica il conteggio dei codici residui quando la 2FA è attiva. Deferred (Promise.resolve)
+  // per evitare setState sincrono nell'effect (cascading renders), come per loadDeviceSessions.
+  useEffect(() => {
+    if (is2faActive) {
+      void Promise.resolve().then(() => loadBackupCodesStatus());
+    }
+  }, [is2faActive, loadBackupCodesStatus]);
 
   // === SESSIONI / DISPOSITIVI ATTIVI (3.2) ===
   const loadDeviceSessions = useCallback(async () => {
@@ -1179,6 +1231,43 @@ export function Settings() {
                       >
                         {t("settings.mfa.cancel")}
                       </button>
+                    </div>
+                  )}
+
+                  {/* Codici di backup MFA (173): recovery self-service, visibili solo con 2FA attiva */}
+                  {is2faActive && (
+                    <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/10 flex flex-col gap-3">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                          <p className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-white/90">
+                            {t("settings.mfa.backupTitle")}
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
+                            {backupStatus && backupStatus.total > 0
+                              ? t("settings.mfa.backupRemaining", { remaining: String(backupStatus.remaining), total: String(backupStatus.total) })
+                              : t("settings.mfa.backupNone")}
+                          </p>
+                        </div>
+                        <Button onClick={() => void generateBackupCodes()} isDisabled={backupPending} variant="ghost">
+                          {backupStatus && backupStatus.total > 0 ? t("settings.mfa.backupRegenerate") : t("settings.mfa.backupGenerate")}
+                        </Button>
+                      </div>
+                      {backupCodes.length > 0 && (
+                        <div className="flex flex-col gap-2 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-3">
+                          <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 leading-relaxed">
+                            {t("settings.mfa.backupWarning")}
+                          </p>
+                          <div className="grid grid-cols-2 gap-1.5 font-mono text-sm text-slate-800 dark:text-white">
+                            {backupCodes.map((code) => (
+                              <span key={code} className="tracking-wider select-all">{code}</span>
+                            ))}
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button onClick={() => void copyBackupCodes()} variant="ghost">{t("settings.mfa.backupCopy")}</Button>
+                            <Button onClick={() => setBackupCodes([])} variant="primary">{t("settings.mfa.backupDone")}</Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

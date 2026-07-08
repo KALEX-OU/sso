@@ -172,6 +172,12 @@ function AuthPortal() {
   const [mfaHint, setMfaHint] = useState("");
   const [mfaLoading, setMfaLoading] = useState(false);
   const [mfaTotpUid, setMfaTotpUid] = useState("");
+  // Recovery MFA con codice di backup (173): l'email è catturata al momento del challenge MFA.
+  const [mfaEmail, setMfaEmail] = useState("");
+  const [showBackupRecover, setShowBackupRecover] = useState(false);
+  const [backupCode, setBackupCode] = useState("");
+  const [backupRecoverLoading, setBackupRecoverLoading] = useState(false);
+  const [backupRecoverMsg, setBackupRecoverMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const [isVatValidating, setIsVatValidating] = useState(false);
   const [viesAddress, setViesAddress] = useState("");
@@ -750,6 +756,7 @@ function AuthPortal() {
 
           setMfaResolver(resolver);
           setMfaRequired(true);
+          setMfaEmail(data.email);
           setMfaTotpUid(totpInfoOptions.uid);
           setMfaHint(totpInfoOptions.displayName || "la tua app di autenticazione");
           setLoading(false);
@@ -771,6 +778,34 @@ function AuthPortal() {
       }
       setError(errMsg);
       setLoading(false);
+    }
+  };
+
+  // Recovery MFA con codice di backup (173): reimposta i fattori MFA lato server, poi l'utente
+  // ri-accede con la sola password (il reset degrada a password-only, non concede accesso).
+  const handleBackupRecover = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!backupCode.trim() || !mfaEmail) return;
+    setBackupRecoverMsg(null);
+    setBackupRecoverLoading(true);
+    try {
+      const res = await fetchWithAppCheck("/api/auth/mfa/recover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: mfaEmail, code: backupCode.trim() })
+      });
+      const data = (await res.json().catch(() => ({}))) as { reset?: boolean };
+      if (res.ok && data.reset) {
+        setBackupRecoverMsg({ type: "ok", text: t("auth.mfaBackupResetOk") });
+        setMfaResolver(null);
+        setBackupCode("");
+      } else {
+        setBackupRecoverMsg({ type: "err", text: t("auth.mfaBackupInvalid") });
+      }
+    } catch {
+      setBackupRecoverMsg({ type: "err", text: t("auth.mfaBackupError") });
+    } finally {
+      setBackupRecoverLoading(false);
     }
   };
 
@@ -1242,6 +1277,50 @@ function AuthPortal() {
                   {mfaLoading && <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>}
                   {t("auth.mfaSubmit")}
                 </Button>
+
+                {/* Recovery con codice di backup (173): per chi ha perso il dispositivo TOTP */}
+                {!showBackupRecover ? (
+                  <button
+                    type="button"
+                    onClick={() => { setShowBackupRecover(true); setBackupRecoverMsg(null); }}
+                    className="w-full text-center text-[11px] font-semibold text-slate-400 hover:text-secondary dark:hover:text-violet-400 underline mt-2 cursor-pointer bg-transparent border-0 outline-none block"
+                  >
+                    {t("auth.mfaBackupCta")}
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2 mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 p-3">
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">{t("auth.mfaBackupPrompt")}</p>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="XXXXX-XXXXX"
+                        className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3 py-2 h-[44px] text-sm text-slate-900 dark:text-white outline-none w-full text-center tracking-wider font-mono"
+                        value={backupCode}
+                        onChange={(e) => setBackupCode(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => void handleBackupRecover()}
+                        isDisabled={backupRecoverLoading || !backupCode.trim()}
+                        className="px-4 font-bold bg-slate-800 dark:bg-white/10 text-white rounded-xl cursor-pointer whitespace-nowrap"
+                      >
+                        {t("auth.mfaBackupSubmit")}
+                      </Button>
+                    </div>
+                    {backupRecoverMsg && (
+                      <p className={`text-[11px] font-semibold ${backupRecoverMsg.type === "ok" ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
+                        {backupRecoverMsg.text}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { setShowBackupRecover(false); setBackupRecoverMsg(null); setBackupCode(""); }}
+                      className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-500 self-start bg-transparent border-0 cursor-pointer outline-none"
+                    >
+                      {t("auth.mfaBackupCancel")}
+                    </button>
+                  </div>
+                )}
 
                 <button
                   type="button"
