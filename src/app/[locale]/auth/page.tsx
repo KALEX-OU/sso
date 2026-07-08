@@ -214,6 +214,7 @@ function AuthPortal() {
     register: registerLogin,
     handleSubmit: handleSubmitLogin,
     setValue: setValueLogin,
+    getValues: getValuesLogin,
     control: controlLogin,
     formState: { errors: errorsLogin }
   } = useForm<LoginInput>({
@@ -615,11 +616,17 @@ function AuthPortal() {
             try {
               // 1. Chiama /api/auth/session per impostare il cookie HttpOnly lato server
               const idToken = await currentUser.getIdToken();
+              // "Ricordami": letto live dal form (getValues, no ref/global → passa react-hooks). Al login
+              // riflette la scelta dell'utente; sui page-load è il default true. Determina la persistenza
+              // del cookie server (rememberMe=false → cookie di sessione).
+              const rememberChoice = getValuesLogin("rememberMe");
               const sessionRes = await fetchWithAppCheck("/api/auth/session", {
                 method: "POST",
                 headers: {
-                  "Authorization": `Bearer ${idToken}`
-                }
+                  "Authorization": `Bearer ${idToken}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ rememberMe: rememberChoice })
               });
               if (!sessionRes.ok) {
                 throw new Error("Impossibile sincronizzare la sessione server-side.");
@@ -657,7 +664,7 @@ function AuthPortal() {
       }
     });
     return () => unsubscribe();
-  }, [redirectUri, redirecting, handleSSORedirect, router, currentLocale, searchParams]);
+  }, [redirectUri, redirecting, handleSSORedirect, router, currentLocale, searchParams, getValuesLogin]);
 
 
 
