@@ -12,6 +12,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, CustomProvider } from 
 import type { AppCheck } from "firebase/app-check";
 
 import type { CustomClaims } from "./types.js";
+import { decodeClaims } from "./claims-codec";
 
 // Configurazione pubblica predefinita per Firebase Client SDK
 const firebaseConfig = {
@@ -299,7 +300,9 @@ export function useAuth() {
         try {
           // Forza il refresh del token per ottenere i Custom Claims aggiornati
           const tokenResult = await currentUser.getIdTokenResult(true);
-          const customClaims = tokenResult.claims as CustomClaims;
+          // Confine di lettura tollerante v1↔v2: un token v2 (chiavi compatte) viene riespanso
+          // nella forma lunga attesa dai componenti; un token v1 passa invariato.
+          const customClaims = decodeClaims(tokenResult.claims) as CustomClaims;
           setClaims(customClaims);
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : "Errore sconosciuto caricamento claims";
