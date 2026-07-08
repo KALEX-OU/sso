@@ -60,8 +60,8 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
 
   const handleRevokeSession = (id: string) => {
     setSessions(sessions.filter((s) => s.id !== id));
@@ -168,8 +168,8 @@ export default function DashboardPage() {
               Sottoscrizioni Suite
             </span>
             <div className="space-y-2">
-              {activeOrg?.subscriptions_on_organization && activeOrg.subscriptions_on_organization.length > 0 ? (
-                (activeOrg.subscriptions_on_organization as unknown as SubscriptionData[]).flatMap((sub) => {
+              {activeOrg?.subscriptions && activeOrg.subscriptions.length > 0 ? (
+                (activeOrg.subscriptions as unknown as SubscriptionData[]).flatMap((sub) => {
                   const servicesList = Array.isArray(sub.services) ? sub.services : [];
                   return servicesList.map((srv) => ({
                     serviceId: srv.serviceId,

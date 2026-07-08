@@ -75,8 +75,8 @@ export default function ProductCatalogPage() {
   // Stato loading del checkout per singolo prodotto
   const [checkoutLoading, setCheckoutLoading] = useState<Record<string, boolean>>({});
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
   const organizationId = activeOrg?.orgId;
   const orgType = activeOrg?.type || "personal";
 

@@ -54,8 +54,8 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
 
     const organization = dbData?.organization;
     const orgName = organization?.name || "Nessuna Organizzazione Associata";
-    const orgRole = dbData?.userOrganizations_on_user?.[0]?.role || organization?.role || "Viewer";
-    const subs = organization?.subscriptions_on_organization || [];
+    const orgRole = organization?.role || "Viewer";
+    const subs = organization?.subscriptions || [];
 
     // Risposta simulata basata sui dati reali del dashboard
     setTimeout(() => {

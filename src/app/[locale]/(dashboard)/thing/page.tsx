@@ -31,8 +31,8 @@ export default function ThingManagementPage() {
   const [isThingModalOpen, setIsThingModalOpen] = useState(false);
   const [generatedThingToken, setGeneratedThingToken] = useState("");
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
 
   const loadThings = useCallback(async (orgId: string) => {
     setLoadingData(true);

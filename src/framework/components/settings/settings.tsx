@@ -154,8 +154,7 @@ export function Settings() {
     };
   }, [currentUserData, user?.email]);
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization as unknown as OrganizationData | undefined;
+  const activeOrg = dbData?.organization as unknown as OrganizationData | undefined;
   const orgInitialData = useMemo(() => {
     if (!activeOrg) return {};
     return {

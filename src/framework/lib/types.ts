@@ -39,7 +39,7 @@ export interface UserOrganization {
   role: string;
   isTest?: boolean;
   viesValidated?: boolean;
-  subscriptions_on_organization?: Array<{
+  subscriptions?: Array<{
     subscriptionId: string;
     status: string;
     appId: string;
@@ -66,11 +66,6 @@ export interface DashboardData {
     [key: string]: unknown;
   };
   organization?: UserOrganization | null;
-  userOrganizations_on_user?: Array<{
-    role: string;
-    organization: UserOrganization;
-    [key: string]: unknown;
-  }>;
   [key: string]: unknown;
 }
 

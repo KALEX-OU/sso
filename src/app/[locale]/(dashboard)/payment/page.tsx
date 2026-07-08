@@ -38,8 +38,8 @@ export default function PaymentPage() {
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
   const organizationId = activeOrg?.orgId;
 
   const loadPayments = useCallback(async (orgId: string) => {

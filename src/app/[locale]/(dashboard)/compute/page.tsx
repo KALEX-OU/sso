@@ -18,8 +18,8 @@ export default function ComputePage() {
   const { user, dbData, showToast } = useDashboard();
   
   // Dati dell'organizzazione
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
   const isOrgSandbox = activeOrg?.isTest === true; // Indica se l'organizzazione è in modalità Test (Sandbox)
 
   // Stati del form

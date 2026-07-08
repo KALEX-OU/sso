@@ -261,13 +261,14 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
       return;
     }
 
-    const activeOrg = dbData.userOrganizations_on_user?.[0]?.organization;
+    // Contratto /api/auth/dashboard: { user, organization } (org attiva con role e subscriptions).
+    const activeOrg = dbData.organization;
     if (!activeOrg) return;
 
     let needsClaimRefresh = false;
 
     // 1. Controllo ruoli
-    const dbRole = dbData.userOrganizations_on_user?.[0]?.role;
+    const dbRole = activeOrg.role;
     const tokenRole = authClaims.uRole || authClaims.role;
     if (dbRole && tokenRole && dbRole !== tokenRole) {
       needsClaimRefresh = true;

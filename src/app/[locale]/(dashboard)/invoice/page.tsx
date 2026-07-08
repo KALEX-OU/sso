@@ -8,8 +8,8 @@ import { fetchAuthed } from "@/lib/firebase/client";
 export default function InvoicePage() {
   const { dbData } = useDashboard();
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
   const organizationId = activeOrg?.orgId;
 
   if (!organizationId) {

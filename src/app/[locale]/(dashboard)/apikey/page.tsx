@@ -32,8 +32,8 @@ export default function ApiKeyManagementPage() {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [generatedKeyVisible, setGeneratedKeyVisible] = useState("");
 
-  const activeOrgRelation = dbData?.userOrganizations_on_user?.[0];
-  const activeOrg = activeOrgRelation?.organization;
+  // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
+  const activeOrg = dbData?.organization;
 
   const apiKeyInitialData = useMemo(() => ({
     name: "",
