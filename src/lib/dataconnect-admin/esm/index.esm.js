@@ -522,10 +522,10 @@ export function listAllProducts(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('ListAllProducts', inputVars, inputOpts);
 }
 
-export function listAllProductsGlobal(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+export function listAllProductsGlobal(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllProductsGlobal', undefined, inputOpts);
+  return dcInstance.executeQuery('ListAllProductsGlobal', inputVars, inputOpts);
 }
 
 export function listAllProductBatches(dcOrOptions, options) {
@@ -654,10 +654,10 @@ export function listPricesByProduct(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('ListPricesByProduct', inputVars, inputOpts);
 }
 
-export function listAllPrices(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+export function listAllPrices(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListAllPrices', undefined, inputOpts);
+  return dcInstance.executeQuery('ListAllPrices', inputVars, inputOpts);
 }
 
 export function getCheckout(dcOrVarsOrOptions, varsOrOptions, options) {

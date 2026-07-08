@@ -1,6 +1,6 @@
 {
   "name": "@kalex/dataconnect-admin",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "author": "Firebase <firebase-support@google.com> (https://firebase.google.com/)",
   "description": "Generated Admin SDK For default",
   "license": "Apache-2.0",

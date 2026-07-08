@@ -1236,17 +1236,17 @@ exports.listAllProducts = function listAllProducts(dcOrVars, varsOrOptions, opti
 }
 ;
 
-const listAllProductsGlobalRef = (dc) => {
-  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+const listAllProductsGlobalRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'ListAllProductsGlobal');
+  return queryRef(dcInstance, 'ListAllProductsGlobal', inputVars);
 }
 listAllProductsGlobalRef.operationName = 'ListAllProductsGlobal';
 exports.listAllProductsGlobalRef = listAllProductsGlobalRef;
 
-exports.listAllProductsGlobal = function listAllProductsGlobal(dcOrOptions, options) {
+exports.listAllProductsGlobal = function listAllProductsGlobal(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listAllProductsGlobalRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
@@ -1566,17 +1566,17 @@ exports.listPricesByProduct = function listPricesByProduct(dcOrVars, varsOrOptio
 }
 ;
 
-const listAllPricesRef = (dc) => {
-  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+const listAllPricesRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'ListAllPrices');
+  return queryRef(dcInstance, 'ListAllPrices', inputVars);
 }
 listAllPricesRef.operationName = 'ListAllPrices';
 exports.listAllPricesRef = listAllPricesRef;
 
-exports.listAllPrices = function listAllPrices(dcOrOptions, options) {
+exports.listAllPrices = function listAllPrices(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listAllPricesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;

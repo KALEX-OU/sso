@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layout";
 import { dataConnect } from "@/lib/firebase/client";
 import { listPaymentsByOrg } from "@/lib/dataconnect-client";
+import { firstPageListVars } from "@/framework/lib/pagination";
 import {
   Card,
   Chip
@@ -44,7 +45,7 @@ export default function PaymentPage() {
   const loadPayments = useCallback(async (orgId: string) => {
     setLoading(true);
     try {
-      const res = await listPaymentsByOrg(dataConnect, { orgId });
+      const res = await listPaymentsByOrg(dataConnect, { orgId, ...firstPageListVars() });
       setPayments((res.data.payments || []) as PaymentItem[]);
     } catch (err) {
       console.error("Errore caricamento pagamenti:", err);

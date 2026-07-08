@@ -1150,6 +1150,12 @@ export interface ListAllPricesData {
   } & Prices_Key)[];
 }
 
+export interface ListAllPricesVariables {
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
+}
+
 export interface ListAllProductBatchesData {
   productBatches: ({
     batchId: string;
@@ -1295,8 +1301,17 @@ export interface ListAllProductsGlobalData {
   } & Products_Key)[];
 }
 
+export interface ListAllProductsGlobalVariables {
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
+}
+
 export interface ListAllProductsVariables {
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListAllSubscriptionsData {
@@ -1385,6 +1400,9 @@ export interface ListApiKeysByOrgData {
 export interface ListApiKeysByOrgVariables {
   orgId: string;
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListAuditLogsByOrgData {
@@ -1415,6 +1433,9 @@ export interface ListCheckoutsByOrgData {
 
 export interface ListCheckoutsByOrgVariables {
   buyerId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListComputesByOrgData {
@@ -1432,6 +1453,9 @@ export interface ListComputesByOrgData {
 
 export interface ListComputesByOrgVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListInvoicesByOrgData {
@@ -1463,6 +1487,9 @@ export interface ListInvoicesByOrgData {
 
 export interface ListInvoicesByOrgVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListInvoicesBySellerData {
@@ -1494,6 +1521,9 @@ export interface ListInvoicesBySellerData {
 
 export interface ListInvoicesBySellerVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListMembersByOrgData {
@@ -1555,6 +1585,9 @@ export interface ListPaymentsByOrgData {
 
 export interface ListPaymentsByOrgVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListPaymentsBySellerData {
@@ -1590,6 +1623,9 @@ export interface ListPaymentsBySellerData {
 
 export interface ListPaymentsBySellerVariables {
   sellerOrgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListPricesByProductData {
@@ -1607,6 +1643,9 @@ export interface ListPricesByProductData {
 
 export interface ListPricesByProductVariables {
   productId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListProductConsumesByOrgData {
@@ -1657,6 +1696,9 @@ export interface ListTeamsByOrgData {
 export interface ListTeamsByOrgVariables {
   orgId: string;
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface ListThingsByOrgData {
@@ -1675,6 +1717,9 @@ export interface ListThingsByOrgData {
 export interface ListThingsByOrgVariables {
   orgId: string;
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 
 export interface MigrateInviteeMembershipData {
@@ -3062,15 +3107,15 @@ export function listAllProducts(dc: DataConnect, vars: ListAllProductsVariables,
 
 interface ListAllProductsGlobalRef {
   /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllProductsGlobalData, undefined>;
+  (vars: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllProductsGlobalData, undefined>;
+  (dc: DataConnect, vars: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
   operationName: string;
 }
 export const listAllProductsGlobalRef: ListAllProductsGlobalRef;
 
-export function listAllProductsGlobal(options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, undefined>;
-export function listAllProductsGlobal(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, undefined>;
+export function listAllProductsGlobal(vars: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
+export function listAllProductsGlobal(dc: DataConnect, vars: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 
 interface ListAllProductBatchesRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -3326,15 +3371,15 @@ export function listPricesByProduct(dc: DataConnect, vars: ListPricesByProductVa
 
 interface ListAllPricesRef {
   /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllPricesData, undefined>;
+  (vars: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListAllPricesData, undefined>;
+  (dc: DataConnect, vars: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
   operationName: string;
 }
 export const listAllPricesRef: ListAllPricesRef;
 
-export function listAllPrices(options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
-export function listAllPrices(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
+export function listAllPrices(vars: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
+export function listAllPrices(dc: DataConnect, vars: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
 
 interface GetCheckoutRef {
   /* Allow users to create refs without passing in DataConnect */

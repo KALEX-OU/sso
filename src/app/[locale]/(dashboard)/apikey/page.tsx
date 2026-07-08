@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDashboard } from "../layout";
 import { dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { listApiKeysByOrg } from "@/lib/dataconnect-client";
+import { firstPageListVars } from "@/framework/lib/pagination";
 import {
   Button,
   Card,
@@ -49,7 +50,7 @@ export default function ApiKeyManagementPage() {
   const loadApiKeys = useCallback(async (orgId: string) => {
     setLoadingData(true);
     try {
-      const keyRes = await listApiKeysByOrg(dataConnect, { orgId, appId: "sso" });
+      const keyRes = await listApiKeysByOrg(dataConnect, { orgId, appId: "sso", ...firstPageListVars() });
       setApiKeys((keyRes.data.apiKeys || []) as ApiKeyItem[]);
     } catch (err) {
       console.error("Errore caricamento api keys:", err);

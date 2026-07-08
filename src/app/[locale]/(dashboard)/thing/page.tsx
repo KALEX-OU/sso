@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layout";
 import { dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { listThingsByOrg } from "@/lib/dataconnect-client";
+import { firstPageListVars } from "@/framework/lib/pagination";
 import {
   Button,
   Card,
@@ -36,7 +37,7 @@ export default function ThingManagementPage() {
   const loadThings = useCallback(async (orgId: string) => {
     setLoadingData(true);
     try {
-      const thingRes = await listThingsByOrg(dataConnect, { orgId, appId: "sso" });
+      const thingRes = await listThingsByOrg(dataConnect, { orgId, appId: "sso", ...firstPageListVars() });
       setThings((thingRes.data.things || []) as ThingItem[]);
     } catch (err) {
       console.error("Errore caricamento cose:", err);

@@ -1959,6 +1959,9 @@ The `ListThingsByOrg` query requires an argument of type `ListThingsByOrgVariabl
 export interface ListThingsByOrgVariables {
   orgId: string;
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -1989,13 +1992,16 @@ import { connectorConfig, listThingsByOrg, ListThingsByOrgVariables } from '@kal
 const listThingsByOrgVars: ListThingsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listThingsByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listThingsByOrg(listThingsByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listThingsByOrg({ orgId: ..., appId: ..., });
+const { data } = await listThingsByOrg({ orgId: ..., appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2020,12 +2026,15 @@ import { connectorConfig, listThingsByOrgRef, ListThingsByOrgVariables } from '@
 const listThingsByOrgVars: ListThingsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listThingsByOrgRef()` function to get a reference to the query.
 const ref = listThingsByOrgRef(listThingsByOrgVars);
 // Variables can be defined inline as well.
-const ref = listThingsByOrgRef({ orgId: ..., appId: ..., });
+const ref = listThingsByOrgRef({ orgId: ..., appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2080,6 +2089,9 @@ The `ListApiKeysByOrg` query requires an argument of type `ListApiKeysByOrgVaria
 export interface ListApiKeysByOrgVariables {
   orgId: string;
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -2117,13 +2129,16 @@ import { connectorConfig, listApiKeysByOrg, ListApiKeysByOrgVariables } from '@k
 const listApiKeysByOrgVars: ListApiKeysByOrgVariables = {
   orgId: ..., 
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listApiKeysByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listApiKeysByOrg(listApiKeysByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listApiKeysByOrg({ orgId: ..., appId: ..., });
+const { data } = await listApiKeysByOrg({ orgId: ..., appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2148,12 +2163,15 @@ import { connectorConfig, listApiKeysByOrgRef, ListApiKeysByOrgVariables } from 
 const listApiKeysByOrgVars: ListApiKeysByOrgVariables = {
   orgId: ..., 
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listApiKeysByOrgRef()` function to get a reference to the query.
 const ref = listApiKeysByOrgRef(listApiKeysByOrgVars);
 // Variables can be defined inline as well.
-const ref = listApiKeysByOrgRef({ orgId: ..., appId: ..., });
+const ref = listApiKeysByOrgRef({ orgId: ..., appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2956,6 +2974,9 @@ The `ListAllProducts` query requires an argument of type `ListAllProductsVariabl
 ```typescript
 export interface ListAllProductsVariables {
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -3036,13 +3057,16 @@ import { connectorConfig, listAllProducts, ListAllProductsVariables } from '@kal
 // The `ListAllProducts` query requires an argument of type `ListAllProductsVariables`:
 const listAllProductsVars: ListAllProductsVariables = {
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listAllProducts()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listAllProducts(listAllProductsVars);
 // Variables can be defined inline as well.
-const { data } = await listAllProducts({ appId: ..., });
+const { data } = await listAllProducts({ appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3066,12 +3090,15 @@ import { connectorConfig, listAllProductsRef, ListAllProductsVariables } from '@
 // The `ListAllProducts` query requires an argument of type `ListAllProductsVariables`:
 const listAllProductsVars: ListAllProductsVariables = {
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listAllProductsRef()` function to get a reference to the query.
 const ref = listAllProductsRef(listAllProductsVars);
 // Variables can be defined inline as well.
-const ref = listAllProductsRef({ appId: ..., });
+const ref = listAllProductsRef({ appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3093,22 +3120,22 @@ executeQuery(ref).then((response) => {
 ## ListAllProductsGlobal
 You can execute the `ListAllProductsGlobal` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
 ```typescript
-listAllProductsGlobal(options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, undefined>;
+listAllProductsGlobal(vars: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 
 interface ListAllProductsGlobalRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllProductsGlobalData, undefined>;
+  (vars: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 }
 export const listAllProductsGlobalRef: ListAllProductsGlobalRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listAllProductsGlobal(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, undefined>;
+listAllProductsGlobal(dc: DataConnect, vars: ListAllProductsGlobalVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 
 interface ListAllProductsGlobalRef {
   ...
-  (dc: DataConnect): QueryRef<ListAllProductsGlobalData, undefined>;
+  (dc: DataConnect, vars: ListAllProductsGlobalVariables): QueryRef<ListAllProductsGlobalData, ListAllProductsGlobalVariables>;
 }
 export const listAllProductsGlobalRef: ListAllProductsGlobalRef;
 ```
@@ -3120,7 +3147,15 @@ console.log(name);
 ```
 
 ### Variables
-The `ListAllProductsGlobal` query has no variables.
+The `ListAllProductsGlobal` query requires an argument of type `ListAllProductsGlobalVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListAllProductsGlobalVariables {
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
+}
+```
 ### Return Type
 Recall that executing the `ListAllProductsGlobal` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
@@ -3194,21 +3229,29 @@ export interface ListAllProductsGlobalData {
 
 ```typescript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, listAllProductsGlobal } from '@kalex/dataconnect';
+import { connectorConfig, listAllProductsGlobal, ListAllProductsGlobalVariables } from '@kalex/dataconnect';
 
+// The `ListAllProductsGlobal` query requires an argument of type `ListAllProductsGlobalVariables`:
+const listAllProductsGlobalVars: ListAllProductsGlobalVariables = {
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
+};
 
 // Call the `listAllProductsGlobal()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await listAllProductsGlobal();
+const { data } = await listAllProductsGlobal(listAllProductsGlobalVars);
+// Variables can be defined inline as well.
+const { data } = await listAllProductsGlobal({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
-const { data } = await listAllProductsGlobal(dataConnect);
+const { data } = await listAllProductsGlobal(dataConnect, listAllProductsGlobalVars);
 
 console.log(data.products);
 
 // Or, you can use the `Promise` API.
-listAllProductsGlobal().then((response) => {
+listAllProductsGlobal(listAllProductsGlobalVars).then((response) => {
   const data = response.data;
   console.log(data.products);
 });
@@ -3218,15 +3261,23 @@ listAllProductsGlobal().then((response) => {
 
 ```typescript
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, listAllProductsGlobalRef } from '@kalex/dataconnect';
+import { connectorConfig, listAllProductsGlobalRef, ListAllProductsGlobalVariables } from '@kalex/dataconnect';
 
+// The `ListAllProductsGlobal` query requires an argument of type `ListAllProductsGlobalVariables`:
+const listAllProductsGlobalVars: ListAllProductsGlobalVariables = {
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
+};
 
 // Call the `listAllProductsGlobalRef()` function to get a reference to the query.
-const ref = listAllProductsGlobalRef();
+const ref = listAllProductsGlobalRef(listAllProductsGlobalVars);
+// Variables can be defined inline as well.
+const ref = listAllProductsGlobalRef({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
-const ref = listAllProductsGlobalRef(dataConnect);
+const ref = listAllProductsGlobalRef(dataConnect, listAllProductsGlobalVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -3792,6 +3843,9 @@ The `ListInvoicesByOrg` query requires an argument of type `ListInvoicesByOrgVar
 ```typescript
 export interface ListInvoicesByOrgVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -3835,13 +3889,16 @@ import { connectorConfig, listInvoicesByOrg, ListInvoicesByOrgVariables } from '
 // The `ListInvoicesByOrg` query requires an argument of type `ListInvoicesByOrgVariables`:
 const listInvoicesByOrgVars: ListInvoicesByOrgVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listInvoicesByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listInvoicesByOrg(listInvoicesByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listInvoicesByOrg({ orgId: ..., });
+const { data } = await listInvoicesByOrg({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3865,12 +3922,15 @@ import { connectorConfig, listInvoicesByOrgRef, ListInvoicesByOrgVariables } fro
 // The `ListInvoicesByOrg` query requires an argument of type `ListInvoicesByOrgVariables`:
 const listInvoicesByOrgVars: ListInvoicesByOrgVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listInvoicesByOrgRef()` function to get a reference to the query.
 const ref = listInvoicesByOrgRef(listInvoicesByOrgVars);
 // Variables can be defined inline as well.
-const ref = listInvoicesByOrgRef({ orgId: ..., });
+const ref = listInvoicesByOrgRef({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3924,6 +3984,9 @@ The `ListInvoicesBySeller` query requires an argument of type `ListInvoicesBySel
 ```typescript
 export interface ListInvoicesBySellerVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -3967,13 +4030,16 @@ import { connectorConfig, listInvoicesBySeller, ListInvoicesBySellerVariables } 
 // The `ListInvoicesBySeller` query requires an argument of type `ListInvoicesBySellerVariables`:
 const listInvoicesBySellerVars: ListInvoicesBySellerVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listInvoicesBySeller()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listInvoicesBySeller(listInvoicesBySellerVars);
 // Variables can be defined inline as well.
-const { data } = await listInvoicesBySeller({ orgId: ..., });
+const { data } = await listInvoicesBySeller({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3997,12 +4063,15 @@ import { connectorConfig, listInvoicesBySellerRef, ListInvoicesBySellerVariables
 // The `ListInvoicesBySeller` query requires an argument of type `ListInvoicesBySellerVariables`:
 const listInvoicesBySellerVars: ListInvoicesBySellerVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listInvoicesBySellerRef()` function to get a reference to the query.
 const ref = listInvoicesBySellerRef(listInvoicesBySellerVars);
 // Variables can be defined inline as well.
-const ref = listInvoicesBySellerRef({ orgId: ..., });
+const ref = listInvoicesBySellerRef({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4056,6 +4125,9 @@ The `ListPaymentsByOrg` query requires an argument of type `ListPaymentsByOrgVar
 ```typescript
 export interface ListPaymentsByOrgVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -4103,13 +4175,16 @@ import { connectorConfig, listPaymentsByOrg, ListPaymentsByOrgVariables } from '
 // The `ListPaymentsByOrg` query requires an argument of type `ListPaymentsByOrgVariables`:
 const listPaymentsByOrgVars: ListPaymentsByOrgVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listPaymentsByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listPaymentsByOrg(listPaymentsByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listPaymentsByOrg({ orgId: ..., });
+const { data } = await listPaymentsByOrg({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4133,12 +4208,15 @@ import { connectorConfig, listPaymentsByOrgRef, ListPaymentsByOrgVariables } fro
 // The `ListPaymentsByOrg` query requires an argument of type `ListPaymentsByOrgVariables`:
 const listPaymentsByOrgVars: ListPaymentsByOrgVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listPaymentsByOrgRef()` function to get a reference to the query.
 const ref = listPaymentsByOrgRef(listPaymentsByOrgVars);
 // Variables can be defined inline as well.
-const ref = listPaymentsByOrgRef({ orgId: ..., });
+const ref = listPaymentsByOrgRef({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4192,6 +4270,9 @@ The `ListPaymentsBySeller` query requires an argument of type `ListPaymentsBySel
 ```typescript
 export interface ListPaymentsBySellerVariables {
   sellerOrgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -4239,13 +4320,16 @@ import { connectorConfig, listPaymentsBySeller, ListPaymentsBySellerVariables } 
 // The `ListPaymentsBySeller` query requires an argument of type `ListPaymentsBySellerVariables`:
 const listPaymentsBySellerVars: ListPaymentsBySellerVariables = {
   sellerOrgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listPaymentsBySeller()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listPaymentsBySeller(listPaymentsBySellerVars);
 // Variables can be defined inline as well.
-const { data } = await listPaymentsBySeller({ sellerOrgId: ..., });
+const { data } = await listPaymentsBySeller({ sellerOrgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4269,12 +4353,15 @@ import { connectorConfig, listPaymentsBySellerRef, ListPaymentsBySellerVariables
 // The `ListPaymentsBySeller` query requires an argument of type `ListPaymentsBySellerVariables`:
 const listPaymentsBySellerVars: ListPaymentsBySellerVariables = {
   sellerOrgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listPaymentsBySellerRef()` function to get a reference to the query.
 const ref = listPaymentsBySellerRef(listPaymentsBySellerVars);
 // Variables can be defined inline as well.
-const ref = listPaymentsBySellerRef({ sellerOrgId: ..., });
+const ref = listPaymentsBySellerRef({ sellerOrgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4579,6 +4666,9 @@ The `ListTeamsByOrg` query requires an argument of type `ListTeamsByOrgVariables
 export interface ListTeamsByOrgVariables {
   orgId: string;
   appId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -4608,13 +4698,16 @@ import { connectorConfig, listTeamsByOrg, ListTeamsByOrgVariables } from '@kalex
 const listTeamsByOrgVars: ListTeamsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listTeamsByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listTeamsByOrg(listTeamsByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listTeamsByOrg({ orgId: ..., appId: ..., });
+const { data } = await listTeamsByOrg({ orgId: ..., appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4639,12 +4732,15 @@ import { connectorConfig, listTeamsByOrgRef, ListTeamsByOrgVariables } from '@ka
 const listTeamsByOrgVars: ListTeamsByOrgVariables = {
   orgId: ..., 
   appId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listTeamsByOrgRef()` function to get a reference to the query.
 const ref = listTeamsByOrgRef(listTeamsByOrgVars);
 // Variables can be defined inline as well.
-const ref = listTeamsByOrgRef({ orgId: ..., appId: ..., });
+const ref = listTeamsByOrgRef({ orgId: ..., appId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5160,6 +5256,9 @@ The `ListComputesByOrg` query requires an argument of type `ListComputesByOrgVar
 ```typescript
 export interface ListComputesByOrgVariables {
   orgId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -5189,13 +5288,16 @@ import { connectorConfig, listComputesByOrg, ListComputesByOrgVariables } from '
 // The `ListComputesByOrg` query requires an argument of type `ListComputesByOrgVariables`:
 const listComputesByOrgVars: ListComputesByOrgVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listComputesByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listComputesByOrg(listComputesByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listComputesByOrg({ orgId: ..., });
+const { data } = await listComputesByOrg({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5219,12 +5321,15 @@ import { connectorConfig, listComputesByOrgRef, ListComputesByOrgVariables } fro
 // The `ListComputesByOrg` query requires an argument of type `ListComputesByOrgVariables`:
 const listComputesByOrgVars: ListComputesByOrgVariables = {
   orgId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listComputesByOrgRef()` function to get a reference to the query.
 const ref = listComputesByOrgRef(listComputesByOrgVars);
 // Variables can be defined inline as well.
-const ref = listComputesByOrgRef({ orgId: ..., });
+const ref = listComputesByOrgRef({ orgId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5638,6 +5743,9 @@ The `ListPricesByProduct` query requires an argument of type `ListPricesByProduc
 ```typescript
 export interface ListPricesByProductVariables {
   productId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -5667,13 +5775,16 @@ import { connectorConfig, listPricesByProduct, ListPricesByProductVariables } fr
 // The `ListPricesByProduct` query requires an argument of type `ListPricesByProductVariables`:
 const listPricesByProductVars: ListPricesByProductVariables = {
   productId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listPricesByProduct()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listPricesByProduct(listPricesByProductVars);
 // Variables can be defined inline as well.
-const { data } = await listPricesByProduct({ productId: ..., });
+const { data } = await listPricesByProduct({ productId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5697,12 +5808,15 @@ import { connectorConfig, listPricesByProductRef, ListPricesByProductVariables }
 // The `ListPricesByProduct` query requires an argument of type `ListPricesByProductVariables`:
 const listPricesByProductVars: ListPricesByProductVariables = {
   productId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listPricesByProductRef()` function to get a reference to the query.
 const ref = listPricesByProductRef(listPricesByProductVars);
 // Variables can be defined inline as well.
-const ref = listPricesByProductRef({ productId: ..., });
+const ref = listPricesByProductRef({ productId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5724,22 +5838,22 @@ executeQuery(ref).then((response) => {
 ## ListAllPrices
 You can execute the `ListAllPrices` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
 ```typescript
-listAllPrices(options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
+listAllPrices(vars: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
 
 interface ListAllPricesRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListAllPricesData, undefined>;
+  (vars: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
 }
 export const listAllPricesRef: ListAllPricesRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listAllPrices(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, undefined>;
+listAllPrices(dc: DataConnect, vars: ListAllPricesVariables, options?: ExecuteQueryOptions): QueryPromise<ListAllPricesData, ListAllPricesVariables>;
 
 interface ListAllPricesRef {
   ...
-  (dc: DataConnect): QueryRef<ListAllPricesData, undefined>;
+  (dc: DataConnect, vars: ListAllPricesVariables): QueryRef<ListAllPricesData, ListAllPricesVariables>;
 }
 export const listAllPricesRef: ListAllPricesRef;
 ```
@@ -5751,7 +5865,15 @@ console.log(name);
 ```
 
 ### Variables
-The `ListAllPrices` query has no variables.
+The `ListAllPrices` query requires an argument of type `ListAllPricesVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListAllPricesVariables {
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
+}
+```
 ### Return Type
 Recall that executing the `ListAllPrices` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
@@ -5774,21 +5896,29 @@ export interface ListAllPricesData {
 
 ```typescript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, listAllPrices } from '@kalex/dataconnect';
+import { connectorConfig, listAllPrices, ListAllPricesVariables } from '@kalex/dataconnect';
 
+// The `ListAllPrices` query requires an argument of type `ListAllPricesVariables`:
+const listAllPricesVars: ListAllPricesVariables = {
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
+};
 
 // Call the `listAllPrices()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await listAllPrices();
+const { data } = await listAllPrices(listAllPricesVars);
+// Variables can be defined inline as well.
+const { data } = await listAllPrices({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
-const { data } = await listAllPrices(dataConnect);
+const { data } = await listAllPrices(dataConnect, listAllPricesVars);
 
 console.log(data.prices);
 
 // Or, you can use the `Promise` API.
-listAllPrices().then((response) => {
+listAllPrices(listAllPricesVars).then((response) => {
   const data = response.data;
   console.log(data.prices);
 });
@@ -5798,15 +5928,23 @@ listAllPrices().then((response) => {
 
 ```typescript
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, listAllPricesRef } from '@kalex/dataconnect';
+import { connectorConfig, listAllPricesRef, ListAllPricesVariables } from '@kalex/dataconnect';
 
+// The `ListAllPrices` query requires an argument of type `ListAllPricesVariables`:
+const listAllPricesVars: ListAllPricesVariables = {
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
+};
 
 // Call the `listAllPricesRef()` function to get a reference to the query.
-const ref = listAllPricesRef();
+const ref = listAllPricesRef(listAllPricesVars);
+// Variables can be defined inline as well.
+const ref = listAllPricesRef({ limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
-const ref = listAllPricesRef(dataConnect);
+const ref = listAllPricesRef(dataConnect, listAllPricesVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -5976,6 +6114,9 @@ The `ListCheckoutsByOrg` query requires an argument of type `ListCheckoutsByOrgV
 ```typescript
 export interface ListCheckoutsByOrgVariables {
   buyerId: string;
+  limit: number;
+  beforeCreatedAt: TimestampString;
+  beforeId: string;
 }
 ```
 ### Return Type
@@ -6006,13 +6147,16 @@ import { connectorConfig, listCheckoutsByOrg, ListCheckoutsByOrgVariables } from
 // The `ListCheckoutsByOrg` query requires an argument of type `ListCheckoutsByOrgVariables`:
 const listCheckoutsByOrgVars: ListCheckoutsByOrgVariables = {
   buyerId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listCheckoutsByOrg()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await listCheckoutsByOrg(listCheckoutsByOrgVars);
 // Variables can be defined inline as well.
-const { data } = await listCheckoutsByOrg({ buyerId: ..., });
+const { data } = await listCheckoutsByOrg({ buyerId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6036,12 +6180,15 @@ import { connectorConfig, listCheckoutsByOrgRef, ListCheckoutsByOrgVariables } f
 // The `ListCheckoutsByOrg` query requires an argument of type `ListCheckoutsByOrgVariables`:
 const listCheckoutsByOrgVars: ListCheckoutsByOrgVariables = {
   buyerId: ..., 
+  limit: ..., 
+  beforeCreatedAt: ..., 
+  beforeId: ..., 
 };
 
 // Call the `listCheckoutsByOrgRef()` function to get a reference to the query.
 const ref = listCheckoutsByOrgRef(listCheckoutsByOrgVars);
 // Variables can be defined inline as well.
-const ref = listCheckoutsByOrgRef({ buyerId: ..., });
+const ref = listCheckoutsByOrgRef({ buyerId: ..., limit: ..., beforeCreatedAt: ..., beforeId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
