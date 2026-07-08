@@ -3,10 +3,12 @@ import { setCorrelationId } from "./logger";
 
 const APP_ID = process.env.NEXT_PUBLIC_APP_ID || "web";
 
-// Struttura standard delle risposte d'errore di KALEX
+// Struttura standard delle risposte d'errore di KALEX — envelope unico del gateway:
+// { success: false, error: { code, message, requestId, details? } }
 export interface KalexError {
   message: string;
   code?: string;
+  requestId?: string;
   details?: unknown;
 }
 
@@ -173,36 +175,23 @@ export async function fetchAuthedClient<T>(
       };
     }
 
+    // Envelope d'errore unico del gateway: error è SEMPRE un oggetto {code, message, requestId}.
     if (!response.ok) {
-      let errorObj: KalexError;
-      if (typeof json.error === "string") {
-        errorObj = { message: json.error };
-      } else if (json.error && typeof json.error === "object") {
-        const errObj = json.error as KalexError;
-        errorObj = {
-          message: errObj.message || json.message || "Errore sconosciuto nella chiamata API.",
-          code: errObj.code,
-          details: errObj.details || { correlationId }
-        };
-      } else {
-        errorObj = {
-          message: json.message || "Errore sconosciuto nella chiamata API.",
-          details: { correlationId }
-        };
-      }
+      const errObj = json.error && typeof json.error === "object" ? (json.error as KalexError) : undefined;
       return {
         success: false,
-        error: errorObj
+        error: {
+          message: errObj?.message || json.message || "Errore sconosciuto nella chiamata API.",
+          code: errObj?.code,
+          requestId: errObj?.requestId,
+          details: errObj?.details || { correlationId }
+        }
       };
     }
 
     let errorObj: KalexError | undefined = undefined;
-    if (json.error) {
-      if (typeof json.error === "string") {
-        errorObj = { message: json.error };
-      } else if (typeof json.error === "object") {
-        errorObj = json.error as KalexError;
-      }
+    if (json.error && typeof json.error === "object") {
+      errorObj = json.error as KalexError;
     } else if (json.success === false) {
       errorObj = { message: json.message || "Errore sconosciuto nella chiamata API." };
     }

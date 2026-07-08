@@ -165,7 +165,7 @@ export async function forwardProxyRequest(
     // convertiamo in 200 OK con success: false per evitare errori 401 rossi in console
     if (moduleName === "auth" && pathString === "client-token" && status === 401) {
       status = 200;
-      finalBody = JSON.stringify({ success: false, code: "auth/unauthorized", message: "Utente non autenticato." });
+      finalBody = JSON.stringify({ success: false, error: { code: "auth/unauthorized", message: "Utente non autenticato." } });
     }
 
     const nextResponse = new NextResponse(finalBody, {

@@ -112,7 +112,7 @@ export default function ProductCatalogPage() {
       if (prodData.success) {
         setProducts(prodData.items || []);
       } else {
-        throw new Error(prodData.error || "Errore sconosciuto");
+        throw new Error(prodData.error?.message || "Errore sconosciuto");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Errore generico";

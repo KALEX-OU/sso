@@ -175,7 +175,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
           [serviceId]: updated
         }));
       } else {
-        showToast(data.error || "Impossibile aggiornare la licenza.", "error");
+        showToast(data.error?.message || "Impossibile aggiornare la licenza.", "error");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
