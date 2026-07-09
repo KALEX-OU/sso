@@ -112,12 +112,15 @@ export async function forceCleanSession(appId: string = APP_ID): Promise<void> {
     // Silente
   }
 
-  // 6. Elimina i cookie di sessione sia locali che sul dominio centralizzato .kalex.cloud
+  // 6. Elimina i cookie di sessione sia locali sia sul dominio centralizzato configurato (NEXT_PUBLIC_COOKIE_DOMAIN)
   try {
     if (typeof document !== "undefined") {
-      document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
+      const cookieDomain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN?.trim();
+      if (cookieDomain) {
+        document.cookie = `kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=${cookieDomain}`;
+        document.cookie = `kalex_csrf=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=${cookieDomain}`;
+      }
       document.cookie = "kalex_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      document.cookie = "kalex_csrf=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.kalex.cloud";
       document.cookie = "kalex_csrf=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
   } catch {

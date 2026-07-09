@@ -83,12 +83,12 @@ export async function proxy(request: NextRequest) {
     // Invia il redirect pulendo il cookie non valido
     const response = NextResponse.redirect(url.toString());
     if (sessionCookie) {
-      const isProd = process.env.NODE_ENV === "production" || !request.headers.get("host")?.includes("localhost");
+      const cookieDomain = process.env.COOKIE_DOMAIN?.trim();
       response.cookies.delete("kalex_session");
-      if (isProd) {
+      if (cookieDomain) {
         response.cookies.set("kalex_session", "", {
           path: "/",
-          domain: ".kalex.cloud",
+          domain: cookieDomain,
           expires: new Date(0)
         });
       }
