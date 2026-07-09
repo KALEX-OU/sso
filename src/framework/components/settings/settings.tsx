@@ -6,6 +6,7 @@ import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
 import { Card, CardBody, Tabs, Tab, TabList, Button, Input, Label } from "../ui";
 import { Form } from "../layouts/Form";
+import { DomainManagement } from "./DomainManagement";
 import {
   User as UserIcon,
   Camera,
@@ -877,6 +878,12 @@ export function Settings() {
             >
               {t("settings.tabs.organization")}
             </Tab>
+            <Tab
+              id="domains"
+              className="klx-settings-tab-trigger"
+            >
+              {t("settings.tabs.domains")}
+            </Tab>
           </TabList>
         </Tabs>
       ) : null}
@@ -1484,6 +1491,11 @@ export function Settings() {
           </CardBody>
         </Card>
       )}
+
+      {/* ========================================== */}
+      {/* TAB 3: DOMINI (white-label §3-bis)         */}
+      {/* ========================================== */}
+      {currentTab === "domains" && isOrgManager && <DomainManagement />}
 
       {/* ========================================== */}
       {/* DIALOG DI CONFIRMA ELIMINAZIONE GDPR       */}
