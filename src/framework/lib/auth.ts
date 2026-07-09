@@ -6,6 +6,7 @@ import type { FirebaseApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User, Auth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getSsoBaseUrl } from "./urls";
 import type { FirebaseStorage } from "firebase/storage";
 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, CustomProvider } from "firebase/app-check";
@@ -128,7 +129,7 @@ export async function forceCleanSession(appId: string = APP_ID): Promise<void> {
   }
 
   // 7. Esegue il reindirizzamento o ricaricamento finale della pagina
-  const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+  const ssoUrl = getSsoBaseUrl();
   let currentUrlStr = window.location.href;
   if (currentUrlStr) {
     try {
@@ -235,7 +236,7 @@ function base64UrlEncode(bytes: Uint8Array): string {
 }
 
 async function redirectToSso(clientId: string, register: boolean): Promise<void> {
-  const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+  const ssoUrl = getSsoBaseUrl();
   let currentUrlStr = typeof window !== "undefined" ? window.location.href : "";
 
   // State univoco anti-CSRF, conservato nella RP e confrontato al ritorno

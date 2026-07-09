@@ -2,6 +2,7 @@
 
 import React, { useSyncExternalStore } from "react";
 import { useAuth } from "../../../lib/auth";
+import { getSsoBaseUrl } from "../../../lib/urls";
 import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from "../../ui";
 import { LogIn, UserPlus, LogOut, Settings, LayoutDashboard } from "lucide-react";
 
@@ -73,7 +74,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
   };
 
   const redirectToSSO = (path = "") => {
-    const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+    const ssoUrl = getSsoBaseUrl();
     window.location.href = `${ssoUrl}${path}`;
   };
 

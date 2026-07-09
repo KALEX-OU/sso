@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { getApiBaseUrl } from "./urls";
 
 /**
  * Estrae la lingua preferita del client analizzando l'header Accept-Language.
@@ -105,7 +106,7 @@ export async function verifySessionCookieServerSide(
   request: NextRequest,
   apiBaseUrl?: string
 ): Promise<boolean> {
-  const baseUrl = apiBaseUrl || process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
+  const baseUrl = apiBaseUrl || getApiBaseUrl();
 
   const now = Date.now();
   const cacheKey = await hashSessionCookieValue(sessionCookie);

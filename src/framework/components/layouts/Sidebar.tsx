@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
+import { getSsoBaseUrl } from "@/framework/lib/urls";
 import { getVisibleModulesForSidebar, AppIds, LucideIconName, getModuleInfo } from "@/framework/lib/resources.config";
 import { getModuleLabel } from "@/framework/lib/module-labels";
 import { useTheme } from "next-themes";
@@ -60,7 +61,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   // Estrae la lista dei moduli visibili sulla base del ruolo utente e ruolo organizzazione (SSOT)
   const visibleModules = getVisibleModulesForSidebar(appId as AppIds, userRole, orgRole);
 
-  const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+  const ssoUrl = getSsoBaseUrl();
   const settingsUrl = appId === "sso" ? `/${currentLocale}/settings` : `${ssoUrl}/${currentLocale}/settings`;
 
   const handleLogout = async () => {

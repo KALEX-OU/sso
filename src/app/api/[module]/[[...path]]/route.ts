@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/framework/lib/urls";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
+const API_BASE_URL = getApiBaseUrl();
 
 interface CookieOptions {
   httpOnly?: boolean;

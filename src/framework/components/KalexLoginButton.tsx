@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "./ui";
 import { LogIn, User } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { getSsoBaseUrl } from "../lib/urls";
 
 interface KalexLoginButtonProps {
   clientId: string;
@@ -22,7 +23,7 @@ export function KalexLoginButton({
 
   const handleAuth = () => {
     if (user) {
-      const ssoUrl = process.env.NEXT_PUBLIC_SSO_URL || "https://sso.kalex.cloud";
+      const ssoUrl = getSsoBaseUrl();
       window.location.href = ssoUrl;
     } else {
       loginRedirect(clientId);

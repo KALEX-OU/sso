@@ -1,6 +1,7 @@
 import { createI18nMiddleware } from "next-international/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { parseLocalePath, verifySessionCookieServerSide } from "./framework/lib/proxy";
+import { getApiBaseUrl } from "./framework/lib/urls";
 
 const locales = ["it", "en", "es"] as const;
 const defaultLocale = "en";
@@ -11,7 +12,7 @@ const I18nMiddleware = createI18nMiddleware({
   urlMappingStrategy: "redirect"
 });
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.kalex.cloud";
+const API_BASE_URL = getApiBaseUrl();
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
