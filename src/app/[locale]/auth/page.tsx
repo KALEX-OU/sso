@@ -158,6 +158,10 @@ function AuthPortal() {
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // White-label (§3-bis): nome dell'org risolto dall'host (sottodominio o dominio custom).
+  const [tenantName, setTenantName] = useState<string | null>(null);
+  // Nome mostrato nel logo: l'org risolta dall'host ha la precedenza sul brand statico.
+  const displayBrandName = tenantName || brand.name;
 
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -201,6 +205,27 @@ function AuthPortal() {
     setTimeout(() => {
       if (active) setMounted(true);
     }, 0);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // White-label (§3-bis): risolve il nome dell'org dall'host corrente (sottodominio o dominio
+  // custom) tramite l'endpoint pubblico. Best-effort: in caso di errore resta il brand statico.
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/public/tenant?host=${encodeURIComponent(window.location.hostname)}`);
+        if (!res.ok) return;
+        const json = (await res.json()) as { found?: boolean; tenant?: { name?: string } };
+        if (active && json.found && json.tenant?.name) {
+          setTenantName(json.tenant.name);
+        }
+      } catch {
+        // Nessun branding tenant: si resta sul brand statico.
+      }
+    })();
     return () => {
       active = false;
     };
@@ -1224,7 +1249,7 @@ function AuthPortal() {
             {/* Brand Logo & Title */}
             <div className="text-center mb-8">
               <span className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}>
-                {brand.name}
+                {displayBrandName}
               </span>
               <p className="text-slate-500 dark:text-gray-400 text-xs font-semibold mt-2 tracking-wide uppercase">
                 {t("auth.subtitle")}
