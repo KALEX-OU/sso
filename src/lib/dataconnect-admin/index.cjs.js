@@ -434,6 +434,34 @@ function deleteProductConsume(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.deleteProductConsume = deleteProductConsume;
 
+function updateOrganizationSubdomain(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateOrganizationSubdomain', inputVars, inputOpts);
+}
+exports.updateOrganizationSubdomain = updateOrganizationSubdomain;
+
+function createOrganizationDomain(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateOrganizationDomain', inputVars, inputOpts);
+}
+exports.createOrganizationDomain = createOrganizationDomain;
+
+function updateOrganizationDomainStatus(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpdateOrganizationDomainStatus', inputVars, inputOpts);
+}
+exports.updateOrganizationDomainStatus = updateOrganizationDomainStatus;
+
+function deleteOrganizationDomain(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('DeleteOrganizationDomain', inputVars, inputOpts);
+}
+exports.deleteOrganizationDomain = deleteOrganizationDomain;
+
 function getUserClaimsContext(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -804,4 +832,32 @@ function getProductDetails(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('GetProductDetails', inputVars, inputOpts);
 }
 exports.getProductDetails = getProductDetails;
+
+function getOrganizationBySubdomain(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrganizationBySubdomain', inputVars, inputOpts);
+}
+exports.getOrganizationBySubdomain = getOrganizationBySubdomain;
+
+function getOrganizationDomainByDomain(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrganizationDomainByDomain', inputVars, inputOpts);
+}
+exports.getOrganizationDomainByDomain = getOrganizationDomainByDomain;
+
+function getOrganizationDomain(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetOrganizationDomain', inputVars, inputOpts);
+}
+exports.getOrganizationDomain = getOrganizationDomain;
+
+function listOrganizationDomainsByOrg(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListOrganizationDomainsByOrg', inputVars, inputOpts);
+}
+exports.listOrganizationDomainsByOrg = listOrganizationDomainsByOrg;
 

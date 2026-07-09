@@ -61,6 +61,10 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListAllCheckouts*](#listallcheckouts)
   - [*GetPayment*](#getpayment)
   - [*GetProductDetails*](#getproductdetails)
+  - [*GetOrganizationBySubdomain*](#getorganizationbysubdomain)
+  - [*GetOrganizationDomainByDomain*](#getorganizationdomainbydomain)
+  - [*GetOrganizationDomain*](#getorganizationdomain)
+  - [*ListOrganizationDomainsByOrg*](#listorganizationdomainsbyorg)
 - [**Mutations**](#mutations)
   - [*UpsertUser*](#upsertuser)
   - [*CreateOrganization*](#createorganization)
@@ -123,6 +127,10 @@ This README will guide you through the process of using the generated JavaScript
   - [*CreateProductConsume*](#createproductconsume)
   - [*UpdateProductConsume*](#updateproductconsume)
   - [*DeleteProductConsume*](#deleteproductconsume)
+  - [*UpdateOrganizationSubdomain*](#updateorganizationsubdomain)
+  - [*CreateOrganizationDomain*](#createorganizationdomain)
+  - [*UpdateOrganizationDomainStatus*](#updateorganizationdomainstatus)
+  - [*DeleteOrganizationDomain*](#deleteorganizationdomain)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `default`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -6590,6 +6598,477 @@ console.log(data.product);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.product);
+});
+```
+
+## GetOrganizationBySubdomain
+You can execute the `GetOrganizationBySubdomain` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+getOrganizationBySubdomain(vars: GetOrganizationBySubdomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+
+interface GetOrganizationBySubdomainRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationBySubdomainVariables): QueryRef<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+}
+export const getOrganizationBySubdomainRef: GetOrganizationBySubdomainRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getOrganizationBySubdomain(dc: DataConnect, vars: GetOrganizationBySubdomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+
+interface GetOrganizationBySubdomainRef {
+  ...
+  (dc: DataConnect, vars: GetOrganizationBySubdomainVariables): QueryRef<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+}
+export const getOrganizationBySubdomainRef: GetOrganizationBySubdomainRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getOrganizationBySubdomainRef:
+```typescript
+const name = getOrganizationBySubdomainRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetOrganizationBySubdomain` query requires an argument of type `GetOrganizationBySubdomainVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetOrganizationBySubdomainVariables {
+  subdomain: string;
+}
+```
+### Return Type
+Recall that executing the `GetOrganizationBySubdomain` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetOrganizationBySubdomainData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetOrganizationBySubdomainData {
+  organizations: ({
+    orgId: string;
+    name: string;
+    subdomain?: string | null;
+    type: string;
+    country: string;
+  } & Organizations_Key)[];
+}
+```
+### Using `GetOrganizationBySubdomain`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getOrganizationBySubdomain, GetOrganizationBySubdomainVariables } from '@kalex/dataconnect';
+
+// The `GetOrganizationBySubdomain` query requires an argument of type `GetOrganizationBySubdomainVariables`:
+const getOrganizationBySubdomainVars: GetOrganizationBySubdomainVariables = {
+  subdomain: ..., 
+};
+
+// Call the `getOrganizationBySubdomain()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getOrganizationBySubdomain(getOrganizationBySubdomainVars);
+// Variables can be defined inline as well.
+const { data } = await getOrganizationBySubdomain({ subdomain: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getOrganizationBySubdomain(dataConnect, getOrganizationBySubdomainVars);
+
+console.log(data.organizations);
+
+// Or, you can use the `Promise` API.
+getOrganizationBySubdomain(getOrganizationBySubdomainVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizations);
+});
+```
+
+### Using `GetOrganizationBySubdomain`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getOrganizationBySubdomainRef, GetOrganizationBySubdomainVariables } from '@kalex/dataconnect';
+
+// The `GetOrganizationBySubdomain` query requires an argument of type `GetOrganizationBySubdomainVariables`:
+const getOrganizationBySubdomainVars: GetOrganizationBySubdomainVariables = {
+  subdomain: ..., 
+};
+
+// Call the `getOrganizationBySubdomainRef()` function to get a reference to the query.
+const ref = getOrganizationBySubdomainRef(getOrganizationBySubdomainVars);
+// Variables can be defined inline as well.
+const ref = getOrganizationBySubdomainRef({ subdomain: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getOrganizationBySubdomainRef(dataConnect, getOrganizationBySubdomainVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.organizations);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizations);
+});
+```
+
+## GetOrganizationDomainByDomain
+You can execute the `GetOrganizationDomainByDomain` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+getOrganizationDomainByDomain(vars: GetOrganizationDomainByDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+
+interface GetOrganizationDomainByDomainRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationDomainByDomainVariables): QueryRef<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+}
+export const getOrganizationDomainByDomainRef: GetOrganizationDomainByDomainRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getOrganizationDomainByDomain(dc: DataConnect, vars: GetOrganizationDomainByDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+
+interface GetOrganizationDomainByDomainRef {
+  ...
+  (dc: DataConnect, vars: GetOrganizationDomainByDomainVariables): QueryRef<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+}
+export const getOrganizationDomainByDomainRef: GetOrganizationDomainByDomainRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getOrganizationDomainByDomainRef:
+```typescript
+const name = getOrganizationDomainByDomainRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetOrganizationDomainByDomain` query requires an argument of type `GetOrganizationDomainByDomainVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetOrganizationDomainByDomainVariables {
+  domain: string;
+}
+```
+### Return Type
+Recall that executing the `GetOrganizationDomainByDomain` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetOrganizationDomainByDomainData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetOrganizationDomainByDomainData {
+  organizationDomains: ({
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    organization: {
+      orgId: string;
+      name: string;
+      subdomain?: string | null;
+    } & Organizations_Key;
+  } & OrganizationDomains_Key)[];
+}
+```
+### Using `GetOrganizationDomainByDomain`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getOrganizationDomainByDomain, GetOrganizationDomainByDomainVariables } from '@kalex/dataconnect';
+
+// The `GetOrganizationDomainByDomain` query requires an argument of type `GetOrganizationDomainByDomainVariables`:
+const getOrganizationDomainByDomainVars: GetOrganizationDomainByDomainVariables = {
+  domain: ..., 
+};
+
+// Call the `getOrganizationDomainByDomain()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getOrganizationDomainByDomain(getOrganizationDomainByDomainVars);
+// Variables can be defined inline as well.
+const { data } = await getOrganizationDomainByDomain({ domain: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getOrganizationDomainByDomain(dataConnect, getOrganizationDomainByDomainVars);
+
+console.log(data.organizationDomains);
+
+// Or, you can use the `Promise` API.
+getOrganizationDomainByDomain(getOrganizationDomainByDomainVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomains);
+});
+```
+
+### Using `GetOrganizationDomainByDomain`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getOrganizationDomainByDomainRef, GetOrganizationDomainByDomainVariables } from '@kalex/dataconnect';
+
+// The `GetOrganizationDomainByDomain` query requires an argument of type `GetOrganizationDomainByDomainVariables`:
+const getOrganizationDomainByDomainVars: GetOrganizationDomainByDomainVariables = {
+  domain: ..., 
+};
+
+// Call the `getOrganizationDomainByDomainRef()` function to get a reference to the query.
+const ref = getOrganizationDomainByDomainRef(getOrganizationDomainByDomainVars);
+// Variables can be defined inline as well.
+const ref = getOrganizationDomainByDomainRef({ domain: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getOrganizationDomainByDomainRef(dataConnect, getOrganizationDomainByDomainVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.organizationDomains);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomains);
+});
+```
+
+## GetOrganizationDomain
+You can execute the `GetOrganizationDomain` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+getOrganizationDomain(vars: GetOrganizationDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+
+interface GetOrganizationDomainRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationDomainVariables): QueryRef<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+}
+export const getOrganizationDomainRef: GetOrganizationDomainRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getOrganizationDomain(dc: DataConnect, vars: GetOrganizationDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+
+interface GetOrganizationDomainRef {
+  ...
+  (dc: DataConnect, vars: GetOrganizationDomainVariables): QueryRef<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+}
+export const getOrganizationDomainRef: GetOrganizationDomainRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getOrganizationDomainRef:
+```typescript
+const name = getOrganizationDomainRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetOrganizationDomain` query requires an argument of type `GetOrganizationDomainVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetOrganizationDomainVariables {
+  domainId: string;
+}
+```
+### Return Type
+Recall that executing the `GetOrganizationDomain` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetOrganizationDomainData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetOrganizationDomainData {
+  organizationDomain?: {
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & OrganizationDomains_Key;
+}
+```
+### Using `GetOrganizationDomain`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getOrganizationDomain, GetOrganizationDomainVariables } from '@kalex/dataconnect';
+
+// The `GetOrganizationDomain` query requires an argument of type `GetOrganizationDomainVariables`:
+const getOrganizationDomainVars: GetOrganizationDomainVariables = {
+  domainId: ..., 
+};
+
+// Call the `getOrganizationDomain()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getOrganizationDomain(getOrganizationDomainVars);
+// Variables can be defined inline as well.
+const { data } = await getOrganizationDomain({ domainId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getOrganizationDomain(dataConnect, getOrganizationDomainVars);
+
+console.log(data.organizationDomain);
+
+// Or, you can use the `Promise` API.
+getOrganizationDomain(getOrganizationDomainVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain);
+});
+```
+
+### Using `GetOrganizationDomain`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getOrganizationDomainRef, GetOrganizationDomainVariables } from '@kalex/dataconnect';
+
+// The `GetOrganizationDomain` query requires an argument of type `GetOrganizationDomainVariables`:
+const getOrganizationDomainVars: GetOrganizationDomainVariables = {
+  domainId: ..., 
+};
+
+// Call the `getOrganizationDomainRef()` function to get a reference to the query.
+const ref = getOrganizationDomainRef(getOrganizationDomainVars);
+// Variables can be defined inline as well.
+const ref = getOrganizationDomainRef({ domainId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getOrganizationDomainRef(dataConnect, getOrganizationDomainVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.organizationDomain);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain);
+});
+```
+
+## ListOrganizationDomainsByOrg
+You can execute the `ListOrganizationDomainsByOrg` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+listOrganizationDomainsByOrg(vars: ListOrganizationDomainsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+
+interface ListOrganizationDomainsByOrgRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListOrganizationDomainsByOrgVariables): QueryRef<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+}
+export const listOrganizationDomainsByOrgRef: ListOrganizationDomainsByOrgRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listOrganizationDomainsByOrg(dc: DataConnect, vars: ListOrganizationDomainsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+
+interface ListOrganizationDomainsByOrgRef {
+  ...
+  (dc: DataConnect, vars: ListOrganizationDomainsByOrgVariables): QueryRef<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+}
+export const listOrganizationDomainsByOrgRef: ListOrganizationDomainsByOrgRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listOrganizationDomainsByOrgRef:
+```typescript
+const name = listOrganizationDomainsByOrgRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListOrganizationDomainsByOrg` query requires an argument of type `ListOrganizationDomainsByOrgVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListOrganizationDomainsByOrgVariables {
+  orgId: string;
+}
+```
+### Return Type
+Recall that executing the `ListOrganizationDomainsByOrg` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListOrganizationDomainsByOrgData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListOrganizationDomainsByOrgData {
+  organizationDomains: ({
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & OrganizationDomains_Key)[];
+}
+```
+### Using `ListOrganizationDomainsByOrg`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listOrganizationDomainsByOrg, ListOrganizationDomainsByOrgVariables } from '@kalex/dataconnect';
+
+// The `ListOrganizationDomainsByOrg` query requires an argument of type `ListOrganizationDomainsByOrgVariables`:
+const listOrganizationDomainsByOrgVars: ListOrganizationDomainsByOrgVariables = {
+  orgId: ..., 
+};
+
+// Call the `listOrganizationDomainsByOrg()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listOrganizationDomainsByOrg(listOrganizationDomainsByOrgVars);
+// Variables can be defined inline as well.
+const { data } = await listOrganizationDomainsByOrg({ orgId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listOrganizationDomainsByOrg(dataConnect, listOrganizationDomainsByOrgVars);
+
+console.log(data.organizationDomains);
+
+// Or, you can use the `Promise` API.
+listOrganizationDomainsByOrg(listOrganizationDomainsByOrgVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomains);
+});
+```
+
+### Using `ListOrganizationDomainsByOrg`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listOrganizationDomainsByOrgRef, ListOrganizationDomainsByOrgVariables } from '@kalex/dataconnect';
+
+// The `ListOrganizationDomainsByOrg` query requires an argument of type `ListOrganizationDomainsByOrgVariables`:
+const listOrganizationDomainsByOrgVars: ListOrganizationDomainsByOrgVariables = {
+  orgId: ..., 
+};
+
+// Call the `listOrganizationDomainsByOrgRef()` function to get a reference to the query.
+const ref = listOrganizationDomainsByOrgRef(listOrganizationDomainsByOrgVars);
+// Variables can be defined inline as well.
+const ref = listOrganizationDomainsByOrgRef({ orgId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listOrganizationDomainsByOrgRef(dataConnect, listOrganizationDomainsByOrgVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.organizationDomains);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomains);
 });
 ```
 
@@ -14117,6 +14596,463 @@ console.log(data.productConsume_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.productConsume_delete);
+});
+```
+
+## UpdateOrganizationSubdomain
+You can execute the `UpdateOrganizationSubdomain` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+updateOrganizationSubdomain(vars: UpdateOrganizationSubdomainVariables): MutationPromise<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+
+interface UpdateOrganizationSubdomainRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationSubdomainVariables): MutationRef<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+}
+export const updateOrganizationSubdomainRef: UpdateOrganizationSubdomainRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateOrganizationSubdomain(dc: DataConnect, vars: UpdateOrganizationSubdomainVariables): MutationPromise<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+
+interface UpdateOrganizationSubdomainRef {
+  ...
+  (dc: DataConnect, vars: UpdateOrganizationSubdomainVariables): MutationRef<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+}
+export const updateOrganizationSubdomainRef: UpdateOrganizationSubdomainRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateOrganizationSubdomainRef:
+```typescript
+const name = updateOrganizationSubdomainRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateOrganizationSubdomain` mutation requires an argument of type `UpdateOrganizationSubdomainVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateOrganizationSubdomainVariables {
+  orgId: string;
+  subdomain?: string | null;
+}
+```
+### Return Type
+Recall that executing the `UpdateOrganizationSubdomain` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateOrganizationSubdomainData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateOrganizationSubdomainData {
+  organization_update?: Organizations_Key | null;
+}
+```
+### Using `UpdateOrganizationSubdomain`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateOrganizationSubdomain, UpdateOrganizationSubdomainVariables } from '@kalex/dataconnect';
+
+// The `UpdateOrganizationSubdomain` mutation requires an argument of type `UpdateOrganizationSubdomainVariables`:
+const updateOrganizationSubdomainVars: UpdateOrganizationSubdomainVariables = {
+  orgId: ..., 
+  subdomain: ..., // optional
+};
+
+// Call the `updateOrganizationSubdomain()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateOrganizationSubdomain(updateOrganizationSubdomainVars);
+// Variables can be defined inline as well.
+const { data } = await updateOrganizationSubdomain({ orgId: ..., subdomain: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateOrganizationSubdomain(dataConnect, updateOrganizationSubdomainVars);
+
+console.log(data.organization_update);
+
+// Or, you can use the `Promise` API.
+updateOrganizationSubdomain(updateOrganizationSubdomainVars).then((response) => {
+  const data = response.data;
+  console.log(data.organization_update);
+});
+```
+
+### Using `UpdateOrganizationSubdomain`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateOrganizationSubdomainRef, UpdateOrganizationSubdomainVariables } from '@kalex/dataconnect';
+
+// The `UpdateOrganizationSubdomain` mutation requires an argument of type `UpdateOrganizationSubdomainVariables`:
+const updateOrganizationSubdomainVars: UpdateOrganizationSubdomainVariables = {
+  orgId: ..., 
+  subdomain: ..., // optional
+};
+
+// Call the `updateOrganizationSubdomainRef()` function to get a reference to the mutation.
+const ref = updateOrganizationSubdomainRef(updateOrganizationSubdomainVars);
+// Variables can be defined inline as well.
+const ref = updateOrganizationSubdomainRef({ orgId: ..., subdomain: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateOrganizationSubdomainRef(dataConnect, updateOrganizationSubdomainVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.organization_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organization_update);
+});
+```
+
+## CreateOrganizationDomain
+You can execute the `CreateOrganizationDomain` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+createOrganizationDomain(vars: CreateOrganizationDomainVariables): MutationPromise<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+
+interface CreateOrganizationDomainRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateOrganizationDomainVariables): MutationRef<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+}
+export const createOrganizationDomainRef: CreateOrganizationDomainRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createOrganizationDomain(dc: DataConnect, vars: CreateOrganizationDomainVariables): MutationPromise<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+
+interface CreateOrganizationDomainRef {
+  ...
+  (dc: DataConnect, vars: CreateOrganizationDomainVariables): MutationRef<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+}
+export const createOrganizationDomainRef: CreateOrganizationDomainRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createOrganizationDomainRef:
+```typescript
+const name = createOrganizationDomainRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateOrganizationDomain` mutation requires an argument of type `CreateOrganizationDomainVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateOrganizationDomainVariables {
+  domainId: string;
+  orgId: string;
+  domain: string;
+  status?: string | null;
+}
+```
+### Return Type
+Recall that executing the `CreateOrganizationDomain` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateOrganizationDomainData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateOrganizationDomainData {
+  organizationDomain_insert: OrganizationDomains_Key;
+}
+```
+### Using `CreateOrganizationDomain`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createOrganizationDomain, CreateOrganizationDomainVariables } from '@kalex/dataconnect';
+
+// The `CreateOrganizationDomain` mutation requires an argument of type `CreateOrganizationDomainVariables`:
+const createOrganizationDomainVars: CreateOrganizationDomainVariables = {
+  domainId: ..., 
+  orgId: ..., 
+  domain: ..., 
+  status: ..., // optional
+};
+
+// Call the `createOrganizationDomain()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createOrganizationDomain(createOrganizationDomainVars);
+// Variables can be defined inline as well.
+const { data } = await createOrganizationDomain({ domainId: ..., orgId: ..., domain: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createOrganizationDomain(dataConnect, createOrganizationDomainVars);
+
+console.log(data.organizationDomain_insert);
+
+// Or, you can use the `Promise` API.
+createOrganizationDomain(createOrganizationDomainVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain_insert);
+});
+```
+
+### Using `CreateOrganizationDomain`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createOrganizationDomainRef, CreateOrganizationDomainVariables } from '@kalex/dataconnect';
+
+// The `CreateOrganizationDomain` mutation requires an argument of type `CreateOrganizationDomainVariables`:
+const createOrganizationDomainVars: CreateOrganizationDomainVariables = {
+  domainId: ..., 
+  orgId: ..., 
+  domain: ..., 
+  status: ..., // optional
+};
+
+// Call the `createOrganizationDomainRef()` function to get a reference to the mutation.
+const ref = createOrganizationDomainRef(createOrganizationDomainVars);
+// Variables can be defined inline as well.
+const ref = createOrganizationDomainRef({ domainId: ..., orgId: ..., domain: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createOrganizationDomainRef(dataConnect, createOrganizationDomainVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.organizationDomain_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain_insert);
+});
+```
+
+## UpdateOrganizationDomainStatus
+You can execute the `UpdateOrganizationDomainStatus` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+updateOrganizationDomainStatus(vars: UpdateOrganizationDomainStatusVariables): MutationPromise<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+
+interface UpdateOrganizationDomainStatusRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationDomainStatusVariables): MutationRef<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+}
+export const updateOrganizationDomainStatusRef: UpdateOrganizationDomainStatusRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateOrganizationDomainStatus(dc: DataConnect, vars: UpdateOrganizationDomainStatusVariables): MutationPromise<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+
+interface UpdateOrganizationDomainStatusRef {
+  ...
+  (dc: DataConnect, vars: UpdateOrganizationDomainStatusVariables): MutationRef<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+}
+export const updateOrganizationDomainStatusRef: UpdateOrganizationDomainStatusRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateOrganizationDomainStatusRef:
+```typescript
+const name = updateOrganizationDomainStatusRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateOrganizationDomainStatus` mutation requires an argument of type `UpdateOrganizationDomainStatusVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateOrganizationDomainStatusVariables {
+  domainId: string;
+  status?: string | null;
+  certName?: string | null;
+  verifiedAt?: TimestampString | null;
+}
+```
+### Return Type
+Recall that executing the `UpdateOrganizationDomainStatus` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateOrganizationDomainStatusData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateOrganizationDomainStatusData {
+  organizationDomain_update?: OrganizationDomains_Key | null;
+}
+```
+### Using `UpdateOrganizationDomainStatus`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateOrganizationDomainStatus, UpdateOrganizationDomainStatusVariables } from '@kalex/dataconnect';
+
+// The `UpdateOrganizationDomainStatus` mutation requires an argument of type `UpdateOrganizationDomainStatusVariables`:
+const updateOrganizationDomainStatusVars: UpdateOrganizationDomainStatusVariables = {
+  domainId: ..., 
+  status: ..., // optional
+  certName: ..., // optional
+  verifiedAt: ..., // optional
+};
+
+// Call the `updateOrganizationDomainStatus()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateOrganizationDomainStatus(updateOrganizationDomainStatusVars);
+// Variables can be defined inline as well.
+const { data } = await updateOrganizationDomainStatus({ domainId: ..., status: ..., certName: ..., verifiedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateOrganizationDomainStatus(dataConnect, updateOrganizationDomainStatusVars);
+
+console.log(data.organizationDomain_update);
+
+// Or, you can use the `Promise` API.
+updateOrganizationDomainStatus(updateOrganizationDomainStatusVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain_update);
+});
+```
+
+### Using `UpdateOrganizationDomainStatus`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateOrganizationDomainStatusRef, UpdateOrganizationDomainStatusVariables } from '@kalex/dataconnect';
+
+// The `UpdateOrganizationDomainStatus` mutation requires an argument of type `UpdateOrganizationDomainStatusVariables`:
+const updateOrganizationDomainStatusVars: UpdateOrganizationDomainStatusVariables = {
+  domainId: ..., 
+  status: ..., // optional
+  certName: ..., // optional
+  verifiedAt: ..., // optional
+};
+
+// Call the `updateOrganizationDomainStatusRef()` function to get a reference to the mutation.
+const ref = updateOrganizationDomainStatusRef(updateOrganizationDomainStatusVars);
+// Variables can be defined inline as well.
+const ref = updateOrganizationDomainStatusRef({ domainId: ..., status: ..., certName: ..., verifiedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateOrganizationDomainStatusRef(dataConnect, updateOrganizationDomainStatusVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.organizationDomain_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain_update);
+});
+```
+
+## DeleteOrganizationDomain
+You can execute the `DeleteOrganizationDomain` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-client/index.d.ts](./index.d.ts):
+```typescript
+deleteOrganizationDomain(vars: DeleteOrganizationDomainVariables): MutationPromise<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+
+interface DeleteOrganizationDomainRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteOrganizationDomainVariables): MutationRef<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+}
+export const deleteOrganizationDomainRef: DeleteOrganizationDomainRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteOrganizationDomain(dc: DataConnect, vars: DeleteOrganizationDomainVariables): MutationPromise<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+
+interface DeleteOrganizationDomainRef {
+  ...
+  (dc: DataConnect, vars: DeleteOrganizationDomainVariables): MutationRef<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+}
+export const deleteOrganizationDomainRef: DeleteOrganizationDomainRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteOrganizationDomainRef:
+```typescript
+const name = deleteOrganizationDomainRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteOrganizationDomain` mutation requires an argument of type `DeleteOrganizationDomainVariables`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteOrganizationDomainVariables {
+  domainId: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteOrganizationDomain` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteOrganizationDomainData`, which is defined in [dataconnect-client/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteOrganizationDomainData {
+  organizationDomain_delete?: OrganizationDomains_Key | null;
+}
+```
+### Using `DeleteOrganizationDomain`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteOrganizationDomain, DeleteOrganizationDomainVariables } from '@kalex/dataconnect';
+
+// The `DeleteOrganizationDomain` mutation requires an argument of type `DeleteOrganizationDomainVariables`:
+const deleteOrganizationDomainVars: DeleteOrganizationDomainVariables = {
+  domainId: ..., 
+};
+
+// Call the `deleteOrganizationDomain()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteOrganizationDomain(deleteOrganizationDomainVars);
+// Variables can be defined inline as well.
+const { data } = await deleteOrganizationDomain({ domainId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteOrganizationDomain(dataConnect, deleteOrganizationDomainVars);
+
+console.log(data.organizationDomain_delete);
+
+// Or, you can use the `Promise` API.
+deleteOrganizationDomain(deleteOrganizationDomainVars).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain_delete);
+});
+```
+
+### Using `DeleteOrganizationDomain`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteOrganizationDomainRef, DeleteOrganizationDomainVariables } from '@kalex/dataconnect';
+
+// The `DeleteOrganizationDomain` mutation requires an argument of type `DeleteOrganizationDomainVariables`:
+const deleteOrganizationDomainVars: DeleteOrganizationDomainVariables = {
+  domainId: ..., 
+};
+
+// Call the `deleteOrganizationDomainRef()` function to get a reference to the mutation.
+const ref = deleteOrganizationDomainRef(deleteOrganizationDomainVars);
+// Variables can be defined inline as well.
+const ref = deleteOrganizationDomainRef({ domainId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteOrganizationDomainRef(dataConnect, deleteOrganizationDomainVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.organizationDomain_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.organizationDomain_delete);
 });
 ```
 

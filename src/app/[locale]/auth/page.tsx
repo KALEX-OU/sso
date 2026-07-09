@@ -150,7 +150,6 @@ function AuthPortal() {
 
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
   const isDark = resolvedTheme === "dark";
-  const activeBgGradient = isDark ? brand.bgGradientDark : brand.bgGradientLight;
   const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
 
   const [isLogin, setIsLogin] = useState(true);

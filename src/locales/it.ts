@@ -580,4 +580,8 @@ export default {
   // Chiavi risorse autogenerate
   "fields.vatNumberHash.label": "Vat Number Hash",
   "fields.vatNumberHash.placeholder": "Inserisci vat number hash...",
+
+  // Chiavi risorse autogenerate
+  "fields.subdomain.label": "Sottodominio",
+  "fields.subdomain.placeholder": "E.g. la-tua-azienda",
 } as const;

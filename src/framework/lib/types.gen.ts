@@ -201,6 +201,7 @@ export interface Productprice {
 export interface Organization {
   orgId: string;
   name: string;
+  subdomain?: string;
   type: string;
   country: string;
   viesValidated: boolean;
@@ -307,4 +308,14 @@ export interface TeamMember {
   userId: string;
   teamId: string;
   joinedAt: string;
+}
+
+export interface OrganizationDomain {
+  domainId: string;
+  orgId: string;
+  domain: string;
+  status: string;
+  certName?: string;
+  verifiedAt?: string;
+  createdAt: string;
 }

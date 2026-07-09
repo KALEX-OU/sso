@@ -32,6 +32,19 @@ export const organizationModule = {
       validation: { required: true, min: 1 },
       graphql: { nullable: false }
     },
+    // Slug del sottodominio white-label: <subdomain>.kalexs.com (§3-bis). @unique globale.
+    // Il pattern del slug (lowercase, alfanumerico+trattini) è validato lato rotta (il registry
+    // non supporta regex generiche). Nullable → più org possono non averlo (unique ammette NULL multipli).
+    subdomain: {
+      type: "String",
+      encrypted: false,
+      render: true,
+      order: 2.5,
+      label: "fields.subdomain.label",
+      placeholder: "fields.subdomain.placeholder",
+      validation: { min: 3, max: 63 },
+      graphql: { nullable: true, directive: "@unique" }
+    },
     type: {
       type: "String",
       encrypted: false,
@@ -269,14 +282,14 @@ export const organizationModule = {
   rolePolicies: {
     owner: {
       canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true,
-      allowedFields: ["orgId", "name", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
+      allowedFields: ["orgId", "name", "subdomain", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
     },
     admin: {
       canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true,
-      allowedFields: ["orgId", "name", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
+      allowedFields: ["orgId", "name", "subdomain", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
     },
-    member: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "type", "country", "address"] },
-    viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "type", "country"] },
+    member: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "subdomain", "type", "country", "address"] },
+    viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "subdomain", "type", "country"] },
     device: { canCreate: false, canRead: true, canList: false, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "type", "country"] }
   }
 } as const;

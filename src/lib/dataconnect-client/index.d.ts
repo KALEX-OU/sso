@@ -234,6 +234,17 @@ export interface CreateOrganizationData {
   organization_upsert: Organizations_Key;
 }
 
+export interface CreateOrganizationDomainData {
+  organizationDomain_insert: OrganizationDomains_Key;
+}
+
+export interface CreateOrganizationDomainVariables {
+  domainId: string;
+  orgId: string;
+  domain: string;
+  status?: string | null;
+}
+
 export interface CreateOrganizationVariables {
   orgId: string;
   name: string;
@@ -446,6 +457,14 @@ export interface DeleteInvoiceVariables {
 
 export interface DeleteOrganizationData {
   organization_delete?: Organizations_Key | null;
+}
+
+export interface DeleteOrganizationDomainData {
+  organizationDomain_delete?: OrganizationDomains_Key | null;
+}
+
+export interface DeleteOrganizationDomainVariables {
+  domainId: string;
 }
 
 export interface DeleteOrganizationVariables {
@@ -734,6 +753,20 @@ export interface GetOrganizationByStripeCustomerVariables {
   stripeCustomerId: string;
 }
 
+export interface GetOrganizationBySubdomainData {
+  organizations: ({
+    orgId: string;
+    name: string;
+    subdomain?: string | null;
+    type: string;
+    country: string;
+  } & Organizations_Key)[];
+}
+
+export interface GetOrganizationBySubdomainVariables {
+  subdomain: string;
+}
+
 export interface GetOrganizationDetailsData {
   organization?: {
     orgId: string;
@@ -772,6 +805,43 @@ export interface GetOrganizationDetailsData {
 
 export interface GetOrganizationDetailsVariables {
   orgId: string;
+}
+
+export interface GetOrganizationDomainByDomainData {
+  organizationDomains: ({
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    organization: {
+      orgId: string;
+      name: string;
+      subdomain?: string | null;
+    } & Organizations_Key;
+  } & OrganizationDomains_Key)[];
+}
+
+export interface GetOrganizationDomainByDomainVariables {
+  domain: string;
+}
+
+export interface GetOrganizationDomainData {
+  organizationDomain?: {
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & OrganizationDomains_Key;
+}
+
+export interface GetOrganizationDomainVariables {
+  domainId: string;
 }
 
 export interface GetPaymentData {
@@ -1553,6 +1623,22 @@ export interface ListMembersByOrgVariables {
   orgId: string;
 }
 
+export interface ListOrganizationDomainsByOrgData {
+  organizationDomains: ({
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & OrganizationDomains_Key)[];
+}
+
+export interface ListOrganizationDomainsByOrgVariables {
+  orgId: string;
+}
+
 export interface ListPaymentsByOrgData {
   payments: ({
     paymentId: string;
@@ -1741,6 +1827,11 @@ export interface MigrateInviteeMembershipVariables {
   rbac?: unknown | null;
 }
 
+export interface OrganizationDomains_Key {
+  domainId: string;
+  __typename?: 'OrganizationDomains_Key';
+}
+
 export interface Organizations_Key {
   orgId: string;
   __typename?: 'Organizations_Key';
@@ -1880,6 +1971,17 @@ export interface UpdateOrganizationBillingVariables {
   metadata?: unknown | null;
 }
 
+export interface UpdateOrganizationDomainStatusData {
+  organizationDomain_update?: OrganizationDomains_Key | null;
+}
+
+export interface UpdateOrganizationDomainStatusVariables {
+  domainId: string;
+  status?: string | null;
+  certName?: string | null;
+  verifiedAt?: TimestampString | null;
+}
+
 export interface UpdateOrganizationStripeConnectData {
   organization_update?: Organizations_Key | null;
 }
@@ -1897,6 +1999,15 @@ export interface UpdateOrganizationStripeCustomerData {
 export interface UpdateOrganizationStripeCustomerVariables {
   orgId: string;
   stripeCustomerId?: string | null;
+}
+
+export interface UpdateOrganizationSubdomainData {
+  organization_update?: Organizations_Key | null;
+}
+
+export interface UpdateOrganizationSubdomainVariables {
+  orgId: string;
+  subdomain?: string | null;
 }
 
 export interface UpdateOrganizationVatHashData {
@@ -2807,6 +2918,54 @@ export const deleteProductConsumeRef: DeleteProductConsumeRef;
 export function deleteProductConsume(vars: DeleteProductConsumeVariables): MutationPromise<DeleteProductConsumeData, DeleteProductConsumeVariables>;
 export function deleteProductConsume(dc: DataConnect, vars: DeleteProductConsumeVariables): MutationPromise<DeleteProductConsumeData, DeleteProductConsumeVariables>;
 
+interface UpdateOrganizationSubdomainRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationSubdomainVariables): MutationRef<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateOrganizationSubdomainVariables): MutationRef<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+  operationName: string;
+}
+export const updateOrganizationSubdomainRef: UpdateOrganizationSubdomainRef;
+
+export function updateOrganizationSubdomain(vars: UpdateOrganizationSubdomainVariables): MutationPromise<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+export function updateOrganizationSubdomain(dc: DataConnect, vars: UpdateOrganizationSubdomainVariables): MutationPromise<UpdateOrganizationSubdomainData, UpdateOrganizationSubdomainVariables>;
+
+interface CreateOrganizationDomainRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateOrganizationDomainVariables): MutationRef<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateOrganizationDomainVariables): MutationRef<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+  operationName: string;
+}
+export const createOrganizationDomainRef: CreateOrganizationDomainRef;
+
+export function createOrganizationDomain(vars: CreateOrganizationDomainVariables): MutationPromise<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+export function createOrganizationDomain(dc: DataConnect, vars: CreateOrganizationDomainVariables): MutationPromise<CreateOrganizationDomainData, CreateOrganizationDomainVariables>;
+
+interface UpdateOrganizationDomainStatusRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateOrganizationDomainStatusVariables): MutationRef<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateOrganizationDomainStatusVariables): MutationRef<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+  operationName: string;
+}
+export const updateOrganizationDomainStatusRef: UpdateOrganizationDomainStatusRef;
+
+export function updateOrganizationDomainStatus(vars: UpdateOrganizationDomainStatusVariables): MutationPromise<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+export function updateOrganizationDomainStatus(dc: DataConnect, vars: UpdateOrganizationDomainStatusVariables): MutationPromise<UpdateOrganizationDomainStatusData, UpdateOrganizationDomainStatusVariables>;
+
+interface DeleteOrganizationDomainRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteOrganizationDomainVariables): MutationRef<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteOrganizationDomainVariables): MutationRef<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+  operationName: string;
+}
+export const deleteOrganizationDomainRef: DeleteOrganizationDomainRef;
+
+export function deleteOrganizationDomain(vars: DeleteOrganizationDomainVariables): MutationPromise<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+export function deleteOrganizationDomain(dc: DataConnect, vars: DeleteOrganizationDomainVariables): MutationPromise<DeleteOrganizationDomainData, DeleteOrganizationDomainVariables>;
+
 interface GetUserClaimsContextRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: GetUserClaimsContextVariables): QueryRef<GetUserClaimsContextData, GetUserClaimsContextVariables>;
@@ -3442,4 +3601,52 @@ export const getProductDetailsRef: GetProductDetailsRef;
 
 export function getProductDetails(vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
 export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetProductDetailsData, GetProductDetailsVariables>;
+
+interface GetOrganizationBySubdomainRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationBySubdomainVariables): QueryRef<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrganizationBySubdomainVariables): QueryRef<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+  operationName: string;
+}
+export const getOrganizationBySubdomainRef: GetOrganizationBySubdomainRef;
+
+export function getOrganizationBySubdomain(vars: GetOrganizationBySubdomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+export function getOrganizationBySubdomain(dc: DataConnect, vars: GetOrganizationBySubdomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationBySubdomainData, GetOrganizationBySubdomainVariables>;
+
+interface GetOrganizationDomainByDomainRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationDomainByDomainVariables): QueryRef<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrganizationDomainByDomainVariables): QueryRef<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+  operationName: string;
+}
+export const getOrganizationDomainByDomainRef: GetOrganizationDomainByDomainRef;
+
+export function getOrganizationDomainByDomain(vars: GetOrganizationDomainByDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+export function getOrganizationDomainByDomain(dc: DataConnect, vars: GetOrganizationDomainByDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainByDomainData, GetOrganizationDomainByDomainVariables>;
+
+interface GetOrganizationDomainRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetOrganizationDomainVariables): QueryRef<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetOrganizationDomainVariables): QueryRef<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+  operationName: string;
+}
+export const getOrganizationDomainRef: GetOrganizationDomainRef;
+
+export function getOrganizationDomain(vars: GetOrganizationDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+export function getOrganizationDomain(dc: DataConnect, vars: GetOrganizationDomainVariables, options?: ExecuteQueryOptions): QueryPromise<GetOrganizationDomainData, GetOrganizationDomainVariables>;
+
+interface ListOrganizationDomainsByOrgRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListOrganizationDomainsByOrgVariables): QueryRef<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListOrganizationDomainsByOrgVariables): QueryRef<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+  operationName: string;
+}
+export const listOrganizationDomainsByOrgRef: ListOrganizationDomainsByOrgRef;
+
+export function listOrganizationDomainsByOrg(vars: ListOrganizationDomainsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
+export function listOrganizationDomainsByOrg(dc: DataConnect, vars: ListOrganizationDomainsByOrgVariables, options?: ExecuteQueryOptions): QueryPromise<ListOrganizationDomainsByOrgData, ListOrganizationDomainsByOrgVariables>;
 

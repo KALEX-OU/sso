@@ -861,6 +861,62 @@ exports.deleteProductConsume = function deleteProductConsume(dcOrVars, vars) {
 }
 ;
 
+const updateOrganizationSubdomainRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateOrganizationSubdomain', inputVars);
+}
+updateOrganizationSubdomainRef.operationName = 'UpdateOrganizationSubdomain';
+exports.updateOrganizationSubdomainRef = updateOrganizationSubdomainRef;
+
+exports.updateOrganizationSubdomain = function updateOrganizationSubdomain(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationSubdomainRef(dcInstance, inputVars));
+}
+;
+
+const createOrganizationDomainRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateOrganizationDomain', inputVars);
+}
+createOrganizationDomainRef.operationName = 'CreateOrganizationDomain';
+exports.createOrganizationDomainRef = createOrganizationDomainRef;
+
+exports.createOrganizationDomain = function createOrganizationDomain(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createOrganizationDomainRef(dcInstance, inputVars));
+}
+;
+
+const updateOrganizationDomainStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateOrganizationDomainStatus', inputVars);
+}
+updateOrganizationDomainStatusRef.operationName = 'UpdateOrganizationDomainStatus';
+exports.updateOrganizationDomainStatusRef = updateOrganizationDomainStatusRef;
+
+exports.updateOrganizationDomainStatus = function updateOrganizationDomainStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateOrganizationDomainStatusRef(dcInstance, inputVars));
+}
+;
+
+const deleteOrganizationDomainRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteOrganizationDomain', inputVars);
+}
+deleteOrganizationDomainRef.operationName = 'DeleteOrganizationDomain';
+exports.deleteOrganizationDomainRef = deleteOrganizationDomainRef;
+
+exports.deleteOrganizationDomain = function deleteOrganizationDomain(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteOrganizationDomainRef(dcInstance, inputVars));
+}
+;
+
 const getUserClaimsContextRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -1653,5 +1709,65 @@ exports.getProductDetails = function getProductDetails(dcOrVars, varsOrOptions, 
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getProductDetailsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getOrganizationBySubdomainRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetOrganizationBySubdomain', inputVars);
+}
+getOrganizationBySubdomainRef.operationName = 'GetOrganizationBySubdomain';
+exports.getOrganizationBySubdomainRef = getOrganizationBySubdomainRef;
+
+exports.getOrganizationBySubdomain = function getOrganizationBySubdomain(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrganizationBySubdomainRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getOrganizationDomainByDomainRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetOrganizationDomainByDomain', inputVars);
+}
+getOrganizationDomainByDomainRef.operationName = 'GetOrganizationDomainByDomain';
+exports.getOrganizationDomainByDomainRef = getOrganizationDomainByDomainRef;
+
+exports.getOrganizationDomainByDomain = function getOrganizationDomainByDomain(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrganizationDomainByDomainRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getOrganizationDomainRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetOrganizationDomain', inputVars);
+}
+getOrganizationDomainRef.operationName = 'GetOrganizationDomain';
+exports.getOrganizationDomainRef = getOrganizationDomainRef;
+
+exports.getOrganizationDomain = function getOrganizationDomain(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getOrganizationDomainRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listOrganizationDomainsByOrgRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListOrganizationDomainsByOrg', inputVars);
+}
+listOrganizationDomainsByOrgRef.operationName = 'ListOrganizationDomainsByOrg';
+exports.listOrganizationDomainsByOrgRef = listOrganizationDomainsByOrgRef;
+
+exports.listOrganizationDomainsByOrg = function listOrganizationDomainsByOrg(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listOrganizationDomainsByOrgRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;

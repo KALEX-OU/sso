@@ -232,6 +232,17 @@ export interface CreateOrganizationData {
   organization_upsert: Organizations_Key;
 }
 
+export interface CreateOrganizationDomainData {
+  organizationDomain_insert: OrganizationDomains_Key;
+}
+
+export interface CreateOrganizationDomainVariables {
+  domainId: string;
+  orgId: string;
+  domain: string;
+  status?: string | null;
+}
+
 export interface CreateOrganizationVariables {
   orgId: string;
   name: string;
@@ -444,6 +455,14 @@ export interface DeleteInvoiceVariables {
 
 export interface DeleteOrganizationData {
   organization_delete?: Organizations_Key | null;
+}
+
+export interface DeleteOrganizationDomainData {
+  organizationDomain_delete?: OrganizationDomains_Key | null;
+}
+
+export interface DeleteOrganizationDomainVariables {
+  domainId: string;
 }
 
 export interface DeleteOrganizationVariables {
@@ -732,6 +751,20 @@ export interface GetOrganizationByStripeCustomerVariables {
   stripeCustomerId: string;
 }
 
+export interface GetOrganizationBySubdomainData {
+  organizations: ({
+    orgId: string;
+    name: string;
+    subdomain?: string | null;
+    type: string;
+    country: string;
+  } & Organizations_Key)[];
+}
+
+export interface GetOrganizationBySubdomainVariables {
+  subdomain: string;
+}
+
 export interface GetOrganizationDetailsData {
   organization?: {
     orgId: string;
@@ -770,6 +803,43 @@ export interface GetOrganizationDetailsData {
 
 export interface GetOrganizationDetailsVariables {
   orgId: string;
+}
+
+export interface GetOrganizationDomainByDomainData {
+  organizationDomains: ({
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    organization: {
+      orgId: string;
+      name: string;
+      subdomain?: string | null;
+    } & Organizations_Key;
+  } & OrganizationDomains_Key)[];
+}
+
+export interface GetOrganizationDomainByDomainVariables {
+  domain: string;
+}
+
+export interface GetOrganizationDomainData {
+  organizationDomain?: {
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & OrganizationDomains_Key;
+}
+
+export interface GetOrganizationDomainVariables {
+  domainId: string;
 }
 
 export interface GetPaymentData {
@@ -1551,6 +1621,22 @@ export interface ListMembersByOrgVariables {
   orgId: string;
 }
 
+export interface ListOrganizationDomainsByOrgData {
+  organizationDomains: ({
+    domainId: string;
+    orgId: string;
+    domain: string;
+    status: string;
+    certName?: string | null;
+    verifiedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & OrganizationDomains_Key)[];
+}
+
+export interface ListOrganizationDomainsByOrgVariables {
+  orgId: string;
+}
+
 export interface ListPaymentsByOrgData {
   payments: ({
     paymentId: string;
@@ -1739,6 +1825,11 @@ export interface MigrateInviteeMembershipVariables {
   rbac?: unknown | null;
 }
 
+export interface OrganizationDomains_Key {
+  domainId: string;
+  __typename?: 'OrganizationDomains_Key';
+}
+
 export interface Organizations_Key {
   orgId: string;
   __typename?: 'Organizations_Key';
@@ -1878,6 +1969,17 @@ export interface UpdateOrganizationBillingVariables {
   metadata?: unknown | null;
 }
 
+export interface UpdateOrganizationDomainStatusData {
+  organizationDomain_update?: OrganizationDomains_Key | null;
+}
+
+export interface UpdateOrganizationDomainStatusVariables {
+  domainId: string;
+  status?: string | null;
+  certName?: string | null;
+  verifiedAt?: TimestampString | null;
+}
+
 export interface UpdateOrganizationStripeConnectData {
   organization_update?: Organizations_Key | null;
 }
@@ -1895,6 +1997,15 @@ export interface UpdateOrganizationStripeCustomerData {
 export interface UpdateOrganizationStripeCustomerVariables {
   orgId: string;
   stripeCustomerId?: string | null;
+}
+
+export interface UpdateOrganizationSubdomainData {
+  organization_update?: Organizations_Key | null;
+}
+
+export interface UpdateOrganizationSubdomainVariables {
+  orgId: string;
+  subdomain?: string | null;
 }
 
 export interface UpdateOrganizationVatHashData {
@@ -2378,6 +2489,26 @@ export function deleteProductConsume(dc: DataConnect, vars: DeleteProductConsume
 /** Generated Node Admin SDK operation action function for the 'DeleteProductConsume' Mutation. Allow users to pass in custom DataConnect instances. */
 export function deleteProductConsume(vars: DeleteProductConsumeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteProductConsumeData>>;
 
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationSubdomain' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationSubdomain(dc: DataConnect, vars: UpdateOrganizationSubdomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationSubdomainData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationSubdomain' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationSubdomain(vars: UpdateOrganizationSubdomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationSubdomainData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateOrganizationDomain' Mutation. Allow users to execute without passing in DataConnect. */
+export function createOrganizationDomain(dc: DataConnect, vars: CreateOrganizationDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrganizationDomainData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateOrganizationDomain' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createOrganizationDomain(vars: CreateOrganizationDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateOrganizationDomainData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationDomainStatus' Mutation. Allow users to execute without passing in DataConnect. */
+export function updateOrganizationDomainStatus(dc: DataConnect, vars: UpdateOrganizationDomainStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationDomainStatusData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdateOrganizationDomainStatus' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updateOrganizationDomainStatus(vars: UpdateOrganizationDomainStatusVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateOrganizationDomainStatusData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteOrganizationDomain' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteOrganizationDomain(dc: DataConnect, vars: DeleteOrganizationDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteOrganizationDomainData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteOrganizationDomain' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteOrganizationDomain(vars: DeleteOrganizationDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteOrganizationDomainData>>;
+
 /** Generated Node Admin SDK operation action function for the 'GetUserClaimsContext' Query. Allow users to execute without passing in DataConnect. */
 export function getUserClaimsContext(dc: DataConnect, vars: GetUserClaimsContextVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserClaimsContextData>>;
 /** Generated Node Admin SDK operation action function for the 'GetUserClaimsContext' Query. Allow users to pass in custom DataConnect instances. */
@@ -2642,4 +2773,24 @@ export function getPayment(vars: GetPaymentVariables, options?: OperationOptions
 export function getProductDetails(dc: DataConnect, vars: GetProductDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductDetailsData>>;
 /** Generated Node Admin SDK operation action function for the 'GetProductDetails' Query. Allow users to pass in custom DataConnect instances. */
 export function getProductDetails(vars: GetProductDetailsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetProductDetailsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationBySubdomain' Query. Allow users to execute without passing in DataConnect. */
+export function getOrganizationBySubdomain(dc: DataConnect, vars: GetOrganizationBySubdomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationBySubdomainData>>;
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationBySubdomain' Query. Allow users to pass in custom DataConnect instances. */
+export function getOrganizationBySubdomain(vars: GetOrganizationBySubdomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationBySubdomainData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationDomainByDomain' Query. Allow users to execute without passing in DataConnect. */
+export function getOrganizationDomainByDomain(dc: DataConnect, vars: GetOrganizationDomainByDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationDomainByDomainData>>;
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationDomainByDomain' Query. Allow users to pass in custom DataConnect instances. */
+export function getOrganizationDomainByDomain(vars: GetOrganizationDomainByDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationDomainByDomainData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationDomain' Query. Allow users to execute without passing in DataConnect. */
+export function getOrganizationDomain(dc: DataConnect, vars: GetOrganizationDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationDomainData>>;
+/** Generated Node Admin SDK operation action function for the 'GetOrganizationDomain' Query. Allow users to pass in custom DataConnect instances. */
+export function getOrganizationDomain(vars: GetOrganizationDomainVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetOrganizationDomainData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListOrganizationDomainsByOrg' Query. Allow users to execute without passing in DataConnect. */
+export function listOrganizationDomainsByOrg(dc: DataConnect, vars: ListOrganizationDomainsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListOrganizationDomainsByOrgData>>;
+/** Generated Node Admin SDK operation action function for the 'ListOrganizationDomainsByOrg' Query. Allow users to pass in custom DataConnect instances. */
+export function listOrganizationDomainsByOrg(vars: ListOrganizationDomainsByOrgVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListOrganizationDomainsByOrgData>>;
 
