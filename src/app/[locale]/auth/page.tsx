@@ -210,13 +210,22 @@ function AuthPortal() {
     };
   }, []);
 
-  // White-label (§3-bis): risolve il nome dell'org dall'host corrente (sottodominio o dominio
-  // custom) tramite l'endpoint pubblico. Best-effort: in caso di errore resta il brand statico.
+  // White-label (§3-bis): risolve il nome dell'org dal dominio tenant. Il login gira sempre sull'host
+  // di sistema (sso.<base>), quindi l'host del tenant si ricava dal `redirect_uri` (l'URL da cui
+  // l'utente proviene, es. https://acme.kalexs.com/...); fallback all'host corrente. Best-effort.
   useEffect(() => {
     let active = true;
     void (async () => {
       try {
-        const res = await fetch(`/api/public/tenant?host=${encodeURIComponent(window.location.hostname)}`);
+        let host = window.location.hostname;
+        if (redirectUri) {
+          try {
+            host = new URL(redirectUri).hostname;
+          } catch {
+            // redirect_uri non è un URL valido: si usa l'host corrente.
+          }
+        }
+        const res = await fetch(`/api/public/tenant?host=${encodeURIComponent(host)}`);
         if (!res.ok) return;
         const json = (await res.json()) as { found?: boolean; tenant?: { name?: string } };
         if (active && json.found && json.tenant?.name) {
@@ -229,7 +238,7 @@ function AuthPortal() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [redirectUri]);
 
   const loginFormRef = useRef<HTMLFormElement | null>(null);
   const registerFormRef = useRef<HTMLFormElement | null>(null);
