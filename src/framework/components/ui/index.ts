@@ -20,6 +20,7 @@ export * from "./Checkbox";
 export * from "./Chip";
 export * from "./CloseButton";
 export * from "./Code";
+export * from "./GlobalLoader";
 export * from "./ColorArea";
 export * from "./ColorField";
 export * from "./ColorPicker";

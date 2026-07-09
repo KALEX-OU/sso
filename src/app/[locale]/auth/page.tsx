@@ -64,6 +64,7 @@ import {
 import { useTheme } from "next-themes";
 import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
 import { Sun, Moon, Globe, Mail, Lock, User as UserIcon } from "lucide-react";
+import { GlobalLoader } from "@/framework/components/ui";
 import { useForm, SubmitHandler, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -972,17 +973,7 @@ function AuthPortal() {
   if (!mounted) return null;
 
   if (redirecting) {
-    return (
-      <div className={`flex flex-col items-center justify-center min-h-screen bg-gradient-to-br ${activeBgGradient} transition-all duration-700 text-foreground px-4`}>
-        <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-2xl p-6 text-center">
-          <Card.Content className="flex flex-col items-center justify-center">
-            <span className="animate-spin rounded-full h-12 w-12 border-2 border-slate-300 dark:border-white/25 border-t-secondary dark:border-t-violet-400 mb-6"></span>
-            <h2 className="text-xl font-bold mb-2 tracking-wide text-slate-900 dark:text-white">{t("auth.success")}</h2>
-            <p className="text-slate-500 dark:text-gray-400 text-sm">{t("auth.redirecting")}</p>
-          </Card.Content>
-        </Card>
-      </div>
-    );
+    return <GlobalLoader message={t("auth.success")} subMessage={t("auth.redirecting")} />;
   }
 
 

@@ -7,6 +7,7 @@ import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import { useI18n, useCurrentLocale } from "@/locales/client";
 import { Card, Button } from "@heroui/react";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { GlobalLoader } from "@/framework/components/ui";
 
 // Configurazione brand speculare a quella di auth/page.tsx
 const BRAND_CONFIGS: Record<
@@ -282,6 +283,11 @@ export default function VerifyEmailPage() {
     });
   }, [oobCode, currentLocale, router, searchParams, t, handleOnboarding]);
 
+
+  // Loader coerente con tutti gli altri gate (GlobalLoader): un solo spinner + messaggio aggiornabile.
+  if (loading) {
+    return <GlobalLoader message={statusMessage} />;
+  }
 
   return (
     <div className={`min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans p-6 bg-gradient-to-br ${activeBgGradient}`}>

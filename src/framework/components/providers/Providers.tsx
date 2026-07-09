@@ -6,7 +6,7 @@ import { I18nProviderClient } from "@/locales/client";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, useAuth, forceCleanSession } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
-import { Button, Spinner, DebugWidget } from "../ui";
+import { Button, DebugWidget, GlobalLoader } from "../ui";
 import { ShieldAlert, RefreshCw, ArrowLeft } from "lucide-react";
 
 // Suppress the React 19 false-positive warning for inline script tags rendered by NextThemesProvider
@@ -474,34 +474,36 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
 
   const isLoading = loading || initLoading || exchangeLoading;
 
-  if (isMounted && (isLoading || exchangeError)) {
+  // Loader UNICO (GlobalLoader): stesso look di tutti gli altri gate → l'utente percepisce un
+  // solo loader il cui messaggio cambia, non schermate diverse che si susseguono.
+  if (isMounted && isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-4 gap-4">
-        {isLoading && <Spinner size="lg" color="current" />}
-        {!exchangeError && (
-          <span className="text-xs font-semibold text-violet-400 tracking-wider uppercase animate-pulse">
-            {exchangeLoading ? "Sincronizzazione sessione SSO in corso..." : "Caricamento sessione in corso..."}
-          </span>
-        )}
-        {exchangeError && (
-          <div className="mt-4 p-5 border border-white/10 bg-slate-900/60 backdrop-blur-2xl rounded-3xl max-w-md shadow-2xl flex flex-col items-center gap-4 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-              <ShieldAlert className="w-6 h-6 text-red-500" />
-            </div>
-            <div className="space-y-1">
-              <span className="font-black text-red-500 uppercase tracking-widest text-[10px]">Autenticazione Fallita</span>
-              <p className="text-slate-300 text-xs font-semibold leading-relaxed px-2">{exchangeError}</p>
-            </div>
-            <Button
-              unstyled
-              size="sm"
-              className="mt-2 bg-gradient-to-r from-red-600 to-accent hover:from-red-500 hover:to-accent text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
-              onClick={forceCleanAndRedirect}
-            >
-              Pulisci Sessione e Riprova
-            </Button>
+      <GlobalLoader
+        message={exchangeLoading ? "Sincronizzazione sessione in corso…" : "Caricamento in corso…"}
+      />
+    );
+  }
+
+  if (isMounted && exchangeError) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 gap-4">
+        <div className="p-5 border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl rounded-3xl max-w-md shadow-2xl flex flex-col items-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+            <ShieldAlert className="w-6 h-6 text-red-500" />
           </div>
-        )}
+          <div className="space-y-1">
+            <span className="font-black text-red-500 uppercase tracking-widest text-[10px]">Autenticazione Fallita</span>
+            <p className="text-slate-600 dark:text-slate-300 text-xs font-semibold leading-relaxed px-2">{exchangeError}</p>
+          </div>
+          <Button
+            unstyled
+            size="sm"
+            className="mt-2 bg-gradient-to-r from-red-600 to-accent hover:from-red-500 hover:to-accent text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
+            onClick={forceCleanAndRedirect}
+          >
+            Pulisci Sessione e Riprova
+          </Button>
+        </div>
       </div>
     );
   }
