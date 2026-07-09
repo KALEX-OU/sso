@@ -114,6 +114,14 @@ export async function forwardProxyRequest(
   const ip = forwardedFor ? forwardedFor.split(",")[0] : realIp || "127.0.0.1";
   headers.set("x-forwarded-for", ip);
 
+  // Inoltra lo Host ORIGINALE del browser (white-label §3-bis): l'api vede sempre `api.<base>` come
+  // Host, quindi senza questo header non potrebbe risolvere il tenant né derivare il dominio del
+  // cookie per i domini custom (host-only vs `.kalexs.com` condiviso).
+  const originalHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  if (originalHost) {
+    headers.set("x-forwarded-host", originalHost);
+  }
+
   headers.set("content-type", request.headers.get("content-type") || "application/json");
 
   // Inoltra l'User-Agent per tracciamento
