@@ -7,13 +7,16 @@ import type { NextConfig } from "next";
 // (script-src/connect-src), object-src 'none' e frame-ancestors 'none' (anti-clickjacking).
 // ⚠️ Se si aggiunge un servizio esterno nuovo (SDK/endpoint), va aggiunto qui, altrimenti
 // il browser lo blocca in prod: verificare in staging dopo ogni modifica.
+// Dominio base per-ambiente (dev.kalexs.com / staging.kalexs.com / kalexs.com), guidato da env.
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN?.trim() || "kalexs.com";
+
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://apis.google.com https://js.stripe.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "connect-src 'self' https://*.googleapis.com https://*.google.com https://*.kalex.cloud wss://*.firebaseio.com https://*.firebaseio.com https://api.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
+  `connect-src 'self' https://*.googleapis.com https://*.google.com https://*.${BASE_DOMAIN} wss://*.firebaseio.com https://*.firebaseio.com https://api.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`,
   "frame-src https://www.google.com https://recaptcha.google.com https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com",
   "object-src 'none'",
   "base-uri 'self'",
@@ -23,7 +26,7 @@ const CONTENT_SECURITY_POLICY = [
 ].join("; ");
 
 const SECURITY_HEADERS = [
-  // 2 anni, sottodomini inclusi: l'intera suite vive su *.kalex.cloud in HTTPS
+  // 2 anni, sottodomini inclusi: l'intera suite vive su *.kalexs.com in HTTPS
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "Content-Security-Policy", value: CONTENT_SECURITY_POLICY },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -33,6 +36,8 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Output standalone: bundle minimale (server.js + dipendenze tracciate) per immagini Docker slim.
+  output: "standalone",
   async headers() {
     return [
       {
