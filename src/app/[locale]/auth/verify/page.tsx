@@ -276,6 +276,23 @@ export default function VerifyEmailPage() {
           }, 3000);
         }
       } catch (err) {
+        // `auth/invalid-action-code` capita se l'oobCode è GIÀ stato consumato (doppio apply:
+        // StrictMode, retry, un'altra scheda). Se l'email risulta già verificata è un SUCCESSO,
+        // non un errore → proseguiamo con l'onboarding invece di mostrare un errore fuorviante.
+        const alreadyConsumed =
+          !!err && typeof err === "object" && "code" in err && (err as { code?: string }).code === "auth/invalid-action-code";
+        if (alreadyConsumed && user) {
+          try {
+            await user.reload();
+            if (user.emailVerified) {
+              console.log("[Verification Page] oobCode già consumato ma email verificata → successo.");
+              await handleOnboarding(user);
+              return;
+            }
+          } catch {
+            // ricarica fallita: cadiamo nell'errore generico sotto
+          }
+        }
         console.error("[Verification Page] Errore durante la verifica/onboarding:", err);
         setError(t("auth.verifyError") || "Il codice di verifica è scaduto o non è valido.");
         setLoading(false);
