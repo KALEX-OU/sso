@@ -3,22 +3,21 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
-import { fetchAuthedClient } from "@/framework/lib/api";
-import { dashboardResponseSchema, refreshClaimsResponseSchema } from "@/framework/lib/schemas";
-import { getRegistryApp } from "@/framework/lib/resources.config";
 import { usePersistentToggle } from "@/framework/lib/use-persistent-toggle";
 import { Sidebar } from "@/framework/components/layouts/Sidebar";
 import { MfaEnrollmentGate } from "@/framework/components/settings/MfaEnrollmentGate";
+import { ReauthProvider } from "@/framework/components/settings/ReauthProvider";
 import { useUIStrings } from "@/framework/lib/ui.localization";
 import { ToastNotification } from "@/framework/components/layouts/ToastNotification";
-import type {
-  ToastState,
-  DashboardData,
-  RefreshClaimsResponse
-} from "@/framework/lib/types";
+import { useClaimsSync } from "@/framework/components/layouts/hooks/useClaimsSync";
+import { useOnboarding } from "@/framework/components/layouts/hooks/useOnboarding";
+import { useRbacGuard } from "@/framework/components/layouts/hooks/useRbacGuard";
+import type { ToastState } from "@/framework/lib/types";
 import { AlertCircle, X } from "lucide-react";
 
 // I tipi del Dashboard e del registro risorse sono importati da @/framework/lib/types
+// E4.3b: la logica di claims/onboarding/RBAC è estratta negli hook in ./hooks
+// (useClaimsSync, useOnboarding, useRbacGuard) e composta qui.
 
 import { DashboardContext } from "@/framework/components/layouts/DashboardContext";
 export { useDashboard } from "@/framework/components/layouts/DashboardContext";
@@ -40,18 +39,8 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   const pathname = usePathname();
   const { user: firebaseUser, loading: authLoading, claims: authClaims, loginRedirect } = useAuth();
 
-  const [loading, setLoading] = useState(true);
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const [dbData, setDbData] = useState<DashboardData | null>(null);
-  const [error, setError] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentToggle("klx-sidebar-collapsed", false);
-  const [onboardingPending, setOnboardingPending] = useState(false);
-  const [onboardingMessage, setOnboardingMessage] = useState("");
-
-  const isRefreshingRef = useRef(false);
-  const refreshAttemptsRef = useRef(0);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const showToast = useCallback((message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ message, type });
@@ -65,206 +54,36 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     }
   }, [toast]);
 
-  // Controlla se il ruolo dell'utente ha i privilegi RBAC per compiere l'azione
-  const hasPermission = useCallback((module: string, action: "read" | "create" | "update" | "delete"): boolean => {
-    if (!authClaims) return false;
-    
-    const userRoleRaw = authClaims.uRole || authClaims.role;
-    // Bypass completo per l'owner
-    if (userRoleRaw === "owner") return true;
+  // Refresh dei custom claims con retry/ref + sync dei dati anagrafici (hook estratto)
+  const {
+    dbData,
+    error,
+    setError,
+    onboardingMessage,
+    fetchAndSyncUserData,
+    refreshClaims,
+    refreshAttemptsRef
+  } = useClaimsSync({ sRef });
 
-    // Recupera la policy definita staticamente nel registro (SSOT)
-    const appConfig = getRegistryApp(appId);
-    if (!appConfig) return false;
-    const moduleConfig = appConfig.modules[module];
-    if (!moduleConfig) return false;
+  // Stato auth/redirect + polling dell'onboarding (hook estratto)
+  const { loading, isRedirecting, onboardingPending } = useOnboarding({
+    appId,
+    firebaseUser,
+    authLoading,
+    authClaims,
+    pathname,
+    router,
+    loginRedirect,
+    fetchAndSyncUserData,
+    refreshClaims,
+    refreshAttemptsRef
+  });
 
-    const userRole = (userRoleRaw?.toLowerCase() || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
-    const policy = moduleConfig.rolePolicies[userRole] || moduleConfig.rolePolicies["viewer"];
-
-    if (!policy) return false;
-
-    switch (action) {
-      case "read": return !!(policy.canRead || policy.canList);
-      case "create": return !!policy.canCreate;
-      case "update": return !!policy.canUpdate;
-      case "delete": return !!policy.canDelete;
-      default: return false;
-    }
-  }, [authClaims, appId]);
-
-  // Sincronizza i dati anagrafici dal backend /api/auth/dashboard
-  const fetchAndSyncUserData = useCallback(async (): Promise<boolean> => {
-    try {
-      const res = await fetchAuthedClient<DashboardData>("/api/auth/dashboard", undefined, {
-        // Guard minimo: verifica che la risposta sia un oggetto (non stringa/array/null propagati
-        // come dato), poi restituisce il payload grezzo tipizzato come DashboardData (contratto lasco).
-        validate: (raw): DashboardData => {
-          dashboardResponseSchema.parse(raw);
-          return raw as DashboardData;
-        }
-      });
-
-      if (res.success && res.data) {
-        const data = res.data;
-        if (data.status === "pending") {
-          setOnboardingMessage(data.message || sRef.current.layout.onboardingInProgress);
-          return true;
-        }
-        setDbData(data);
-        return false;
-      }
-
-      if (res.error?.code === "api/invalid-response") {
-        console.error("[Layout Load User Data] Risposta dashboard non conforme allo schema:", res.error.details);
-        setError(sRef.current.layout.invalidServerData);
-      }
-
-      return false;
-    } catch (err) {
-      console.error("[Layout Load User Data] Errore caricamento:", err);
-      return false;
-    }
-  }, []);
-
-  // Esegue il refresh dei custom claims dell'utente (dopo onboarding o cambio organizzazione)
-  const refreshClaims = useCallback(async (targetOrgId?: string) => {
-    if (isRefreshingRef.current) return;
-    
-    if (refreshAttemptsRef.current >= 3) {
-      console.warn("[Layout Claims Refresh] Raggiunto limite tentativi. Onboarding incompleto.");
-      setError(sRef.current.layout.claimsAlignError);
-      return;
-    }
-    
-    isRefreshingRef.current = true;
-    refreshAttemptsRef.current++;
-    
-    try {
-      const res = await fetchAuthedClient<RefreshClaimsResponse>("/api/auth/claims/refresh", {
-        method: "POST",
-        body: JSON.stringify({ orgId: targetOrgId })
-      }, {
-        validate: (raw): RefreshClaimsResponse => refreshClaimsResponseSchema.parse(raw)
-      });
-
-      if (res.error?.code === "api/invalid-response") {
-        console.warn("[Layout Claims Refresh] Risposta non conforme allo schema:", res.error.details);
-      }
-
-      if (res.success && res.data?.success) {
-        // Forza il refresh del token Firebase a livello client per recepire i nuovi claims
-        const { auth, forceCleanSession } = await import("@/framework/lib/auth");
-        if (auth.currentUser) {
-          try {
-            await auth.currentUser.getIdTokenResult(true);
-            refreshAttemptsRef.current = 0; // Reset
-          } catch (tokenErr) {
-            console.warn("[Layout Claims Refresh] Token revocato o scaduto durante il refresh dei claims:", tokenErr);
-            const authErr = tokenErr as { code?: string };
-            if (authErr.code === "auth/user-token-expired" || authErr.code === "auth/token-expired" || authErr.code === "auth/requires-recent-login") {
-              void forceCleanSession();
-              return;
-            }
-            throw tokenErr;
-          }
-        }
-        await fetchAndSyncUserData();
-      }
-    } catch (err) {
-      console.error("[Layout Claims Refresh] Errore:", err);
-    } finally {
-      isRefreshingRef.current = false;
-    }
-  }, [fetchAndSyncUserData]);
-
-  // Gestione stato di autenticazione, reindirizzamenti e polling dell'onboarding
-  useEffect(() => {
-    if (authLoading) return;
-
-    let redirectTimer: NodeJS.Timeout | null = null;
-
-    if (!firebaseUser) {
-      Promise.resolve().then(() => {
-        setOnboardingPending(false);
-        setLoading(false);
-        setIsRedirecting(true);
-      });
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-      
-      // Reindirizza al login se non autenticato con transizione fluida
-      const locale = pathname.split("/")[1] || "en";
-      redirectTimer = setTimeout(() => {
-        if (appId === "sso") {
-          router.push(`/${locale}/auth`);
-        } else {
-          loginRedirect(appId);
-        }
-      }, 300);
-      return;
-    }
-
-    const initUserData = async () => {
-      try {
-        const isPending = await fetchAndSyncUserData();
-
-        if (isPending) {
-          setOnboardingPending(true);
-          
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-          }
-
-          // Polling ogni 3 secondi finché l'onboarding non è completato in background
-          const intervalId = setInterval(async () => {
-            const stillPending = await fetchAndSyncUserData();
-            if (!stillPending) {
-              if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current);
-                pollingIntervalRef.current = null;
-              }
-              setOnboardingPending(false);
-              refreshAttemptsRef.current = 0;
-              await refreshClaims();
-            }
-          }, 3000);
-
-          pollingIntervalRef.current = intervalId;
-        }
-      } catch (err) {
-        console.error("[Layout Init] Errore inizializzazione:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void initUserData();
-
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-      if (redirectTimer) {
-        clearTimeout(redirectTimer);
-      }
-    };
-  }, [firebaseUser, authLoading, fetchAndSyncUserData, refreshClaims, pathname, router, appId, loginRedirect]);
-
-  // Innesca il refresh se l'utente è loggato ma non ha claims associati a un'organizzazione
-  useEffect(() => {
-    if (!loading && firebaseUser && authClaims && !authClaims.orgId && !onboardingPending) {
-      const timer = setTimeout(() => {
-        void refreshClaims();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [firebaseUser, authClaims, onboardingPending, loading, refreshClaims]);
+  // Route guard RBAC + redirect (hook estratto); espone hasPermission per il context
+  const { hasPermission } = useRbacGuard({ appId, loading, firebaseUser, authClaims, pathname, router });
 
   // Sincronizzazione automatica dei claims in caso di disallineamento rilevato con il database (es. dopo acquisti Stripe o cambi ruolo)
+  // Resta nel layout (glue di composizione): dipende dallo stato di useClaimsSync (dbData) e di useOnboarding (loading, onboardingPending).
   useEffect(() => {
     if (loading || authLoading || !firebaseUser || !authClaims || !dbData || onboardingPending) {
       return;
@@ -316,35 +135,6 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     }
   }, [loading, authLoading, firebaseUser, authClaims, dbData, onboardingPending, refreshClaims]);
 
-  // Controllo proattivo dei permessi di accesso alle rotte (RBAC Security)
-  useEffect(() => {
-    if (loading || !firebaseUser || !authClaims) return;
-
-    const locale = pathname.split("/")[1] || "en";
-    const relativePath = pathname.replace(new RegExp(`^\\/[a-z]{2}`), "");
-    const cleanPath = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
-
-    // Se l'utente accede ad una sotto-rotta specifica che non sia dashboard o auth
-    const isDashboardPath = appId === "sso"
-      ? cleanPath.startsWith("dashboard")
-      : (cleanPath === "" || cleanPath.startsWith("dashboard"));
-
-    if (cleanPath && !isDashboardPath && !cleanPath.startsWith("auth") && !cleanPath.startsWith("support")) {
-      const appConfig = getRegistryApp(appId);
-      if (appConfig) {
-        // Cerca se la rotta corrisponde a un modulo registrato
-        const modulesList = Object.keys(appConfig.modules);
-        const matchedModule = modulesList.find(mod => cleanPath === mod || cleanPath.startsWith(mod + "/"));
-
-        if (matchedModule && !hasPermission(matchedModule, "read")) {
-          console.warn(`[RBAC Guard] Accesso negato a '/${cleanPath}'. Ruolo '${authClaims.uRole}' non autorizzato. Reindirizzamento.`);
-          const dashboardRedirectPath = appId === "sso" ? "dashboard" : "";
-          router.push(`/${locale}/${dashboardRedirectPath}`);
-        }
-      }
-    }
-  }, [loading, firebaseUser, authClaims, pathname, appId, router, hasPermission]);
-
   // Schermata di caricamento globale o reindirizzamento premium in corso
   if (authLoading || loading || isRedirecting) {
     return (
@@ -373,7 +163,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   return (
     <DashboardContext.Provider value={{ user: firebaseUser, claims: authClaims, loading, dbData, refreshClaims, hasPermission, showToast, setError }}>
       <div className="h-screen overflow-hidden flex bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-all duration-300">
-        
+
         {/* SIDEBAR A SINISTRA */}
         <Sidebar appId={appId} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
@@ -394,9 +184,13 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
           )}
 
           {/* Rendering dei figli — avvolti dal gate MFA (174): se l'org richiede il TOTP e l'utente
-              non è enrollato, blocca l'app e forza l'attivazione. */}
+              non è enrollato, blocca l'app e forza l'attivazione. Il ReauthProvider (178) sta più
+              all'esterno: mette a disposizione app-wide il modal di step-up per i 403
+              `auth/reauth-required` sulle operazioni sensibili. */}
           <div className="flex-1">
-            <MfaEnrollmentGate>{children}</MfaEnrollmentGate>
+            <ReauthProvider>
+              <MfaEnrollmentGate>{children}</MfaEnrollmentGate>
+            </ReauthProvider>
           </div>
         </main>
 

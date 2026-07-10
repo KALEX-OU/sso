@@ -127,20 +127,52 @@ export async function fetchAuthedClient<T>(
       headers
     });
 
-    // 6. Se lo stato è 401 o 403 e l'utente è loggato, forza il refresh dei Custom Claims e riprova una singola volta
+    // 6. Se lo stato è 401 o 403 e l'utente è loggato, tenta un retry.
     if ((response.status === 401 || response.status === 403) && currentUser) {
-      console.warn(`[KALEX API Client] Ricevuto status ${response.status}. Tentativo di refresh del token e retry...`);
-      try {
-        const newIdToken = await currentUser.getIdToken(true);
-        headers.set("Authorization", `Bearer ${newIdToken}`);
-        
-        // Manteniamo intatta l'Idempotency-Key per permettere al server di dedurre la ripetizione dell'azione
-        response = await fetch(targetUrl, {
-          ...init,
-          headers
-        });
-      } catch (refreshErr) {
-        console.error("[KALEX API Client] Fallito il refresh del token durante il retry:", refreshErr);
+      // 6a. Step-up auth (178): 403 `auth/reauth-required` → il server esige una RI-AUTENTICAZIONE
+      // recente per un'operazione sensibile (eliminazione org, domini custom, API key). Un semplice
+      // getIdToken(true) NON basta: rinfresca i claim ma non `auth_time`. Innesca il modal di reauth
+      // (via bridge) e, solo se l'utente si ri-autentica, il token fresco supera il guard.
+      let handledByReauth = false;
+      if (response.status === 403) {
+        let isReauthRequired = false;
+        try {
+          const peek = (await response.clone().json()) as { error?: { code?: string } };
+          isReauthRequired = peek?.error?.code === "auth/reauth-required";
+        } catch {
+          isReauthRequired = false;
+        }
+        if (isReauthRequired) {
+          handledByReauth = true;
+          const { requestReauth } = await import("./reauth-bridge");
+          const reauthed = await requestReauth();
+          if (reauthed) {
+            try {
+              const freshToken = await currentUser.getIdToken(true);
+              headers.set("Authorization", `Bearer ${freshToken}`);
+              response = await fetch(targetUrl, { ...init, headers });
+            } catch (reauthErr) {
+              console.error("[KALEX API Client] Retry post ri-autenticazione fallito:", reauthErr);
+            }
+          }
+        }
+      }
+
+      // 6b. Retry generico (refresh dei Custom Claims) per gli altri 401/403: una singola volta.
+      if (!handledByReauth) {
+        console.warn(`[KALEX API Client] Ricevuto status ${response.status}. Tentativo di refresh del token e retry...`);
+        try {
+          const newIdToken = await currentUser.getIdToken(true);
+          headers.set("Authorization", `Bearer ${newIdToken}`);
+
+          // Manteniamo intatta l'Idempotency-Key per permettere al server di dedurre la ripetizione dell'azione
+          response = await fetch(targetUrl, {
+            ...init,
+            headers
+          });
+        } catch (refreshErr) {
+          console.error("[KALEX API Client] Fallito il refresh del token durante il retry:", refreshErr);
+        }
       }
     }
 
