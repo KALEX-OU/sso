@@ -11,7 +11,7 @@ export type AccordionProps = React.ComponentProps<typeof HeroAccordion> & {
   tooltip?: string;
 };
 
-export const Accordion: React.FC<AccordionProps> = (
+const AccordionBase: React.FC<AccordionProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-accordion-skeleton ${className}`} />;
@@ -34,6 +34,11 @@ export const Accordion: React.FC<AccordionProps> = (
   }
 );
 
-Accordion.displayName = "Accordion";
+AccordionBase.displayName = "Accordion";
 
 export const AccordionItem = HeroAccordionItem;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Accordion = Object.assign(AccordionBase, {
+  Item: AccordionItem
+});

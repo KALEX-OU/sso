@@ -11,7 +11,7 @@ export type DisclosureGroupProps = React.ComponentProps<typeof HeroDisclosureGro
   tooltip?: string;
 };
 
-export const DisclosureGroup: React.FC<DisclosureGroupProps> = (
+const DisclosureGroupBase: React.FC<DisclosureGroupProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-disclosure-group-skeleton ${className}`} />;
@@ -34,6 +34,11 @@ export const DisclosureGroup: React.FC<DisclosureGroupProps> = (
   }
 );
 
-DisclosureGroup.displayName = "DisclosureGroup";
+DisclosureGroupBase.displayName = "DisclosureGroup";
 
 export const DisclosureGroupRoot = HeroDisclosureGroupRoot;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const DisclosureGroup = Object.assign(DisclosureGroupBase, {
+  Root: DisclosureGroupRoot
+});

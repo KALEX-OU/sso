@@ -4,9 +4,11 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import Image from "next/image";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
+import { useBrand } from "../providers/BrandProvider";
 import { Card, CardBody, Tabs, Tab, TabList, Button, Input, Label } from "../ui";
 import { Form } from "../layouts/Form";
 import { DomainManagement } from "./DomainManagement";
+import { MfaPolicyToggle } from "./MfaPolicyToggle";
 import {
   User as UserIcon,
   Camera,
@@ -36,28 +38,16 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import QRCode from "react-qr-code";
 import { auth, storage, forceCleanSession } from "../../lib/auth";
+import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
 import { useTheme } from "next-themes";
-
-interface OrganizationData {
-  orgId: string;
-  name: string;
-  type: string;
-  country: string;
-  vatNumber?: string | null;
-  fiscalCode?: string | null;
-  billingAddress?: string | null;
-  sdiCode?: string | null;
-  officeCode?: string | null;
-  cigCode?: string | null;
-  cupCode?: string | null;
-  address?: string | null;
-  metadata?: Record<string, unknown> | null;
-}
+import { organizationSettingsSchema } from "../../lib/schemas/api";
 
 export function Settings() {
   const { user, dbData, showToast, claims, refreshClaims } = useDashboard();
+  const brand = useBrand();
   const t = useI18n();
+  const s = useUIStrings();
   // P1-91: setter reali per applicare theme/locale scelti nelle impostazioni (prima "dead settings").
   const changeLocale = useChangeLocale();
   const currentLocale = useCurrentLocale();
@@ -160,7 +150,19 @@ export function Settings() {
     };
   }, [currentUserData, user?.email]);
 
-  const activeOrg = dbData?.organization as unknown as OrganizationData | undefined;
+  // Organizzazione attiva validata via Zod (E3.5): il payload dashboard è lasco
+  // (index signature `unknown`) — niente doppio cast, un payload non conforme viene
+  // loggato e trattato come assente (il tab azienda resta vuoto invece di corrompersi).
+  const rawOrganization = dbData?.organization;
+  const activeOrg = useMemo(() => {
+    if (!rawOrganization) return undefined;
+    const parsed = organizationSettingsSchema.safeParse(rawOrganization);
+    if (!parsed.success) {
+      console.error("[Settings] Payload organizzazione non conforme allo schema:", parsed.error);
+      return undefined;
+    }
+    return parsed.data;
+  }, [rawOrganization]);
   const orgInitialData = useMemo(() => {
     if (!activeOrg) return {};
     return {
@@ -503,7 +505,7 @@ export function Settings() {
         const session = await multiFactor(user).getSession();
         const secret = await TotpMultiFactorGenerator.generateSecret(session);
         setTotpSecret(secret);
-        setTotpUri(secret.generateQrCodeUrl(user.email || "account KALEX", "KALEX"));
+        setTotpUri(secret.generateQrCodeUrl(user.email || fmtUI(s.settings.totpAccountFallback, { issuer: brand.totpIssuer }), brand.totpIssuer));
         setTotpCode("");
         setMfaStep("totp-verify");
       } catch (err) {
@@ -665,11 +667,11 @@ export function Settings() {
       : (ua.includes("iphone") || ua.includes("ipad")) ? "iOS"
         : ua.includes("mac os") ? "macOS"
           : ua.includes("windows") ? "Windows"
-            : ua.includes("linux") ? "Linux" : "Dispositivo";
+            : ua.includes("linux") ? "Linux" : s.settings.deviceFallback;
     const browser = ua.includes("edg/") ? "Edge"
       : ua.includes("chrome/") ? "Chrome"
         : ua.includes("safari/") && !ua.includes("chrome/") ? "Safari"
-          : ua.includes("firefox/") ? "Firefox" : "Browser";
+          : ua.includes("firefox/") ? "Firefox" : s.settings.browserFallback;
     return `${browser} · ${os}`;
   };
 
@@ -851,7 +853,7 @@ export function Settings() {
     <div className="klx-settings-container">
       <div>
         <h1 className="klx-settings-header-title">
-          <UserIcon className="w-5 h-5 text-violet-500" /> {t("settings.header.title")}
+          <UserIcon className="w-5 h-5 text-secondary" /> {t("settings.header.title")}
         </h1>
         <p className="klx-settings-header-desc">
           {t("settings.header.desc")}
@@ -899,7 +901,7 @@ export function Settings() {
               <CardBody>
                 <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                   <div className="flex items-center gap-2">
-                    <UserIcon className="w-4 h-4 text-violet-500" />
+                    <UserIcon className="w-4 h-4 text-secondary" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                       {t("settings.profile.personalInfo")}
                     </h2>
@@ -922,7 +924,7 @@ export function Settings() {
                 <div className="flex flex-col items-center w-full space-y-5">
                   <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4 w-full">
                     <div className="flex items-center gap-2">
-                      <Camera className="w-4 h-4 text-violet-500" />
+                      <Camera className="w-4 h-4 text-secondary" />
                       <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                         {t("settings.profile.imageTitle")}
                       </h2>
@@ -933,13 +935,13 @@ export function Settings() {
                   <div className="klx-settings-profile-avatar-wrapper">
                     {uploading ? (
                       <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2">
-                        <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-violet-500"></span>
+                        <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-secondary"></span>
                         <span className="text-[9px] font-bold uppercase tracking-widest">{t("settings.profile.uploading")}</span>
                       </div>
                     ) : (
                       <>
                         {avatarPreview ? (
-                          <Image src={avatarPreview} alt="Avatar" fill sizes="144px" unoptimized className="object-cover" />
+                          <Image src={avatarPreview} alt={s.settings.avatarAlt} fill sizes="144px" unoptimized className="object-cover" />
                         ) : (
                           <span className="text-4xl font-black text-slate-400 dark:text-slate-600 select-none">
                             {displayName.substring(0, 2).toUpperCase()}
@@ -947,7 +949,7 @@ export function Settings() {
                         )}
 
                         <label className="klx-settings-avatar-hover-overlay gap-1 select-none">
-                          <Camera className="w-5 h-5 text-violet-400" />
+                          <Camera className="w-5 h-5 text-secondary" />
                           <span className="text-[8px] font-extrabold uppercase tracking-widest">{t("settings.profile.browse")}</span>
                           <input type="file" accept="image/*" className="klx-settings-avatar-input" onChange={handleAvatarChange} />
                         </label>
@@ -1007,7 +1009,7 @@ export function Settings() {
             <Card className="klx-settings-card--full">
               <CardBody>
                 <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
-                  <Key className="w-4 h-4 text-violet-500" />
+                  <Key className="w-4 h-4 text-secondary" />
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                     {t("settings.pwd.title")}
                   </h2>
@@ -1025,12 +1027,12 @@ export function Settings() {
                         required
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full pr-10"
+                        className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full pe-10"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -1100,7 +1102,7 @@ export function Settings() {
               <CardBody>
                 <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-violet-500" />
+                    <Shield className="w-4 h-4 text-secondary" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                       {t("settings.mfa.title")}
                     </h2>
@@ -1209,7 +1211,7 @@ export function Settings() {
                       {totpUri && (
                         <a
                           href={totpUri}
-                          className="text-[10px] font-extrabold uppercase tracking-wider text-violet-500 hover:text-violet-400 self-start"
+                          className="text-[10px] font-extrabold uppercase tracking-wider text-secondary hover:text-secondary self-start"
                         >
                           {t("settings.mfa.openInApp")}
                         </a>
@@ -1349,7 +1351,7 @@ export function Settings() {
             <CardBody>
               <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
                 <div className="flex items-center gap-2">
-                  <Key className="w-4 h-4 text-violet-500" />
+                  <Key className="w-4 h-4 text-secondary" />
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
                     {t("settings.apikey.title")}
                   </h2>
@@ -1400,7 +1402,7 @@ export function Settings() {
 
                 {loadingApiKey ? (
                   <div className="flex items-center gap-2 text-slate-400 py-2">
-                    <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-violet-500"></span>
+                    <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-secondary"></span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">{t("settings.apikey.loadingDetails")}</span>
                   </div>
                 ) : apiKeyData?.hasKey ? (
@@ -1408,7 +1410,7 @@ export function Settings() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase">{t("settings.apikey.hashLabel")}</span>
-                        <code className="text-xs text-slate-800 dark:text-violet-400 font-mono font-bold break-all bg-white dark:bg-black/30 px-2 py-0.5 rounded border border-slate-200 dark:border-white/5">
+                        <code className="text-xs text-slate-800 dark:text-secondary font-mono font-bold break-all bg-white dark:bg-black/30 px-2 py-0.5 rounded border border-slate-200 dark:border-white/5">
                           {apiKeyData.keyHash}
                         </code>
                       </div>
@@ -1479,17 +1481,21 @@ export function Settings() {
       {/* TAB 2: DATI FISCALI ORGANIZZAZIONE          */}
       {/* ========================================== */}
       {currentTab === "organization" && isOrgManager && (
-        <Card className="klx-settings-card">
-          <CardBody>
-            <Form
-              moduleId="organization"
-              initialData={orgInitialData}
-              fieldsOrder={["name", "type", "country", "vatNumber", "fiscalCode", "address", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode"]}
-              onSubmit={handleOrgSubmit}
-              submitLabel={t("settings.org.submit")}
-            />
-          </CardBody>
-        </Card>
+        <div className="space-y-6">
+          <Card className="klx-settings-card">
+            <CardBody>
+              <Form
+                moduleId="organization"
+                initialData={orgInitialData}
+                fieldsOrder={["name", "type", "country", "vatNumber", "fiscalCode", "address", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode"]}
+                onSubmit={handleOrgSubmit}
+                submitLabel={t("settings.org.submit")}
+              />
+            </CardBody>
+          </Card>
+          {/* Policy MFA per-org (174): richiedi il TOTP obbligatorio ai membri. */}
+          <MfaPolicyToggle />
+        </div>
       )}
 
       {/* ========================================== */}
@@ -1552,9 +1558,9 @@ export function Settings() {
       {/* ========================================== */}
       {reauthOpen && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border border-violet-500/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative">
+          <Card className="max-w-md w-full border border-secondary/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative">
             <CardBody className="space-y-4">
-              <div className="flex items-center gap-3 text-violet-500">
+              <div className="flex items-center gap-3 text-secondary">
                 <Lock className="w-5 h-5" />
                 <h3 className="text-base font-extrabold uppercase tracking-wider">
                   {t("settings.reauth.title")}
@@ -1594,7 +1600,7 @@ export function Settings() {
                       <button
                         type="submit"
                         disabled={reauthPending || reauthMfaCode.length < 6}
-                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
+                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-secondary/90 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
                       >
                         {reauthPending ? t("settings.reauth.verifying") : t("settings.reauth.confirmCode")}
                       </button>
@@ -1626,7 +1632,7 @@ export function Settings() {
                       <button
                         type="submit"
                         disabled={reauthPending || !reauthPassword}
-                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-violet-700 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
+                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-secondary/90 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
                       >
                         {reauthPending ? t("settings.reauth.verifying") : t("settings.reauth.reconfirm")}
                       </button>

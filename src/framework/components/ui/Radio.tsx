@@ -11,7 +11,7 @@ export type RadioProps = React.ComponentProps<typeof HeroRadio> & {
   tooltip?: string;
 };
 
-export const Radio: React.FC<RadioProps> = (
+const RadioBase: React.FC<RadioProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-radio-skeleton ${className}`} />;
@@ -34,6 +34,11 @@ export const Radio: React.FC<RadioProps> = (
   }
 );
 
-Radio.displayName = "Radio";
+RadioBase.displayName = "Radio";
 
 export const RadioGroup = HeroRadioGroup;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Radio = Object.assign(RadioBase, {
+  Group: RadioGroup
+});

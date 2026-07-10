@@ -62,7 +62,8 @@ CheckboxComponent.displayName = "Checkbox";
 export const Checkbox = Object.assign(CheckboxComponent, {
   Control: HeroCheckbox.Control,
   Indicator: HeroCheckbox.Indicator,
-  Content: HeroCheckbox.Content
+  Content: HeroCheckbox.Content,
+  Group: HeroCheckboxGroup
 });
 
 export const CheckboxGroup = HeroCheckboxGroup;

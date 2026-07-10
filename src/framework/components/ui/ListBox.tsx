@@ -11,7 +11,7 @@ export type ListBoxProps = React.ComponentProps<typeof HeroListBox> & {
   tooltip?: string;
 };
 
-export const ListBox: React.FC<ListBoxProps> = (
+const ListBoxBase: React.FC<ListBoxProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-list-box-skeleton ${className}`} />;
@@ -34,7 +34,13 @@ export const ListBox: React.FC<ListBoxProps> = (
   }
 );
 
-ListBox.displayName = "ListBox";
+ListBoxBase.displayName = "ListBox";
 
 export const ListBoxItem = HeroListBoxItem;
 export const ListBoxSection = HeroListBoxSection;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ListBox = Object.assign(ListBoxBase, {
+  Item: ListBoxItem,
+  Section: ListBoxSection
+});

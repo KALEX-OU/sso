@@ -11,7 +11,7 @@ export type DrawerProps = React.ComponentProps<typeof HeroDrawer> & {
   tooltip?: string;
 };
 
-export const Drawer: React.FC<DrawerProps> = (
+const DrawerBase: React.FC<DrawerProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-drawer-skeleton ${className}`} />;
@@ -33,9 +33,17 @@ export const Drawer: React.FC<DrawerProps> = (
   }
 );
 
-Drawer.displayName = "Drawer";
+DrawerBase.displayName = "Drawer";
 
 export const DrawerContent = HeroDrawerContent;
 export const DrawerHeader = HeroDrawerHeader;
 export const DrawerBody = HeroDrawerBody;
 export const DrawerFooter = HeroDrawerFooter;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Drawer = Object.assign(DrawerBase, {
+  Content: DrawerContent,
+  Header: DrawerHeader,
+  Body: DrawerBody,
+  Footer: DrawerFooter
+});

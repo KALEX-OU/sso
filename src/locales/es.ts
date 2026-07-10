@@ -538,6 +538,23 @@ export default {
   "settings.domains.status.active": "Activo",
   "settings.domains.status.provisioning": "Verificando",
   "settings.domains.status.failed": "Error",
+  "mfaGate.title": "Autenticación de dos factores requerida",
+  "mfaGate.desc": "Tu organización requiere TOTP para todos los miembros. Activa la autenticación de dos factores para seguir usando la plataforma.",
+  "mfaGate.start": "Activar ahora",
+  "mfaGate.starting": "Preparando…",
+  "mfaGate.startError": "No se pudo iniciar la configuración. Inténtalo de nuevo.",
+  "mfaGate.scan": "Escanea el QR con tu app de autenticación e introduce el código de 6 dígitos.",
+  "mfaGate.copy": "Copiar clave",
+  "mfaGate.codePlaceholder": "000000",
+  "mfaGate.verify": "Verificar y activar",
+  "mfaGate.verifying": "Verificando…",
+  "mfaGate.confirmError": "Código no válido. Inténtalo de nuevo.",
+  "mfaGate.reloginNote": "Al finalizar se te pedirá iniciar sesión de nuevo con tu segundo factor.",
+  "settings.mfaPolicy.title": "MFA obligatoria para la organización",
+  "settings.mfaPolicy.desc": "Si está activa, todos los miembros deben configurar TOTP para acceder.",
+  "settings.mfaPolicy.on": "MFA ahora obligatoria para los miembros.",
+  "settings.mfaPolicy.off": "MFA ya no es obligatoria.",
+  "settings.mfaPolicy.error": "No se pudo actualizar la política MFA.",
   "settings.deleteDialog.title": "Eliminación Definitiva",
   "settings.deleteDialog.bodyBefore": "Todos tus datos personales, el acceso a los servicios y la configuración asociada se eliminarán permanentemente. Para confirmar, escribe",
   "settings.deleteDialog.confirmWord": "ELIMINAR",
@@ -607,4 +624,8 @@ export default {
   // Chiavi risorse autogenerate
   "fields.subdomain.label": "Subdominio",
   "fields.subdomain.placeholder": "Ej. tu-empresa",
+
+  // Chiavi risorse autogenerate
+  "fields.mfaRequired.label": "Mfa Required",
+  "fields.mfaRequired.placeholder": "Ingrese mfa required...",
 } as const;

@@ -13,6 +13,8 @@ import pkg from "@/../package.json";
 import { SupportDialog } from "@/framework/components/user/SupportDialog";
 import { AIDataDialog } from "@/framework/components/user/AIDataDialog";
 import { Avatar, Button, Tooltip, ScrollShadow } from "@/framework/components/ui";
+import { useBrand } from "@/framework/components/providers/BrandProvider";
+import { useUIStrings, fmtUI } from "@/framework/lib/ui.localization";
 import * as LucideIcons from "lucide-react";
 import {
   LayoutDashboard,
@@ -44,6 +46,8 @@ interface SidebarProps {
 
 export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   const { user, claims, logout, loginRedirect } = useAuth();
+  const brand = useBrand();
+  const s = useUIStrings();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const currentLocale = useCurrentLocale();
@@ -52,7 +56,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   const [aiOpen, setAiOpen] = React.useState(false);
 
   const userRole = (claims?.uRole || claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
-  const displayName = user?.displayName || user?.email?.split("@")[0] || "Utente";
+  const displayName = user?.displayName || user?.email?.split("@")[0] || s.common.user;
   const roleName = (claims?.uRole || claims?.role) ? String(claims?.uRole || claims?.role).toUpperCase() : "VIEWER";
   
   // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims rbac.apps
@@ -83,12 +87,12 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
       <div className="klx-sidebar-header">
         {!collapsed && (
           <div className="klx-sidebar-logo-container">
-            <div className="klx-sidebar-logo-mark">K</div>
-            <span className="klx-sidebar-logo-text">KALEX</span>
+            <div className="klx-sidebar-logo-mark">{brand.logoMark}</div>
+            <span className="klx-sidebar-logo-text">{brand.name}</span>
           </div>
         )}
         {collapsed && (
-          <div className="klx-sidebar-logo-mark">K</div>
+          <div className="klx-sidebar-logo-mark">{brand.logoMark}</div>
         )}
         {!collapsed && (
           <Button
@@ -96,9 +100,10 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
             variant="ghost"
             onClick={() => setCollapsed(true)}
             className="klx-sidebar-toggle-btn"
-            aria-label="Collassa Sidebar"
+            aria-label={s.sidebar.collapse}
           >
-            <ChevronLeft className="w-4 h-4" />
+            {/* Chevron di collasso: direzionale, si specchia in RTL */}
+            <ChevronLeft className="w-4 h-4 rtl:-scale-x-100" />
           </Button>
         )}
       </div>
@@ -111,9 +116,10 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
             variant="ghost"
             onClick={() => setCollapsed(false)}
             className="klx-sidebar-toggle-btn"
-            aria-label="Espandi Sidebar"
+            aria-label={s.sidebar.expand}
           >
-            <ChevronRight className="w-4 h-4" />
+            {/* Chevron di espansione: direzionale, si specchia in RTL */}
+            <ChevronRight className="w-4 h-4 rtl:-scale-x-100" />
           </Button>
         </div>
       )}
@@ -170,14 +176,14 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 isIconOnly
                 variant="ghost"
                 className="klx-sidebar-action-btn klx-sidebar-action-btn--notif"
-                aria-label="Notifiche"
+                aria-label={s.sidebar.notifications}
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-warning" />
+                <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-warning" />
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              Notifiche
+              {s.sidebar.notifications}
             </Tooltip.Content>
           </Tooltip>
 
@@ -192,13 +198,13 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 isIconOnly
                 variant="ghost"
                 className="klx-sidebar-action-btn klx-sidebar-action-btn--msg"
-                aria-label="Messaggi"
+                aria-label={s.sidebar.messages}
               >
                 <MessageSquare className="w-4 h-4" />
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              Messaggi
+              {s.sidebar.messages}
             </Tooltip.Content>
           </Tooltip>
 
@@ -213,14 +219,14 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 isIconOnly
                 variant="ghost"
                 className="klx-sidebar-action-btn klx-sidebar-action-btn--status"
-                aria-label="Stato del Servizio"
+                aria-label={s.sidebar.serviceStatus}
               >
                 <ActivitySquare className="w-4 h-4" />
-                <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                <span className="absolute bottom-1 end-1 w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              Stato Servizio: OK
+              {s.sidebar.serviceStatusOk}
             </Tooltip.Content>
           </Tooltip>
 
@@ -236,13 +242,13 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 variant="ghost"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 className="klx-sidebar-action-btn"
-                aria-label="Cambia Tema"
+                aria-label={s.sidebar.changeTheme}
               >
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              Tema: {theme === "dark" ? "Light" : "Dark"}
+              {fmtUI(s.sidebar.themeLabel, { mode: theme === "dark" ? "Light" : "Dark" })}
             </Tooltip.Content>
           </Tooltip>
 
@@ -257,13 +263,13 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 <Link
                   href={settingsUrl}
                   className="klx-sidebar-action-btn klx-sidebar-action-btn--settings"
-                  aria-label="Impostazioni"
+                  aria-label={s.sidebar.settings}
                 >
                   <Settings className="w-4 h-4" />
                 </Link>
               </Tooltip.Trigger>
               <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-                Impostazioni
+                {s.sidebar.settings}
               </Tooltip.Content>
             </Tooltip>
           )}
@@ -302,14 +308,14 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 onClick={() => setSupportOpen(true)}
                 variant="ghost"
                 className="klx-sidebar-footer-btn"
-                aria-label="Apri Supporto"
+                aria-label={s.sidebar.openSupport}
               >
                 <LifeBuoy className="w-4 h-4" />
-                {!collapsed && <span>Supporto</span>}
+                {!collapsed && <span>{s.sidebar.support}</span>}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              Supporto
+              {s.sidebar.support}
             </Tooltip.Content>
           </Tooltip>
 
@@ -323,14 +329,14 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 onClick={() => setAiOpen(true)}
                 variant="ghost"
                 className="klx-sidebar-footer-btn"
-                aria-label="AI Agent"
+                aria-label={s.sidebar.aiAgent}
               >
                 <Cpu className="w-4 h-4 text-secondary animate-pulse" />
-                {!collapsed && <span>AI Agent</span>}
+                {!collapsed && <span>{s.sidebar.aiAgent}</span>}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              AI Agent
+              {s.sidebar.aiAgent}
             </Tooltip.Content>
           </Tooltip>
 
@@ -344,14 +350,14 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 onClick={handleLogout}
                 variant="ghost"
                 className="klx-sidebar-footer-btn klx-sidebar-footer-btn--logout"
-                aria-label="Esci"
+                aria-label={s.sidebar.logout}
               >
                 <LogOut className="w-4 h-4" />
-                {!collapsed && <span>Esci</span>}
+                {!collapsed && <span>{s.sidebar.logout}</span>}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              Disconnetti
+              {s.sidebar.disconnect}
             </Tooltip.Content>
           </Tooltip>
         </div>
@@ -359,7 +365,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         {/* COPYRIGHT E VERSIONE FOOTER */}
         {!collapsed && (
           <div className="klx-sidebar-copyright">
-            <span>© KALEX CLOUDTECH OÜ</span>
+            <span>{brand.copyright}</span>
             <span className="bg-slate-900/80 text-slate-400 px-1.5 py-0.5 rounded font-mono text-[8px]">
               v{pkg.version}
             </span>

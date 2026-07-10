@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
 import { stripeConnectStatusSchema, stripeUrlResponseSchema } from "../../lib/schemas";
 import { Button, Card, Badge, Skeleton, Spinner } from "../ui";
+import { useBrand } from "../providers/BrandProvider";
+import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 import { ShieldAlert, CreditCard, ExternalLink, CheckCircle2, AlertTriangle, HelpCircle } from "lucide-react";
 
 interface ConnectStatus {
@@ -20,6 +22,14 @@ interface ConnectStatus {
 
 export function StripeConnect() {
   const { claims, loading: authLoading } = useAuth();
+  const brand = useBrand();
+  const s = useUIStrings();
+  // Ref sincronizzata via effect (regola react-hooks/refs: niente scritture di ref nel render):
+  // le callback di fetch leggono sRef.current senza aggiungere `s` alle dipendenze.
+  const sRef = useRef(s);
+  useEffect(() => {
+    sRef.current = s;
+  }, [s]);
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -40,12 +50,12 @@ export function StripeConnect() {
           validate: (raw): ConnectStatus => stripeConnectStatusSchema.parse(raw)
         });
         if (!res.success || !res.data) {
-          throw new Error(res.error?.message || "Errore durante il recupero dello stato dell'account.");
+          throw new Error(res.error?.message || sRef.current.dialogs.stripeConnect.errStatusFetch);
         }
         setStatus(res.data);
       } catch (err) {
         console.error("[StripeConnect] Fetch status error:", err);
-        setError(err instanceof Error ? err.message : "Errore di rete durante la verifica dello stato.");
+        setError(err instanceof Error ? err.message : sRef.current.dialogs.stripeConnect.errStatusNetwork);
       } finally {
         setLoading(false);
       }
@@ -70,11 +80,11 @@ export function StripeConnect() {
       if (res.success && res.data?.url) {
         window.location.href = res.data.url;
       } else {
-        throw new Error(res.error?.message || "Impossibile generare il link di onboarding.");
+        throw new Error(res.error?.message || sRef.current.dialogs.stripeConnect.errOnboardLink);
       }
     } catch (err) {
       console.error("[StripeConnect] Onboarding error:", err);
-      setError(err instanceof Error ? err.message : "Errore di connessione a Stripe.");
+      setError(err instanceof Error ? err.message : sRef.current.dialogs.stripeConnect.errStripeConnection);
       setActionLoading(false);
     }
   };
@@ -92,11 +102,11 @@ export function StripeConnect() {
       if (res.success && res.data?.url) {
         window.open(res.data.url, "_blank", "noopener,noreferrer");
       } else {
-        throw new Error(res.error?.message || "Impossibile generare il link per la dashboard.");
+        throw new Error(res.error?.message || sRef.current.dialogs.stripeConnect.errDashboardLink);
       }
     } catch (err) {
       console.error("[StripeConnect] Login link error:", err);
-      setError(err instanceof Error ? err.message : "Errore durante la generazione del link.");
+      setError(err instanceof Error ? err.message : sRef.current.dialogs.stripeConnect.errLinkGeneration);
     } finally {
       setActionLoading(false);
     }
@@ -125,12 +135,12 @@ export function StripeConnect() {
             <ShieldAlert className="w-8 h-8" />
           </div>
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-red-400">Accesso Limitato</h2>
+            <h2 className="text-xl font-bold text-red-400">{s.dialogs.stripeConnect.accessDeniedTitle}</h2>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Solo il proprietario dell&apos;organizzazione (**owner**) possiede le autorizzazioni necessarie per configurare i conti bancari, attivare Stripe Connect o gestire le impostazioni di incasso e payout per i partner.
+              {s.dialogs.stripeConnect.accessDeniedBody}
             </p>
             <div className="p-4 bg-slate-900/40 border border-white/5 text-slate-500 text-xs rounded-xl">
-              Il tuo ruolo attuale: <strong className="text-slate-300 capitalize">{role || "Membro"}</strong>
+              {s.dialogs.stripeConnect.currentRoleLabel} <strong className="text-slate-300 capitalize">{role || s.dialogs.stripeConnect.roleFallback}</strong>
             </div>
           </div>
         </Card>
@@ -147,10 +157,10 @@ export function StripeConnect() {
     <div className="w-full space-y-6">
       <div className="flex flex-col gap-1.5">
         <h1 className="text-2xl font-extrabold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-          Configurazione Stripe Connect
+          {s.dialogs.stripeConnect.pageTitle}
         </h1>
         <p className="text-slate-400 text-sm">
-          Abilita la ricezione dei pagamenti e gestisci il split-billing per i progetti in cui collabori come organizzazione partner.
+          {s.dialogs.stripeConnect.pageDesc}
         </p>
       </div>
 
@@ -166,16 +176,16 @@ export function StripeConnect() {
         <Card className="p-8 bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-3xl space-y-6 shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex-shrink-0">
+              <div className="p-3.5 bg-success/10 border border-success/20 text-success rounded-2xl flex-shrink-0">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-white">Stripe Connect Attivo</h3>
-                  <Badge color="success" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-emerald-500/20 bg-emerald-500/8 text-emerald-400">Attivo</Badge>
+                  <h3 className="text-lg font-bold text-white">{s.dialogs.stripeConnect.activeTitle}</h3>
+                  <Badge color="success" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-success/20 bg-success/8 text-success">{s.dialogs.stripeConnect.activeBadge}</Badge>
                 </div>
                 <p className="text-slate-400 text-xs mt-1">
-                  ID Account: <code className="font-mono text-violet-400 font-semibold">{status?.stripeConnectAccountId}</code>
+                  {s.dialogs.stripeConnect.accountIdLabel} <code className="font-mono text-secondary font-semibold">{status?.stripeConnectAccountId}</code>
                 </p>
               </div>
             </div>
@@ -183,28 +193,28 @@ export function StripeConnect() {
             <Button
               isDisabled={actionLoading}
               onClick={handleLoginLink}
-              className="px-5 py-2.5 bg-violet-500 text-white font-bold rounded-xl hover:bg-secondary transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-violet-500/20"
+              className="px-5 py-2.5 bg-secondary text-white font-bold rounded-xl hover:bg-secondary transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-secondary/20"
             >
               {actionLoading ? (
                 <Spinner size="sm" color="current" />
               ) : (
                 <ExternalLink className="w-4 h-4" />
               )}
-              Console Express Stripe
+              {s.dialogs.stripeConnect.expressConsole}
             </Button>
           </div>
 
           <div className="border-t border-white/5 pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-slate-950/40 border border-white/5 rounded-2xl space-y-1">
-              <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Ricezione Pagamenti</span>
+              <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">{s.dialogs.stripeConnect.chargesLabel}</span>
               <p className="text-sm font-bold text-slate-200">
-                {status?.chargesEnabled ? "Abilitata - Puoi incassare split-billing" : "Sospesa o limitata"}
+                {status?.chargesEnabled ? s.dialogs.stripeConnect.chargesEnabled : s.dialogs.stripeConnect.chargesDisabled}
               </p>
             </div>
             <div className="p-4 bg-slate-950/40 border border-white/5 rounded-2xl space-y-1">
-              <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Invio Bonifici (Payout)</span>
+              <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">{s.dialogs.stripeConnect.payoutsLabel}</span>
               <p className="text-sm font-bold text-slate-200">
-                {status?.payoutsEnabled ? "Abilitato - Bonifici automatici attivi" : "Sospeso o in verifica"}
+                {status?.payoutsEnabled ? s.dialogs.stripeConnect.payoutsEnabled : s.dialogs.stripeConnect.payoutsDisabled}
               </p>
             </div>
           </div>
@@ -214,9 +224,9 @@ export function StripeConnect() {
             <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex gap-3 text-blue-400 text-xs">
               <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <strong className="font-bold">Verifiche future previste:</strong>
+                <strong className="font-bold">{s.dialogs.stripeConnect.futureChecksTitle}</strong>
                 <p className="text-slate-400 leading-relaxed">
-                  Stripe potrebbe richiedere ulteriori informazioni in futuro qualora superassi determinate soglie di incasso (es. {eventuallyDueList.join(", ")}).
+                  {fmtUI(s.dialogs.stripeConnect.futureChecksBody, { list: eventuallyDueList.join(", ") })}
                 </p>
               </div>
             </div>
@@ -234,11 +244,11 @@ export function StripeConnect() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-white">Configurazione Incompleta</h3>
-                  <Badge color="warning" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-amber-500/20 bg-amber-500/8 text-amber-400">KYC Richiesto</Badge>
+                  <h3 className="text-lg font-bold text-white">{s.dialogs.stripeConnect.incompleteTitle}</h3>
+                  <Badge color="warning" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-amber-500/20 bg-amber-500/8 text-amber-400">{s.dialogs.stripeConnect.kycBadge}</Badge>
                 </div>
                 <p className="text-slate-400 text-xs mt-1">
-                  ID Account: <code className="font-mono text-amber-400 font-semibold">{status?.stripeConnectAccountId}</code>
+                  {s.dialogs.stripeConnect.accountIdLabel} <code className="font-mono text-amber-400 font-semibold">{status?.stripeConnectAccountId}</code>
                 </p>
               </div>
             </div>
@@ -249,24 +259,24 @@ export function StripeConnect() {
               className="px-5 py-2.5 bg-amber-500 text-slate-950 font-extrabold rounded-xl hover:bg-amber-600 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-amber-500/10"
             >
               {actionLoading && <Spinner size="sm" color="current" />}
-              Completa Configurazione
+              {s.dialogs.stripeConnect.completeSetup}
             </Button>
           </div>
 
           <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl space-y-3">
             <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
               <AlertTriangle className="w-4 h-4" />
-              <span>Stripe richiede ulteriori informazioni di identificazione (KYC) per attivare i payout:</span>
+              <span>{s.dialogs.stripeConnect.kycNotice}</span>
             </div>
             {currentlyDueList.length > 0 ? (
-              <ul className="list-disc pl-5 text-slate-400 text-xs space-y-1.5">
+              <ul className="list-disc ps-5 text-slate-400 text-xs space-y-1.5">
                 {currentlyDueList.map((req, i) => (
                   <li key={i} className="capitalize">{req.replace(/\./g, " ").replace(/_/g, " ")}</li>
                 ))}
               </ul>
             ) : (
               <p className="text-slate-400 text-xs">
-                Completa i passaggi richiesti sul portale di Stripe Connect per poter abilitare i pagamenti.
+                {s.dialogs.stripeConnect.kycFallback}
               </p>
             )}
           </div>
@@ -276,34 +286,34 @@ export function StripeConnect() {
       {/* STATO 3: Non Configurata (Nessun account Connect associato) */}
       {!isConfigured && (
         <Card className="p-8 bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-3xl space-y-6 shadow-2xl flex flex-col md:flex-row items-start gap-6">
-          <div className="p-4 bg-violet-500/10 border border-violet-500/20 text-violet-400 rounded-2xl flex-shrink-0">
+          <div className="p-4 bg-secondary/10 border border-secondary/20 text-secondary rounded-2xl flex-shrink-0">
             <CreditCard className="w-8 h-8" />
           </div>
           <div className="space-y-6 flex-grow">
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white">Abilita Stripe Connect per la tua Organizzazione</h3>
+              <h3 className="text-xl font-bold text-white">{s.dialogs.stripeConnect.enableTitle}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Connetti in sicurezza un conto corrente o carta di debito bancaria tramite Stripe Connect Express. Abilitando Connect, la tua organizzazione potrà vendere beni hardware, offrire licenze o configurare flussi di fatturazione ricorrente split-billing con altre organizzazioni partner all&apos;interno del network KALEX.
+                {fmtUI(s.dialogs.stripeConnect.enableBody, { brand: brand.name })}
               </p>
             </div>
 
             <div className="p-4 bg-slate-950/40 border border-white/5 rounded-2xl text-slate-500 text-xs space-y-1.5">
               <div className="flex items-center gap-1.5 font-bold text-slate-300">
-                <CheckCircle2 className="w-3.5 h-3.5 text-violet-400" />
-                <span>Onboarding Semplice & Sicuro:</span>
+                <CheckCircle2 className="w-3.5 h-3.5 text-secondary" />
+                <span>{s.dialogs.stripeConnect.safeOnboardingTitle}</span>
               </div>
               <p className="leading-relaxed">
-                Stripe Express gestisce direttamente i requisiti antiriciclaggio e fiscali (KYC). KALEX non memorizza in alcun modo i tuoi estremi bancari. La commissione sulla piattaforma per le transazioni split Connect è fissata all&apos;1%.
+                {fmtUI(s.dialogs.stripeConnect.safeOnboardingBody, { brand: brand.name })}
               </p>
             </div>
 
             <Button
               isDisabled={actionLoading}
               onClick={handleOnboard}
-              className="px-6 py-3 bg-violet-500 text-white font-bold rounded-xl hover:bg-secondary transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-violet-500/20"
+              className="px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:bg-secondary transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 text-sm shadow-lg shadow-secondary/20"
             >
               {actionLoading && <Spinner size="sm" color="current" />}
-              Attiva Stripe Connect
+              {s.dialogs.stripeConnect.enableCta}
             </Button>
           </div>
         </Card>

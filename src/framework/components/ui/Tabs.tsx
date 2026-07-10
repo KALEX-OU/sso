@@ -11,7 +11,7 @@ export type TabsProps = React.ComponentProps<typeof HeroTabs> & {
   tooltip?: string;
 };
 
-export const Tabs: React.FC<TabsProps> = (
+const TabsBase: React.FC<TabsProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-tabs-skeleton ${className}`} />;
@@ -34,7 +34,13 @@ export const Tabs: React.FC<TabsProps> = (
   }
 );
 
-Tabs.displayName = "Tabs";
+TabsBase.displayName = "Tabs";
 
 export const Tab = HeroTab;
 export const TabList = HeroTabList;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Tabs = Object.assign(TabsBase, {
+  Tab,
+  List: TabList
+});

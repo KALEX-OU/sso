@@ -11,7 +11,7 @@ export type ToastProps = React.ComponentProps<typeof HeroToast> & {
   tooltip?: string;
 };
 
-export const Toast: React.FC<ToastProps> = (
+const ToastBase: React.FC<ToastProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-toast-skeleton ${className}`} />;
@@ -34,6 +34,11 @@ export const Toast: React.FC<ToastProps> = (
   }
 );
 
-Toast.displayName = "Toast";
+ToastBase.displayName = "Toast";
 
 export const ToastProvider = HeroToastProvider;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Toast = Object.assign(ToastBase, {
+  Provider: ToastProvider
+});

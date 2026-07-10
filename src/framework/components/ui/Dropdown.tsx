@@ -11,7 +11,7 @@ export type DropdownProps = React.ComponentProps<typeof HeroDropdown> & {
   tooltip?: string;
 };
 
-export const Dropdown: React.FC<DropdownProps> = (
+const DropdownBase: React.FC<DropdownProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-dropdown-skeleton ${className}`} />;
@@ -33,9 +33,17 @@ export const Dropdown: React.FC<DropdownProps> = (
   }
 );
 
-Dropdown.displayName = "Dropdown";
+DropdownBase.displayName = "Dropdown";
 
 export const DropdownTrigger = HeroDropdownTrigger;
 export const DropdownMenu = HeroDropdownMenu;
 export const DropdownSection = HeroDropdownSection;
 export const DropdownItem = HeroDropdownItem;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Dropdown = Object.assign(DropdownBase, {
+  Trigger: DropdownTrigger,
+  Menu: DropdownMenu,
+  Section: DropdownSection,
+  Item: DropdownItem
+});

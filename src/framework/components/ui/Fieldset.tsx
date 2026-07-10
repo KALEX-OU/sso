@@ -11,7 +11,7 @@ export type FieldsetProps = React.ComponentProps<typeof HeroFieldset> & {
   tooltip?: string;
 };
 
-export const Fieldset: React.FC<FieldsetProps> = (
+const FieldsetBase: React.FC<FieldsetProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-fieldset-skeleton ${className}`} />;
@@ -34,7 +34,13 @@ export const Fieldset: React.FC<FieldsetProps> = (
   }
 );
 
-Fieldset.displayName = "Fieldset";
+FieldsetBase.displayName = "Fieldset";
 
 export const FieldsetLegend = HeroFieldsetLegend;
 export const FieldsetActions = HeroFieldsetActions;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Fieldset = Object.assign(FieldsetBase, {
+  Legend: FieldsetLegend,
+  Actions: FieldsetActions
+});

@@ -229,6 +229,18 @@ export const organizationModule = {
       validation: { default: false },
       graphql: { nullable: false, directive: "@default(value: false)" }
     },
+    // Policy MFA (174): se true, TUTTI i membri dell'org devono avere il TOTP obbligatorio.
+    // Configurabile da owner/admin; propagata nei claims (mfaReq) → enforcement api + gate frontend.
+    mfaRequired: {
+      type: "Boolean",
+      encrypted: false,
+      render: false,
+      order: 20.5,
+      label: "fields.mfaRequired.label",
+      placeholder: "fields.mfaRequired.placeholder",
+      validation: { default: false },
+      graphql: { nullable: false, directive: "@default(value: false)" }
+    },
     confirmed: {
       type: "Boolean",
       encrypted: false,
@@ -282,14 +294,14 @@ export const organizationModule = {
   rolePolicies: {
     owner: {
       canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true,
-      allowedFields: ["orgId", "name", "subdomain", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
+      allowedFields: ["orgId", "name", "subdomain", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "mfaRequired", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
     },
     admin: {
       canCreate: true, canRead: true, canList: true, canUpdate: true, canDelete: true,
-      allowedFields: ["orgId", "name", "subdomain", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
+      allowedFields: ["orgId", "name", "subdomain", "type", "country", "viesValidated", "vatNumber", "fiscalCode", "billingAddress", "sdiCode", "officeCode", "cigCode", "cupCode", "address", "latitude", "longitude", "altitude", "stripeCustomerId", "stripeConnectAccountId", "stripeConnectOnboarded", "isTest", "mfaRequired", "confirmed", "addressDetails", "metadata", "createdAt", "apps"]
     },
-    member: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "subdomain", "type", "country", "address"] },
-    viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "subdomain", "type", "country"] },
+    member: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "subdomain", "type", "country", "address", "mfaRequired"] },
+    viewer: { canCreate: false, canRead: true, canList: true, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "subdomain", "type", "country", "mfaRequired"] },
     device: { canCreate: false, canRead: true, canList: false, canUpdate: false, canDelete: false, allowedFields: ["orgId", "name", "type", "country"] }
   }
 } as const;

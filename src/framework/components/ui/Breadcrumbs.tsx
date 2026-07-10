@@ -11,7 +11,7 @@ export type BreadcrumbsProps = React.ComponentProps<typeof HeroBreadcrumbs> & {
   tooltip?: string;
 };
 
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = (
+const BreadcrumbsBase: React.FC<BreadcrumbsProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-breadcrumbs-skeleton ${className}`} />;
@@ -34,6 +34,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = (
   }
 );
 
-Breadcrumbs.displayName = "Breadcrumbs";
+BreadcrumbsBase.displayName = "Breadcrumbs";
 
 export const BreadcrumbsItem = HeroBreadcrumbsItem;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Breadcrumbs = Object.assign(BreadcrumbsBase, {
+  Item: BreadcrumbsItem
+});

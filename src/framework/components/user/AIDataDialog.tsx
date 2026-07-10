@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Modal } from "../ui";
 import { Cpu, Send, Bot, User, Sparkles, X } from "lucide-react";
 import { useDashboard } from "@/framework/components/layouts/DashboardContext";
+import { useBrand } from "../providers/BrandProvider";
+import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 interface Message {
   sender: "user" | "ai";
@@ -16,18 +18,19 @@ interface AIDataDialogProps {
   onClose: () => void;
 }
 
-const SUGGESTED_PROMPTS = [
-  "Analizza la mia organizzazione",
-  "Mostra lo stato delle mie subscription",
-  "Quali permessi ha il mio ruolo?"
-];
-
 export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
   const { dbData } = useDashboard();
+  const brand = useBrand();
+  const s = useUIStrings();
+  const suggestedPrompts = [
+    s.dialogs.ai.promptOrg,
+    s.dialogs.ai.promptSubs,
+    s.dialogs.ai.promptRole
+  ];
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "ai",
-      text: "Ciao! Sono l'agente di Analisi AI di KALEX. Sono connesso in tempo reale ai tuoi dati di sessione e dell'organizzazione. Chiedimi pure un'analisi strutturata o informazioni sulle risorse attive.",
+      text: fmtUI(s.dialogs.ai.greeting, { brand: brand.name }),
       timestamp: new Date()
     }
   ]);
@@ -53,42 +56,46 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
     setIsTyping(true);
 
     const organization = dbData?.organization;
-    const orgName = organization?.name || "Nessuna Organizzazione Associata";
+    const orgName = organization?.name || s.dialogs.ai.orgNone;
     const orgRole = organization?.role || "Viewer";
     const subs = organization?.subscriptions || [];
 
     // Risposta simulata basata sui dati reali del dashboard
     setTimeout(() => {
-      let aiText = "Non ho elementi sufficienti per analizzare questa specifica richiesta. Prova a chiedermi un report dell'organizzazione o lo stato dei servizi.";
+      let aiText = s.dialogs.ai.answerFallback;
       const cleanText = text.toLowerCase();
 
       if (cleanText.includes("organizzazion") || cleanText.includes("azienda") || cleanText.includes("dati")) {
-        aiText = `Ecco l'analisi dei dati per l'organizzazione **${orgName}**:\n` +
-                 `- **Stato Onboarding**: ${organization?.confirmed ? "🟢 Confermato ed Attivo" : "🟡 In attesa / Da confermare"}\n` +
-                 `- **Tipo Organizzazione**: ${organization?.type || "Standard"}\n` +
-                 `- **Paese di Registrazione**: ${organization?.country || "Non Specificato"}\n` +
-                 `- **Modalità Ambiente**: ${organization?.isTest ? "🧪 Test Environment" : "⚡ Production Live"}\n` +
-                 `- **Verifica P.IVA (VIES)**: ${organization?.viesValidated ? "✅ Validata con successo" : "❌ Non validata o non presente"}\n\n` +
-                 `*Il tuo ruolo all'interno di questa organizzazione è **${orgRole.toUpperCase()}**, che ti garantisce la visibilità delle risorse.*`;
+        aiText = fmtUI(s.dialogs.ai.orgReport, {
+          org: orgName,
+          onboarding: organization?.confirmed ? s.dialogs.ai.orgConfirmed : s.dialogs.ai.orgPending,
+          type: organization?.type || s.dialogs.ai.orgTypeStandard,
+          country: organization?.country || s.dialogs.ai.orgCountryUnknown,
+          env: organization?.isTest ? s.dialogs.ai.envTest : s.dialogs.ai.envProd,
+          vies: organization?.viesValidated ? s.dialogs.ai.viesOk : s.dialogs.ai.viesKo,
+          role: orgRole.toUpperCase()
+        });
       } else if (cleanText.includes("sub") || cleanText.includes("sottoscrizion") || cleanText.includes("abbonament") || cleanText.includes("serviz")) {
         if (subs.length === 0) {
-          aiText = `Per l'organizzazione **${orgName}** non risultano licenze o abbonamenti attivi al momento. Puoi attivarne uno dalla sezione **Product** del nostro portale.`;
+          aiText = fmtUI(s.dialogs.ai.subsEmpty, { org: orgName });
         } else {
-          aiText = `Ho trovato **${subs.length}** abbonamenti attivi per **${orgName}**:\n\n` +
-                   subs.map((sub, idx) => (
-                     `${idx + 1}. **Servizio**: ${sub.appId.toUpperCase()}\n` +
-                     `   - **Stato**: ${sub.status === "active" ? "🟢 Attivo" : "🟡 " + sub.status}\n` +
-                     `   - **Rinnovo Automatico**: ${sub.cancelAtPeriodEnd ? "❌ Disattivato" : "✅ Attivo"}\n` +
-                     `   - **Scadenza Periodo**: ${sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString("it-IT") : "N/D"}`
-                   )).join("\n\n");
+          aiText = fmtUI(s.dialogs.ai.subsFound, { count: subs.length, org: orgName }) + "\n\n" +
+                   subs.map((sub, idx) => fmtUI(s.dialogs.ai.subItem, {
+                     index: idx + 1,
+                     service: sub.appId.toUpperCase(),
+                     status: sub.status === "active" ? s.dialogs.ai.subStatusActive : fmtUI(s.dialogs.ai.subStatusOther, { status: sub.status }),
+                     renewal: sub.cancelAtPeriodEnd ? s.dialogs.ai.renewalOff : s.dialogs.ai.renewalOn,
+                     expiry: sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString("it-IT") : s.dialogs.ai.notAvailable
+                   })).join("\n\n");
         }
       } else if (cleanText.includes("permess") || cleanText.includes("ruolo") || cleanText.includes("claims")) {
-        aiText = `Analisi dei privilegi per l'utente loggato:\n` +
-                 `- **Ruolo Assegnato**: \`${orgRole.toUpperCase()}\`\n` +
-                 `- **Bypass RBAC/FLS**: ${orgRole.toLowerCase() === "owner" ? "✅ Abilitato (Bypass completo)" : "❌ Disabilitato (Soggetto a policy)"}\n\n` +
-                 `I tuoi permessi operativi ti consentono di visualizzare e gestire le risorse in conformità con il registro statico di sicurezza di KALEX per l'applicazione corrente.`;
+        aiText = fmtUI(s.dialogs.ai.roleReport, {
+          role: orgRole.toUpperCase(),
+          bypass: orgRole.toLowerCase() === "owner" ? s.dialogs.ai.bypassOn : s.dialogs.ai.bypassOff,
+          brand: brand.name
+        });
       } else if (cleanText.includes("ciao") || cleanText.includes("salve")) {
-        aiText = `Ciao! Posso eseguire un'analisi dei tuoi dati in tempo reale. Chiedimi pure un riassunto dell'organizzazione o lo stato degli abbonamenti attivi.`;
+        aiText = s.dialogs.ai.answerGreeting;
       }
 
       setMessages((prev) => [
@@ -114,12 +121,12 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
                   <Cpu className="w-5 h-5 text-slate-950 font-bold" />
                 </div>
-                <div className="text-left">
+                <div className="text-start">
                   <h3 className="text-sm font-black uppercase tracking-wider text-slate-200">
-                    Analizzatore Dati AI KALEX
+                    {fmtUI(s.dialogs.ai.title, { brand: brand.name })}
                   </h3>
                   <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
-                    Gemini Agent integrato
+                    {s.dialogs.ai.subtitle}
                   </p>
                 </div>
               </div>
@@ -133,7 +140,7 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
 
             {/* Body */}
             <div className="flex-1 py-4 overflow-y-auto scrollbar-none flex flex-col gap-4">
-              <div className="flex-1 flex flex-col gap-3.5 pr-1">
+              <div className="flex-1 flex flex-col gap-3.5 pe-1">
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
@@ -155,10 +162,10 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
                       )}
                     </div>
                     <div
-                      className={`rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap text-left ${
+                      className={`rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap text-start ${
                         msg.sender === "user"
-                          ? "bg-cyan-600/90 text-white rounded-tr-none"
-                          : "bg-slate-900/60 border border-slate-800 text-slate-300 rounded-tl-none"
+                          ? "bg-cyan-600/90 text-white rounded-se-none"
+                          : "bg-slate-900/60 border border-slate-800 text-slate-300 rounded-ss-none"
                       }`}
                     >
                       {msg.text}
@@ -171,7 +178,7 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
                     <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 text-cyan-400 flex items-center justify-center shrink-0">
                       <Bot className="w-3.5 h-3.5" />
                     </div>
-                    <div className="bg-slate-900/60 border border-slate-800 text-slate-300 rounded-2xl rounded-tl-none p-3.5 flex items-center gap-1">
+                    <div className="bg-slate-900/60 border border-slate-800 text-slate-300 rounded-2xl rounded-ss-none p-3.5 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" />
                       <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce delay-100" />
                       <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce delay-200" />
@@ -183,12 +190,12 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
 
               {/* Suggerimenti rapidi */}
               {messages.length === 1 && (
-                <div className="mt-2 text-left">
+                <div className="mt-2 text-start">
                   <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Suggerimenti rapidi:
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> {s.dialogs.ai.suggestionsLabel}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                    {suggestedPrompts.map((prompt, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(prompt)}
@@ -206,7 +213,7 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
             <div className="border-t border-slate-900/60 pt-3 flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Chiedi un'analisi all'AI di KALEX..."
+                placeholder={fmtUI(s.dialogs.ai.inputPlaceholder, { brand: brand.name })}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {

@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Modal } from "../ui";
 import { LifeBuoy, Send, Bot, User, Sparkles, X } from "lucide-react";
+import { useBrand } from "../providers/BrandProvider";
+import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 interface Message {
   sender: "user" | "ai";
@@ -15,18 +17,19 @@ interface SupportDialogProps {
   onClose: () => void;
 }
 
-const SUGGESTED_PROMPTS = [
-  "Come genero una chiave API?",
-  "Come funziona l'onboarding Stripe?",
-  "Cos'è la protezione FLS?",
-  "Come cambio lingua o tema?"
-];
-
 export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
+  const brand = useBrand();
+  const s = useUIStrings();
+  const suggestedPrompts = [
+    s.dialogs.support.promptApiKey,
+    s.dialogs.support.promptStripe,
+    s.dialogs.support.promptFls,
+    s.dialogs.support.promptTheme
+  ];
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "ai",
-      text: "Ciao! Sono l'assistente virtuale di KALEX Cloud. Come posso aiutarti oggi con i nostri prodotti o servizi?",
+      text: fmtUI(s.dialogs.support.greeting, { brand: brand.name }),
       timestamp: new Date()
     }
   ]);
@@ -53,19 +56,19 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
 
     // Risposta simulata intelligente basata sul testo
     setTimeout(() => {
-      let aiText = "Mi dispiace, non ho capito la richiesta. Puoi riformulare la domanda sui servizi KALEX?";
+      let aiText = fmtUI(s.dialogs.support.answerFallback, { brand: brand.name });
       const cleanText = text.toLowerCase();
 
       if (cleanText.includes("api") || cleanText.includes("chiave")) {
-        aiText = "Per generare una chiave API su KALEX:\n1. Accedi alla sezione **API Key** dal menu laterale.\n2. Clicca su **Crea Chiave**.\n3. Specifica i permessi per ciascun modulo e clicca su Genera.\n\n*Nota: Ricorda di salvare la chiave subito, non verrà mostrata una seconda volta per ragioni di sicurezza.*";
+        aiText = fmtUI(s.dialogs.support.answerApiKey, { brand: brand.name });
       } else if (cleanText.includes("stripe") || cleanText.includes("onboarding") || cleanText.includes("pagament")) {
-        aiText = "L'onboarding di Stripe ti consente di attivare i pagamenti. Puoi completarlo accedendo alla sezione **Payment** o dalla pagina del profilo dell'organizzazione, dove verrai reindirizzato su Stripe Connect per inserire i dati fiscali della tua azienda.";
+        aiText = s.dialogs.support.answerStripe;
       } else if (cleanText.includes("fls") || cleanText.includes("sicurezza") || cleanText.includes("rbac")) {
-        aiText = "KALEX adotta una sicurezza a livello di singolo campo (Field-Level Security - FLS) e RBAC. Le politiche sono definite staticamente in `resources.config.ts`. Solo gli utenti con ruolo `owner` scavalcano questi controlli, mentre per gli altri ruoli le proprietà in ingresso e in uscita vengono filtrate automaticamente.";
+        aiText = fmtUI(s.dialogs.support.answerFls, { brand: brand.name });
       } else if (cleanText.includes("tema") || cleanText.includes("lingua") || cleanText.includes("esci")) {
-        aiText = "Puoi cambiare il tema (chiaro/scuro) cliccando sull'icona del sole/luna in basso a sinistra della sidebar. La lingua viene gestita in base al locale impostato nell'URL (it/en/es) ed è modificabile dal pannello impostazioni utente.";
+        aiText = s.dialogs.support.answerTheme;
       } else if (cleanText.includes("ciao") || cleanText.includes("salve")) {
-        aiText = "Ciao! Come posso esserti utile oggi? Posso spiegarti come funzionano le API Key, l'onboarding Stripe, o le nostre politiche di sicurezza.";
+        aiText = s.dialogs.support.answerGreeting;
       }
 
       setMessages((prev) => [
@@ -88,15 +91,15 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-500 to-accent flex items-center justify-center shadow-lg">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-secondary to-accent flex items-center justify-center shadow-lg">
                   <LifeBuoy className="w-5 h-5 text-slate-950 font-bold" />
                 </div>
-                <div className="text-left">
+                <div className="text-start">
                   <h3 className="text-sm font-black uppercase tracking-wider text-slate-200">
-                    Supporto Virtuale KALEX
+                    {fmtUI(s.dialogs.support.title, { brand: brand.name })}
                   </h3>
-                  <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest">
-                    AI Agent attivo
+                  <p className="text-[10px] text-secondary font-bold uppercase tracking-widest">
+                    {s.dialogs.support.subtitle}
                   </p>
                 </div>
               </div>
@@ -110,7 +113,7 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
 
             {/* Body */}
             <div className="flex-1 py-4 overflow-y-auto scrollbar-none flex flex-col gap-4">
-              <div className="flex-1 flex flex-col gap-3.5 pr-1">
+              <div className="flex-1 flex flex-col gap-3.5 pe-1">
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
@@ -122,7 +125,7 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
                       className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                         msg.sender === "user"
                           ? "bg-secondary text-white"
-                          : "bg-slate-900 border border-slate-800 text-violet-400"
+                          : "bg-slate-900 border border-slate-800 text-secondary"
                       }`}
                     >
                       {msg.sender === "user" ? (
@@ -132,10 +135,10 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
                       )}
                     </div>
                     <div
-                      className={`rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap text-left ${
+                      className={`rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap text-start ${
                         msg.sender === "user"
-                          ? "bg-secondary/90 text-white rounded-tr-none"
-                          : "bg-slate-900/60 border border-slate-800 text-slate-300 rounded-tl-none"
+                          ? "bg-secondary/90 text-white rounded-se-none"
+                          : "bg-slate-900/60 border border-slate-800 text-slate-300 rounded-ss-none"
                       }`}
                     >
                       {msg.text}
@@ -145,13 +148,13 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
 
                 {isTyping && (
                   <div className="flex gap-3 self-start">
-                    <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 text-violet-400 flex items-center justify-center shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 text-secondary flex items-center justify-center shrink-0">
                       <Bot className="w-3.5 h-3.5" />
                     </div>
-                    <div className="bg-slate-900/60 border border-slate-800 text-slate-300 rounded-2xl rounded-tl-none p-3.5 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" />
-                      <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce delay-100" />
-                      <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce delay-200" />
+                    <div className="bg-slate-900/60 border border-slate-800 text-slate-300 rounded-2xl rounded-ss-none p-3.5 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-bounce" />
+                      <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-bounce delay-100" />
+                      <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-bounce delay-200" />
                     </div>
                   </div>
                 )}
@@ -160,16 +163,16 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
 
               {/* Suggerimenti rapidi */}
               {messages.length === 1 && (
-                <div className="mt-2 text-left">
+                <div className="mt-2 text-start">
                   <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-violet-400" /> Suggerimenti rapidi:
+                    <Sparkles className="w-3.5 h-3.5 text-secondary" /> {s.dialogs.support.suggestionsLabel}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                    {suggestedPrompts.map((prompt, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(prompt)}
-                        className="text-[10px] font-bold bg-slate-900/50 hover:bg-violet-950/20 text-slate-300 hover:text-violet-400 border border-slate-900 hover:border-violet-900/40 py-1.5 px-3 rounded-full transition-all cursor-pointer"
+                        className="text-[10px] font-bold bg-slate-900/50 hover:bg-secondary/10 text-slate-300 hover:text-secondary border border-slate-900 hover:border-secondary/30 py-1.5 px-3 rounded-full transition-all cursor-pointer"
                       >
                         {prompt}
                       </button>
@@ -183,17 +186,17 @@ export function SupportDialog({ isOpen, onClose }: SupportDialogProps) {
             <div className="border-t border-slate-900/60 pt-3 flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Fai una domanda sul supporto KALEX..."
+                placeholder={fmtUI(s.dialogs.support.inputPlaceholder, { brand: brand.name })}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSendMessage(inputValue);
                 }}
-                className="flex-1 bg-slate-900/50 hover:bg-slate-900 border border-slate-900/60 hover:border-slate-800 transition-colors text-xs text-slate-200 placeholder:text-slate-500 rounded-xl px-4 py-2.5 outline-none focus:border-violet-500"
+                className="flex-1 bg-slate-900/50 hover:bg-slate-900 border border-slate-900/60 hover:border-slate-800 transition-colors text-xs text-slate-200 placeholder:text-slate-500 rounded-xl px-4 py-2.5 outline-none focus:border-secondary"
               />
               <button
                 onClick={() => handleSendMessage(inputValue)}
-                className="bg-secondary hover:bg-violet-500 text-white rounded-xl p-2.5 cursor-pointer shadow-lg transition-colors flex items-center justify-center shrink-0"
+                className="bg-secondary hover:bg-secondary text-white rounded-xl p-2.5 cursor-pointer shadow-lg transition-colors flex items-center justify-center shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>

@@ -3,6 +3,7 @@
 import React from "react";
 import { Skeleton, Card, CardHeader, CardBody } from "../ui";
 import { AlertCircle } from "lucide-react";
+import { useUIStrings } from "../../lib/ui.localization";
 
 interface BaseModuleLayoutProps {
   isLoading?: boolean;
@@ -17,6 +18,7 @@ export function BaseModuleLayout({
   children,
   className = ""
 }: BaseModuleLayoutProps) {
+  const s = useUIStrings();
   if (error) {
     return (
       <div className="klx-layout-error-container">
@@ -24,7 +26,7 @@ export function BaseModuleLayout({
           <CardHeader className="klx-layout-error-header">
             <AlertCircle className="w-6 h-6 text-danger" />
             <h3 className="klx-layout-error-title">
-              Si è verificato un errore
+              {s.layout.errorTitle}
             </h3>
           </CardHeader>
           <CardBody className="klx-layout-error-body">

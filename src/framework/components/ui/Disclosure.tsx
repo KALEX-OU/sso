@@ -11,7 +11,7 @@ export type DisclosureProps = React.ComponentProps<typeof HeroDisclosure> & {
   tooltip?: string;
 };
 
-export const Disclosure: React.FC<DisclosureProps> = (
+const DisclosureBase: React.FC<DisclosureProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-disclosure-skeleton ${className}`} />;
@@ -34,10 +34,19 @@ export const Disclosure: React.FC<DisclosureProps> = (
   }
 );
 
-Disclosure.displayName = "Disclosure";
+DisclosureBase.displayName = "Disclosure";
 
 export const DisclosureBody = HeroDisclosureBody;
 export const DisclosureContent = HeroDisclosureContent;
 export const DisclosureHeading = HeroDisclosureHeading;
 export const DisclosureIndicator = HeroDisclosureIndicator;
 export const DisclosureTrigger = HeroDisclosureTrigger;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Disclosure = Object.assign(DisclosureBase, {
+  Body: DisclosureBody,
+  Content: DisclosureContent,
+  Heading: DisclosureHeading,
+  Indicator: DisclosureIndicator,
+  Trigger: DisclosureTrigger
+});

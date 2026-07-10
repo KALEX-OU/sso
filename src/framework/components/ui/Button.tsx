@@ -6,9 +6,36 @@ import { Tooltip } from "./Tooltip";
 import { Skeleton } from "./Skeleton";
 import { Spinner } from "./Spinner";
 
+// Variante nativa HeroUI: fonte di verità derivata dai tipi del pacchetto (niente duplicazione manuale).
+type HeroButtonVariant = NonNullable<React.ComponentProps<typeof HeroButton>["variant"]>;
+
+/**
+ * Varianti supportate dal Button del framework (E3.4).
+ * L'array è la SSOT runtime (utile per storybook/test); il `satisfies` garantisce a
+ * compile-time che ogni variante sia anche una variante nativa HeroUI, quindi il valore
+ * può essere inoltrato a HeroButton SENZA cast. Le vecchie varianti "success"/"warning"/
+ * "link" sono state rimosse (v1.0, breaking consentito): non avevano né classi klx né
+ * equivalente HeroUI ed erano inutilizzate in tutto il monorepo.
+ */
+export const BUTTON_VARIANTS = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "danger",
+  "danger-soft",
+  "ghost",
+  "outline"
+] as const satisfies readonly HeroButtonVariant[];
+
+export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
+
+/** Taglie supportate dal Button del framework. */
+export const BUTTON_SIZES = ["sm", "md", "lg"] as const;
+export type ButtonSize = (typeof BUTTON_SIZES)[number];
+
 export interface ButtonProps extends Omit<React.ComponentProps<typeof HeroButton>, "onClick" | "variant" | "children"> {
-  variant?: "primary" | "secondary" | "success" | "warning" | "danger" | "ghost" | "link" | "outline" | "danger-soft" | "tertiary";
-  size?: "sm" | "md" | "lg";
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   isLoading?: boolean;
   isSkeleton?: boolean;
   icon?: React.ReactNode;
@@ -28,7 +55,14 @@ export interface ButtonProps extends Omit<React.ComponentProps<typeof HeroButton
   unstyled?: boolean;
 }
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+// Classi skeleton per taglia: la mappa esaustiva sostituisce l'oggetto inline (satisfies = completezza garantita).
+const SKELETON_SIZE_CLASSES = {
+  sm: "h-8 w-20",
+  md: "h-10 w-24",
+  lg: "h-12 w-32"
+} satisfies Record<ButtonSize, string>;
+
+const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className = "",
@@ -50,12 +84,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     if (isSkeleton) {
-      const sizeClasses = {
-        sm: "h-8 w-20",
-        md: "h-10 w-24",
-        lg: "h-12 w-32"
-      }[size ?? "md"];
-      return <Skeleton className={`rounded-xl ${sizeClasses} ${className}`} />;
+      return <Skeleton className={`rounded-xl ${SKELETON_SIZE_CLASSES[size ?? "md"]} ${className}`} />;
     }
 
     // Modalità unstyled: passthrough puro verso HeroUI (nessuna classe klx; size/variant
@@ -67,7 +96,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className={className}
           size={size}
           isDisabled={disabled || isDisabled || isLoading}
-          variant={variant as "primary" | "secondary" | "danger" | "ghost" | "danger-soft" | "outline" | "tertiary" | undefined}
+          variant={variant}
           onClick={onClick ? (e) => onClick(e as React.MouseEvent<HTMLButtonElement>) : undefined}
           {...props}
         >
@@ -77,19 +106,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return tooltip ? <Tooltip content={tooltip}>{rawButton}</Tooltip> : rawButton;
     }
 
-    const appliedVariant = variant ?? "primary";
-    const appliedSize = size ?? "md";
+    const appliedVariant: ButtonVariant = variant ?? "primary";
+    const appliedSize: ButtonSize = size ?? "md";
 
     const buttonContent = (
       <HeroButton
         ref={ref}
         className={`klx-btn klx-btn--${appliedVariant} klx-btn--${appliedSize} ${className}`}
         isDisabled={disabled || isDisabled || isLoading}
-        variant={appliedVariant as "primary" | "secondary" | "danger" | "ghost" | "danger-soft" | "outline" | "tertiary" | undefined}
+        variant={appliedVariant}
         onClick={onClick ? (e) => onClick(e as React.MouseEvent<HTMLButtonElement>) : undefined}
         {...props}
       >
-        {isLoading && <Spinner size="sm" className="mr-1.5" />}
+        {isLoading && <Spinner size="sm" className="me-1.5" />}
         {!isLoading && icon && iconPosition === "start" && (
           <span className="klx-btn-icon klx-btn-icon--start">{icon}</span>
         )}
@@ -108,6 +137,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 
-Button.displayName = "Button";
+ButtonBase.displayName = "Button";
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Button = Object.assign(ButtonBase, {
+  Group: ButtonGroup
+});
 
 export { ButtonGroup };

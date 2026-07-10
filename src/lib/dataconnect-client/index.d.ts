@@ -1104,6 +1104,7 @@ export interface GetUserClaimsContextData {
         type: string;
         confirmed: boolean;
         isTest: boolean;
+        mfaRequired: boolean;
         viesValidated: boolean;
         country: string;
         vatNumber?: string | null;

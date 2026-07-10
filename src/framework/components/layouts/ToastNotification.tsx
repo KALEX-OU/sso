@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CheckCircle, AlertCircle, Shield, X } from "lucide-react";
+import { useUIStrings } from "../../lib/ui.localization";
 
 export interface ToastNotificationProps {
   message: string;
@@ -10,6 +11,7 @@ export interface ToastNotificationProps {
 }
 
 export function ToastNotification({ message, type, onClose }: ToastNotificationProps) {
+  const s = useUIStrings();
   return (
     <div
       className={`klx-toast ${
@@ -39,7 +41,7 @@ export function ToastNotification({ message, type, onClose }: ToastNotificationP
             ? "klx-toast-close-btn--error"
             : "klx-toast-close-btn--info"
         }`}
-        aria-label="Chiudi notifica"
+        aria-label={s.common.closeNotification}
       >
         <X className="w-4 h-4" />
       </button>

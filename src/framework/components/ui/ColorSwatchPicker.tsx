@@ -11,7 +11,7 @@ export type ColorSwatchPickerProps = React.ComponentProps<typeof HeroColorSwatch
   tooltip?: string;
 };
 
-export const ColorSwatchPicker: React.FC<ColorSwatchPickerProps> = (
+const ColorSwatchPickerBase: React.FC<ColorSwatchPickerProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-color-swatch-picker-skeleton ${className}`} />;
@@ -34,6 +34,11 @@ export const ColorSwatchPicker: React.FC<ColorSwatchPickerProps> = (
   }
 );
 
-ColorSwatchPicker.displayName = "ColorSwatchPicker";
+ColorSwatchPickerBase.displayName = "ColorSwatchPicker";
 
 export const ColorSwatchPickerItem = HeroColorSwatchPickerItem;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ColorSwatchPicker = Object.assign(ColorSwatchPickerBase, {
+  Item: ColorSwatchPickerItem
+});

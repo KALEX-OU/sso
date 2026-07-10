@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { Button, ScrollShadow } from "../ui";
+import { useUIStrings } from "../../lib/ui.localization";
 
 interface DetailViewProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function DetailView({
   children,
   className = ""
 }: DetailViewProps) {
+  const s = useUIStrings();
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) onClose();
@@ -61,7 +63,7 @@ export function DetailView({
             onClick={onClose}
             variant="ghost"
             size="sm"
-            aria-label="Chiudi dettagli"
+            aria-label={s.common.closeDetails}
             className="klx-detail-close-btn"
           >
             <X className="w-5 h-5" />

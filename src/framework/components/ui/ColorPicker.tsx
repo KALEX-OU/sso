@@ -11,7 +11,7 @@ export type ColorPickerProps = React.ComponentProps<typeof HeroColorPicker> & {
   tooltip?: string;
 };
 
-export const ColorPicker: React.FC<ColorPickerProps> = (
+const ColorPickerBase: React.FC<ColorPickerProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-color-picker-skeleton ${className}`} />;
@@ -34,7 +34,13 @@ export const ColorPicker: React.FC<ColorPickerProps> = (
   }
 );
 
-ColorPicker.displayName = "ColorPicker";
+ColorPickerBase.displayName = "ColorPicker";
 
 export const ColorPickerTrigger = HeroColorPickerTrigger;
 export const ColorPickerPopover = HeroColorPickerPopover;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ColorPicker = Object.assign(ColorPickerBase, {
+  Trigger: ColorPickerTrigger,
+  Popover: ColorPickerPopover
+});

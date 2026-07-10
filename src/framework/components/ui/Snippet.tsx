@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Tooltip } from "./Tooltip";
 import { Skeleton } from "./Skeleton";
+import { useUIStrings } from "../../lib/ui.localization";
 
 export interface SnippetProps extends React.HTMLAttributes<HTMLDivElement> {
   textToCopy?: string;
@@ -13,6 +14,7 @@ export interface SnippetProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Snippet = React.forwardRef<HTMLDivElement, SnippetProps>(
   ({ children, textToCopy, className = "", isSkeleton, tooltip, ...props }, ref) => {
+    const s = useUIStrings();
     const [copied, setCopied] = useState(false);
 
     if (isSkeleton) {
@@ -41,7 +43,7 @@ export const Snippet = React.forwardRef<HTMLDivElement, SnippetProps>(
         <button
           onClick={handleCopy}
           className="klx-snippet-copy-btn"
-          aria-label="Copia negli appunti"
+          aria-label={s.common.copyToClipboard}
         >
           {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
         </button>

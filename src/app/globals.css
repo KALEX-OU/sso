@@ -44,14 +44,31 @@
   --klx-warning: #f59e0b;
   --klx-danger: #ef4444;
 
-  /* Glow/ombre derivate dai colori di brand (15% alpha — valori invariati rispetto ai precedenti hardcoded) */
-  --klx-glow-primary: rgba(79, 70, 229, 0.15);
-  --klx-glow-success: rgba(16, 185, 129, 0.15);
-  --klx-glow-danger: rgba(239, 68, 68, 0.15);
+  /* Glow/ombre e scrollbar DERIVATE via color-mix: seguono automaticamente
+     il brand attivo, quindi NON vanno ridefinite nei blocchi [data-brand]. */
+  --klx-glow-primary: color-mix(in srgb, var(--klx-primary) 15%, transparent);
+  --klx-glow-success: color-mix(in srgb, var(--klx-success) 15%, transparent);
+  --klx-glow-danger: color-mix(in srgb, var(--klx-danger) 15%, transparent);
 
-  /* Scrollbar minimalista (derivata da --klx-secondary #7c3aed) */
-  --klx-scrollbar-thumb: rgba(124, 58, 237, 0.3);
-  --klx-scrollbar-thumb-hover: rgba(124, 58, 237, 0.6);
+  /* Scrollbar minimalista (derivata da --klx-secondary) */
+  --klx-scrollbar-thumb: color-mix(in srgb, var(--klx-secondary) 30%, transparent);
+  --klx-scrollbar-thumb-hover: color-mix(in srgb, var(--klx-secondary) 60%, transparent);
+}
+
+/* ==========================================================================
+   OVERRIDE PER BRAND (white-label) — E1 DS_REFACTORING_V1_PLAN
+   UNICO punto di personalizzazione colore per brand: un blocco [data-brand]
+   che ridefinisce SOLO i token primitivi --klx-*. Tutto il resto (utility
+   @theme, HeroUI, BEM, glow/scrollbar) ne discende automaticamente.
+   L'attributo data-brand è applicato a <html> dal BrandProvider
+   (framework/src/components/providers/BrandProvider.tsx) in base alla
+   BrandConfig attiva (lib/brand.config.ts).
+   ========================================================================== */
+[data-brand="acme"] {
+  /* Brand DEMO per il collaudo white-label (palette teal/sky/amber) */
+  --klx-primary: #0d9488;   /* teal-600 */
+  --klx-secondary: #0369a1; /* sky-700 */
+  --klx-accent: #f59e0b;    /* amber-500 */
 }
 
 /* @theme inline: le utility Tailwind (bg-primary, text-danger, from-primary…) referenziano
@@ -105,7 +122,8 @@ body {
 /* Struttura principale della Sidebar */
 .klx-sidebar {
   @apply shrink-0 flex flex-col h-screen transition-all duration-300 ease-in-out z-30;
-  @apply bg-slate-50/95 dark:bg-slate-950/95 text-slate-800 dark:text-slate-100 border-r border-slate-200/60 dark:border-slate-900/60 backdrop-blur-xl;
+  /* border-e (logical): in RTL la sidebar sta a destra e il bordo va sul lato interno */
+  @apply bg-slate-50/95 dark:bg-slate-950/95 text-slate-800 dark:text-slate-100 border-e border-slate-200/60 dark:border-slate-900/60 backdrop-blur-xl;
   width: 16rem; /* w-64 */
 }
 
@@ -131,7 +149,11 @@ body {
 }
 
 .klx-sidebar-logo-text {
-  @apply text-sm font-black uppercase tracking-[0.2em] bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  /* Il gradiente del logo ACCOMPAGNA la direzione di lettura del testo:
+     in RTL parte quindi dal lato di inizio lettura (rtl:bg-gradient-to-l).
+     Gli altri gradienti del DS (CTA .klx-btn--primary, logo-mark to-br) sono
+     puramente decorativi e restano fisici — vedi nota su .klx-btn--primary. */
+  @apply text-sm font-black uppercase tracking-[0.2em] bg-clip-text text-transparent bg-gradient-to-r rtl:bg-gradient-to-l from-primary to-secondary;
 }
 
 .klx-sidebar-toggle-btn {
@@ -149,7 +171,7 @@ body {
 }
 
 .klx-sidebar-menu-item--active {
-  @apply bg-primary/10 text-primary border-l-3 border-primary;
+  @apply bg-primary/10 text-primary border-s-3 border-primary;
 }
 
 .klx-sidebar-menu-item-icon {
@@ -218,7 +240,7 @@ body {
 }
 
 .klx-sidebar-profile-info {
-  @apply text-left min-w-0 flex-1;
+  @apply text-start min-w-0 flex-1;
 }
 
 .klx-sidebar-profile-name {
@@ -292,10 +314,17 @@ body {
 
 /* DetailView */
 .klx-detail-overlay {
+  /* justify-end è GIÀ logico (il flex segue la direzione di scrittura):
+     in LTR il pannello si ancora a destra, in RTL a sinistra — comportamento
+     voluto, il detail-panel DEVE specchiarsi. Nessuna modifica necessaria. */
   @apply fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm transition-opacity duration-300;
 }
 .klx-detail-panel {
-  @apply w-full max-w-xl h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-900 rounded-l-3xl shadow-2xl flex flex-col animate-in slide-in-from-right duration-300;
+  /* slide-in-from-end (tw-animate-css, importata da @heroui/styles) è
+     direction-aware nativa: entra da destra in LTR e da sinistra in RTL,
+     coerente con il justify-end logico dell'overlay. border-s/rounded-s:
+     il bordo/arrotondamento stanno sempre sul lato interno (inline-start). */
+  @apply w-full max-w-xl h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-s border-slate-200 dark:border-slate-900 rounded-s-3xl shadow-2xl flex flex-col animate-in slide-in-from-end duration-300;
 }
 .klx-detail-header {
   @apply flex items-center justify-between px-6 py-5 border-b border-slate-200/60 dark:border-slate-900/50;
@@ -313,7 +342,7 @@ body {
   @apply flex-1 p-6 overflow-y-auto text-slate-700 dark:text-slate-300;
 }
 .klx-detail-footer {
-  @apply px-6 py-4 border-t border-slate-200/60 dark:border-slate-900/50 bg-slate-50/60 dark:bg-slate-950/60 flex items-center justify-end gap-3 rounded-bl-3xl;
+  @apply px-6 py-4 border-t border-slate-200/60 dark:border-slate-900/50 bg-slate-50/60 dark:bg-slate-950/60 flex items-center justify-end gap-3 rounded-es-3xl;
 }
 
 /* Filter & Active Filter Chips */
@@ -330,7 +359,7 @@ body {
   @apply inline-flex items-center gap-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl px-2.5 py-1 text-xs font-semibold;
 }
 .klx-filter-chip-remove-btn {
-  @apply ml-1 hover:text-secondary/80 dark:hover:text-secondary/60 transition-colors cursor-pointer outline-none flex items-center justify-center;
+  @apply ms-1 hover:text-secondary/80 dark:hover:text-secondary/60 transition-colors cursor-pointer outline-none flex items-center justify-center;
 }
 .klx-filter-clear-btn {
   @apply h-7 min-w-0 px-2 text-xs font-extrabold uppercase tracking-wider rounded-lg text-danger hover:bg-danger/10 active:scale-95 transition-all;
@@ -370,8 +399,11 @@ body {
 
 /* ToastNotification */
 .klx-toast {
-  /* z-[60]: sopra i modal (backdrop z-50) così il toast non resta nascosto dietro il velo */
-  @apply fixed bottom-6 left-6 z-[60] animate-in fade-in slide-in-from-bottom-5 duration-300;
+  /* z-[60]: sopra i modal (backdrop z-50) così il toast non resta nascosto dietro il velo.
+     start-6 (logical): il toast si ancora al lato di inizio lettura e in RTL si
+     specchia a destra — voluto: resta sul lato della sidebar (anch'essa logica)
+     e opposto al detail-panel, come in LTR. */
+  @apply fixed bottom-6 start-6 z-[60] animate-in fade-in slide-in-from-bottom-5 duration-300;
   @apply bg-white dark:bg-slate-950/95 backdrop-blur-xl border rounded-2xl p-4 shadow-2xl flex items-center gap-3.5 max-w-sm;
 }
 .klx-toast--success {
@@ -387,10 +419,10 @@ body {
   @apply shrink-0;
 }
 .klx-toast-message {
-  @apply text-slate-800 dark:text-white text-xs font-bold leading-relaxed pr-2;
+  @apply text-slate-800 dark:text-white text-xs font-bold leading-relaxed pe-2;
 }
 .klx-toast-close-btn {
-  @apply ml-auto shrink-0 p-1 rounded-lg transition-colors cursor-pointer outline-none;
+  @apply ms-auto shrink-0 p-1 rounded-lg transition-colors cursor-pointer outline-none;
 }
 .klx-toast-close-btn--success {
   @apply hover:bg-success/10 text-success;
@@ -411,6 +443,8 @@ body {
 }
 
 .klx-btn--primary {
+  /* RTL: gradiente fisico voluto — è decorazione di superficie (non accompagna
+     una direzione di lettura come il logo-text), quindi NON si specchia. */
   @apply bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90;
 }
 
@@ -459,11 +493,11 @@ body {
 }
 
 .klx-settings-card--danger {
-  @apply border border-red-500/20 dark:border-red-500/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-8;
+  @apply border border-danger/20 dark:border-danger/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-8;
 }
 
 .klx-settings-profile-avatar-wrapper {
-  @apply relative w-36 h-36 rounded-full flex items-center justify-center border-4 border-violet-500/20 overflow-hidden shadow-2xl;
+  @apply relative w-36 h-36 rounded-full flex items-center justify-center border-4 border-secondary/20 overflow-hidden shadow-2xl;
 }
 
 .klx-settings-profile-avatar-wrapper:hover .klx-settings-avatar-hover-overlay {
@@ -483,7 +517,7 @@ body {
 }
 
 .klx-settings-profile-badge {
-  @apply flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-violet-500/10 text-violet-500 border border-violet-500/20 mt-3;
+  @apply flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-secondary/10 text-secondary border border-secondary/20 mt-3;
 }
 
 .klx-settings-avatar-input {

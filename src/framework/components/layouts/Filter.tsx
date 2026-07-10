@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "../ui";
 import { X } from "lucide-react";
+import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 export interface ActiveFilter {
   id: string;
@@ -24,22 +25,23 @@ export function Filter({
   onClearAll,
   className = ""
 }: FilterProps) {
+  const s = useUIStrings();
   if (activeFilters.length === 0) return null;
 
   return (
     <div className={`klx-filter-container ${className}`}>
       <span className="klx-filter-label">
-        Filtri attivi:
+        {s.filter.activeFilters}
       </span>
       <div className="klx-filter-chips">
         {activeFilters.map((filter) => (
           <div key={filter.id} className="klx-filter-chip">
-            <span className="opacity-70 mr-1">{filter.label}:</span>
+            <span className="opacity-70 me-1">{filter.label}:</span>
             <span>{filter.displayValue}</span>
             <button 
               onClick={() => onRemoveFilter(filter.id)} 
               className="klx-filter-chip-remove-btn"
-              aria-label={`Rimuovi filtro ${filter.label}`}
+              aria-label={fmtUI(s.filter.removeFilter, { label: filter.label })}
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -51,7 +53,7 @@ export function Filter({
           variant="ghost"
           className="klx-filter-clear-btn"
         >
-          Rimuovi tutti
+          {s.filter.removeAll}
         </Button>
       </div>
     </div>

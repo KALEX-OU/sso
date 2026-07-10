@@ -5,6 +5,7 @@ import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
 import { Card, CardBody, Button, Input, Label } from "../ui";
 import { Globe, Plus, Trash2, Copy, ExternalLink, RefreshCw } from "lucide-react";
+import { useUIStrings } from "../../lib/ui.localization";
 import { useI18n } from "@/locales/client";
 
 interface CustomDomain {
@@ -36,6 +37,7 @@ function statusClass(status: string): string {
 export function DomainManagement(): React.ReactElement {
   const { showToast } = useDashboard();
   const t = useI18n();
+  const s = useUIStrings();
 
   const [loading, setLoading] = useState(true);
   const [baseDomain, setBaseDomain] = useState("");
@@ -145,7 +147,7 @@ export function DomainManagement(): React.ReactElement {
       <Card className="klx-settings-card--full">
         <CardBody>
           <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
-            <Globe className="w-4 h-4 text-violet-500" />
+            <Globe className="w-4 h-4 text-secondary" />
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
               {t("settings.domains.subdomainTitle")}
             </h2>
@@ -161,11 +163,11 @@ export function DomainManagement(): React.ReactElement {
                 <Input
                   type="text"
                   value={subdomainInput}
-                  placeholder="la-tua-org"
+                  placeholder={s.settings.subdomainPlaceholder}
                   onChange={(e) => setSubdomainInput(e.target.value)}
-                  className={`${inputCls} rounded-r-none`}
+                  className={`${inputCls} rounded-e-none`}
                 />
-                <span className="h-[48px] flex items-center px-3 rounded-2xl rounded-l-none border border-l-0 border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900 text-sm text-slate-500 dark:text-gray-400 whitespace-nowrap">
+                <span className="h-[48px] flex items-center px-3 rounded-2xl rounded-s-none border border-s-0 border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900 text-sm text-slate-500 dark:text-gray-400 whitespace-nowrap">
                   .{baseDomain}
                 </span>
               </div>
@@ -192,7 +194,7 @@ export function DomainManagement(): React.ReactElement {
       <Card className="klx-settings-card--full">
         <CardBody>
           <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
-            <Globe className="w-4 h-4 text-violet-500" />
+            <Globe className="w-4 h-4 text-secondary" />
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
               {t("settings.domains.customTitle")}
             </h2>
@@ -203,12 +205,12 @@ export function DomainManagement(): React.ReactElement {
             <Input
               type="text"
               value={newDomain}
-              placeholder="app.tuazienda.com"
+              placeholder={s.settings.customDomainPlaceholder}
               onChange={(e) => setNewDomain(e.target.value)}
               className={`${inputCls} flex-1 min-w-[220px]`}
             />
             <Button variant="primary" isDisabled={addingDomain || !newDomain.trim()} onClick={() => void addDomain()}>
-              <Plus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 me-1" />
               {addingDomain ? t("settings.domains.adding") : t("settings.domains.add")}
             </Button>
           </div>

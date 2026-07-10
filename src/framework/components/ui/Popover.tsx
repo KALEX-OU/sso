@@ -11,7 +11,7 @@ export type PopoverProps = React.ComponentProps<typeof HeroPopover> & {
   tooltip?: string;
 };
 
-export const Popover: React.FC<PopoverProps> = (
+const PopoverBase: React.FC<PopoverProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-popover-skeleton ${className}`} />;
@@ -33,8 +33,15 @@ export const Popover: React.FC<PopoverProps> = (
   }
 );
 
-Popover.displayName = "Popover";
+PopoverBase.displayName = "Popover";
 
 export const PopoverTrigger = HeroPopoverTrigger;
 export const PopoverContent = HeroPopoverContent;
 export const PopoverRoot = HeroPopoverRoot;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Popover = Object.assign(PopoverBase, {
+  Trigger: PopoverTrigger,
+  Content: PopoverContent,
+  Root: PopoverRoot
+});

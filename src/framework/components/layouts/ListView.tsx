@@ -4,6 +4,7 @@ import React from "react";
 import { TextField, Input, InputGroup, InputGroupPrefix } from "../ui";
 import { Filter, ActiveFilter } from "./Filter";
 import { Search } from "lucide-react";
+import { useUIStrings } from "../../lib/ui.localization";
 
 interface ListViewProps {
   title: string;
@@ -25,7 +26,7 @@ export function ListView({
   description,
   searchValue,
   onSearchChange,
-  searchPlaceholder = "Cerca...",
+  searchPlaceholder,
   activeFilters = [],
   onRemoveFilter,
   onClearAllFilters,
@@ -34,6 +35,8 @@ export function ListView({
   children,
   className = ""
 }: ListViewProps) {
+  const s = useUIStrings();
+  const placeholder = searchPlaceholder ?? s.common.search;
   return (
     <div className={`klx-listview-container ${className}`}>
       {/* Intestazione */}
@@ -58,13 +61,13 @@ export function ListView({
       {/* Barra dei controlli (Ricerca + Filtri) */}
       <div className="klx-listview-controls">
         <div className="klx-listview-search-wrapper">
-          <TextField value={searchValue} onChange={onSearchChange} aria-label={searchPlaceholder} className="w-full">
+          <TextField value={searchValue} onChange={onSearchChange} aria-label={placeholder} className="w-full">
             <InputGroup className="klx-listview-search-input-group">
-              <InputGroupPrefix className="flex items-center justify-center mr-2">
+              <InputGroupPrefix className="flex items-center justify-center me-2">
                 <Search className="w-4 h-4 text-muted-foreground" />
               </InputGroupPrefix>
               <Input
-                placeholder={searchPlaceholder}
+                placeholder={placeholder}
                 className="klx-listview-search-input"
               />
             </InputGroup>

@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect, useSyncExternalStore, useCallback, useRef } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { I18nProviderClient } from "@/locales/client";
+import { I18nProviderClient, useCurrentLocale } from "@/locales/client";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, useAuth, forceCleanSession } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
 import { Button, DebugWidget, GlobalLoader } from "../ui";
 import { ShieldAlert, RefreshCw, ArrowLeft } from "lucide-react";
+import { BrandProvider } from "./BrandProvider";
+import type { BrandConfig } from "../../lib/brand.config";
+import { useUIStrings, fmtUI, localeDirection } from "../../lib/ui.localization";
 
 // Suppress the React 19 false-positive warning for inline script tags rendered by NextThemesProvider
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -23,6 +26,24 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 const emptySubscribe = () => () => {};
 
 // ---------------------------------------------------------
+// INNER COMPONENT: LocaleDirection (E3.1 — RTL readiness)
+// ---------------------------------------------------------
+/**
+ * Imposta l'attributo `dir` su <html> in base al locale corrente, in modo
+ * reattivo a `useCurrentLocale()` (il cambio lingua da settings aggiorna la
+ * direzione senza reload). Va montato DENTRO I18nProviderClient.
+ * NB: i locale attivi (it/en/es) sono tutti LTR — l'RTL è predisposto per
+ * mercati futuri (vedi RTL_LOCALES in lib/ui.localization.ts).
+ */
+function LocaleDirection() {
+  const locale = useCurrentLocale();
+  useEffect(() => {
+    document.documentElement.dir = localeDirection(locale);
+  }, [locale]);
+  return null;
+}
+
+// ---------------------------------------------------------
 // INNER COMPONENT: RateLimitGuard
 // ---------------------------------------------------------
 interface RateLimitGuardProps {
@@ -31,6 +52,7 @@ interface RateLimitGuardProps {
 }
 
 function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) {
+  const s = useUIStrings();
   const [countdown, setCountdown] = useState(initialCountdown);
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -65,32 +87,33 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center select-none relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full filter blur-[100px] md:blur-[150px] pointer-events-none bg-violet-500/10 transition-all duration-700"></div>
+      {/* RTL: fisico voluto — centraggio simmetrico (left-1/2 + -translate-x-1/2); con start-1/2 il translate fisico non centrerebbe più in RTL */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full filter blur-[100px] md:blur-[150px] pointer-events-none bg-secondary/10 transition-all duration-700"></div>
       
       <div className="relative z-10 max-w-md w-full p-8 border border-white/10 bg-slate-900/60 backdrop-blur-2xl rounded-3xl shadow-2xl space-y-6">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-500/20 to-accent/20 flex items-center justify-center mx-auto border border-violet-500/30 animate-pulse">
-          <ShieldAlert className="w-8 h-8 text-violet-400" />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-secondary/20 to-accent/20 flex items-center justify-center mx-auto border border-secondary/30 animate-pulse">
+          <ShieldAlert className="w-8 h-8 text-secondary" />
         </div>
 
         <div className="space-y-2">
           <h2 className="text-xl font-black tracking-tight text-white uppercase">
-            Richieste Troppo Rapide
+            {s.providers.rateLimitTitle}
           </h2>
           <p className="text-slate-400 text-xs leading-relaxed font-semibold">
-            Hai eseguito troppi aggiornamenti della pagina in un breve intervallo di tempo. Per garantire la stabilità del servizio, le richieste frequenti sono momentaneamente limitate.
+            {s.providers.rateLimitBody}
           </p>
           <p className="text-slate-400 text-xs leading-relaxed font-medium">
-            Ti consigliamo di navigare all&apos;interno dell&apos;applicazione usando i menu e i link interni senza ricaricare l&apos;intera pagina.
+            {s.providers.rateLimitHint}
           </p>
         </div>
 
         {countdown > 0 ? (
-          <div className="py-2 px-4 rounded-xl bg-white/5 border border-white/5 inline-block text-xs font-bold text-violet-400">
-            Attendi <span className="text-white text-sm font-black mx-1">{countdown}</span> secondi per riprovare
+          <div className="py-2 px-4 rounded-xl bg-white/5 border border-white/5 inline-block text-xs font-bold text-secondary">
+            {s.providers.waitPrefix} <span className="text-white text-sm font-black mx-1">{countdown}</span> {s.providers.waitSuffix}
           </div>
         ) : (
-          <div className="py-2 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 inline-block text-xs font-bold text-emerald-400">
-            Pronto per il ripristino!
+          <div className="py-2 px-4 rounded-xl bg-success/10 border border-success/20 inline-block text-xs font-bold text-success">
+            {s.providers.readyToRetry}
           </div>
         )}
 
@@ -101,8 +124,8 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
             variant="ghost"
             className={`w-full font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer ${
               countdown > 0 
-                ? "bg-secondary/30 text-violet-400 cursor-not-allowed border border-violet-500/20" 
-                : "bg-gradient-to-r from-secondary to-accent hover:from-violet-500 hover:to-accent text-white shadow-lg"
+                ? "bg-secondary/30 text-secondary cursor-not-allowed border border-secondary/20" 
+                : "bg-gradient-to-r from-secondary to-accent hover:from-secondary hover:to-accent text-white shadow-lg"
             }`}
             onClick={handleRetry}
             isDisabled={countdown > 0 || isRetrying}
@@ -110,10 +133,10 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
             {isRetrying ? (
               <span className="flex items-center justify-center gap-2">
                 <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                Ripristino...
+                {s.providers.retrying}
               </span>
             ) : (
-              "Riprova Ora"
+              s.providers.retryNow
             )}
           </Button>
 
@@ -124,8 +147,9 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
             className="w-full font-bold text-xs uppercase tracking-wider rounded-xl border border-white/5 hover:bg-white/5 text-slate-400 hover:text-white cursor-pointer"
             onClick={handleGoBack}
           >
-            <ArrowLeft className="w-4 h-4 mr-1 shrink-0" />
-            Torna Indietro
+            {/* Freccia "indietro": direzionale, si specchia in RTL */}
+            <ArrowLeft className="w-4 h-4 me-1 shrink-0 rtl:-scale-x-100" />
+            {s.providers.goBack}
           </Button>
         </div>
       </div>
@@ -137,6 +161,8 @@ interface ProvidersProps {
   children: React.ReactNode;
   locale: string;
   appId: "sso" | "web" | string;
+  /** Brand white-label esplicito; in assenza risolto da NEXT_PUBLIC_KALEX_BRAND (default KALEX). */
+  brand?: BrandConfig;
 }
 
 interface ClientTokenResult {
@@ -156,6 +182,12 @@ interface ClientTokenResult {
 // ---------------------------------------------------------
 function FirebaseProvider({ children, appId }: { children: React.ReactNode; appId: string }) {
   const { loading } = useAuth();
+  const s = useUIStrings();
+  // Ref per le stringhe dentro callback/effetti (il cambio lingua non deve ri-innescarli)
+  const sRef = useRef(s);
+  useEffect(() => {
+    sRef.current = s;
+  }, [s]);
   const [initLoading, setInitLoading] = useState(true);
   const [exchangeLoading, setExchangeLoading] = useState(false);
   const [exchangeError, setExchangeError] = useState<string | null>(null);
@@ -240,7 +272,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
               await signInWithCustomToken(auth, res.customToken);
             } catch (signInErr) {
               const errMsg = signInErr instanceof Error ? signInErr.message : String(signInErr);
-              setExchangeError(`Errore di inizializzazione Firebase Auth: ${errMsg}. Verifica che il dominio '${window.location.hostname}' sia inserito tra i referrer consentiti per la chiave API di Firebase.`);
+              setExchangeError(fmtUI(sRef.current.providers.firebaseInitError, { error: errMsg, domain: window.location.hostname }));
               await auth.signOut();
             }
           } else if (res.isRateLimited && active.current) {
@@ -394,7 +426,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           
           if (storedState && state !== storedState) {
             console.error("[SSO Callback] Rilevato potenziale attacco CSRF: gli state non corrispondono.");
-            setExchangeError("Errore di convalida della sessione (CSRF Blocked).");
+            setExchangeError(sRef.current.providers.csrfBlocked);
             setExchangeLoading(false);
             return;
           }
@@ -432,11 +464,11 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
             } catch (signInErr) {
               console.error("[SSO Callback] Errore signInWithCustomToken:", signInErr);
               const errMsg = signInErr instanceof Error ? signInErr.message : String(signInErr);
-              setExchangeError(`Impossibile autenticare la sessione Firebase client: ${errMsg}. Verifica che il dominio '${window.location.hostname}' sia inserito tra i referrer consentiti per la chiave API di Firebase Auth nella console Google Cloud.`);
+              setExchangeError(fmtUI(sRef.current.providers.firebaseClientAuthError, { error: errMsg, domain: window.location.hostname }));
               await auth.signOut();
             }
           } else {
-            const errorMsg = response.error?.message || "Impossibile completare lo scambio del codice SSO.";
+            const errorMsg = response.error?.message || sRef.current.providers.ssoExchangeFailed;
             const correlationId = (response.error?.details as { correlationId?: string })?.correlationId;
             setExchangeError(correlationId ? `${errorMsg} (Correlation ID: ${correlationId})` : errorMsg);
             // Forza la pulizia per evitare sessioni parziali/invalide
@@ -444,7 +476,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           }
         } catch (err) {
           console.error("[SSO Callback] Errore scambio token:", err);
-          setExchangeError("Errore di rete durante lo scambio del codice SSO.");
+          setExchangeError(sRef.current.providers.ssoNetworkError);
           await forceCleanSession(appId);
         } finally {
           setExchangeLoading(false);
@@ -479,7 +511,7 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
   if (isMounted && isLoading) {
     return (
       <GlobalLoader
-        message={exchangeLoading ? "Sincronizzazione sessione in corso…" : "Caricamento in corso…"}
+        message={exchangeLoading ? s.common.sessionSync : s.common.loading}
       />
     );
   }
@@ -488,20 +520,20 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 gap-4">
         <div className="p-5 border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl rounded-3xl max-w-md shadow-2xl flex flex-col items-center gap-4 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-            <ShieldAlert className="w-6 h-6 text-red-500" />
+          <div className="w-12 h-12 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center">
+            <ShieldAlert className="w-6 h-6 text-danger" />
           </div>
           <div className="space-y-1">
-            <span className="font-black text-red-500 uppercase tracking-widest text-[10px]">Autenticazione Fallita</span>
+            <span className="font-black text-danger uppercase tracking-widest text-[10px]">{s.providers.authFailed}</span>
             <p className="text-slate-600 dark:text-slate-300 text-xs font-semibold leading-relaxed px-2">{exchangeError}</p>
           </div>
           <Button
             unstyled
             size="sm"
-            className="mt-2 bg-gradient-to-r from-red-600 to-accent hover:from-red-500 hover:to-accent text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
+            className="mt-2 bg-gradient-to-r from-danger to-accent hover:opacity-90 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
             onClick={forceCleanAndRedirect}
           >
-            Pulisci Sessione e Riprova
+            {s.providers.cleanAndRetry}
           </Button>
         </div>
       </div>
@@ -519,14 +551,17 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
 // ---------------------------------------------------------
 // EXPORTED DEFAULT COMPONENT: Providers
 // ---------------------------------------------------------
-export default function Providers({ children, locale, appId }: ProvidersProps) {
+export default function Providers({ children, locale, appId, brand }: ProvidersProps) {
   return (
     <I18nProviderClient locale={locale}>
-      <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-        <FirebaseProvider appId={appId}>
-          {children}
-        </FirebaseProvider>
-      </NextThemesProvider>
+      <LocaleDirection />
+      <BrandProvider brand={brand}>
+        <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <FirebaseProvider appId={appId}>
+            {children}
+          </FirebaseProvider>
+        </NextThemesProvider>
+      </BrandProvider>
     </I18nProviderClient>
   );
 }

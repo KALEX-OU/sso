@@ -25,7 +25,7 @@ interface GlobalLoaderProps {
 export function GlobalLoader({ message, subMessage, fullScreen = true }: GlobalLoaderProps) {
   const inner = (
     <div className="flex flex-col items-center justify-center gap-4 text-center">
-      <Loader2 className="w-12 h-12 text-secondary dark:text-violet-400 animate-spin" aria-hidden />
+      <Loader2 className="w-12 h-12 text-secondary dark:text-secondary animate-spin" aria-hidden />
       {message && (
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-xs px-4">{message}</p>
       )}

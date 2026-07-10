@@ -11,7 +11,7 @@ export type AlertDialogProps = React.ComponentProps<typeof HeroAlertDialog> & {
   tooltip?: string;
 };
 
-export const AlertDialog: React.FC<AlertDialogProps> = (
+const AlertDialogBase: React.FC<AlertDialogProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-alert-dialog-skeleton ${className}`} />;
@@ -33,7 +33,7 @@ export const AlertDialog: React.FC<AlertDialogProps> = (
   }
 );
 
-AlertDialog.displayName = "AlertDialog";
+AlertDialogBase.displayName = "AlertDialog";
 
 export const AlertDialogBackdrop = HeroAlertDialogBackdrop;
 export const AlertDialogBody = HeroAlertDialogBody;
@@ -46,3 +46,18 @@ export const AlertDialogHeading = HeroAlertDialogHeading;
 export const AlertDialogIcon = HeroAlertDialogIcon;
 export const AlertDialogRoot = HeroAlertDialogRoot;
 export const AlertDialogTrigger = HeroAlertDialogTrigger;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const AlertDialog = Object.assign(AlertDialogBase, {
+  Backdrop: AlertDialogBackdrop,
+  Body: AlertDialogBody,
+  CloseTrigger: AlertDialogCloseTrigger,
+  Container: AlertDialogContainer,
+  Dialog: AlertDialogDialog,
+  Footer: AlertDialogFooter,
+  Header: AlertDialogHeader,
+  Heading: AlertDialogHeading,
+  Icon: AlertDialogIcon,
+  Root: AlertDialogRoot,
+  Trigger: AlertDialogTrigger
+});

@@ -39,7 +39,7 @@ export const User = React.forwardRef<HTMLDivElement, UserProps>(
             initials
           )}
         </Avatar>
-        <div className="klx-user-details flex flex-col text-left">
+        <div className="klx-user-details flex flex-col text-start">
           <span className="klx-user-name text-xs font-semibold text-foreground truncate max-w-[150px]">{name}</span>
           {description && (
             <span className="klx-user-description text-[10px] text-muted-foreground truncate max-w-[150px]">

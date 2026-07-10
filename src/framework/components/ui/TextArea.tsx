@@ -74,7 +74,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         {label && (
           <Label className="klx-label">
             {label}
-            {isRequired && <span className="text-danger ml-0.5">*</span>}
+            {isRequired && <span className="text-danger ms-0.5">*</span>}
           </Label>
         )}
         
@@ -83,7 +83,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         </div>
 
         {description && <Description className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{description}</Description>}
-        {error && <FieldError className="text-[10px] text-red-500 font-semibold mt-0.5">{error}</FieldError>}
+        {error && <FieldError className="text-[10px] text-danger font-semibold mt-0.5">{error}</FieldError>}
       </TextField>
     );
   }

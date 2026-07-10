@@ -83,12 +83,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <Label className="klx-label">
             {label}
-            {isRequired && <span className="text-danger ml-0.5">*</span>}
+            {isRequired && <span className="text-danger ms-0.5">*</span>}
           </Label>
         )}
         
         <div className="relative w-full flex items-center">
-          {icon && <span className="absolute left-3.5 text-slate-400 dark:text-slate-500">{icon}</span>}
+          {icon && <span className="absolute start-3.5 text-slate-400 dark:text-slate-500">{icon}</span>}
           <div className="w-full">
             {inputWithTooltip}
           </div>

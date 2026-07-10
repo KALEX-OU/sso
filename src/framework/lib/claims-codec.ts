@@ -45,6 +45,8 @@ export interface FullClaims {
   orgId?: string;
   uRole?: string;
   confirmed?: boolean;
+  // Policy MFA dell'org attiva (174): true se l'org richiede il TOTP obbligatorio ai membri.
+  mfaReq?: boolean;
   loc?: string;
   uAvatar?: string;
   country?: string;
@@ -67,6 +69,7 @@ export interface CompactClaims {
   o?: string;
   r?: string;
   c?: boolean;
+  mf?: boolean;
   l?: string;
   av?: string;
   cc?: string;
@@ -87,6 +90,7 @@ export function encodeClaims(full: FullClaims): CompactClaims {
   if (full.orgId !== undefined) out.o = full.orgId;
   if (full.uRole !== undefined) out.r = full.uRole;
   if (full.confirmed !== undefined) out.c = full.confirmed;
+  if (full.mfaReq !== undefined) out.mf = full.mfaReq;
   if (full.loc !== undefined) out.l = full.loc;
   if (full.uAvatar) out.av = full.uAvatar; // stringa vuota → droppata
   if (full.country !== undefined) out.cc = full.country;
@@ -157,6 +161,7 @@ export function decodeClaims<T extends Record<string, unknown>>(raw: T): T & Ful
   if (c.o !== undefined) full.orgId = c.o;
   if (c.r !== undefined) full.uRole = c.r;
   if (c.c !== undefined) full.confirmed = c.c;
+  if (c.mf !== undefined) full.mfaReq = c.mf;
   if (c.l !== undefined) full.loc = c.l;
   if (c.av !== undefined) full.uAvatar = c.av;
   if (c.cc !== undefined) full.country = c.cc;

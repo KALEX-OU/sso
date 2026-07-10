@@ -11,7 +11,7 @@ export type TagGroupProps = React.ComponentProps<typeof HeroTagGroup> & {
   tooltip?: string;
 };
 
-export const TagGroup: React.FC<TagGroupProps> = (
+const TagGroupBase: React.FC<TagGroupProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-tag-group-skeleton ${className}`} />;
@@ -34,7 +34,13 @@ export const TagGroup: React.FC<TagGroupProps> = (
   }
 );
 
-TagGroup.displayName = "TagGroup";
+TagGroupBase.displayName = "TagGroup";
 
 export const Tag = HeroTag;
 export const TagRemoveButton = HeroTagRemoveButton;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const TagGroup = Object.assign(TagGroupBase, {
+  Tag,
+  RemoveButton: TagRemoveButton
+});

@@ -538,6 +538,23 @@ export default {
   "settings.domains.status.active": "Active",
   "settings.domains.status.provisioning": "Verifying",
   "settings.domains.status.failed": "Failed",
+  "mfaGate.title": "Two-factor authentication required",
+  "mfaGate.desc": "Your organization requires TOTP for all members. Enable two-factor authentication to keep using the platform.",
+  "mfaGate.start": "Enable now",
+  "mfaGate.starting": "Preparing…",
+  "mfaGate.startError": "Could not start setup. Please try again.",
+  "mfaGate.scan": "Scan the QR with your authenticator app, then enter the 6-digit code.",
+  "mfaGate.copy": "Copy key",
+  "mfaGate.codePlaceholder": "000000",
+  "mfaGate.verify": "Verify and enable",
+  "mfaGate.verifying": "Verifying…",
+  "mfaGate.confirmError": "Invalid code. Please try again.",
+  "mfaGate.reloginNote": "When done, you'll be asked to sign in again with your second factor.",
+  "settings.mfaPolicy.title": "Organization-wide required MFA",
+  "settings.mfaPolicy.desc": "When on, all organization members must set up TOTP to sign in.",
+  "settings.mfaPolicy.on": "MFA is now required for members.",
+  "settings.mfaPolicy.off": "MFA is no longer required.",
+  "settings.mfaPolicy.error": "Could not update the MFA policy.",
   "settings.deleteDialog.title": "Permanent Deletion",
   "settings.deleteDialog.bodyBefore": "All your personal data, service access and associated configuration will be permanently deleted. To confirm, type",
   "settings.deleteDialog.confirmWord": "DELETE",
@@ -607,4 +624,8 @@ export default {
   // Chiavi risorse autogenerate
   "fields.subdomain.label": "Subdomain",
   "fields.subdomain.placeholder": "E.g. your-company",
+
+  // Chiavi risorse autogenerate
+  "fields.mfaRequired.label": "Mfa Required",
+  "fields.mfaRequired.placeholder": "Enter mfa required...",
 } as const;

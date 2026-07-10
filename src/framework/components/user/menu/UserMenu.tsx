@@ -5,6 +5,7 @@ import { useAuth } from "../../../lib/auth";
 import { getSsoBaseUrl } from "../../../lib/urls";
 import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from "../../ui";
 import { LogIn, UserPlus, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { useUIStrings } from "../../../lib/ui.localization";
 
 interface UserMenuProps {
   clientId?: string;
@@ -15,6 +16,7 @@ const emptySubscribe = () => () => {};
 
 export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
   const { user, loading, claims, logout, loginRedirect, registerRedirect } = useAuth();
+  const s = useUIStrings();
 
   const isMounted = useSyncExternalStore(
     emptySubscribe,
@@ -39,7 +41,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
           onClick={() => loginRedirect(clientId)}
           variant="ghost"
           size="sm"
-          className="font-extrabold uppercase tracking-wider rounded-2xl text-secondary dark:text-violet-400 hover:bg-violet-500/10 active:scale-95 transition-all flex items-center gap-2"
+          className="font-extrabold uppercase tracking-wider rounded-2xl text-secondary dark:text-secondary hover:bg-secondary/10 active:scale-95 transition-all flex items-center gap-2"
         >
           <LogIn className="w-4 h-4" />
           Accedi
@@ -48,7 +50,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
           onClick={() => registerRedirect(clientId)}
           variant="primary"
           size="sm"
-          className="font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-violet-500 to-accent text-slate-950 shadow-md active:scale-95 transition-all flex items-center gap-2"
+          className="font-extrabold uppercase tracking-wider rounded-2xl bg-gradient-to-r from-secondary to-accent text-slate-950 shadow-md active:scale-95 transition-all flex items-center gap-2"
         >
           <UserPlus className="w-4 h-4" />
           Registrati
@@ -58,7 +60,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
   }
 
   // Calcola il nome da visualizzare (predilige display name, poi email)
-  const displayName = user.displayName || user.email?.split("@")[0] || "Utente";
+  const displayName = user.displayName || user.email?.split("@")[0] || s.common.user;
   const userEmail = user.email || "";
   const roleName = claims?.uRole ? String(claims.uRole).toUpperCase() : "UTENTE";
 
@@ -85,7 +87,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
         <DropdownTrigger>
           <span className="flex items-center gap-2 outline-none cursor-pointer group active:scale-98 transition-transform">
             <Avatar
-              className="w-8 h-8 text-xs cursor-pointer ring-2 ring-violet-500/50 ring-offset-1 ring-offset-background"
+              className="w-8 h-8 text-xs cursor-pointer ring-2 ring-secondary/50 ring-offset-1 ring-offset-background"
             >
               {user.photoURL ? (
                 React.createElement("img", { src: user.photoURL, alt: displayName, className: "w-full h-full object-cover rounded-full" })
@@ -93,7 +95,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
                 displayName.substring(0, 2).toUpperCase()
               )}
             </Avatar>
-            <span className="text-left hidden md:block">
+            <span className="text-start hidden md:block">
               <span className="text-xs font-black uppercase text-foreground group-hover:text-primary transition-colors block">
                 {displayName}
               </span>
@@ -103,7 +105,7 @@ export function UserMenu({ clientId = "web", className = "" }: UserMenuProps) {
             </span>
           </span>
         </DropdownTrigger>
-        <DropdownMenu aria-label="Menu utente">
+        <DropdownMenu aria-label={s.common.userMenu}>
           <DropdownItem key="profile" className="h-14 gap-2 opacity-100 pointer-events-none">
             <div className="flex flex-col">
               <p className="font-semibold text-xs">{displayName}</p>

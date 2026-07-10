@@ -10,9 +10,10 @@ import { useClaims } from "../../lib/auth";
 import { MODULE_REGISTRY, getModulePolicyForContext, getModuleInfo } from "../../lib/resources.config";
 import { LOCALIZATION, type OptionItem } from "./form.localization";
 import { FIELD_DEPENDENCIES } from "./form.dependencies";
+import { useUIStrings, fmtUI, type UIStrings } from "../../lib/ui.localization";
 
-// Generatore Zod dinamico
-function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: string[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
+// Generatore Zod dinamico (messaggi di validazione localizzati via `v`)
+function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: string[], v: UIStrings["validation"]): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const moduleConfig = getModuleInfo(moduleId);
   if (!moduleConfig) return z.object({}) as z.ZodObject<Record<string, z.ZodTypeAny>>;
 
@@ -31,7 +32,7 @@ function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: 
     if (field.type === "Boolean") {
       fieldSchema = z.boolean();
     } else if (field.type === "Float") {
-      fieldSchema = z.number({ message: "Deve essere un numero" });
+      fieldSchema = z.number({ message: v.number });
     } else if (field.type === "Timestamp") {
       fieldSchema = z.string().or(z.date());
     } else if (field.type === "Any") {
@@ -48,29 +49,29 @@ function buildZodSchema(moduleId: string, allowedFields: string[], fieldsOrder: 
       let strSchema: z.ZodString = fieldSchema;
 
       if (val.min) {
-        strSchema = strSchema.min(val.min, `Minimo ${val.min} caratteri`);
+        strSchema = strSchema.min(val.min, fmtUI(v.min, { n: val.min }));
       }
       if (val.max) {
-        strSchema = strSchema.max(val.max, `Massimo ${val.max} caratteri`);
+        strSchema = strSchema.max(val.max, fmtUI(v.max, { n: val.max }));
       }
       if (val.email) {
-        strSchema = strSchema.email("Email non valida");
+        strSchema = strSchema.email(v.email);
       }
       if (val.format === "vat") {
-        strSchema = strSchema.regex(/^[A-Z0-9]{2,15}$/i, "Partita IVA non valida");
+        strSchema = strSchema.regex(/^[A-Z0-9]{2,15}$/i, v.vat);
       }
       if (val.format === "personal_id") {
-        strSchema = strSchema.regex(/^[A-Z0-9]{16}$/i, "Codice Fiscale non valido (16 caratteri)");
+        strSchema = strSchema.regex(/^[A-Z0-9]{16}$/i, v.personalId);
       }
       if (val.format === "sdi") {
-        strSchema = strSchema.regex(/^[A-Z0-9]{7}$/i, "Codice SDI non valido (7 caratteri)");
+        strSchema = strSchema.regex(/^[A-Z0-9]{7}$/i, v.sdi);
       }
 
       // required/optional/enum vanno applicati PER ULTIMI (cambiano il tipo dello schema).
       if (val.enum) {
         fieldSchema = z.enum(val.enum as [string, ...string[]]);
       } else if (val.required) {
-        fieldSchema = strSchema.min(1, "Campo obbligatorio");
+        fieldSchema = strSchema.min(1, v.required);
       } else {
         fieldSchema = strSchema.optional().or(z.literal(""));
       }
@@ -101,6 +102,7 @@ interface DisabledFieldWrapperProps {
 }
 
 function DisabledFieldWrapper({ label, value }: DisabledFieldWrapperProps) {
+  const s = useUIStrings();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -122,10 +124,10 @@ function DisabledFieldWrapper({ label, value }: DisabledFieldWrapperProps) {
               type="button"
               onClick={handleCopy}
               className="text-slate-400 hover:text-slate-200 p-1 hover:bg-white/5 rounded-lg active:scale-95 transition-all cursor-pointer border-none bg-transparent outline-none flex items-center justify-center"
-              title="Copia negli appunti"
+              title={s.common.copyToClipboard}
             >
               {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                <Check className="w-3.5 h-3.5 text-success" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
@@ -154,11 +156,12 @@ export function Form({
   fieldsOrder = [],
   disabledFields = [],
   onSubmit,
-  submitLabel = "Salva",
+  submitLabel,
   className = "",
   t
 }: FormProps) {
   const { role, claims, loading: authLoading } = useClaims();
+  const s = useUIStrings();
   const [isPending, setIsPending] = useState(false);
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
 
@@ -193,7 +196,7 @@ export function Form({
     reset,
     control
   } = useForm<Record<string, unknown>>({
-    resolver: zodResolver(buildZodSchema(moduleId, allowedFields, fieldsOrder)),
+    resolver: zodResolver(buildZodSchema(moduleId, allowedFields, fieldsOrder, s.validation)),
     defaultValues: initialData
   });
 
@@ -264,7 +267,7 @@ export function Form({
   if (authLoading) {
     return (
       <div className="flex justify-center p-6">
-        <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-violet-500"></span>
+        <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-secondary"></span>
       </div>
     );
   }
@@ -273,7 +276,7 @@ export function Form({
     return (
       <div className="p-4 bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-2xl border border-red-200 dark:border-red-900/50 text-xs font-bold flex items-center gap-2">
         <AlertCircle className="w-4 h-4" />
-        <span>Non si dispone dei permessi necessari per compilare questo modulo.</span>
+        <span>{s.form.noPermission}</span>
       </div>
     );
   }
@@ -295,7 +298,7 @@ export function Form({
       await onSubmit(cleanedData, idempotencyKey);
     } catch (err) {
       console.error(err);
-      setErrorAlert(err instanceof Error ? err.message : "Errore durante la sottomissione.");
+      setErrorAlert(err instanceof Error ? err.message : s.form.submitError);
     } finally {
       setIsPending(false);
     }
@@ -418,9 +421,9 @@ export function Form({
                     isDisabled={isSubmitting || isPending}
                   >
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                      {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
+                      {resolvedLabel} {isRequired && <span className="text-danger ms-0.5">*</span>}
                     </Label>
-                    <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-primary focus-within:shadow-[0_0_12px_rgba(79,70,229,0.15)] rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all cursor-pointer">
+                    <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-primary focus-within:shadow-[0_0_12px_var(--klx-glow-primary)] rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectPopover className="bg-slate-950 border border-slate-900 rounded-2xl shadow-2xl p-1.5 text-slate-200 min-w-[240px] z-50">
@@ -448,7 +451,7 @@ export function Form({
                 render={({ field: { value, onChange, onBlur } }) => (
                   <TextField className="flex flex-col gap-1.5 w-full">
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                      {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
+                      {resolvedLabel} {isRequired && <span className="text-danger ms-0.5">*</span>}
                     </Label>
                     <Textarea
                       placeholder={resolvedPlaceholder}
@@ -478,7 +481,7 @@ export function Form({
                 render={({ field: { value, onChange, onBlur } }) => (
                   <TextField className="flex flex-col gap-1.5 w-full">
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                      {resolvedLabel} {isRequired && <span className="text-danger ml-0.5">*</span>}
+                      {resolvedLabel} {isRequired && <span className="text-danger ms-0.5">*</span>}
                     </Label>
                     <Input
                       type={field.type === "Float" ? "number" : "text"}
@@ -528,7 +531,7 @@ export function Form({
             </span>
           ) : (
             <>
-              <Save className="w-4 h-4" /> {submitLabel}
+              <Save className="w-4 h-4" /> {submitLabel ?? s.common.save}
             </>
           )}
         </Button>

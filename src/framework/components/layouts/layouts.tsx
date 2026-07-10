@@ -8,6 +8,8 @@ import { dashboardResponseSchema, refreshClaimsResponseSchema } from "@/framewor
 import { getRegistryApp } from "@/framework/lib/resources.config";
 import { usePersistentToggle } from "@/framework/lib/use-persistent-toggle";
 import { Sidebar } from "@/framework/components/layouts/Sidebar";
+import { MfaEnrollmentGate } from "@/framework/components/settings/MfaEnrollmentGate";
+import { useUIStrings } from "@/framework/lib/ui.localization";
 import { ToastNotification } from "@/framework/components/layouts/ToastNotification";
 import type {
   ToastState,
@@ -27,6 +29,13 @@ interface LayoutProps {
 }
 
 export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
+  const s = useUIStrings();
+  // Ref per usare le stringhe correnti dentro callback/effetti senza aggiungerle
+  // alle dipendenze (il cambio lingua non deve ri-innescare fetch/refresh).
+  const sRef = useRef(s);
+  useEffect(() => {
+    sRef.current = s;
+  }, [s]);
   const router = useRouter();
   const pathname = usePathname();
   const { user: firebaseUser, loading: authLoading, claims: authClaims, loginRedirect } = useAuth();
@@ -99,7 +108,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
       if (res.success && res.data) {
         const data = res.data;
         if (data.status === "pending") {
-          setOnboardingMessage(data.message || "Onboarding dell'organizzazione in corso...");
+          setOnboardingMessage(data.message || sRef.current.layout.onboardingInProgress);
           return true;
         }
         setDbData(data);
@@ -108,7 +117,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
 
       if (res.error?.code === "api/invalid-response") {
         console.error("[Layout Load User Data] Risposta dashboard non conforme allo schema:", res.error.details);
-        setError("I dati ricevuti dal server non sono validi. Ricarica la pagina o contatta l'assistenza.");
+        setError(sRef.current.layout.invalidServerData);
       }
 
       return false;
@@ -124,7 +133,7 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     
     if (refreshAttemptsRef.current >= 3) {
       console.warn("[Layout Claims Refresh] Raggiunto limite tentativi. Onboarding incompleto.");
-      setError("Impossibile allineare l'organizzazione del profilo. Contatta l'assistenza.");
+      setError(sRef.current.layout.claimsAlignError);
       return;
     }
     
@@ -340,10 +349,10 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   if (authLoading || loading || isRedirecting) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-4">
-        <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#00ffff] shadow-[0_0_15px_rgba(0,255,255,0.2)] mb-4"></span>
+        <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary shadow-[0_0_15px_var(--klx-glow-primary)] mb-4"></span>
         {isRedirecting && (
           <p className="text-xs text-slate-400 font-medium tracking-wide animate-pulse">
-            {appId === "sso" ? "Verifica autenticazione..." : "Reindirizzamento sicuro al portale di autenticazione..."}
+            {appId === "sso" ? s.layout.authCheck : s.layout.secureRedirect}
           </p>
         )}
       </div>
@@ -354,8 +363,8 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
   if (onboardingPending) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center">
-        <span className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff00ff] shadow-[0_0_15px_rgba(255,0,255,0.2)] mb-6"></span>
-        <h2 className="text-sm font-black uppercase tracking-widest text-[#ff00ff] mb-2">Setup Organizzazione</h2>
+        <span className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent shadow-[0_0_15px_var(--klx-glow-primary)] mb-6"></span>
+        <h2 className="text-sm font-black uppercase tracking-widest text-accent mb-2">{s.layout.orgSetupTitle}</h2>
         <p className="text-slate-400 text-xs max-w-sm leading-relaxed font-bold">{onboardingMessage}</p>
       </div>
     );
@@ -372,21 +381,22 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
         <main className="flex-1 overflow-y-auto klx-scrollbar-minimalist h-full relative flex flex-col p-6 space-y-6">
           {/* Banner di errore globale */}
           {error && (
-            <div className="bg-red-950/60 border border-[#ff00ff] text-white rounded-2xl p-4 text-xs font-bold shadow-xl flex items-center gap-3">
-              <AlertCircle className="w-4 h-4 text-[#ff00ff] shrink-0" />
+            <div className="bg-danger/15 border border-danger/40 text-white rounded-2xl p-4 text-xs font-bold shadow-xl flex items-center gap-3">
+              <AlertCircle className="w-4 h-4 text-danger shrink-0" />
               <span className="flex-1">{error}</span>
               <button
                 onClick={() => setError("")}
-                className="ml-auto p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
+                className="ms-auto p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* Rendering dei figli */}
+          {/* Rendering dei figli — avvolti dal gate MFA (174): se l'org richiede il TOTP e l'utente
+              non è enrollato, blocca l'app e forza l'attivazione. */}
           <div className="flex-1">
-            {children}
+            <MfaEnrollmentGate>{children}</MfaEnrollmentGate>
           </div>
         </main>
 

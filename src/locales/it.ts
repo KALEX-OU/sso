@@ -538,6 +538,23 @@ export default {
   "settings.domains.status.active": "Attivo",
   "settings.domains.status.provisioning": "In verifica",
   "settings.domains.status.failed": "Errore",
+  "mfaGate.title": "Autenticazione a due fattori richiesta",
+  "mfaGate.desc": "La tua organizzazione richiede il TOTP per tutti i membri. Attiva l'autenticazione a due fattori per continuare a usare la piattaforma.",
+  "mfaGate.start": "Attiva ora",
+  "mfaGate.starting": "Preparazione…",
+  "mfaGate.startError": "Impossibile avviare l'attivazione. Riprova.",
+  "mfaGate.scan": "Scansiona il QR con la tua app di autenticazione, poi inserisci il codice a 6 cifre.",
+  "mfaGate.copy": "Copia la chiave",
+  "mfaGate.codePlaceholder": "000000",
+  "mfaGate.verify": "Verifica e attiva",
+  "mfaGate.verifying": "Verifica…",
+  "mfaGate.confirmError": "Codice non valido. Riprova.",
+  "mfaGate.reloginNote": "Al termine ti verrà chiesto di riaccedere con il secondo fattore.",
+  "settings.mfaPolicy.title": "MFA obbligatoria per l'organizzazione",
+  "settings.mfaPolicy.desc": "Se attiva, tutti i membri dell'organizzazione devono configurare il TOTP per accedere.",
+  "settings.mfaPolicy.on": "MFA ora obbligatoria per i membri.",
+  "settings.mfaPolicy.off": "MFA non più obbligatoria.",
+  "settings.mfaPolicy.error": "Impossibile aggiornare la policy MFA.",
   "settings.deleteDialog.title": "Cancellazione Definitiva",
   "settings.deleteDialog.bodyBefore": "Tutti i tuoi dati personali, l'accesso ai servizi e la configurazione associata verranno eliminati permanentemente. Per confermare, digita",
   "settings.deleteDialog.confirmWord": "ELIMINA",
@@ -607,4 +624,8 @@ export default {
   // Chiavi risorse autogenerate
   "fields.subdomain.label": "Sottodominio",
   "fields.subdomain.placeholder": "E.g. la-tua-azienda",
+
+  // Chiavi risorse autogenerate
+  "fields.mfaRequired.label": "Mfa Required",
+  "fields.mfaRequired.placeholder": "Inserisci mfa required...",
 } as const;

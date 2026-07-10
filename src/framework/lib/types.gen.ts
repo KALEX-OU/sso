@@ -221,6 +221,7 @@ export interface Organization {
   stripeConnectAccountId?: string;
   stripeConnectOnboarded?: boolean;
   isTest: boolean;
+  mfaRequired: boolean;
   confirmed: boolean;
   addressDetails?: unknown;
   metadata?: unknown;

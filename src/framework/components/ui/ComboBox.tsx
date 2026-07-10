@@ -11,7 +11,7 @@ export type ComboBoxProps = React.ComponentProps<typeof HeroComboBox> & {
   tooltip?: string;
 };
 
-export const ComboBox: React.FC<ComboBoxProps> = (
+const ComboBoxBase: React.FC<ComboBoxProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-combo-box-skeleton ${className}`} />;
@@ -34,10 +34,19 @@ export const ComboBox: React.FC<ComboBoxProps> = (
   }
 );
 
-ComboBox.displayName = "ComboBox";
+ComboBoxBase.displayName = "ComboBox";
 
 export const ComboBoxContext = HeroComboBoxContext;
 export const ComboBoxInputGroup = HeroComboBoxInputGroup;
 export const ComboBoxPopover = HeroComboBoxPopover;
 export const ComboBoxRoot = HeroComboBoxRoot;
 export const ComboBoxTrigger = HeroComboBoxTrigger;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ComboBox = Object.assign(ComboBoxBase, {
+  Context: ComboBoxContext,
+  InputGroup: ComboBoxInputGroup,
+  Popover: ComboBoxPopover,
+  Root: ComboBoxRoot,
+  Trigger: ComboBoxTrigger
+});

@@ -11,7 +11,7 @@ export type MenuProps = React.ComponentProps<typeof HeroMenu> & {
   tooltip?: string;
 };
 
-export const Menu: React.FC<MenuProps> = (
+const MenuBase: React.FC<MenuProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-menu-skeleton ${className}`} />;
@@ -34,7 +34,13 @@ export const Menu: React.FC<MenuProps> = (
   }
 );
 
-Menu.displayName = "Menu";
+MenuBase.displayName = "Menu";
 
 export const MenuItem = HeroMenuItem;
 export const MenuSection = HeroMenuSection;
+
+// Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const Menu = Object.assign(MenuBase, {
+  Item: MenuItem,
+  Section: MenuSection
+});

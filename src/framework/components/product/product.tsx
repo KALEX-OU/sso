@@ -1,24 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView } from "../layouts/ListView";
 import { Table } from "../ui";
+import { useBrand } from "../providers/BrandProvider";
+import { useUIStrings, fmtUI } from "../../lib/ui.localization";
+import {
+  apiErrorMessage,
+  productListResponseSchema,
+  checkoutSessionResponseSchema,
+  type ProductItem
+} from "../../lib/schemas/api";
 
 interface Column<T> {
   key: string;
   header: string;
   render?: (item: T) => React.ReactNode;
   sortable?: boolean;
-}
-
-interface ProductItem {
-  productId: string;
-  name: string;
-  description: string | null;
-  type: string;
-  sku: string | null;
-  price: number;
-  isActive: boolean;
 }
 
 interface ProductModuleProps {
@@ -39,26 +37,36 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
   const [error, setError] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [purchasingProduct, setPurchasingProduct] = useState<string | null>(null);
+  const brand = useBrand();
+  const s = useUIStrings();
+  // Ref alle stringhe correnti: le callback leggono sempre l'ultima lingua
+  // senza aggiungere `s` alle dipendenze (il cambio lingua non ri-innesca i fetch).
+  const sRef = useRef(s);
+  useEffect(() => {
+    sRef.current = s;
+  }, [s]);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     setError(undefined);
     try {
       const res = await fetchAuthed(`/api/product/list?appId=sso&orgId=${organizationId}`);
-      const data = await res.json();
+      // Validazione Zod della risposta (E3.5): payload malformato → log + errore i18n, mai dato corrotto.
+      const parsed = productListResponseSchema.safeParse(await res.json());
+      if (!parsed.success) {
+        console.error("[ProductModule] Risposta /product/list non conforme allo schema:", parsed.error);
+        setError(sRef.current.modules.product.errLoad);
+        return;
+      }
+      const data = parsed.data;
       if (data.success) {
-        setProducts(data.items || []);
+        setProducts(data.items ?? []);
       } else {
-        const errMsg = data.error && typeof data.error === "object" && "message" in data.error
-          ? String(data.error.message)
-          : typeof data.error === "string"
-            ? data.error
-            : "Impossibile caricare i prodotti.";
-        setError(errMsg);
+        setError(apiErrorMessage(data) ?? sRef.current.modules.product.errLoad);
       }
     } catch (err) {
       console.error("[ProductModule] Load Error:", err);
-      setError("Errore di connessione durante il recupero dei prodotti.");
+      setError(sRef.current.modules.product.errConnection);
     } finally {
       setLoading(false);
     }
@@ -75,35 +83,43 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
 
   const handleBuyProduct = async (productId: string) => {
     if (activeRole !== "owner" && activeRole !== "admin") {
-      showToast("Solo l'Owner o gli Admin possono acquistare prodotti.", "error");
+      showToast(s.modules.product.onlyAdminsBuy, "error");
       return;
     }
 
     setPurchasingProduct(productId);
     try {
-      showToast(`Inizializzazione acquisto per il prodotto...`, "info");
+      showToast(s.modules.product.purchaseInit, "info");
       
       const res = await fetchAuthed("/api/stripe/partner/checkout-session", {
         method: "POST",
         body: JSON.stringify({
           productId,
           quantity: 1,
-          sellerOrgId: "KALEX_SYSTEM_ORG" // KALEX OÜ
+          sellerOrgId: brand.sellerOrgId
         })
       });
 
-      const data = await res.json();
+      // Validazione Zod della risposta di checkout (riusa lo schema Stripe condiviso)
+      const parsed = checkoutSessionResponseSchema.safeParse(await res.json());
+      if (!parsed.success) {
+        console.error("[ProductModule] Risposta checkout non conforme allo schema:", parsed.error);
+        showToast(sRef.current.modules.product.errCheckout, "error");
+        setPurchasingProduct(null);
+        return;
+      }
+      const data = parsed.data;
       if (data.success && data.url) {
         window.location.assign(data.url);
       } else {
-        const errorMsg = data.error?.message || "Impossibile avviare il checkout del prodotto.";
+        const errorMsg = data.error?.message || s.modules.product.errCheckout;
         showToast(errorMsg, "error");
         setPurchasingProduct(null);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(err);
-      showToast(`Errore durante l'avvio dell'acquisto: ${message}`, "error");
+      showToast(fmtUI(s.modules.product.errPurchaseStart, { message }), "error");
       setPurchasingProduct(null);
     }
   };
@@ -113,18 +129,18 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     return (
       p.name.toLowerCase().includes(term) ||
       (p.sku && p.sku.toLowerCase().includes(term)) ||
-      p.type.toLowerCase().includes(term)
+      (p.type ?? "").toLowerCase().includes(term)
     );
   });
 
   const columns: Column<ProductItem>[] = [
     {
       key: "name",
-      header: "Prodotto",
+      header: s.modules.product.colProduct,
       render: (item: ProductItem) => (
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-violet-500/10 rounded-xl flex items-center justify-center">
-            <ShoppingBag className="w-4 h-4 text-violet-500" />
+          <div className="p-2 bg-secondary/10 rounded-xl flex items-center justify-center">
+            <ShoppingBag className="w-4 h-4 text-secondary" />
           </div>
           <div>
             <div className="font-bold text-sm text-foreground">{item.name}</div>
@@ -136,13 +152,13 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     },
     {
       key: "sku",
-      header: "SKU / Codice",
-      render: (item: ProductItem) => <code className="px-1.5 py-0.5 bg-default-100 rounded text-xs font-mono">{item.sku || "N/D"}</code>,
+      header: s.modules.product.colSku,
+      render: (item: ProductItem) => <code className="px-1.5 py-0.5 bg-default-100 rounded text-xs font-mono">{item.sku || s.modules.product.notAvailable}</code>,
       sortable: true
     },
     {
       key: "type",
-      header: "Categoria",
+      header: s.modules.product.colCategory,
       render: (item: ProductItem) => (
         <span className="text-xs font-semibold px-2.5 py-1 bg-default-100 rounded-xl border border-divider">
           {item.type}
@@ -152,29 +168,32 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     },
     {
       key: "price",
-      header: "Prezzo",
+      header: s.modules.product.colPrice,
       render: (item: ProductItem) => (
         <span className="font-semibold text-sm">
-          {new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(item.price)}
+          {/* `price` non è garantito dal registro SSOT: fallback esplicito invece di "NaN" */}
+          {typeof item.price === "number"
+            ? new Intl.NumberFormat(brand.numberLocale, { style: "currency", currency: brand.currency }).format(item.price)
+            : s.modules.product.notAvailable}
         </span>
       ),
       sortable: true
     },
     {
       key: "action",
-      header: "Azione",
+      header: s.modules.product.colAction,
       render: (item: ProductItem) => (
         <button
           onClick={() => handleBuyProduct(item.productId)}
           disabled={purchasingProduct !== null}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-500 to-accent text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-secondary to-accent text-slate-950 font-extrabold uppercase text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {purchasingProduct === item.productId ? (
-            "Elaborazione..."
+            s.modules.product.processing
           ) : (
             <>
-              Acquista
-              <ArrowRight className="w-3.5 h-3.5" />
+              {s.modules.product.buyButton}
+              <ArrowRight className="w-3.5 h-3.5 rtl:-scale-x-100" />
             </>
           )}
         </button>
@@ -186,13 +205,13 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     <BaseModuleLayout isLoading={loading} error={error}>
       <div className="w-full">
         <ListView
-          title="Prodotti e Hardware KALEX"
-          description="Gestisci e acquista sensori IoT, gateway ed estensioni hardware ufficiali KALEX per la tua infrastruttura."
+          title={fmtUI(s.modules.product.title, { brand: brand.name })}
+          description={fmtUI(s.modules.product.description, { brand: brand.name })}
           searchValue={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Cerca prodotti per nome, SKU o tipo..."
+          searchPlaceholder={s.modules.product.searchPlaceholder}
         >
-          <Table aria-label="Tabella Prodotti">
+          <Table aria-label={s.modules.product.tableAria}>
             <Table.ScrollContainer>
               <Table.Content>
                 <Table.Header>
@@ -203,7 +222,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
                 <Table.Body
                   renderEmptyState={() => (
                     <div className="text-center py-8 text-muted-foreground text-xs">
-                      Nessun prodotto corrisponde ai criteri di ricerca.
+                      {s.modules.product.emptyState}
                     </div>
                   )}
                 >
