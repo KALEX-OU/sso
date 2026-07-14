@@ -7,8 +7,9 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, useAuth, forceCleanSession } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
 import { Button, DebugWidget, GlobalLoader } from "../ui";
-import { ShieldAlert, RefreshCw, ArrowLeft } from "lucide-react";
+import { RefreshCw, ArrowLeft } from "lucide-react";
 import { BrandProvider } from "./BrandProvider";
+import { ApiGuard } from "../layouts/ApiGuard";
 import type { BrandConfig } from "../../lib/brand.config";
 import { useUIStrings, fmtUI, localeDirection } from "../../lib/ui.localization";
 
@@ -85,47 +86,35 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
     }
   };
 
+  // Schermata-guardia generica (theme-aware): la logica countdown/retry resta qui,
+  // la grafica è unica per tutti i gate di questo tipo (vedi layouts/ApiGuard).
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center select-none relative overflow-hidden">
-      {/* RTL: fisico voluto — centraggio simmetrico (left-1/2 + -translate-x-1/2); con start-1/2 il translate fisico non centrerebbe più in RTL */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full filter blur-[100px] md:blur-[150px] pointer-events-none bg-secondary/10 transition-all duration-700"></div>
-      
-      <div className="relative z-10 max-w-md w-full p-8 border border-white/10 bg-slate-900/60 backdrop-blur-2xl rounded-3xl shadow-2xl space-y-6">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-secondary/20 to-accent/20 flex items-center justify-center mx-auto border border-secondary/30 animate-pulse">
-          <ShieldAlert className="w-8 h-8 text-secondary" />
-        </div>
-
-        <div className="space-y-2">
-          <h2 className="text-xl font-black tracking-tight text-white uppercase">
-            {s.providers.rateLimitTitle}
-          </h2>
-          <p className="text-slate-400 text-xs leading-relaxed font-semibold">
-            {s.providers.rateLimitBody}
-          </p>
-          <p className="text-slate-400 text-xs leading-relaxed font-medium">
-            {s.providers.rateLimitHint}
-          </p>
-        </div>
-
-        {countdown > 0 ? (
-          <div className="py-2 px-4 rounded-xl bg-white/5 border border-white/5 inline-block text-xs font-bold text-secondary">
-            {s.providers.waitPrefix} <span className="text-white text-sm font-black mx-1">{countdown}</span> {s.providers.waitSuffix}
+    <ApiGuard
+      tone="warning"
+      title={s.providers.rateLimitTitle}
+      description={s.providers.rateLimitBody}
+      hint={s.providers.rateLimitHint}
+      status={
+        countdown > 0 ? (
+          <div className="py-2 px-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 inline-block text-xs font-bold text-secondary">
+            {s.providers.waitPrefix} <span className="text-slate-900 dark:text-white text-sm font-black mx-1">{countdown}</span> {s.providers.waitSuffix}
           </div>
         ) : (
           <div className="py-2 px-4 rounded-xl bg-success/10 border border-success/20 inline-block text-xs font-bold text-success">
             {s.providers.readyToRetry}
           </div>
-        )}
-
-        <div className="flex flex-col gap-2 pt-2">
+        )
+      }
+      actions={
+        <>
           <Button
             unstyled
             size="md"
             variant="ghost"
             className={`w-full font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer ${
-              countdown > 0 
-                ? "bg-secondary/30 text-secondary cursor-not-allowed border border-secondary/20" 
-                : "bg-gradient-to-r from-secondary to-accent hover:from-secondary hover:to-accent text-white shadow-lg"
+              countdown > 0
+                ? "bg-secondary/20 text-secondary cursor-not-allowed border border-secondary/20"
+                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg"
             }`}
             onClick={handleRetry}
             isDisabled={countdown > 0 || isRetrying}
@@ -144,16 +133,16 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
             unstyled
             size="md"
             variant="ghost"
-            className="w-full font-bold text-xs uppercase tracking-wider rounded-xl border border-white/5 hover:bg-white/5 text-slate-400 hover:text-white cursor-pointer"
+            className="w-full font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
             onClick={handleGoBack}
           >
             {/* Freccia "indietro": direzionale, si specchia in RTL */}
             <ArrowLeft className="w-4 h-4 me-1 shrink-0 rtl:-scale-x-100" />
             {s.providers.goBack}
           </Button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 }
 
@@ -224,6 +213,18 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
           return { success: false, isRateLimited: true };
         }
         
+        // Un fallimento CSRF è TRANSIENTE (header/cookie disallineati, es. race tra richieste
+        // parallele al boot): NON è una sessione invalida — mai clean-session/logout per questo.
+        // Il matching per parole chiave qui sotto ("mancante"…) altrimenti lo catturerebbe.
+        if (response.error?.code === "auth/csrf-invalid") {
+          if (attempt < retries) {
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            delay *= 2;
+            continue;
+          }
+          return { success: false };
+        }
+
         // Se la sessione non è presente, è scaduta o revocata (401 Unauthorized), non eseguiamo i retry
         // e segnaliamo che la sessione è genuinamente invalida (→ i chiamanti possono pulirla).
         if (
@@ -517,26 +518,23 @@ function FirebaseProvider({ children, appId }: { children: React.ReactNode; appI
   }
 
   if (isMounted && exchangeError) {
+    // Stessa schermata-guardia generica del rate-limit (tone danger): grafica unica per i gate API.
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 gap-4">
-        <div className="p-5 border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl rounded-3xl max-w-md shadow-2xl flex flex-col items-center gap-4 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center">
-            <ShieldAlert className="w-6 h-6 text-danger" />
-          </div>
-          <div className="space-y-1">
-            <span className="font-black text-danger uppercase tracking-widest text-[10px]">{s.providers.authFailed}</span>
-            <p className="text-slate-600 dark:text-slate-300 text-xs font-semibold leading-relaxed px-2">{exchangeError}</p>
-          </div>
+      <ApiGuard
+        tone="danger"
+        title={s.providers.authFailed}
+        description={exchangeError}
+        actions={
           <Button
             unstyled
             size="sm"
-            className="mt-2 bg-gradient-to-r from-danger to-accent hover:opacity-90 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
+            className="bg-gradient-to-r from-danger to-accent hover:opacity-90 text-white font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer"
             onClick={forceCleanAndRedirect}
           >
             {s.providers.cleanAndRetry}
           </Button>
-        </div>
-      </div>
+        }
+      />
     );
   }
 

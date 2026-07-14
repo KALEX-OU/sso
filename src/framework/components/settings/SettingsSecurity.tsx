@@ -20,6 +20,7 @@ import {
   EmailAuthProvider
 } from "firebase/auth";
 import { forceCleanSession } from "../../lib/auth";
+import { useBrand } from "../providers/BrandProvider";
 import { useUIStrings } from "../../lib/ui.localization";
 import { useI18n } from "@/locales/client";
 
@@ -49,6 +50,8 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
   const { user, showToast } = useDashboard();
   const t = useI18n();
   const s = useUIStrings();
+  // Brand white-label attivo: il copy delle sessioni non cabla "KALEX" (E5.1).
+  const brand = useBrand();
 
   // Stati per il modulo Cambio Password
   const [currentPassword, setCurrentPassword] = useState("");
@@ -334,7 +337,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
             </div>
           </div>
           <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
-            {t("settings.sessions.desc")}
+            {t("settings.sessions.desc", { brand: brand.name })}
           </p>
           {sessionsLoading && deviceSessions.length === 0 ? (
             <p className="text-xs text-slate-400">{t("settings.sessions.loading")}</p>

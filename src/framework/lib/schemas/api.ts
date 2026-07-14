@@ -11,7 +11,7 @@ import { stripeUrlResponseSchema } from "../schemas";
  * Contratto lasco ma validato: un payload malformato viene intercettato da `safeParse`
  * (log + messaggio i18n `errLoad`/simili) invece di propagarsi come dato corrotto.
  *
- * I campi derivano dalle interfacce TS storiche dei moduli (ProductItem, ServiceItem,
+ * I campi derivano dalle interfacce TS storiche dei moduli (ProductItem,
  * InvoiceItem, SubscriptionItem…): gli identificatori sono obbligatori, i campi di sola
  * presentazione sono optional/nullable perché il backend può ometterli (es. `price` del
  * prodotto non esiste nel registro SSOT: i moduli lo gestiscono con fallback espliciti).
@@ -89,27 +89,6 @@ export type ProductItem = z.infer<typeof productItemSchema>;
 
 export const productListResponseSchema = apiEnvelopeSchema.extend({
   items: z.array(productItemSchema).optional()
-});
-
-// ==========================================
-// SERVICE — GET /api/service/list
-// ==========================================
-
-export const serviceItemSchema = z.looseObject({
-  serviceId: z.string(),
-  name: z.string(),
-  description: z.string().nullable().optional(),
-  type: z.enum(["subscription", "usage"]).optional(),
-  priceModel: z.string().nullable().optional(),
-  priceText: z.string().nullable().optional(),
-  subscriptionStatus: z.enum(["active", "trialing", "past_due", "inactive"]).optional(),
-  subscriptionTier: z.string().nullable().optional()
-});
-
-export type ServiceItem = z.infer<typeof serviceItemSchema>;
-
-export const serviceListResponseSchema = apiEnvelopeSchema.extend({
-  items: z.array(serviceItemSchema).optional()
 });
 
 // ==========================================

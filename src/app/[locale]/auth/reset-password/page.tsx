@@ -6,28 +6,34 @@ import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import {
   verifyPasswordResetCode
 } from "firebase/auth";
+// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
+// NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
+// stato ridotto di conseguenza per mantenere l'ingombro precedente.
 import {
   Button,
   Card,
+  CardContent,
   TextField,
   Label,
   Input,
   FieldError,
   InputGroup,
   InputGroupPrefix
-} from "@heroui/react";
+} from "@/framework/components/ui";
 import { useTheme } from "next-themes";
 import { useI18n, useCurrentLocale } from "@/locales/client";
 import { Sun, Moon, Mail, Lock, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, useWatch } from "react-hook-form";
+import { useBrand } from "@/framework/components/providers/BrandProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Configurazione brand speculare ad auth/page.tsx
+// Configurazione brand speculare ad auth/page.tsx.
+// `name: null` = il nome segue il brand white-label attivo (useBrand, E5.1).
 const BRAND_CONFIGS: Record<
   string,
   {
-    name: string;
+    name: string | null;
     bgGradientLight: string;
     bgGradientDark: string;
     glowColorLight: string;
@@ -37,11 +43,11 @@ const BRAND_CONFIGS: Record<
 > = {
   satefy: {
     name: "SATEFY",
-    bgGradientLight: "from-emerald-100/40 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-emerald-950/25 via-slate-950 to-teal-950/15",
-    glowColorLight: "bg-emerald-500/5",
-    glowColorDark: "bg-emerald-500/10",
-    logoColor: "from-emerald-400 to-teal-500"
+    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
+    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
+    glowColorLight: "bg-success/5",
+    glowColorDark: "bg-success/10",
+    logoColor: "from-success to-teal-500"
   },
   standlo: {
     name: "STANDLO",
@@ -52,12 +58,12 @@ const BRAND_CONFIGS: Record<
     logoColor: "from-cyan-400 to-blue-500"
   },
   default: {
-    name: "KALEX",
-    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
-    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
-    glowColorLight: "bg-violet-500/5",
-    glowColorDark: "bg-violet-500/10",
-    logoColor: "from-violet-500 to-accent"
+    name: null,
+    bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
+    bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
+    glowColorLight: "bg-secondary/5",
+    glowColorDark: "bg-secondary/10",
+    logoColor: "from-secondary to-accent"
   }
 };
 
@@ -93,6 +99,9 @@ function ResetPasswordPortal() {
   const oobCode = searchParams.get("oobCode");
   const clientId = searchParams.get("client_id") || "default";
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
+  // Brand white-label attivo: il default non cabla più "KALEX" (E5.1).
+  const wlBrand = useBrand();
+  const brandName = brand.name ?? wlBrand.name;
 
   const isDark = resolvedTheme === "dark";
   const activeBgGradient = isDark ? brand.bgGradientDark : brand.bgGradientLight;
@@ -111,6 +120,7 @@ function ResetPasswordPortal() {
   const {
     register: registerRequest,
     handleSubmit: handleSubmitRequest,
+    control: controlRequest,
     formState: { errors: errorsRequest }
   } = useForm<RequestResetInput>({
     resolver: zodResolver(RequestResetSchema),
@@ -121,11 +131,18 @@ function ResetPasswordPortal() {
   const {
     register: registerNewPass,
     handleSubmit: handleSubmitNewPass,
+    control: controlNewPass,
     formState: { errors: errorsNewPass }
   } = useForm<NewPasswordInput>({
     resolver: zodResolver(NewPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" }
   });
+
+  // Binding controllato per il wrapper Input (E5.1): il wrapper è sempre controllato
+  // (value di default ""), quindi i campi registrati con RHF espongono il valore via useWatch.
+  const emailRequestValue = useWatch({ control: controlRequest, name: "email" }) || "";
+  const passwordNewValue = useWatch({ control: controlNewPass, name: "password" }) || "";
+  const confirmPasswordNewValue = useWatch({ control: controlNewPass, name: "confirmPassword" }) || "";
 
   // Verifica del codice oobCode al montaggio
   useEffect(() => {
@@ -228,7 +245,7 @@ function ResetPasswordPortal() {
     <div
       className={`min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans p-6 bg-gradient-to-br ${activeBgGradient}`}
     >
-      {/* Glow Ambientale */}
+      {/* Glow Ambientale — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
       <div
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full filter blur-[120px] pointer-events-none ${activeGlowColor} opacity-50`}
       ></div>
@@ -237,8 +254,9 @@ function ResetPasswordPortal() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
       {/* Controllo Tema in alto a destra */}
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute top-6 end-6 z-20">
         <Button
+          unstyled
           isIconOnly
           variant="ghost"
           size="sm"
@@ -249,14 +267,14 @@ function ResetPasswordPortal() {
         </Button>
       </div>
 
-      <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-8 rounded-3xl relative z-10">
-        <Card.Content className="flex flex-col p-2">
+      <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 rounded-3xl relative z-10">
+        <CardContent className="flex flex-col p-2">
           {/* Logo e Titolo */}
           <div className="text-center mb-6">
             <span
               className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}
             >
-              {brand.name}
+              {brandName}
             </span>
             <p className="text-slate-500 dark:text-gray-400 text-[10px] font-bold mt-1 tracking-wider uppercase">
               {t("auth.subtitle")}
@@ -273,7 +291,7 @@ function ResetPasswordPortal() {
           {/* VERIFYING CODE LOADER */}
           {verifyingCode && (
             <div className="text-center my-8">
-              <Loader2 className="w-10 h-10 text-secondary dark:text-violet-400 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-10 h-10 text-secondary animate-spin mx-auto mb-4" />
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Verifica del codice in corso...
               </p>
@@ -291,6 +309,7 @@ function ResetPasswordPortal() {
                 {codeError}
               </p>
               <Button
+                unstyled
                 onClick={handleBackToLogin}
                 className="mt-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-5 px-6 cursor-pointer"
               >
@@ -312,21 +331,24 @@ function ResetPasswordPortal() {
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                   {t("auth.email")}
                 </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                  <InputGroupPrefix className="flex items-center justify-center mr-2">
+                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroupPrefix className="flex items-center justify-center me-2">
                     <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
                   </InputGroupPrefix>
+                  {/* Il wrapper Input è sempre controllato: il valore va bindato via watch (RHF) */}
                   <Input
                     type="email"
                     placeholder="name@example.com"
                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                     {...registerRequest("email")}
+                    value={emailRequestValue}
                   />
                 </InputGroup>
                 <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
               </TextField>
 
               <Button
+                unstyled
                 type="submit"
                 isDisabled={loading}
                 className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
@@ -340,7 +362,7 @@ function ResetPasswordPortal() {
               <button
                 type="button"
                 onClick={handleBackToLogin}
-                className="w-full text-center text-xs font-semibold text-secondary dark:text-violet-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
+                className="w-full text-center text-xs font-semibold text-secondary hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
               >
                 {t("auth.backToLogin")}
               </button>
@@ -350,14 +372,15 @@ function ResetPasswordPortal() {
           {/* EMAIL INVIATA CON SUCCESSO */}
           {emailSent && !oobCode && (
             <div className="text-center my-6 space-y-4">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-500">
+              <div className="w-12 h-12 bg-success/10 border border-success/25 dark:border-success/20 rounded-full flex items-center justify-center mx-auto text-success">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-md font-bold text-emerald-600 dark:text-emerald-400">Email Inviata</h3>
+              <h3 className="text-md font-bold text-success">{t("auth.resetEmailSentTitle")}</h3>
               <p className="text-xs text-slate-600 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
                 {t("auth.resetPasswordEmailSent")}
               </p>
               <Button
+                unstyled
                 onClick={handleBackToLogin}
                 className="mt-6 w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-6 cursor-pointer"
               >
@@ -384,15 +407,17 @@ function ResetPasswordPortal() {
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                   {t("auth.newPassword")}
                 </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                  <InputGroupPrefix className="flex items-center justify-center mr-2">
+                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroupPrefix className="flex items-center justify-center me-2">
                     <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                   </InputGroupPrefix>
+                  {/* Il wrapper Input è sempre controllato: il valore va bindato via watch (RHF) */}
                   <Input
                     type="password"
                     placeholder="••••••••"
                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                     {...registerNewPass("password")}
+                    value={passwordNewValue}
                   />
                 </InputGroup>
                 <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
@@ -402,21 +427,24 @@ function ResetPasswordPortal() {
                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                   {t("auth.confirmPassword")}
                 </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                  <InputGroupPrefix className="flex items-center justify-center mr-2">
+                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroupPrefix className="flex items-center justify-center me-2">
                     <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                   </InputGroupPrefix>
+                  {/* Il wrapper Input è sempre controllato: il valore va bindato via watch (RHF) */}
                   <Input
                     type="password"
                     placeholder="••••••••"
                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                     {...registerNewPass("confirmPassword")}
+                    value={confirmPasswordNewValue}
                   />
                 </InputGroup>
                 <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
               </TextField>
 
               <Button
+                unstyled
                 type="submit"
                 isDisabled={loading}
                 className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
@@ -432,14 +460,15 @@ function ResetPasswordPortal() {
           {/* SUCCESSO RESET PASSWORD */}
           {resetSuccess && (
             <div className="text-center my-6 space-y-4">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-500">
+              <div className="w-12 h-12 bg-success/10 border border-success/25 dark:border-success/20 rounded-full flex items-center justify-center mx-auto text-success">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-md font-bold text-emerald-600 dark:text-emerald-400">Password Aggiornata</h3>
+              <h3 className="text-md font-bold text-success">{t("auth.passwordUpdatedTitle")}</h3>
               <p className="text-xs text-slate-600 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
                 {t("auth.passwordResetSuccess")}
               </p>
               <Button
+                unstyled
                 onClick={handleBackToLogin}
                 className="mt-6 w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-6 cursor-pointer"
               >
@@ -447,7 +476,7 @@ function ResetPasswordPortal() {
               </Button>
             </div>
           )}
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

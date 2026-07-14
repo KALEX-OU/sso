@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useDashboard } from "../layout";
-import { Button, Card, Chip, Input, Label, TextField } from "@heroui/react";
+// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
+// NB: il wrapper Card racchiude i children in un body `p-5`: i padding root sono
+// stati ridotti di conseguenza per mantenere l'ingombro precedente.
+import { Button, Card, CardContent, Chip, Input, Label, TextField } from "@/framework/components/ui";
 import { useI18n } from "@/locales/client";
 import {
   ShieldCheck,
@@ -66,16 +69,16 @@ export default function DashboardPage() {
 
   const handleRevokeSession = (id: string) => {
     setSessions(sessions.filter((s) => s.id !== id));
-    showToast("Sessione revocata con successo.", "info");
+    showToast(t("dashboard.toastSessionRevoked"), "info");
   };
 
   const handleVerifyMFA = () => {
     if (mfaCode.length === 6) {
       setMfaEnabled(true);
       setMfaStep("active");
-      showToast("MFA configurata con successo.", "success");
+      showToast(t("dashboard.toastMfaEnabled"), "success");
     } else {
-      showToast("Codice non valido. Inserisci 6 cifre.", "error");
+      showToast(t("dashboard.toastMfaInvalidCode"), "error");
     }
   };
 
@@ -84,7 +87,7 @@ export default function DashboardPage() {
     setMfaStep("idle");
     setMfaCode("");
     setMfaPhone("");
-    showToast("MFA disattivata con successo.", "info");
+    showToast(t("dashboard.toastMfaDisabled"), "info");
   };
 
   if (loading) {
@@ -145,28 +148,28 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-fade-in font-sans">
       {/* 1. Anagrafica Organizzazione Info & Sottoscrizioni */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
-          <Card.Content className="p-2 space-y-4">
-            <span className="text-[10px] uppercase tracking-widest text-secondary dark:text-violet-400 font-extrabold block">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1">
+          <CardContent className="p-2 space-y-4">
+            <span className="text-[10px] uppercase tracking-widest text-secondary font-extrabold block">
               {t("dashboard.title")}
             </span>
             <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
               {activeOrg?.name || t("dashboard.noOrg")}
             </h3>
             <div className="flex gap-2">
-              <Chip size="sm" variant="soft" className="text-xs font-semibold">Tipo: {activeOrg?.type || "N/D"}</Chip>
-              <Chip size="sm" color="success" variant="soft" className="text-xs font-semibold">Stato: {activeOrg?.confirmed ? "Approvata" : "In verifica"}</Chip>
+              <Chip size="sm" variant="soft" className="text-xs font-semibold">{t("dashboard.orgTypeLabel")}: {activeOrg?.type || "N/D"}</Chip>
+              <Chip size="sm" color="success" variant="soft" className="text-xs font-semibold">{t("dashboard.orgStatusLabel")}: {activeOrg?.confirmed ? t("dashboard.statusApproved") : t("dashboard.statusInReview")}</Chip>
               {activeOrg?.viesValidated && (
-                <Chip size="sm" color="success" variant="soft" className="text-xs font-semibold">VIES Validato</Chip>
+                <Chip size="sm" color="success" variant="soft" className="text-xs font-semibold">{t("dashboard.viesValidated")}</Chip>
               )}
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
 
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
-          <Card.Content className="p-2 space-y-4">
-            <span className="text-[10px] uppercase tracking-widest text-secondary dark:text-violet-400 font-extrabold block">
-              Sottoscrizioni Suite
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1">
+          <CardContent className="p-2 space-y-4">
+            <span className="text-[10px] uppercase tracking-widest text-secondary font-extrabold block">
+              {t("dashboard.suiteSubs")}
             </span>
             <div className="space-y-2">
               {activeOrg?.subscriptions && activeOrg.subscriptions.length > 0 ? (
@@ -186,19 +189,19 @@ export default function DashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="text-xs text-slate-500 text-center py-4">Nessun abbonamento attivo. Esplora il catalogo servizi.</div>
+                <div className="text-xs text-slate-500 text-center py-4">{t("dashboard.noSubs")}</div>
               )}
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
       </div>
 
       {/* 2. Sicurezza: MFA & Sessioni Dispositivi */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
-          <Card.Content className="p-2 space-y-4">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1">
+          <CardContent className="p-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-violet-500/10 border border-violet-500/20 rounded-xl text-secondary dark:text-violet-400">
+              <div className="p-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
@@ -208,17 +211,17 @@ export default function DashboardPage() {
             </div>
 
             {mfaStep === "idle" && !mfaEnabled && (
-              <Button onClick={() => setMfaStep("select")} className="w-full font-bold bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white py-5 rounded-xl border border-slate-200 dark:border-white/10 cursor-pointer">
+              <Button unstyled onClick={() => setMfaStep("select")} className="w-full font-bold bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white py-5 rounded-xl border border-slate-200 dark:border-white/10 cursor-pointer">
                 {t("dashboard.mfaSetupBtn")}
               </Button>
             )}
 
             {mfaEnabled && mfaStep === "idle" && (
-              <div className="flex justify-between items-center bg-emerald-100/45 dark:bg-emerald-950/20 p-3.5 rounded-2xl border border-emerald-300 dark:border-emerald-500/20">
+              <div className="flex justify-between items-center bg-success/10 p-3.5 rounded-2xl border border-success/40 dark:border-success/20">
                 <div>
-                  <p className="text-emerald-700 dark:text-emerald-400 text-xs font-bold">{t("dashboard.mfaEnabled")}</p>
+                  <p className="text-success text-xs font-bold">{t("dashboard.mfaEnabled")}</p>
                 </div>
-                <Button size="sm" variant="danger-soft" onClick={handleDisableMFA} className="font-bold text-[10px] cursor-pointer">
+                <Button unstyled size="sm" variant="danger-soft" onClick={handleDisableMFA} className="font-bold text-[10px] cursor-pointer">
                   {t("dashboard.mfaDisable")}
                 </Button>
               </div>
@@ -229,11 +232,11 @@ export default function DashboardPage() {
                 <p className="text-xs font-semibold">{t("dashboard.mfaSelectDesc")}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <button onClick={() => { setMfaMethod("sms"); setMfaStep("verify"); }} className="p-3 bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200 dark:border-white/5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer">
-                    <Smartphone className="w-5 h-5 text-violet-500" />
+                    <Smartphone className="w-5 h-5 text-secondary" />
                     <span className="text-xs font-bold">{t("dashboard.mfaSms")}</span>
                   </button>
                   <button onClick={() => { setMfaMethod("app"); setMfaStep("verify"); }} className="p-3 bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200 dark:border-white/5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer">
-                    <QrCode className="w-5 h-5 text-violet-500" />
+                    <QrCode className="w-5 h-5 text-secondary" />
                     <span className="text-xs font-bold">{t("dashboard.mfaApp")}</span>
                   </button>
                 </div>
@@ -244,43 +247,43 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {mfaMethod === "sms" ? (
                   <TextField className="flex flex-col gap-1 w-full">
-                    <Label className="text-[10px] font-bold text-slate-700 dark:text-gray-300">Cellulare</Label>
+                    <Label className="text-[10px] font-bold text-slate-700 dark:text-gray-300">{t("dashboard.mfaPhoneLabel")}</Label>
                     <Input placeholder="+39 345..." value={mfaPhone} onChange={e => setMfaPhone(e.target.value)} className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white outline-none w-full" />
                   </TextField>
                 ) : (
                   <div className="flex items-center gap-3 bg-slate-100/50 dark:bg-white/5 p-3 rounded-2xl border border-slate-200/50 dark:border-white/5">
                     <QrCode className="w-8 h-8 text-slate-800 dark:text-white" />
-                    <span className="text-[10px] text-slate-500">{"Scansiona il codice o usa: K4LX SSO KEY"}</span>
+                    <span className="text-[10px] text-slate-500">{t("dashboard.mfaScanOrUse")} K4LX SSO KEY</span>
                   </div>
                 )}
                 <TextField className="flex flex-col gap-1 w-full">
-                  <Label className="text-[10px] font-bold text-slate-700 dark:text-gray-300">Codice OTP</Label>
+                  <Label className="text-[10px] font-bold text-slate-700 dark:text-gray-300">{t("dashboard.mfaOtpLabel")}</Label>
                   <Input maxLength={6} placeholder="123456" value={mfaCode} onChange={e => setMfaCode(e.target.value)} className="text-center font-mono font-bold bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white outline-none w-full" />
                 </TextField>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" onClick={() => setMfaStep("select")} className="w-1/3 cursor-pointer">Indietro</Button>
-                  <Button size="sm" onClick={handleVerifyMFA} className="w-2/3 bg-gradient-to-r from-violet-500 to-accent text-slate-950 font-bold cursor-pointer">Verifica</Button>
+                  <Button unstyled size="sm" variant="ghost" onClick={() => setMfaStep("select")} className="w-1/3 cursor-pointer">{t("dashboard.mfaBack")}</Button>
+                  <Button unstyled size="sm" onClick={handleVerifyMFA} className="w-2/3 bg-gradient-to-r from-secondary to-accent text-slate-950 font-bold cursor-pointer">{t("dashboard.mfaVerify")}</Button>
                 </div>
               </div>
             )}
 
             {mfaStep === "active" && (
               <div className="text-center space-y-2">
-                <Check className="w-8 h-8 text-emerald-500 mx-auto" />
+                <Check className="w-8 h-8 text-success mx-auto" />
                 <p className="text-xs font-bold">{t("dashboard.mfaSuccessTitle")}</p>
                 <div className="grid grid-cols-2 gap-1 font-mono text-[9px] bg-slate-100/50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-slate-200/50 dark:border-white/5">
                   {mfaCodesList.map((code, idx) => <span key={idx}>{code}</span>)}
                 </div>
-                <Button size="sm" onClick={() => setMfaStep("idle")} className="w-full font-bold cursor-pointer">Fatto</Button>
+                <Button unstyled size="sm" onClick={() => setMfaStep("idle")} className="w-full font-bold cursor-pointer">{t("dashboard.mfaDone")}</Button>
               </div>
             )}
-          </Card.Content>
+          </CardContent>
         </Card>
 
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6">
-          <Card.Content className="p-2 space-y-4">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1">
+          <CardContent className="p-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-violet-500/10 border border-violet-500/20 rounded-xl text-secondary dark:text-violet-400">
+              <div className="p-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
                 <Laptop className="w-5 h-5" />
               </div>
               <div>
@@ -297,14 +300,14 @@ export default function DashboardPage() {
                     <p className="text-[10px] text-slate-500">{session.ip} • {session.loc}</p>
                   </div>
                   {!session.active && (
-                    <Button size="sm" variant="danger-soft" onClick={() => handleRevokeSession(session.id)} className="font-bold text-[10px] cursor-pointer">
-                      Revoca
+                    <Button unstyled size="sm" variant="danger-soft" onClick={() => handleRevokeSession(session.id)} className="font-bold text-[10px] cursor-pointer">
+                      {t("dashboard.revokeSession")}
                     </Button>
                   )}
                 </div>
               ))}
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
       </div>
     </div>

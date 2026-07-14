@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { TagGroup as HeroTagGroup, Tag as HeroTag, TagRemoveButton as HeroTagRemoveButton } from "@heroui/react";
+import { TagGroup as HeroTagGroup, TagGroupList as HeroTagGroupList, Tag as HeroTag, TagRemoveButton as HeroTagRemoveButton } from "@heroui/react";
 import { Tooltip } from "./Tooltip";
 import { Skeleton } from "./Skeleton";
 
@@ -38,9 +38,12 @@ TagGroupBase.displayName = "TagGroup";
 
 export const Tag = HeroTag;
 export const TagRemoveButton = HeroTagRemoveButton;
+// Collection react-aria dei tag: senza questa lista i <Tag> non sono montabili (E5.1).
+export const TagGroupList = HeroTagGroupList;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
 export const TagGroup = Object.assign(TagGroupBase, {
+  List: TagGroupList,
   Tag,
   RemoveButton: TagRemoveButton
 });

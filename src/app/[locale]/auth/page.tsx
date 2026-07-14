@@ -43,9 +43,13 @@ declare global {
     };
   }
 }
+// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
+// NB: il wrapper Card racchiude i children in un body `p-5`: i padding root sono
+// stati ridotti di conseguenza per mantenere l'ingombro precedente.
 import {
   Button,
   Card,
+  CardContent,
   TextField,
   Label,
   Input,
@@ -59,12 +63,13 @@ import {
   SelectPopover,
   ListBox,
   ListBoxItem,
-  Checkbox
-} from "@heroui/react";
+  Checkbox,
+  GlobalLoader
+} from "@/framework/components/ui";
 import { useTheme } from "next-themes";
 import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
 import { Sun, Moon, Globe, Mail, Lock, User as UserIcon } from "lucide-react";
-import { GlobalLoader } from "@/framework/components/ui";
+import { useBrand } from "@/framework/components/providers/BrandProvider";
 import { useForm, SubmitHandler, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -78,11 +83,13 @@ import {
   validateVatNumber
 } from "@/lib/validation/auth";
 
-// Configurazione estetica dei brand verticali
+// Configurazione estetica dei brand verticali.
+// `name: null` = il nome segue il brand white-label attivo (useBrand, E5.1):
+// niente identità cablata nel markup per la voce di default.
 const BRAND_CONFIGS: Record<
   string,
   {
-    name: string;
+    name: string | null;
     subtitleKey: string;
     logoColor: string;
     bgGradientLight: string;
@@ -94,11 +101,11 @@ const BRAND_CONFIGS: Record<
   satefy: {
     name: "SATEFY",
     subtitleKey: "auth.subtitle",
-    logoColor: "from-emerald-400 to-teal-500",
-    bgGradientLight: "from-emerald-100/40 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-emerald-950/25 via-slate-950 to-teal-950/15",
-    glowColorLight: "bg-emerald-500/5",
-    glowColorDark: "bg-emerald-500/10"
+    logoColor: "from-success to-teal-500",
+    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
+    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
+    glowColorLight: "bg-success/5",
+    glowColorDark: "bg-success/10"
   },
   standlo: {
     name: "STANDLO",
@@ -110,13 +117,13 @@ const BRAND_CONFIGS: Record<
     glowColorDark: "bg-cyan-500/10"
   },
   default: {
-    name: "KALEX",
+    name: null,
     subtitleKey: "auth.subtitle",
-    logoColor: "from-violet-500 to-accent",
-    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
-    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
-    glowColorLight: "bg-violet-500/5",
-    glowColorDark: "bg-violet-500/10"
+    logoColor: "from-secondary to-accent",
+    bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
+    bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
+    glowColorLight: "bg-secondary/5",
+    glowColorDark: "bg-secondary/10"
   }
 };
 
@@ -128,6 +135,8 @@ function AuthPortal() {
   const t = useI18n();
   const currentLocale = useCurrentLocale();
   const changeLocale = useChangeLocale();
+  // Brand white-label attivo (identità/copyright): mai cablare "KALEX" nel markup (E5.1).
+  const wlBrand = useBrand();
 
   const getErrorMessage = useCallback((errorObj?: { message?: string }) => {
     if (!errorObj || !errorObj.message) return "";
@@ -149,6 +158,8 @@ function AuthPortal() {
   const state = searchParams.get("state") || "";
 
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
+  // Nome effettivo: i verticali hanno un nome proprio, il default segue il white-label.
+  const brandName = brand.name ?? wlBrand.name;
   const isDark = resolvedTheme === "dark";
   const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
 
@@ -161,7 +172,7 @@ function AuthPortal() {
   // White-label (§3-bis): nome dell'org risolto dall'host (sottodominio o dominio custom).
   const [tenantName, setTenantName] = useState<string | null>(null);
   // Nome mostrato nel logo: l'org risolta dall'host ha la precedenza sul brand statico.
-  const displayBrandName = tenantName || brand.name;
+  const displayBrandName = tenantName || brandName;
 
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -335,6 +346,15 @@ function AuthPortal() {
   const passwordReg = useWatch({ control: controlReg, name: "password" }) || "";
   const vatNumberValue = useWatch({ control: controlReg, name: "vatNumber" }) || "";
   const emailRegValue = useWatch({ control: controlReg, name: "email" }) || "";
+  // Binding controllato per il wrapper Input (E5.1): il wrapper è sempre controllato
+  // (value di default ""), quindi ogni campo registrato con RHF espone il valore via useWatch.
+  const fullNameRegValue = useWatch({ control: controlReg, name: "fullName" }) || "";
+  const sdiCodeValue = useWatch({ control: controlReg, name: "sdiCode" }) || "";
+  const officeCodeValue = useWatch({ control: controlReg, name: "officeCode" }) || "";
+  const cigCodeValue = useWatch({ control: controlReg, name: "cigCode" }) || "";
+  const cupCodeValue = useWatch({ control: controlReg, name: "cupCode" }) || "";
+  const emailLoginValue = useWatch({ control: controlLogin, name: "email" }) || "";
+  const passwordLoginValue = useWatch({ control: controlLogin, name: "password" }) || "";
 
   // Automatismo Geo-IP per il paese di default e la lingua locale iniziale (attivo sia per login che per registrazione)
   useEffect(() => {
@@ -1016,14 +1036,15 @@ function AuthPortal() {
       <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row relative overflow-hidden font-sans transition-colors duration-500">
         {/* Left Column (Forms and Dynamic States) */}
         <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-20 relative z-10 w-full">
-          {/* Ambient Glow */}
+          {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2); con start-1/2 il translate fisico non centrerebbe in RTL */}
           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
 
           {/* Floating Header per selezione Tema & Lingua */}
-          <div className="absolute top-6 right-6 flex items-center gap-2 z-50">
+          <div className="absolute top-6 end-6 flex items-center gap-2 z-50">
             {/* Selettore Lingua a discesa */}
             <div className="relative">
               <Button
+                unstyled
                 variant="ghost"
                 size="sm"
                 className="border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-800 dark:text-white cursor-pointer rounded-full px-3.5 py-1.5 flex items-center gap-1.5 text-xs font-bold transition-all"
@@ -1035,16 +1056,16 @@ function AuthPortal() {
               {langMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setLangMenuOpen(false)}></div>
-                  <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl z-45 p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute end-0 mt-2 w-36 origin-top-right rtl:origin-top-left rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl z-45 p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
                     <button
                       type="button"
                       onClick={() => {
                         changeLocale("it");
                         setLangMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
+                      className={`w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                         currentLocale === "it"
-                          ? "bg-violet-500/10 text-secondary dark:text-violet-400"
+                          ? "bg-secondary/10 text-secondary"
                           : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                       }`}
                     >
@@ -1056,9 +1077,9 @@ function AuthPortal() {
                         changeLocale("en");
                         setLangMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
+                      className={`w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                         currentLocale === "en"
-                          ? "bg-violet-500/10 text-secondary dark:text-violet-400"
+                          ? "bg-secondary/10 text-secondary"
                           : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                       }`}
                     >
@@ -1070,9 +1091,9 @@ function AuthPortal() {
                         changeLocale("es");
                         setLangMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
+                      className={`w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                         currentLocale === "es"
-                          ? "bg-violet-500/10 text-secondary dark:text-violet-400"
+                          ? "bg-secondary/10 text-secondary"
                           : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                       }`}
                     >
@@ -1085,6 +1106,7 @@ function AuthPortal() {
 
             {/* Toggle Tema */}
             <Button
+              unstyled
               isIconOnly
               variant="ghost"
               size="sm"
@@ -1095,8 +1117,8 @@ function AuthPortal() {
             </Button>
           </div>
 
-          <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/35 dark:bg-slate-950/25 backdrop-blur-2xl shadow-2xl p-6 relative z-10 rounded-3xl transition-all">
-            <Card.Content className="p-4 flex flex-col items-center text-center">
+          <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/35 dark:bg-slate-950/25 backdrop-blur-2xl shadow-2xl p-1 relative z-10 rounded-3xl transition-all">
+            <CardContent className="p-4 flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-center mb-6 animate-pulse">
                 <Mail className="w-8 h-8 text-slate-800 dark:text-white" />
               </div>
@@ -1113,13 +1135,14 @@ function AuthPortal() {
               )}
 
               {resendSuccess && (
-                <div className="bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300 rounded-2xl p-3 text-xs mb-4 text-center font-medium w-full">
+                <div className="bg-success/10 border border-success/25 dark:border-success/20 text-success rounded-2xl p-3 text-xs mb-4 text-center font-medium w-full">
                   {resendSuccess}
                 </div>
               )}
 
               <div className="space-y-3 w-full">
                 <Button
+                  unstyled
                   onClick={handleCheckVerification}
                   isDisabled={loading}
                   className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2`}
@@ -1129,6 +1152,7 @@ function AuthPortal() {
                 </Button>
 
                 <Button
+                  unstyled
                   onClick={handleResendVerification}
                   isDisabled={resendLoading}
                   variant="outline"
@@ -1150,12 +1174,12 @@ function AuthPortal() {
                   {t("auth.backToLogin")}
                 </button>
               </div>
-            </Card.Content>
+            </CardContent>
           </Card>
 
           {/* Footer sotto la Card */}
           <div className="mt-8 text-center text-xs text-slate-500 dark:text-gray-500 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-            <p>© 2026 {brand.name === "KALEX" ? "KALEX CLOUD OÜ" : brand.name}. Tutti i diritti riservati.</p>
+            <p>{wlBrand.copyright} · {t("auth.rightsReserved")}</p>
             <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
             <div className="flex gap-3">
               <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
@@ -1165,7 +1189,7 @@ function AuthPortal() {
         </div>
 
         {/* Right Column (Marketing panel) */}
-        {renderMarketingPanel(brand, t, isDark)}
+        {renderMarketingPanel({ ...brand, name: brandName }, t, isDark)}
       </div>
     );
   }
@@ -1174,14 +1198,15 @@ function AuthPortal() {
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row relative overflow-hidden font-sans transition-colors duration-500">
       {/* Left Column (Forms and Dynamic States) */}
       <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-16 relative z-10 w-full">
-        {/* Ambient Glow */}
+        {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2); con start-1/2 il translate fisico non centrerebbe in RTL */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
 
         {/* Floating Header per selezione Tema & Lingua */}
-        <div className="absolute top-6 right-6 flex items-center gap-2 z-50">
+        <div className="absolute top-6 end-6 flex items-center gap-2 z-50">
           {/* Selettore Lingua a discesa */}
           <div className="relative">
             <Button
+              unstyled
               variant="ghost"
               size="sm"
               className="border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-800 dark:text-white cursor-pointer rounded-full px-3.5 py-1.5 flex items-center gap-1.5 text-xs font-bold transition-all"
@@ -1193,16 +1218,16 @@ function AuthPortal() {
             {langMenuOpen && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setLangMenuOpen(false)}></div>
-                <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl z-45 p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute end-0 mt-2 w-36 origin-top-right rtl:origin-top-left rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl z-45 p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
                   <button
                     type="button"
                     onClick={() => {
                       changeLocale("it");
                       setLangMenuOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
+                    className={`w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                       currentLocale === "it"
-                        ? "bg-violet-500/10 text-secondary dark:text-violet-400"
+                        ? "bg-secondary/10 text-secondary"
                         : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
@@ -1214,9 +1239,9 @@ function AuthPortal() {
                       changeLocale("en");
                       setLangMenuOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
+                    className={`w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                       currentLocale === "en"
-                        ? "bg-violet-500/10 text-secondary dark:text-violet-400"
+                        ? "bg-secondary/10 text-secondary"
                         : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
@@ -1228,9 +1253,9 @@ function AuthPortal() {
                       changeLocale("es");
                       setLangMenuOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
+                    className={`w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                       currentLocale === "es"
-                        ? "bg-violet-500/10 text-secondary dark:text-violet-400"
+                        ? "bg-secondary/10 text-secondary"
                         : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
@@ -1243,6 +1268,7 @@ function AuthPortal() {
 
           {/* Toggle Tema */}
           <Button
+            unstyled
             isIconOnly
             variant="ghost"
             size="sm"
@@ -1253,8 +1279,8 @@ function AuthPortal() {
           </Button>
         </div>
 
-        <Card className="max-w-xl w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/35 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 relative z-10 rounded-3xl transition-all">
-          <Card.Content className="p-4">
+        <Card className="max-w-xl w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/35 backdrop-blur-2xl shadow-2xl p-1 sm:p-3 relative z-10 rounded-3xl transition-all">
+          <CardContent className="p-4">
             {/* Brand Logo & Title */}
             <div className="text-center mb-8">
               <span className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}>
@@ -1287,7 +1313,7 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.mfaCode")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                     <Input
                       type="text"
                       maxLength={6}
@@ -1301,6 +1327,7 @@ function AuthPortal() {
                 </TextField>
 
                 <Button
+                  unstyled
                   type="submit"
                   isDisabled={mfaLoading}
                   className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
@@ -1314,7 +1341,7 @@ function AuthPortal() {
                   <button
                     type="button"
                     onClick={() => { setShowBackupRecover(true); setBackupRecoverMsg(null); }}
-                    className="w-full text-center text-[11px] font-semibold text-slate-400 hover:text-secondary dark:hover:text-violet-400 underline mt-2 cursor-pointer bg-transparent border-0 outline-none block"
+                    className="w-full text-center text-[11px] font-semibold text-slate-400 hover:text-secondary dark:hover:text-secondary underline mt-2 cursor-pointer bg-transparent border-0 outline-none block"
                   >
                     {t("auth.mfaBackupCta")}
                   </button>
@@ -1330,6 +1357,7 @@ function AuthPortal() {
                         onChange={(e) => setBackupCode(e.target.value)}
                       />
                       <Button
+                        unstyled
                         type="button"
                         onClick={() => void handleBackupRecover()}
                         isDisabled={backupRecoverLoading || !backupCode.trim()}
@@ -1339,7 +1367,7 @@ function AuthPortal() {
                       </Button>
                     </div>
                     {backupRecoverMsg && (
-                      <p className={`text-[11px] font-semibold ${backupRecoverMsg.type === "ok" ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
+                      <p className={`text-[11px] font-semibold ${backupRecoverMsg.type === "ok" ? "text-success" : "text-red-500"}`}>
                         {backupRecoverMsg.text}
                       </p>
                     )}
@@ -1360,7 +1388,7 @@ function AuthPortal() {
                     setMfaResolver(null);
                     setError("");
                   }}
-                  className="w-full text-center text-xs font-semibold text-secondary dark:text-violet-400 hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
+                  className="w-full text-center text-xs font-semibold text-secondary hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
                 >
                   {t("auth.backToLogin")}
                 </button>
@@ -1372,8 +1400,8 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.email")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                    <InputGroupPrefix className="flex items-center justify-center mr-2">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                    <InputGroupPrefix className="flex items-center justify-center me-2">
                       <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
                     <Input
@@ -1382,6 +1410,7 @@ function AuthPortal() {
                       autoComplete="username"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerLogin("email")}
+                      value={emailLoginValue}
                     />
                   </InputGroup>
                   <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsLogin.email)}</FieldError>
@@ -1391,8 +1420,8 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.password")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                    <InputGroupPrefix className="flex items-center justify-center mr-2">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                    <InputGroupPrefix className="flex items-center justify-center me-2">
                       <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
                     <Input
@@ -1401,6 +1430,7 @@ function AuthPortal() {
                       autoComplete="current-password"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerLogin("password")}
+                      value={passwordLoginValue}
                     />
                   </InputGroup>
                   <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsLogin.password)}</FieldError>
@@ -1431,13 +1461,14 @@ function AuthPortal() {
                   <button
                     type="button"
                     onClick={() => router.push(`/${currentLocale}/auth/reset-password`)}
-                    className="text-xs font-semibold text-secondary dark:text-violet-400 hover:underline cursor-pointer bg-transparent border-0 outline-none"
+                    className="text-xs font-semibold text-secondary hover:underline cursor-pointer bg-transparent border-0 outline-none"
                   >
                     {t("auth.forgotPassword")}
                   </button>
                 </div>
 
                 <Button
+                  unstyled
                   type="submit"
                   isDisabled={loading}
                   className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
@@ -1472,8 +1503,8 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.name")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                    <InputGroupPrefix className="flex items-center justify-center mr-2">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                    <InputGroupPrefix className="flex items-center justify-center me-2">
                       <UserIcon className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
                     <Input
@@ -1486,6 +1517,7 @@ function AuthPortal() {
                       autoComplete="name"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerReg("fullName")}
+                      value={fullNameRegValue}
                     />
                   </InputGroup>
                   <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.fullName)}</FieldError>
@@ -1496,8 +1528,8 @@ function AuthPortal() {
                   <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                     {t("auth.email")}
                   </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                    <InputGroupPrefix className="flex items-center justify-center mr-2">
+                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                    <InputGroupPrefix className="flex items-center justify-center me-2">
                       <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
                     </InputGroupPrefix>
                     <Input
@@ -1506,6 +1538,7 @@ function AuthPortal() {
                       autoComplete="username"
                       className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                       {...registerReg("email")}
+                      value={emailRegValue}
                     />
                   </InputGroup>
                   <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.email)}</FieldError>
@@ -1517,8 +1550,8 @@ function AuthPortal() {
                     <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                       {t("auth.password")}
                     </Label>
-                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                      <InputGroupPrefix className="flex items-center justify-center mr-2">
+                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                      <InputGroupPrefix className="flex items-center justify-center me-2">
                         <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
                       </InputGroupPrefix>
                       <Input
@@ -1527,6 +1560,7 @@ function AuthPortal() {
                         autoComplete="new-password"
                         className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                         {...registerReg("password")}
+                        value={passwordReg}
                       />
                     </InputGroup>
                     <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.password)}</FieldError>
@@ -1553,7 +1587,7 @@ function AuthPortal() {
                               : passwordReg.length < 10
                               ? "w-[50%] bg-orange-500"
                               : /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,}$/.test(passwordReg)
-                              ? "w-[100%] bg-emerald-500"
+                              ? "w-[100%] bg-success"
                               : "w-[75%] bg-yellow-500"
                           }`}
                         ></div>
@@ -1571,15 +1605,15 @@ function AuthPortal() {
                       <Select
                         selectedKey={field.value}
                         onSelectionChange={(key: string | number | null) => {
-                          if (key) {
-                            field.onChange(key as typeof EU_COUNTRIES[number]);
-                          }
+                          // Niente cast `as`: risolve la chiave contro la lista tipizzata dei paesi
+                          const code = EU_COUNTRIES.find((c) => c === key);
+                          if (code) field.onChange(code);
                         }}
                         isInvalid={!!errorsReg.country}
                         className="flex flex-col gap-1.5 w-full"
                       >
                         <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("auth.fiscalCountry")}</Label>
-                        <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                        <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
@@ -1588,7 +1622,7 @@ function AuthPortal() {
                               const name = EU_COUNTRY_NAMES[code][currentLocale as "it" | "en" | "es"] || EU_COUNTRY_NAMES[code].en;
                               const flag = EU_COUNTRY_FLAGS[code];
                               return (
-                                <ListBoxItem id={code} key={code} textValue={`${flag} ${name}`} className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+                                <ListBoxItem id={code} key={code} textValue={`${flag} ${name}`} className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
                                   <span className="text-base leading-none">{flag}</span>
                                   <span className="text-xs">{name} ({code})</span>
                                 </ListBoxItem>
@@ -1612,7 +1646,7 @@ function AuthPortal() {
                         ? t("auth.vatNumberPersonalES")
                         : t("auth.vatNumberPersonalGeneric")}
                     </Label>
-                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full">
+                    <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full">
                       <Input
                         type="text"
                         placeholder={country === "IT"
@@ -1622,6 +1656,7 @@ function AuthPortal() {
                           : t("auth.vatNumberPersonalPlaceholderGeneric")}
                         className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
                         {...registerReg("vatNumber")}
+                        value={vatNumberValue}
                       />
                     </InputGroup>
                     <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.vatNumber)}</FieldError>
@@ -1634,7 +1669,7 @@ function AuthPortal() {
                     <label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                       {t("auth.residenceAddress")}
                     </label>
-                    <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2.5 flex items-center h-[48px] transition-all w-full">
+                    <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2.5 flex items-center h-[48px] transition-all w-full">
                       <input
                         type="text"
                         placeholder={t("auth.addressPlaceholder")}
@@ -1646,13 +1681,13 @@ function AuthPortal() {
                         className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
                       />
                       {isAddressValidating && (
-                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent ml-2 shrink-0"></span>
+                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent ms-2 shrink-0"></span>
                       )}
                     </div>
                     
                     {/* Lista dei suggerimenti di autocompletamento per privato */}
                     {addressPredictions.length > 0 && (
-                      <div className="absolute top-[76px] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 max-h-[180px] overflow-y-auto">
+                      <div className="absolute top-[76px] start-0 end-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 max-h-[180px] overflow-y-auto">
                         <ul className="outline-none space-y-0.5">
                           {addressPredictions.map((pred) => (
                             <li
@@ -1661,7 +1696,7 @@ function AuthPortal() {
                                 setManualAddressInput(pred.description);
                                 handleSelectAddress(pred.description, country, pred.placeId);
                               }}
-                              className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                              className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                             >
                               <svg className="h-3.5 w-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -1699,15 +1734,15 @@ function AuthPortal() {
                             <Select
                               selectedKey={field.value}
                               onSelectionChange={(key: string | number | null) => {
-                                if (key) {
-                                  field.onChange(key as typeof EU_COUNTRIES[number]);
-                                }
+                                // Niente cast `as`: risolve la chiave contro la lista tipizzata dei paesi
+                                const code = EU_COUNTRIES.find((c) => c === key);
+                                if (code) field.onChange(code);
                               }}
                               isInvalid={!!errorsReg.country}
                               className="flex flex-col gap-1.5 w-full"
                             >
                               <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("auth.country")}</Label>
-                              <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                              <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
@@ -1716,7 +1751,7 @@ function AuthPortal() {
                                     const name = EU_COUNTRY_NAMES[code][currentLocale as "it" | "en" | "es"] || EU_COUNTRY_NAMES[code].en;
                                     const flag = EU_COUNTRY_FLAGS[code];
                                     return (
-                                      <ListBoxItem id={code} key={code} textValue={`${flag} ${code}`} className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+                                      <ListBoxItem id={code} key={code} textValue={`${flag} ${code}`} className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
                                         <span className="text-base leading-none">{flag}</span>
                                         <span className="text-xs">{name} ({code})</span>
                                       </ListBoxItem>
@@ -1741,33 +1776,34 @@ function AuthPortal() {
                           </Label>
                           <InputGroup className={`bg-white/50 dark:bg-slate-950/40 border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
                             isVatVerified
-                              ? "border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)] focus-within:!border-emerald-500"
+                              ? "border-success shadow-[0_0_10px_rgba(16,185,129,0.15)] focus-within:!border-success"
                               : isVatWarning
-                              ? "border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.15)] focus-within:!border-amber-500"
-                              : "border-slate-200 dark:border-white/10 focus-within:!border-violet-500"
+                              ? "border-warning shadow-[0_0_10px_color-mix(in_srgb,var(--klx-warning)_15%,transparent)] focus-within:!border-warning"
+                              : "border-slate-200 dark:border-white/10 focus-within:!border-secondary"
                           }`}>
                             <Input
                               type="text"
                               placeholder={`${country}123456789`}
                               className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                               {...registerReg("vatNumber")}
+                              value={vatNumberValue}
                             />
                             {(isVatValidating || isVatVerified || isVatWarning) && (
-                              <InputGroupSuffix className="flex items-center justify-center ml-2">
+                              <InputGroupSuffix className="flex items-center justify-center ms-2">
                                 {isVatValidating ? (
-                                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent"></span>
+                                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent"></span>
                                 ) : isVatVerified ? (
                                   <div className="flex items-center justify-center">
-                                    <span className="flex h-2 w-2 relative mr-1">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    <span className="flex h-2 w-2 relative me-1">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                                     </span>
-                                    <svg className="h-4 w-4 text-emerald-500 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="h-4 w-4 text-success stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                     </svg>
                                   </div>
                                 ) : (
-                                  <div className="flex items-center justify-center text-amber-500">
+                                  <div className="flex items-center justify-center text-warning">
                                     <svg className="h-4 w-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
@@ -1782,23 +1818,23 @@ function AuthPortal() {
                     </div>
 
                     {isVatVerified && (
-                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mt-1 flex items-center gap-1.5 animate-in fade-in duration-300">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                      <div className="text-[10px] text-success font-bold uppercase tracking-wider mt-1 flex items-center gap-1.5 animate-in fade-in duration-300">
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-success"></span>
                         {t("auth.viesValidated")}
                       </div>
                     )}
 
                     {isVatWarning && !isViesOffline && (
-                      <div className="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider mt-1 flex items-start gap-1.5 animate-in fade-in duration-300 leading-normal max-w-xl">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0 mt-1"></span>
+                      <div className="text-[10px] text-warning font-bold uppercase tracking-wider mt-1 flex items-start gap-1.5 animate-in fade-in duration-300 leading-normal max-w-xl">
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-warning shrink-0 mt-1"></span>
                         <span>{t("auth.vatWarningInfo")}</span>
                       </div>
                     )}
 
                     {/* VIES Offline Alert */}
                     {isViesOffline && (
-                      <div className="bg-amber-100 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-3 text-xs flex items-start gap-2">
-                        <svg className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="bg-warning/15 dark:bg-warning/10 border border-warning/40 dark:border-warning/20 text-warning rounded-xl p-3 text-xs flex items-start gap-2">
+                        <svg className="h-4 w-4 text-warning shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <div>
@@ -1823,7 +1859,7 @@ function AuthPortal() {
                         <InputGroup className={`border transition-all rounded-2xl px-3.5 py-2 flex items-center h-[48px] w-full ${
                           (isVatVerified && isNameFromVies)
                             ? "bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/5 text-slate-500 cursor-not-allowed"
-                            : "bg-white/50 dark:bg-slate-950/40 border-slate-200 dark:border-white/10 focus-within:!border-violet-500"
+                            : "bg-white/50 dark:bg-slate-950/40 border-slate-200 dark:border-white/10 focus-within:!border-secondary"
                         }`}>
                           <Controller
                             name="companyName"
@@ -1867,7 +1903,7 @@ function AuthPortal() {
                           />
                         ) : (
                           <>
-                            <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-xl px-3.5 py-2.5 flex items-center w-full">
+                            <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-xl px-3.5 py-2.5 flex items-center w-full">
                               <input
                                 type="text"
                                 placeholder={t("auth.addressPlaceholder")}
@@ -1879,13 +1915,13 @@ function AuthPortal() {
                                 className="bg-transparent border-0 outline-none w-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0"
                               />
                               {isAddressValidating && (
-                                <span className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent ml-2 shrink-0"></span>
+                                <span className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent ms-2 shrink-0"></span>
                               )}
                             </div>
                             
                             {/* Suggerimenti Places per azienda */}
                             {addressPredictions.length > 0 && (
-                              <div className="absolute top-[68px] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 max-h-[180px] overflow-y-auto">
+                              <div className="absolute top-[68px] start-0 end-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 max-h-[180px] overflow-y-auto">
                                 <ul className="outline-none space-y-0.5">
                                   {addressPredictions.map((pred) => (
                                     <li
@@ -1894,7 +1930,7 @@ function AuthPortal() {
                                         setViesAddress(pred.description);
                                         handleSelectAddress(pred.description, country, pred.placeId);
                                       }}
-                                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                                      className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
                                     >
                                       <svg className="h-3.5 w-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -1920,13 +1956,14 @@ function AuthPortal() {
                               <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                 {t("auth.sdiCode")}
                               </Label>
-                              <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                              <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                 <Input
                                   type="text"
                                   placeholder={t("auth.sdiPlaceholder")}
                                   maxLength={7}
                                   className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                                   {...registerReg("sdiCode")}
+                                  value={sdiCodeValue}
                                 />
                               </InputGroup>
                               <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.sdiCode)}</FieldError>
@@ -1941,13 +1978,14 @@ function AuthPortal() {
                                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                   {t("auth.officeCode")}
                                 </Label>
-                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
                                     placeholder={t("auth.officePlaceholder")}
                                     maxLength={6}
                                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                                     {...registerReg("officeCode")}
+                                    value={officeCodeValue}
                                   />
                                 </InputGroup>
                                 <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.officeCode)}</FieldError>
@@ -1959,12 +1997,13 @@ function AuthPortal() {
                                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                   {t("auth.cigCode")}
                                 </Label>
-                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
                                     placeholder="CIG"
                                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                                     {...registerReg("cigCode")}
+                                    value={cigCodeValue}
                                   />
                                 </InputGroup>
                                 <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.cigCode)}</FieldError>
@@ -1976,12 +2015,13 @@ function AuthPortal() {
                                 <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
                                   {t("auth.cupCode")}
                                 </Label>
-                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
+                                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
                                   <Input
                                     type="text"
                                     placeholder="CUP"
                                     className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                                     {...registerReg("cupCode")}
+                                    value={cupCodeValue}
                                   />
                                 </InputGroup>
                                 <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsReg.cupCode)}</FieldError>
@@ -2027,6 +2067,7 @@ function AuthPortal() {
                 />
 
                 <Button
+                  unstyled
                   type="submit"
                   isDisabled={loading || !isValidReg}
                   className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 mt-6 ${
@@ -2050,17 +2091,17 @@ function AuthPortal() {
                   setIsLogin(!isLogin);
                   setError("");
                 }}
-                className="text-slate-900 dark:text-white font-bold hover:underline ml-1 cursor-pointer bg-transparent border-0 font-sans"
+                className="text-slate-900 dark:text-white font-bold hover:underline ms-1 cursor-pointer bg-transparent border-0 font-sans"
               >
                 {isLogin ? t("auth.registerNow") : t("auth.loginHere")}
               </button>
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
 
         {/* Footer sotto la Card */}
         <div className="mt-8 text-center text-xs text-slate-500 dark:text-gray-500 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-          <p>© 2026 {brand.name === "KALEX" ? "KALEX CLOUD OÜ" : brand.name}. Tutti i diritti riservati.</p>
+          <p>{wlBrand.copyright} · {t("auth.rightsReserved")}</p>
           <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
           <div className="flex gap-3">
             <a href={`/${currentLocale}/privacy?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Privacy Policy</a>
@@ -2070,7 +2111,7 @@ function AuthPortal() {
       </div>
 
       {/* Right Column (Marketing panel) */}
-      {renderMarketingPanel(brand, t, isDark)}
+      {renderMarketingPanel({ ...brand, name: brandName }, t, isDark)}
     </div>
   );
 }
@@ -2091,8 +2132,8 @@ function renderMarketingPanel(
   const glowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
 
   return (
-    <div className="hidden lg:flex flex-1 relative flex-col justify-between items-center p-16 overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-black border-l border-slate-200 dark:border-white/5 transition-colors duration-500">
-      {/* Radial glow */}
+    <div className="hidden lg:flex flex-1 relative flex-col justify-between items-center p-16 overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-black border-s border-slate-200 dark:border-white/5 transition-colors duration-500">
+      {/* Radial glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full filter blur-[150px] pointer-events-none ${glowColor} opacity-75 transition-all duration-700`}></div>
       
       {/* Decorative vector grid pattern */}
@@ -2103,7 +2144,7 @@ function renderMarketingPanel(
       {/* Marketing Content */}
       <div className="relative z-10 my-auto max-w-lg space-y-6 flex flex-col items-center text-center">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/50 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-gray-300 transition-all">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="flex h-2 w-2 rounded-full bg-success animate-pulse"></span>
           {t("auth.ecosystemBadge")}
         </div>
         
@@ -2122,11 +2163,11 @@ function renderMarketingPanel(
             { title: t("auth.feat2Title"), desc: t("auth.feat2Desc") },
             { title: t("auth.feat3Title"), desc: t("auth.feat3Desc") }
           ].map((feat, i) => (
-            <div key={i} className="flex gap-4 p-4 rounded-2xl bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-300 w-full text-left">
+            <div key={i} className="flex gap-4 p-4 rounded-2xl bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-300 w-full text-start">
               <div className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-r ${brand.logoColor} flex items-center justify-center font-bold text-slate-950 dark:text-slate-950 text-sm shadow-sm`}>
                 {i + 1}
               </div>
-              <div className="text-left">
+              <div className="text-start">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">{feat.title}</h3>
                 <p className="text-xs text-slate-600 dark:text-gray-400 mt-0.5">{feat.desc}</p>
               </div>

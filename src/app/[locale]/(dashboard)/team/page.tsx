@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useDashboard } from "../layout";
 import { fetchWithAppCheck } from "@/lib/firebase/client";
-import { Button, Card, Input, Label, TextField, Modal, Checkbox, Chip } from "@heroui/react";
+// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
+// NB: il wrapper Card racchiude i children in un body `p-5`: i padding root sono
+// stati ridotti di conseguenza per mantenere l'ingombro precedente.
+import { Button, Card, CardContent, Input, Label, TextField, Modal, Checkbox, Chip } from "@/framework/components/ui";
 import { Users, Plus, Shield, Trash2, Settings, Lock } from "lucide-react";
+import { useI18n } from "@/locales/client";
 
 interface RbacStructure {
   apps: Record<string, Record<string, number>>;
@@ -55,7 +59,12 @@ const getMaskFromPermissions = (perms: { read: boolean; create: boolean; update:
 
 export default function TeamManagementPage() {
   const { user, showToast, hasPermission } = useDashboard();
-  
+  const t = useI18n();
+  // Pattern tRef (regola i18n): le callback dei fetch leggono la traduzione dalla ref,
+  // così il cambio lingua non ri-innesca i caricamenti.
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
+
   const [teams, setTeams] = useState<TeamItem[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -86,12 +95,12 @@ export default function TeamManagementPage() {
           ? (typeof data.error === "object" && "message" in data.error
               ? String(data.error.message)
               : String(data.error))
-          : "Impossibile recuperare i team.";
+          : tRef.current("team.errList");
         throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore caricamento team.", "error");
+      showToast(err instanceof Error ? err.message : tRef.current("team.toastLoadErr"), "error");
     } finally {
       setLoading(false);
     }
@@ -121,7 +130,7 @@ export default function TeamManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        showToast(`Team '${newTeamName}' creato con successo.`, "success");
+        showToast(t("team.toastCreated", { name: newTeamName }), "success");
         setNewTeamName("");
         void loadTeams();
       } else {
@@ -129,12 +138,12 @@ export default function TeamManagementPage() {
           ? (typeof data.error === "object" && "message" in data.error
               ? String(data.error.message)
               : String(data.error))
-          : "Errore durante la creazione del team.";
+          : t("team.errCreate");
         throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore creazione team.", "error");
+      showToast(err instanceof Error ? err.message : t("team.toastCreateErr"), "error");
     } finally {
       setCreating(false);
     }
@@ -142,7 +151,7 @@ export default function TeamManagementPage() {
 
   const handleDeleteTeam = async (teamId: string, teamName: string) => {
     if (!user) return;
-    if (!confirm(`Sei sicuro di voler eliminare il team '${teamName}'? Tutti i membri saranno disassociati in automatico.`)) return;
+    if (!confirm(t("team.confirmDelete", { name: teamName }))) return;
 
     try {
       const idToken = await user.getIdToken();
@@ -154,19 +163,19 @@ export default function TeamManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        showToast(`Team '${teamName}' eliminato con successo.`, "success");
+        showToast(t("team.toastDeleted", { name: teamName }), "success");
         void loadTeams();
       } else {
         const errMsg = data.error
           ? (typeof data.error === "object" && "message" in data.error
               ? String(data.error.message)
               : String(data.error))
-          : "Errore durante l'eliminazione del team.";
+          : t("team.errDelete");
         throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore eliminazione team.", "error");
+      showToast(err instanceof Error ? err.message : t("team.toastDeleteErr"), "error");
     }
   };
 
@@ -233,7 +242,7 @@ export default function TeamManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        showToast("Permessi del team salvati con successo.", "success");
+        showToast(t("team.toastPermsSaved"), "success");
         setIsPermModalOpen(false);
         void loadTeams();
       } else {
@@ -241,12 +250,12 @@ export default function TeamManagementPage() {
           ? (typeof data.error === "object" && "message" in data.error
               ? String(data.error.message)
               : String(data.error))
-          : "Impossibile aggiornare i permessi del team.";
+          : t("team.errPerms");
         throw new Error(errMsg);
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore aggiornamento permessi.", "error");
+      showToast(err instanceof Error ? err.message : t("team.toastPermsErr"), "error");
     } finally {
       setSavingPerms(false);
     }
@@ -255,64 +264,67 @@ export default function TeamManagementPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-1">
-          <Card.Content className="p-2 space-y-4">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1 lg:col-span-1">
+          <CardContent className="p-2 space-y-4">
             <div>
-              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Nuovo Team</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">Crea un gruppo di lavoro logico per l&apos;organizzazione.</p>
+              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">{t("team.newTeamTitle")}</h3>
+              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{t("team.newTeamDesc")}</p>
             </div>
 
             <form onSubmit={handleCreateTeam} className="space-y-4">
               <TextField isRequired className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Nome Team</Label>
+                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("team.teamNameLabel")}</Label>
                 <Input
-                  placeholder="Es. Team Sicurezza"
+                  isRequired
+                  placeholder={t("team.teamNamePlaceholder")}
                   value={newTeamName}
                   onChange={e => setNewTeamName(e.target.value)}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <Button
+                unstyled
                 type="submit"
                 isDisabled={creating || !hasPermission("team", "create")}
-                className="w-full py-5 font-bold bg-gradient-to-r from-violet-500 to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                className="w-full py-5 font-bold bg-gradient-to-r from-secondary to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                {creating ? "Creazione..." : "Crea Team"}
+                {creating ? t("team.creating") : t("team.createBtn")}
               </Button>
             </form>
-          </Card.Content>
+          </CardContent>
         </Card>
 
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-2">
-          <Card.Content className="p-2 space-y-4">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1 lg:col-span-2">
+          <CardContent className="p-2 space-y-4">
             <div>
-              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Team Attivi</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">Gruppi e autorizzazioni ereditate per le applicazioni.</p>
+              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">{t("team.activeTitle")}</h3>
+              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{t("team.activeDesc")}</p>
             </div>
 
             {loading ? (
-              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-violet-500"></span></div>
+              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-secondary"></span></div>
             ) : teams.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-500">Nessun team attivo trovato.</div>
+              <div className="p-6 text-center text-xs text-slate-500">{t("team.emptyList")}</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {teams.map((team) => (
                   <div key={team.teamId} className="flex justify-between items-center bg-slate-100/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-200/50 dark:border-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-secondary dark:text-violet-400">
+                      <div className="p-2.5 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
                         <Shield className="w-4 h-4" />
                       </div>
                       <div>
                         <p className="text-xs font-bold text-slate-900 dark:text-white">{team.name}</p>
                         <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                          <Users className="w-3 h-3" /> {team.memberCount || 0} membri
+                          <Users className="w-3 h-3" /> {t("team.membersCount", { n: team.memberCount || 0 })}
                         </p>
                       </div>
                     </div>
                     {(hasPermission("team", "update") || hasPermission("team", "delete")) && (
                       <div className="flex gap-1">
                         <Button
+                          unstyled
                           isIconOnly
                           variant="ghost"
                           isDisabled={!hasPermission("team", "update")}
@@ -322,6 +334,7 @@ export default function TeamManagementPage() {
                           <Settings className="w-4 h-4" />
                         </Button>
                         <Button
+                          unstyled
                           isIconOnly
                           variant="ghost"
                           isDisabled={!hasPermission("team", "delete")}
@@ -336,7 +349,7 @@ export default function TeamManagementPage() {
                 ))}
               </div>
             )}
-          </Card.Content>
+          </CardContent>
         </Card>
       </div>
 
@@ -347,37 +360,37 @@ export default function TeamManagementPage() {
             <Modal.Dialog>
               <Modal.Header className="flex flex-col gap-1 border-b border-white/5 pb-4">
                 <h2 className="text-lg font-extrabold text-white flex items-center gap-2">
-                  <Shield className="text-violet-400 w-5 h-5" />
-                  Matrice Permessi Ereditati - {selectedTeam?.name}
+                  <Shield className="text-secondary w-5 h-5" />
+                  {t("team.permModalTitle")} - {selectedTeam?.name}
                 </h2>
                 <p className="text-slate-400 text-xs font-normal">
-                  Configura l&apos;RBAC di default ereditato da tutti i membri assegnati a questo team.
+                  {t("team.permModalDesc")}
                 </p>
               </Modal.Header>
               <Modal.Body className="py-6 space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-200">Matrice dei Permessi Applicativi</h3>
-                    <span className="text-[10px] text-violet-400 font-bold bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                      <Lock className="w-3 h-3" /> Bitmask Team
+                    <h3 className="text-sm font-bold text-slate-200">{t("rbac.matrixTitle")}</h3>
+                    <span className="text-[10px] text-secondary font-bold bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" /> {t("team.bitmaskBadge")}
                     </span>
                   </div>
 
                   {/* SSO App Block */}
                   <div className="border border-white/5 rounded-2xl bg-white/[0.02] overflow-hidden">
                     <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-white">SSO Management Console</span>
-                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">Default</Chip>
+                      <span className="text-xs font-extrabold text-white">{t("rbac.ssoBlock")}</span>
+                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">{t("rbac.defaultChip")}</Chip>
                     </div>
 
                     <div className="divide-y divide-white/5">
                       {/* Intestazione Colonne */}
                       <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-slate-900/50 text-[10px] font-extrabold text-slate-400 uppercase">
-                        <div className="col-span-4">Modulo / Risorsa</div>
-                        <div className="col-span-2 text-center">Lettura</div>
-                        <div className="col-span-2 text-center">Creazione</div>
-                        <div className="col-span-2 text-center">Modifica</div>
-                        <div className="col-span-2 text-center">Eliminazione</div>
+                        <div className="col-span-4">{t("rbac.colModule")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colRead")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colCreate")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colUpdate")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colDelete")}</div>
                       </div>
 
                       {SSO_MODULES.map((moduleKey) => {
@@ -437,14 +450,14 @@ export default function TeamManagementPage() {
                   {/* WEB App Block */}
                   <div className="border border-white/5 rounded-2xl bg-white/[0.02] overflow-hidden">
                     <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-white">WEB Portal (Home)</span>
-                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">Default</Chip>
+                      <span className="text-xs font-extrabold text-white">{t("rbac.webBlock")}</span>
+                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">{t("rbac.defaultChip")}</Chip>
                     </div>
-                    
+
                     <div className="divide-y divide-white/5">
                       <div className="grid grid-cols-12 gap-2 px-4 py-3.5 items-center hover:bg-white/[0.01] transition-colors">
                         <div className="col-span-4">
-                          <p className="text-xs font-bold text-slate-100">Home Page</p>
+                          <p className="text-xs font-bold text-slate-100">{t("rbac.homePage")}</p>
                         </div>
                         <div className="col-span-2 flex justify-center">
                           <Checkbox
@@ -492,11 +505,11 @@ export default function TeamManagementPage() {
                 </div>
               </Modal.Body>
               <Modal.Footer className="pt-4 flex justify-end gap-2 border-t border-white/5">
-                <Button variant="ghost" className="rounded-xl font-bold cursor-pointer text-slate-300 hover:text-white" onClick={() => setIsPermModalOpen(false)}>
-                  Annulla
+                <Button unstyled variant="ghost" className="rounded-xl font-bold cursor-pointer text-slate-300 hover:text-white" onClick={() => setIsPermModalOpen(false)}>
+                  {t("common.cancel")}
                 </Button>
-                <Button className="rounded-xl font-bold cursor-pointer bg-secondary hover:bg-violet-500 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
-                  {savingPerms ? "Salvataggio..." : "Salva Modifiche"}
+                <Button unstyled className="rounded-xl font-bold cursor-pointer bg-secondary hover:bg-secondary/90 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
+                  {savingPerms ? t("common.saving") : t("common.save")}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>

@@ -10,6 +10,8 @@ interface GlobalLoaderProps {
   subMessage?: string;
   /** Se false rende inline (per skeleton/gate parziali). Default: full-screen. */
   fullScreen?: boolean;
+  /** Dimensione dello spinner: "md" per i gate a schermo intero, "sm" per usi inline. */
+  size?: "sm" | "md";
 }
 
 /**
@@ -20,17 +22,21 @@ interface GlobalLoaderProps {
  * visivamente identici: l'utente percepisce UN loader continuo il cui messaggio cambia, invece di
  * tante schermate di caricamento diverse che si susseguono e "lampeggiano".
  *
- * Pattern di riferimento: `auth/verify/page.tsx` (spinner + `statusMessage` aggiornato dal polling).
+ * Coerenza visiva garantita qui (e SOLO qui):
+ * - sfondo = token semantico `--background` (segue tema chiaro/scuro E brand attivo:
+ *   nessuno sfarfallio dark/light tra un gate e l'altro);
+ * - icona unica (Loader2) con colore unico `text-primary` (mai viola/accent per-schermata).
  */
-export function GlobalLoader({ message, subMessage, fullScreen = true }: GlobalLoaderProps) {
+export function GlobalLoader({ message, subMessage, fullScreen = true, size = "md" }: GlobalLoaderProps) {
+  const spinnerSize = size === "sm" ? "w-6 h-6" : "w-12 h-12";
   const inner = (
     <div className="flex flex-col items-center justify-center gap-4 text-center">
-      <Loader2 className="w-12 h-12 text-secondary dark:text-secondary animate-spin" aria-hidden />
+      <Loader2 className={`${spinnerSize} text-primary animate-spin`} aria-hidden />
       {message && (
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-xs px-4">{message}</p>
       )}
       {subMessage && (
-        <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs px-4">{subMessage}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs px-4">{subMessage}</p>
       )}
     </div>
   );
@@ -43,7 +49,7 @@ export function GlobalLoader({ message, subMessage, fullScreen = true }: GlobalL
     <div
       role="status"
       aria-live="polite"
-      className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-6"
+      className="min-h-screen w-full flex items-center justify-center bg-[var(--background)] p-6"
     >
       {inner}
     </div>

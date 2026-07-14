@@ -5,7 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, AlertCircle } from "lucide-react";
-import { Button } from "../ui";
+import { Button, GlobalLoader } from "../ui";
 import { useClaims } from "../../lib/auth";
 import { MODULE_REGISTRY, getModulePolicyForContext, getModuleInfo } from "../../lib/resources.config";
 import { LOCALIZATION } from "./form.localization";
@@ -225,7 +225,8 @@ export function Form({
   if (authLoading) {
     return (
       <div className="flex justify-center p-6">
-        <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-secondary"></span>
+        {/* Loader unico del DS anche negli usi inline (stessa icona/colore ovunque) */}
+        <GlobalLoader fullScreen={false} size="sm" />
       </div>
     );
   }

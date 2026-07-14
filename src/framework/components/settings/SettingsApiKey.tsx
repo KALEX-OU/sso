@@ -6,6 +6,7 @@ import { fetchAuthedClient } from "../../lib/api";
 import { Card, CardBody, Button } from "../ui";
 import { Key, Check, AlertTriangle, Copy } from "lucide-react";
 import { useI18n } from "@/locales/client";
+import { useBrand } from "../providers/BrandProvider";
 
 // E4.2 — Card "Chiave API personale" delle impostazioni, estratta meccanicamente da
 // settings.tsx: lettura dello stato della chiave (hash/attiva/data), generazione e
@@ -14,6 +15,8 @@ import { useI18n } from "@/locales/client";
 export function SettingsApiKey() {
   const { user, showToast, claims } = useDashboard();
   const t = useI18n();
+  // Brand white-label attivo: il copy della chiave API non cabla "KALEX" (E5.1).
+  const brand = useBrand();
 
   // Stati per la gestione della chiave API personale dell'utente
   const [apiKeyData, setApiKeyData] = useState<{
@@ -111,7 +114,7 @@ export function SettingsApiKey() {
 
         <div className="space-y-6">
           <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed max-w-3xl">
-            {t("settings.apikey.desc")}
+            {t("settings.apikey.desc", { brand: brand.name })}
           </p>
 
           {/* Banner di visualizzazione della chiave in chiaro appena generata */}

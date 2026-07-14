@@ -1,19 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { applyActionCode, onAuthStateChanged, User } from "firebase/auth";
 import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import { useI18n, useCurrentLocale } from "@/locales/client";
-import { Card, Button } from "@heroui/react";
+// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
+// NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
+// stato ridotto di conseguenza per mantenere l'ingombro precedente.
+import { Card, CardContent, Button } from "@/framework/components/ui";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { GlobalLoader } from "@/framework/components/ui";
+import { useBrand } from "@/framework/components/providers/BrandProvider";
 
-// Configurazione brand speculare a quella di auth/page.tsx
+// Configurazione brand speculare a quella di auth/page.tsx.
+// `name: null` = il nome segue il brand white-label attivo (useBrand, E5.1).
 const BRAND_CONFIGS: Record<
   string,
   {
-    name: string;
+    name: string | null;
     bgGradientLight: string;
     bgGradientDark: string;
     glowColorLight: string;
@@ -23,11 +28,11 @@ const BRAND_CONFIGS: Record<
 > = {
   satefy: {
     name: "SATEFY",
-    bgGradientLight: "from-emerald-100/40 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-emerald-950/25 via-slate-950 to-teal-950/15",
-    glowColorLight: "bg-emerald-500/5",
-    glowColorDark: "bg-emerald-500/10",
-    logoColor: "from-emerald-400 to-teal-500"
+    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
+    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
+    glowColorLight: "bg-success/5",
+    glowColorDark: "bg-success/10",
+    logoColor: "from-success to-teal-500"
   },
   standlo: {
     name: "STANDLO",
@@ -38,14 +43,43 @@ const BRAND_CONFIGS: Record<
     logoColor: "from-cyan-400 to-blue-500"
   },
   default: {
-    name: "KALEX",
-    bgGradientLight: "from-violet-100/40 via-slate-50 to-accent/20",
-    bgGradientDark: "from-violet-950/25 via-slate-950 to-accent/15",
-    glowColorLight: "bg-violet-500/5",
-    glowColorDark: "bg-violet-500/10",
-    logoColor: "from-violet-500 to-accent"
+    name: null,
+    bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
+    bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
+    glowColorLight: "bg-secondary/5",
+    glowColorDark: "bg-secondary/10",
+    logoColor: "from-secondary to-accent"
   }
 };
+
+// Guardia anti doppio-apply a livello di MODULO: in dev il re-mount della pagina
+// (StrictMode + bailout Suspense di useSearchParams) crea una nuova istanza del componente,
+// quindi un useRef verrebbe ricreato e non basta — verificato empiricamente: col solo ref
+// `accounts:update` partiva due volte. Il Set si azzera solo all'hard reload del documento,
+// per cui i retry legittimi dopo un errore di rete restano possibili.
+const attemptedOobCodes = new Set<string>();
+
+// L'oobCode è monouso: dopo un reload/Fast Refresh la guardia in-memory si azzera ma il codice
+// resta consumato e Firebase risponde `auth/invalid-action-code` su una verifica in realtà
+// riuscita. Tracciamo in sessionStorage l'ultimo codice applicato con successo nella scheda.
+const CONSUMED_OOB_CODE_KEY = "kalex.verify.consumedOobCode";
+
+function wasConsumedInThisSession(code: string): boolean {
+  try {
+    return window.sessionStorage.getItem(CONSUMED_OOB_CODE_KEY) === code;
+  } catch {
+    // sessionStorage inaccessibile (privacy mode): resta la sola guardia in-memory
+    return false;
+  }
+}
+
+function markConsumedInThisSession(code: string): void {
+  try {
+    window.sessionStorage.setItem(CONSUMED_OOB_CODE_KEY, code);
+  } catch {
+    // sessionStorage inaccessibile: nessuna persistenza, la guardia in-memory copre il mount corrente
+  }
+}
 
 export default function VerifyEmailPage() {
   const t = useI18n();
@@ -61,6 +95,9 @@ export default function VerifyEmailPage() {
   const codeChallenge = searchParams.get("code_challenge");
 
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
+  // Brand white-label attivo: il default non cabla più "KALEX" (E5.1).
+  const wlBrand = useBrand();
+  const brandName = brand.name ?? wlBrand.name;
   const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
   const activeBgGradient = isDark ? brand.bgGradientDark : brand.bgGradientLight;
   const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
@@ -69,7 +106,6 @@ export default function VerifyEmailPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
-  const verifiedRef = useRef(false);
 
   // Reindirizzamento finale all'applicazione client o alla dashboard locale
   const handleFinalRedirect = useCallback(async (user: User) => {
@@ -228,8 +264,6 @@ export default function VerifyEmailPage() {
   }, [t, handleFinalRedirect]);
 
   useEffect(() => {
-    if (verifiedRef.current) return;
-    
     if (!oobCode) {
       // Evita setState sincroni nell'effetto per prevenire cascading renders
       Promise.resolve().then(() => {
@@ -239,18 +273,39 @@ export default function VerifyEmailPage() {
       return;
     }
 
-    verifiedRef.current = true;
+    // Guardia anti doppio-apply: una sola esecuzione per oobCode per sessione JS.
+    if (attemptedOobCodes.has(oobCode)) return;
+    attemptedOobCodes.add(oobCode);
+
     Promise.resolve().then(() => {
       setStatusMessage(t("auth.verifyLoading"));
     });
 
+    // Stato di successo per una scheda NON loggata: mostra l'esito e rimanda al login
+    // preservando i parametri SSO (senza l'oobCode ormai consumato).
+    const showSuccessAndGoToLogin = () => {
+      setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
+      setStatusMessage(t("auth.verifyRedirectToLogin"));
+      setLoading(false);
+      setTimeout(() => {
+        const loginUrl = new URL(`${window.location.origin}/${currentLocale}/auth`);
+        searchParams.forEach((value, key) => {
+          if (key !== "oobCode") {
+            loginUrl.searchParams.set(key, value);
+          }
+        });
+        router.push(loginUrl.pathname + loginUrl.search);
+      }, 3000);
+    };
+
     // Registriamo subito onAuthStateChanged per determinare lo stato di autenticazione effettivo del browser
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       unsubscribe(); // Eseguiamo l'unsubscribe immediatamente dopo la prima notifica di stato risolto
-      
+
       try {
         // 1. Convalida il codice di verifica email su Firebase Auth
         await applyActionCode(auth, oobCode);
+        markConsumedInThisSession(oobCode);
         console.log("[Verification Page] applyActionCode completata con successo!");
 
         if (user) {
@@ -262,18 +317,7 @@ export default function VerifyEmailPage() {
         } else {
           console.log("[Verification Page] Nessun utente loggato in questa scheda. Rimando al login.");
           // Se non loggato, email verificata con successo ma reindirizziamo al login per completare
-          setSuccessMessage(t("auth.verifySuccess") || "Email verificata con successo!");
-          setStatusMessage(t("auth.verifyRedirectToLogin"));
-          setLoading(false);
-          setTimeout(() => {
-            const loginUrl = new URL(`${window.location.origin}/${currentLocale}/auth`);
-            searchParams.forEach((value, key) => {
-              if (key !== "oobCode") {
-                loginUrl.searchParams.set(key, value);
-              }
-            });
-            router.push(loginUrl.pathname + loginUrl.search);
-          }, 3000);
+          showSuccessAndGoToLogin();
         }
       } catch (err) {
         // `auth/invalid-action-code` capita se l'oobCode è GIÀ stato consumato (doppio apply:
@@ -293,6 +337,13 @@ export default function VerifyEmailPage() {
             // ricarica fallita: cadiamo nell'errore generico sotto
           }
         }
+        if (alreadyConsumed && !user && wasConsumedInThisSession(oobCode)) {
+          // Codice applicato con successo in QUESTA scheda (reload/Fast Refresh dopo la
+          // verifica): è un successo da riproporre, non un errore.
+          console.log("[Verification Page] oobCode già consumato in questa sessione → successo.");
+          showSuccessAndGoToLogin();
+          return;
+        }
         console.error("[Verification Page] Errore durante la verifica/onboarding:", err);
         setError(t("auth.verifyError") || "Il codice di verifica è scaduto o non è valido.");
         setLoading(false);
@@ -308,15 +359,15 @@ export default function VerifyEmailPage() {
 
   return (
     <div className={`min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans p-6 bg-gradient-to-br ${activeBgGradient}`}>
-      {/* Ambient Glow */}
+      {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
 
-      <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-8 text-center rounded-3xl relative z-10">
-        <Card.Content className="flex flex-col items-center justify-center p-2">
+      <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 text-center rounded-3xl relative z-10">
+        <CardContent className="flex flex-col items-center justify-center p-2">
           {/* Logo Brand */}
           <div className="text-center mb-6">
             <span className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}>
-              {brand.name}
+              {brandName}
             </span>
             <p className="text-slate-500 dark:text-gray-400 text-[10px] font-bold mt-1 tracking-wider uppercase">
               {t("auth.subtitle")}
@@ -326,7 +377,7 @@ export default function VerifyEmailPage() {
           {/* Loader / Stato */}
           {loading && (
             <div className="my-8">
-              <Loader2 className="w-12 h-12 text-secondary dark:text-violet-400 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-12 h-12 text-secondary animate-spin mx-auto mb-4" />
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{statusMessage}</p>
             </div>
           )}
@@ -340,6 +391,7 @@ export default function VerifyEmailPage() {
               <h3 className="text-md font-bold text-red-500">{t("auth.verifyFailedTitle")}</h3>
               <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">{error}</p>
               <Button
+                unstyled
                 onClick={() => router.push(`/${currentLocale}/auth${window.location.search}`)}
                 className="mt-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-5 px-6 cursor-pointer"
               >
@@ -351,14 +403,14 @@ export default function VerifyEmailPage() {
           {/* Successo */}
           {successMessage && !loading && (
             <div className="my-6 space-y-4">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-500">
+              <div className="w-12 h-12 bg-success/10 border border-success/25 dark:border-success/20 rounded-full flex items-center justify-center mx-auto text-success">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-md font-bold text-emerald-600 dark:text-emerald-400">{successMessage}</h3>
+              <h3 className="text-md font-bold text-success">{successMessage}</h3>
               <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">{statusMessage}</p>
             </div>
           )}
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

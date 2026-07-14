@@ -9,6 +9,7 @@ import { MfaEnrollmentGate } from "@/framework/components/settings/MfaEnrollment
 import { ReauthProvider } from "@/framework/components/settings/ReauthProvider";
 import { useUIStrings } from "@/framework/lib/ui.localization";
 import { ToastNotification } from "@/framework/components/layouts/ToastNotification";
+import { GlobalLoader } from "@/framework/components/ui";
 import { useClaimsSync } from "@/framework/components/layouts/hooks/useClaimsSync";
 import { useOnboarding } from "@/framework/components/layouts/hooks/useOnboarding";
 import { useRbacGuard } from "@/framework/components/layouts/hooks/useRbacGuard";
@@ -135,29 +136,19 @@ export function DashboardLayout({ children, appId = "sso" }: LayoutProps) {
     }
   }, [loading, authLoading, firebaseUser, authClaims, dbData, onboardingPending, refreshClaims]);
 
-  // Schermata di caricamento globale o reindirizzamento premium in corso
+  // Gate a schermo intero: SEMPRE GlobalLoader (loader unico, theme-aware) —
+  // niente schermate custom per-gate, così i passaggi tra gate non sfarfallano.
   if (authLoading || loading || isRedirecting) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-4">
-        <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary shadow-[0_0_15px_var(--klx-glow-primary)] mb-4"></span>
-        {isRedirecting && (
-          <p className="text-xs text-slate-400 font-medium tracking-wide animate-pulse">
-            {appId === "sso" ? s.layout.authCheck : s.layout.secureRedirect}
-          </p>
-        )}
-      </div>
+      <GlobalLoader
+        message={isRedirecting ? (appId === "sso" ? s.layout.authCheck : s.layout.secureRedirect) : undefined}
+      />
     );
   }
 
-  // Schermata di onboarding pendente
+  // Schermata di onboarding pendente (stesso loader, cambia solo il testo)
   if (onboardingPending) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-6 text-center">
-        <span className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent shadow-[0_0_15px_var(--klx-glow-primary)] mb-6"></span>
-        <h2 className="text-sm font-black uppercase tracking-widest text-accent mb-2">{s.layout.orgSetupTitle}</h2>
-        <p className="text-slate-400 text-xs max-w-sm leading-relaxed font-bold">{onboardingMessage}</p>
-      </div>
-    );
+    return <GlobalLoader message={s.layout.orgSetupTitle} subMessage={onboardingMessage} />;
   }
 
   return (

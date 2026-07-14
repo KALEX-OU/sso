@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useDashboard } from "../layout";
 import { dataConnect, fetchWithAppCheck } from "@/lib/firebase/client";
 import { listMembersByOrg } from "@/lib/dataconnect-client";
+// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
+// NB: il wrapper Card racchiude i children in un body `p-5`: i padding root sono
+// stati ridotti di conseguenza per mantenere l'ingombro precedente.
 import {
   Button,
   Card,
+  CardContent,
   Avatar,
   Chip,
   Input,
@@ -20,8 +24,9 @@ import {
   TextField,
   Modal,
   Checkbox
-} from "@heroui/react";
+} from "@/framework/components/ui";
 import { Shield, Trash2, Settings, Lock, Copy } from "lucide-react";
+import { useI18n } from "@/locales/client";
 
 interface RbacStructure {
   apps: Record<string, Record<string, number>>;
@@ -83,6 +88,11 @@ const getMaskFromPermissions = (perms: { read: boolean; create: boolean; update:
 
 export default function UserManagementPage() {
   const { user, dbData, showToast, claims } = useDashboard();
+  const t = useI18n();
+  // Pattern tRef (regola i18n): le callback dei fetch leggono la traduzione dalla ref,
+  // così il cambio lingua non ri-innesca i caricamenti.
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
   const [members, setMembers] = useState<MemberItem[]>([]);
   const [teams, setTeams] = useState<{ teamId: string; name: string }[]>([]);
   const [loadingData, setLoadingData] = useState(false);
@@ -114,7 +124,7 @@ export default function UserManagementPage() {
       setMembers((memRes.data.userOrganizations || []) as MemberItem[]);
     } catch (err) {
       console.error("Errore caricamento membri:", err);
-      showToast("Impossibile caricare i membri.", "error");
+      showToast(tRef.current("user.toastLoadErr"), "error");
     } finally {
       setLoadingData(false);
     }
@@ -156,7 +166,7 @@ export default function UserManagementPage() {
     setMemberInviting(true);
     try {
       const idToken = await user?.getIdToken();
-      if (!idToken) throw new Error("Non autenticato.");
+      if (!idToken) throw new Error(t("common.errNotAuth"));
 
       const response = await fetchWithAppCheck("/api/user/create", {
         method: "POST",
@@ -175,10 +185,10 @@ export default function UserManagementPage() {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.error?.message || "Errore invito membro.");
+        throw new Error(data.error?.message || t("user.errInvite"));
       }
 
-      showToast("Invito preso in carico. Creazione dell'utente e invio email in background.", "success");
+      showToast(t("user.toastInviteQueued"), "success");
 
       // Aggiunge localmente il membro in stato pending per feedback reattivo
       const newMemberLocal: MemberItem = {
@@ -196,7 +206,7 @@ export default function UserManagementPage() {
       setMemberForm({ fullName: "", email: "", role: "member", teamIds: [] });
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore invito.", "error");
+      showToast(err instanceof Error ? err.message : t("user.toastInviteErr"), "error");
     } finally {
       setMemberInviting(false);
     }
@@ -205,10 +215,10 @@ export default function UserManagementPage() {
   const handleRetryOnboarding = async (email: string, fullName: string, role: string) => {
     if (!activeOrg) return;
 
-    showToast("Tentativo di ri-accodamento task in corso...", "info");
+    showToast(t("user.toastRetrying"), "info");
     try {
       const idToken = await user?.getIdToken();
-      if (!idToken) throw new Error("Non autenticato.");
+      if (!idToken) throw new Error(t("common.errNotAuth"));
 
       await fetchWithAppCheck("/api/user/create", {
         method: "POST",
@@ -219,17 +229,17 @@ export default function UserManagementPage() {
         body: JSON.stringify({ email, fullName, role, orgId: activeOrg.orgId })
       });
 
-      showToast("Task di onboarding ri-accodato con successo!", "success");
+      showToast(t("user.toastRetryOk"), "success");
       await loadMembers(activeOrg.orgId);
     } catch (err) {
       console.error(err);
-      showToast("Impossibile ri-accodare l'onboarding.", "error");
+      showToast(t("user.toastRetryErr"), "error");
     }
   };
 
   const handleDeleteMember = async (targetUserId: string, email: string) => {
     if (!activeOrg || !user) return;
-    if (!confirm(`Sei sicuro di voler rimuovere l'utente '${email}' dall'organizzazione?`)) return;
+    if (!confirm(t("user.confirmRemove", { email }))) return;
 
     try {
       const idToken = await user.getIdToken();
@@ -241,14 +251,14 @@ export default function UserManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        showToast("Membro rimosso con successo.", "success");
+        showToast(t("user.toastRemoved"), "success");
         void loadMembers(activeOrg.orgId);
       } else {
-        throw new Error(data.error || "Errore durante la rimozione del membro.");
+        throw new Error(data.error || t("user.errRemove"));
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore rimozione membro.", "error");
+      showToast(err instanceof Error ? err.message : t("user.toastRemoveErr"), "error");
     }
   };
 
@@ -256,11 +266,11 @@ export default function UserManagementPage() {
   // (recovery quando l'utente perde il dispositivo TOTP). Motivo obbligatorio per l'audit.
   const handleMfaReset = async (targetUserId: string, email: string) => {
     if (!activeOrg || !user) return;
-    if (!confirm(`Resettare la verifica in due passaggi (2FA) di '${email}'? Dovrà riconfigurarla al prossimo accesso.`)) return;
-    const reason = prompt("Motivo del reset 2FA (min. 10 caratteri, richiesto per l'audit):", "");
+    if (!confirm(t("user.confirmMfaReset", { email }))) return;
+    const reason = prompt(t("user.promptMfaReason"), "");
     if (reason === null) return;
     if (reason.trim().length < 10) {
-      showToast("Il motivo deve contenere almeno 10 caratteri.", "error");
+      showToast(t("user.toastReasonTooShort"), "error");
       return;
     }
     try {
@@ -272,14 +282,14 @@ export default function UserManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        showToast("Verifica in due passaggi resettata con successo.", "success");
+        showToast(t("user.toastMfaReset"), "success");
         void loadMembers(activeOrg.orgId);
       } else {
-        throw new Error(data.error || "Errore durante il reset 2FA.");
+        throw new Error(data.error || t("user.errMfaReset"));
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore reset 2FA.", "error");
+      showToast(err instanceof Error ? err.message : t("user.toastMfaResetErr"), "error");
     }
   };
 
@@ -350,15 +360,15 @@ export default function UserManagementPage() {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        showToast("Ruolo e permessi aggiornati con successo.", "success");
+        showToast(t("user.toastPermsSaved"), "success");
         setIsPermModalOpen(false);
         void loadMembers(activeOrg.orgId);
       } else {
-        throw new Error(data.error || "Impossibile aggiornare i permessi.");
+        throw new Error(data.error || t("user.errPerms"));
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Errore aggiornamento permessi.", "error");
+      showToast(err instanceof Error ? err.message : t("user.toastPermsErr"), "error");
     } finally {
       setSavingPerms(false);
     }
@@ -368,51 +378,54 @@ export default function UserManagementPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Invito */}
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-1">
-          <Card.Content className="p-2 space-y-4">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1 lg:col-span-1">
+          <CardContent className="p-2 space-y-4">
             <div>
-              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Invita Membro</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{"Assegna un ruolo IAM ed inserisci l'utente nell'organizzazione."}</p>
+              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">{t("user.inviteTitle")}</h3>
+              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{t("user.inviteDesc")}</p>
             </div>
 
             <form onSubmit={handleInviteMember} className="space-y-4">
               <TextField isRequired className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Nome Completo</Label>
+                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("user.fullNameLabel")}</Label>
                 <Input
-                  placeholder="Mario Rossi"
+                  isRequired
+                  placeholder={t("user.fullNamePlaceholder")}
                   value={memberForm.fullName}
                   onChange={e => setMemberForm({ ...memberForm, fullName: e.target.value })}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <TextField isRequired className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Indirizzo Email</Label>
+                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("user.emailLabel")}</Label>
                 <Input
+                  isRequired
                   type="email"
-                  placeholder="mario.rossi@azienda.com"
+                  placeholder={t("user.emailPlaceholder")}
                   value={memberForm.email}
                   onChange={e => setMemberForm({ ...memberForm, email: e.target.value })}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-violet-500 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
+                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all"
                 />
               </TextField>
               <Select
                 selectedKey={memberForm.role}
-                onSelectionChange={(key) => setMemberForm({ ...memberForm, role: (key as string) || "member" })}
+                // Chiave normalizzata dal wrapper (string | number | null): niente cast `as`.
+                onSelectionChange={(key) => setMemberForm({ ...memberForm, role: typeof key === "string" && key ? key : "member" })}
                 className="flex flex-col gap-1.5 w-full"
               >
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Ruolo IAM</Label>
-                <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-violet-500 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
+                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("user.roleLabel")}</Label>
+                <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] w-full text-sm text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
                   <ListBox className="outline-none">
-                    <ListBoxItem id="admin" textValue="Admin" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+                    <ListBoxItem id="admin" textValue="Admin" className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
                       Admin
                     </ListBoxItem>
-                    <ListBoxItem id="member" textValue="Member" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+                    <ListBoxItem id="member" textValue="Member" className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
                       Member
                     </ListBoxItem>
-                    <ListBoxItem id="viewer" textValue="Viewer" className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+                    <ListBoxItem id="viewer" textValue="Viewer" className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
                       Viewer
                     </ListBoxItem>
                   </ListBox>
@@ -420,20 +433,20 @@ export default function UserManagementPage() {
               </Select>
 
               <div className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">Associa ai Team</Label>
+                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">{t("user.teamsLabel")}</Label>
                 <div className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl p-3 max-h-[120px] overflow-y-auto space-y-2">
                   {teams.length === 0 ? (
-                    <p className="text-[10px] text-slate-500">Nessun team configurato.</p>
+                    <p className="text-[10px] text-slate-500">{t("user.noTeams")}</p>
                   ) : (
-                    teams.map(t => (
-                      <div key={t.teamId} className="flex items-center gap-2">
+                    teams.map(team => (
+                      <div key={team.teamId} className="flex items-center gap-2">
                         <Checkbox
-                          isSelected={memberForm.teamIds.includes(t.teamId)}
+                          isSelected={memberForm.teamIds.includes(team.teamId)}
                           onChange={() => {
                             setMemberForm(prev => {
-                              const ids = prev.teamIds.includes(t.teamId)
-                                ? prev.teamIds.filter(id => id !== t.teamId)
-                                : [...prev.teamIds, t.teamId];
+                              const ids = prev.teamIds.includes(team.teamId)
+                                ? prev.teamIds.filter(id => id !== team.teamId)
+                                : [...prev.teamIds, team.teamId];
                               return { ...prev, teamIds: ids };
                             });
                           }}
@@ -441,7 +454,7 @@ export default function UserManagementPage() {
                           <Checkbox.Control>
                             <Checkbox.Indicator />
                           </Checkbox.Control>
-                          <span className="text-xs text-slate-700 dark:text-gray-300 capitalize">{t.name}</span>
+                          <span className="text-xs text-slate-700 dark:text-gray-300 capitalize">{team.name}</span>
                         </Checkbox>
                       </div>
                     ))
@@ -450,36 +463,37 @@ export default function UserManagementPage() {
               </div>
 
               <Button
+                unstyled
                 type="submit"
                 isDisabled={memberInviting || activeRole !== "owner" && activeRole !== "admin"}
-                className="w-full py-5 font-bold bg-gradient-to-r from-violet-500 to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
+                className="w-full py-5 font-bold bg-gradient-to-r from-secondary to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
               >
-                {memberInviting ? "Invito in corso..." : "Invia Invito"}
+                {memberInviting ? t("user.inviting") : t("user.inviteBtn")}
               </Button>
             </form>
-          </Card.Content>
+          </CardContent>
         </Card>
 
         {/* Elenco Membri */}
-        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6 lg:col-span-2">
-          <Card.Content className="p-2 space-y-4">
+        <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1 lg:col-span-2">
+          <CardContent className="p-2 space-y-4">
             <div>
-              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">Membri Organizzazione</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">La lista completa delle identità abilitate.</p>
+              <h3 className="text-md font-extrabold text-slate-900 dark:text-white">{t("user.membersTitle")}</h3>
+              <p className="text-slate-500 dark:text-gray-400 text-[10px] mt-0.5">{t("user.membersDesc")}</p>
             </div>
 
             {loadingData ? (
-              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-violet-500"></span></div>
+              <div className="flex justify-center p-6"><span className="animate-spin rounded-full h-8 w-8 border-t-2 border-secondary"></span></div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-start border-collapse">
                   <thead>
                     <tr>
-                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Membro</th>
-                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Team</th>
-                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Ruolo</th>
-                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">Stato</th>
-                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl text-right">Azioni</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">{t("user.colMember")}</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">{t("user.colTeam")}</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">{t("user.colRole")}</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl">{t("user.colStatus")}</th>
+                      <th className="bg-slate-100 dark:bg-white/5 font-bold text-xs px-4 py-3 text-slate-500 dark:text-slate-400 first:rounded-l-xl last:rounded-r-xl text-end">{t("user.colActions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200/30 dark:divide-white/5">
@@ -500,7 +514,7 @@ export default function UserManagementPage() {
                                 <Avatar.Fallback className="text-white">{(u?.fullName || u?.email || "U").slice(0, 2)}</Avatar.Fallback>
                               </Avatar>
                               <div>
-                                <p className="text-xs font-bold text-slate-900 dark:text-white">{u?.fullName || "Invito Pendente"}</p>
+                                <p className="text-xs font-bold text-slate-900 dark:text-white">{u?.fullName || t("user.pendingInvite")}</p>
                                 <p className="text-[10px] text-slate-500">{u?.email}</p>
                               </div>
                             </div>
@@ -510,7 +524,7 @@ export default function UserManagementPage() {
                               {memberTeams.length === 0 ? (
                                 <span className="text-[10px] text-slate-500 italic">-</span>
                               ) : (
-                                memberTeams.map((rel) => (                                   <Chip key={rel.team.teamId} size="sm" variant="soft" className="text-[9px] capitalize px-1 py-0.5 border border-violet-500/30 text-violet-400 bg-violet-500/5 font-semibold">
+                                memberTeams.map((rel) => (                                   <Chip key={rel.team.teamId} size="sm" variant="soft" className="text-[9px] capitalize px-1 py-0.5 border border-secondary/30 text-secondary bg-secondary/5 font-semibold">
                                     {rel.team.name}
                                   </Chip>
                                 ))
@@ -525,16 +539,17 @@ export default function UserManagementPage() {
                             {status === "pending" && <Chip size="sm" color="warning" variant="soft" className="font-bold text-[9px]">Pending</Chip>}
                             {status === "error" && <Chip size="sm" color="danger" variant="soft" className="font-bold text-[9px]">Error</Chip>}
                           </td>
-                          <td className="px-4 py-4 text-right">
+                          <td className="px-4 py-4 text-end">
                             <div className="flex items-center justify-end gap-2">
                               {status === "pending" && u && inviteLink && (
                                 <Button
+                                  unstyled
                                   isIconOnly
                                   variant="ghost"
                                   className="text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"
                                   onClick={() => {
                                     void navigator.clipboard.writeText(inviteLink);
-                                    showToast("Link d'invito copiato negli appunti!", "success");
+                                    showToast(t("user.toastLinkCopied"), "success");
                                   }}
                                 >
                                   <Copy className="w-4 h-4" />
@@ -542,15 +557,17 @@ export default function UserManagementPage() {
                               )}
                               {status === "error" && u && (
                                 <Button
+                                  unstyled
                                   className="font-bold text-[9px] rounded-lg cursor-pointer px-2.5 py-1.5 border border-red-500/30 hover:bg-red-500/10 text-red-500 transition-colors"
                                   onClick={() => void handleRetryOnboarding(u.email, u.fullName || "", member.role)}
                                 >
-                                  Riprova Onboarding
+                                  {t("user.retryOnboarding")}
                                 </Button>
                               )}
                               {u && status === "active" && (activeRole === "owner" || activeRole === "admin") && (
                                 <>
                                   <Button
+                                    unstyled
                                     isIconOnly
                                     variant="ghost"
                                     className="text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"
@@ -560,13 +577,15 @@ export default function UserManagementPage() {
                                   </Button>
                                   {activeRole === "owner" && member.role !== "owner" && (
                                     <Button
-                                      className="font-bold text-[9px] rounded-lg cursor-pointer px-2.5 py-1.5 border border-amber-500/30 hover:bg-amber-500/10 text-amber-500 transition-colors"
+                                      unstyled
+                                      className="font-bold text-[9px] rounded-lg cursor-pointer px-2.5 py-1.5 border border-warning/30 hover:bg-warning/10 text-warning transition-colors"
                                       onClick={() => void handleMfaReset(u.userId, u.email)}
                                     >
-                                      Reset 2FA
+                                      {t("user.resetMfa")}
                                     </Button>
                                   )}
                                   <Button
+                                    unstyled
                                     isIconOnly
                                     variant="ghost"
                                     className="text-red-500 hover:bg-red-500/10 rounded-xl"
@@ -585,7 +604,7 @@ export default function UserManagementPage() {
                 </table>
               </div>
             )}
-          </Card.Content>
+          </CardContent>
         </Card>
       </div>
 
@@ -596,20 +615,21 @@ export default function UserManagementPage() {
             <Modal.Dialog>
               <Modal.Header className="flex flex-col gap-1 border-b border-white/5 pb-4">
                 <h2 className="text-lg font-extrabold text-white flex items-center gap-2">
-                  <Shield className="text-violet-400 w-5 h-5" />
-                  Gestione Privilegi & RBAC
+                  <Shield className="text-secondary w-5 h-5" />
+                  {t("user.permModalTitle")}
                 </h2>
                 <p className="text-slate-400 text-xs font-normal">
-                  Configura i permessi per {selectedMember?.user?.fullName || selectedMember?.user?.email}
+                  {t("user.permModalDesc", { name: selectedMember?.user?.fullName || selectedMember?.user?.email || "" })}
                 </p>
               </Modal.Header>
               <Modal.Body className="py-6 space-y-6">
                 {/* Selezione Ruolo IAM */}
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
-                  <Label className="text-xs font-bold text-slate-300 block">Ruolo Principale dell&apos;Organizzazione</Label>
+                  <Label className="text-xs font-bold text-slate-300 block">{t("user.mainRoleLabel")}</Label>
                   <div className="flex gap-2">
                     {["owner", "admin", "member", "viewer"].map((r) => (
                       <Button
+                        unstyled
                         key={r}
                         variant={editingRole === r ? "primary" : "outline"}
                         className="flex-1 font-bold text-xs uppercase rounded-xl"
@@ -636,27 +656,27 @@ export default function UserManagementPage() {
                 {/* Visual Permission Matrix */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-200">Matrice dei Permessi Applicativi</h3>
-                    <span className="text-[10px] text-violet-400 font-bold bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                      <Lock className="w-3 h-3" /> Bitmask Fine-Grained
+                    <h3 className="text-sm font-bold text-slate-200">{t("rbac.matrixTitle")}</h3>
+                    <span className="text-[10px] text-secondary font-bold bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" /> {t("user.bitmaskBadge")}
                     </span>
                   </div>
 
                   {/* SSO App Block */}
                   <div className="border border-white/5 rounded-2xl bg-white/[0.02] overflow-hidden">
                     <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-white">SSO Management Console</span>
-                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">Default</Chip>
+                      <span className="text-xs font-extrabold text-white">{t("rbac.ssoBlock")}</span>
+                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">{t("rbac.defaultChip")}</Chip>
                     </div>
 
                     <div className="divide-y divide-white/5">
                       {/* Intestazione Colonne */}
                       <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-slate-900/50 text-[10px] font-extrabold text-slate-400 uppercase">
-                        <div className="col-span-4">Modulo / Risorsa</div>
-                        <div className="col-span-2 text-center">Lettura</div>
-                        <div className="col-span-2 text-center">Creazione</div>
-                        <div className="col-span-2 text-center">Modifica</div>
-                        <div className="col-span-2 text-center">Eliminazione</div>
+                        <div className="col-span-4">{t("rbac.colModule")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colRead")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colCreate")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colUpdate")}</div>
+                        <div className="col-span-2 text-center">{t("rbac.colDelete")}</div>
                       </div>
 
                       {SSO_MODULES.map((moduleKey) => {
@@ -716,14 +736,14 @@ export default function UserManagementPage() {
                   {/* WEB App Block */}
                   <div className="border border-white/5 rounded-2xl bg-white/[0.02] overflow-hidden">
                     <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-white">WEB Portal (Home)</span>
-                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">Default</Chip>
+                      <span className="text-xs font-extrabold text-white">{t("rbac.webBlock")}</span>
+                      <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px]">{t("rbac.defaultChip")}</Chip>
                     </div>
-                    
+
                     <div className="divide-y divide-white/5">
                       <div className="grid grid-cols-12 gap-2 px-4 py-3.5 items-center hover:bg-white/[0.01] transition-colors">
                         <div className="col-span-4">
-                          <p className="text-xs font-bold text-slate-100">Home Page</p>
+                          <p className="text-xs font-bold text-slate-100">{t("rbac.homePage")}</p>
                         </div>
                         <div className="col-span-2 flex justify-center">
                           <Checkbox
@@ -771,11 +791,11 @@ export default function UserManagementPage() {
                 </div>
               </Modal.Body>
               <Modal.Footer className="pt-4 flex justify-end gap-2 border-t border-white/5">
-                <Button variant="ghost" className="rounded-xl font-bold cursor-pointer text-slate-300 hover:text-white" onClick={() => setIsPermModalOpen(false)}>
-                  Annulla
+                <Button unstyled variant="ghost" className="rounded-xl font-bold cursor-pointer text-slate-300 hover:text-white" onClick={() => setIsPermModalOpen(false)}>
+                  {t("common.cancel")}
                 </Button>
-                <Button className="rounded-xl font-bold cursor-pointer bg-secondary hover:bg-violet-500 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
-                  {savingPerms ? "Salvataggio..." : "Salva Modifiche"}
+                <Button unstyled className="rounded-xl font-bold cursor-pointer bg-secondary hover:bg-secondary/90 text-white" isDisabled={savingPerms} onClick={() => void handleSavePermissions()}>
+                  {savingPerms ? t("common.saving") : t("common.save")}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>

@@ -57,17 +57,17 @@ export default async function ConnectReturnPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-violet-950/40 via-slate-900 to-slate-955/20 text-white p-6 font-sans">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-secondary/20 via-slate-900 to-slate-950/20 text-white p-6 font-sans">
       <div className="bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-3xl p-10 max-w-md w-full shadow-2xl text-center flex flex-col items-center">
         {onboarded ? (
           <>
             {/* Success badge */}
-            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mb-6 text-emerald-400">
+            <div className="w-16 h-16 bg-success/10 border border-success/20 rounded-full flex items-center justify-center mb-6 text-success">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-3">
+            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-success to-teal-400 bg-clip-text text-transparent mb-3">
               Account Connesso!
             </h1>
             <p className="text-gray-400 text-sm mb-8 leading-relaxed">
@@ -77,12 +77,13 @@ export default async function ConnectReturnPage({ searchParams }: PageProps) {
         ) : (
           <>
             {/* Pending/Warning badge */}
-            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center mb-6 text-amber-400">
+            <div className="w-16 h-16 bg-warning/10 border border-warning/20 rounded-full flex items-center justify-center mb-6 text-warning">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3">
+            {/* Gradiente warning tokenizzato (era amber→yellow non-token): dissolvenza sul medesimo token */}
+            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-warning to-warning/60 bg-clip-text text-transparent mb-3">
               KYC non completato
             </h1>
             <p className="text-gray-400 text-sm mb-8 leading-relaxed">

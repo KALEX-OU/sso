@@ -92,6 +92,14 @@ async function handleProxy(request: NextRequest, context: { params: Promise<{ pa
   if (appCheckDebugHeader) {
     headers.set("x-firebase-appcheck-debug", appCheckDebugHeader);
   }
+
+  // Inoltra il token CSRF (double-submit cookie): senza questo header le mutation
+  // cookie-auth protette dal middleware CSRF dell'api (logout, gestione sessioni)
+  // fallirebbero con 403 auth/csrf-invalid pur avendo il cookie corretto.
+  const csrfHeader = request.headers.get("x-csrf-token");
+  if (csrfHeader) {
+    headers.set("x-csrf-token", csrfHeader);
+  }
   
   // Inoltra i dati dell'IP originale per il Geo-IP
   const forwardedFor = request.headers.get("x-forwarded-for");

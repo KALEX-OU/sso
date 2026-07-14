@@ -3,6 +3,10 @@ import { Outfit, Inter } from "next/font/google";
 import "../globals.css";
 import Providers from "@/framework/components/providers/Providers";
 import Script from "next/script";
+import { resolveBrand } from "@/framework/lib/brand.config";
+
+// Brand white-label risolto a build-time (NEXT_PUBLIC_KALEX_BRAND): niente identità cablata (E5.1).
+const brand = resolveBrand(process.env.NEXT_PUBLIC_KALEX_BRAND);
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -15,8 +19,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "KALEX SSO - Identity Center",
-  description: "Centralized identity and subscription manager for KALEX OÜ Ecosystem",
+  title: `${brand.name} SSO - Identity Center`,
+  description: `Centralized identity and subscription manager for the ${brand.name} ecosystem`,
 };
 
 interface LayoutProps {

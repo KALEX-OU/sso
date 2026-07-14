@@ -16,7 +16,7 @@ const CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
-  `connect-src 'self' https://*.googleapis.com https://*.google.com https://*.${BASE_DOMAIN} wss://*.firebaseio.com https://*.firebaseio.com https://api.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`,
+  `connect-src 'self' https://*.googleapis.com https://*.google.com https://*.${BASE_DOMAIN} https://api.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`,
   "frame-src https://www.google.com https://recaptcha.google.com https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com",
   "object-src 'none'",
   "base-uri 'self'",
