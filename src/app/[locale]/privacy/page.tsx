@@ -4,7 +4,9 @@ import React, { Suspense, useState } from "react";
 // E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
 // NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
 // stato ridotto di conseguenza per mantenere l'ingombro precedente.
-import { Card, CardContent, Button } from "@/framework/components/ui";
+import { Card, CardContent, Button, GlobalLoader } from "@/framework/components/ui";
+// L1.3: shell pubblica del framework — landmark, skip-to-content e motion inclusi.
+import { PublicLayout } from "@/framework/components/public/PublicLayout";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Globe, ArrowLeft, Shield } from "lucide-react";
 import { useCurrentLocale, useChangeLocale } from "@/locales/client";
@@ -14,11 +16,7 @@ import { Sun, Moon } from "lucide-react";
 
 export default function PrivacyPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white font-sans px-4">
-        <span className="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 dark:border-white/20 border-t-secondary dark:border-t-secondary"></span>
-      </div>
-    }>
+    <Suspense fallback={<GlobalLoader />}>
       <PrivacyContent />
     </Suspense>
   );
@@ -51,12 +49,11 @@ function PrivacyContent() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-950 dark:to-black text-slate-800 dark:text-foreground relative overflow-hidden font-sans flex flex-col items-center p-6 sm:p-12 lg:p-20 transition-colors duration-500">
-      {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full filter blur-[120px] pointer-events-none bg-secondary/5 dark:bg-secondary/10 opacity-50"></div>
-
-      {/* Floating Header per selezione Tema & Lingua */}
-      <div className="absolute top-6 end-6 flex items-center gap-2.5 z-50">
+    <PublicLayout className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-950 dark:to-black transition-colors duration-500">
+      {/* L1.3: i toggle tema/lingua sono azioni dell'header della shell pubblica */}
+      <PublicLayout.Header
+        actions={
+          <div className="flex items-center gap-2.5">
         {/* Selettore Lingua a discesa */}
         <div className="relative">
           <Button
@@ -130,7 +127,13 @@ function PrivacyContent() {
         >
           {resolvedTheme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
         </Button>
-      </div>
+          </div>
+        }
+      />
+
+      <PublicLayout.Main width="narrow" className="relative">
+        {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full filter blur-[120px] pointer-events-none bg-secondary/5 dark:bg-secondary/10 opacity-50"></div>
 
       <div className="max-w-3xl w-full relative z-10 flex flex-col gap-6 mt-8">
         <div className="flex items-center gap-4">
@@ -195,6 +198,9 @@ function PrivacyContent() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </PublicLayout.Main>
+
+      <PublicLayout.Footer />
+    </PublicLayout>
   );
 }

@@ -50,6 +50,10 @@ const it = {
     onboardingInProgress: "Onboarding dell'organizzazione in corso...",
     invalidServerData: "I dati ricevuti dal server non sono validi. Ricarica la pagina o contatta l'assistenza.",
     claimsAlignError: "Impossibile allineare l'organizzazione del profilo. Contatta l'assistenza.",
+    skipToContent: "Salta al contenuto principale",
+    mainNavAria: "Navigazione principale",
+    footerNavAria: "Collegamenti a piè di pagina",
+    rightsReserved: "Tutti i diritti riservati.",
   },
   sidebar: {
     collapse: "Collassa Sidebar",
@@ -348,6 +352,10 @@ const en: UIStrings = {
     onboardingInProgress: "Organization onboarding in progress...",
     invalidServerData: "The data received from the server is invalid. Reload the page or contact support.",
     claimsAlignError: "Unable to align the profile organization. Contact support.",
+    skipToContent: "Skip to main content",
+    mainNavAria: "Main navigation",
+    footerNavAria: "Footer links",
+    rightsReserved: "All rights reserved.",
   },
   sidebar: {
     collapse: "Collapse Sidebar",
@@ -638,6 +646,10 @@ const es: UIStrings = {
     onboardingInProgress: "Incorporación de la organización en curso...",
     invalidServerData: "Los datos recibidos del servidor no son válidos. Recarga la página o contacta con el soporte.",
     claimsAlignError: "No se puede alinear la organización del perfil. Contacta con el soporte.",
+    skipToContent: "Saltar al contenido principal",
+    mainNavAria: "Navegación principal",
+    footerNavAria: "Enlaces de pie de página",
+    rightsReserved: "Todos los derechos reservados.",
   },
   sidebar: {
     collapse: "Contraer barra lateral",
