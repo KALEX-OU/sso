@@ -110,7 +110,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
 
       {/* BOTTONE ESPANSIONE (QUANDO COLLASSED) */}
       {collapsed && (
-        <div className="flex justify-center py-2 border-b border-slate-900/50">
+        <div className="flex justify-center py-2 border-b border-slate-200/60 dark:border-slate-900/50">
           <Button
             isIconOnly
             variant="ghost"
@@ -366,7 +366,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         {!collapsed && (
           <div className="klx-sidebar-copyright">
             <span>{brand.copyright}</span>
-            <span className="bg-slate-900/80 text-slate-400 px-1.5 py-0.5 rounded font-mono text-[8px]">
+            <span className="bg-slate-100 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-mono text-[8px]">
               v{pkg.version}
             </span>
           </div>

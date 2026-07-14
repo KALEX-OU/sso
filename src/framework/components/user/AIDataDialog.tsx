@@ -113,26 +113,26 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
   return (
     <Modal isOpen={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Modal.Backdrop isDismissable={true} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <Modal.Container className="dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <Modal.Container className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
           <Modal.Dialog className="flex flex-col h-full overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-900/60 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg">
                   <Cpu className="w-5 h-5 text-slate-950 font-bold" />
                 </div>
                 <div className="text-start">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-200">
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-200">
                     {fmtUI(s.dialogs.ai.title, { brand: brand.name })}
                   </h3>
-                  <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                  <p className="text-[10px] text-primary font-bold uppercase tracking-widest">
                     {s.dialogs.ai.subtitle}
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-1 rounded-lg hover:bg-slate-900 text-slate-400 hover:text-white cursor-pointer transition-colors"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -151,8 +151,8 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                         msg.sender === "user"
-                          ? "bg-cyan-600 text-white"
-                          : "bg-slate-900 border border-slate-800 text-cyan-400"
+                          ? "bg-primary text-white"
+                          : "bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-primary"
                       }`}
                     >
                       {msg.sender === "user" ? (
@@ -164,8 +164,8 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
                     <div
                       className={`rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap text-start ${
                         msg.sender === "user"
-                          ? "bg-cyan-600/90 text-white rounded-se-none"
-                          : "bg-slate-900/60 border border-slate-800 text-slate-300 rounded-ss-none"
+                          ? "bg-primary/90 text-white rounded-se-none"
+                          : "bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-ss-none"
                       }`}
                     >
                       {msg.text}
@@ -175,13 +175,13 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
 
                 {isTyping && (
                   <div className="flex gap-3 self-start">
-                    <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 text-cyan-400 flex items-center justify-center shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-primary flex items-center justify-center shrink-0">
                       <Bot className="w-3.5 h-3.5" />
                     </div>
-                    <div className="bg-slate-900/60 border border-slate-800 text-slate-300 rounded-2xl rounded-ss-none p-3.5 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" />
-                      <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce delay-100" />
-                      <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce delay-200" />
+                    <div className="bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl rounded-ss-none p-3.5 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
+                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce delay-100" />
+                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce delay-200" />
                     </div>
                   </div>
                 )}
@@ -192,14 +192,14 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
               {messages.length === 1 && (
                 <div className="mt-2 text-start">
                   <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> {s.dialogs.ai.suggestionsLabel}
+                    <Sparkles className="w-3.5 h-3.5 text-primary" /> {s.dialogs.ai.suggestionsLabel}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {suggestedPrompts.map((prompt, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(prompt)}
-                        className="text-[10px] font-bold bg-slate-900/50 hover:bg-cyan-950/20 text-slate-300 hover:text-cyan-400 border border-slate-900 hover:border-cyan-900/40 py-1.5 px-3 rounded-full transition-all cursor-pointer"
+                        className="text-[10px] font-bold bg-slate-100 dark:bg-slate-900/50 hover:bg-primary/10 dark:hover:bg-primary/10 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary border border-slate-200 dark:border-slate-900 hover:border-primary/30 dark:hover:border-primary/30 py-1.5 px-3 rounded-full transition-all cursor-pointer"
                       >
                         {prompt}
                       </button>
@@ -210,7 +210,7 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-slate-900/60 pt-3 flex items-center gap-2">
+            <div className="border-t border-slate-200 dark:border-slate-900/60 pt-3 flex items-center gap-2">
               <input
                 type="text"
                 placeholder={fmtUI(s.dialogs.ai.inputPlaceholder, { brand: brand.name })}
@@ -219,11 +219,11 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSendMessage(inputValue);
                 }}
-                className="flex-1 bg-slate-900/50 hover:bg-slate-900 border border-slate-900/60 hover:border-slate-800 transition-colors text-xs text-slate-200 placeholder:text-slate-500 rounded-xl px-4 py-2.5 outline-none focus:border-cyan-500"
+                className="flex-1 bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200/70 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-900/60 hover:border-slate-300 dark:hover:border-slate-800 transition-colors text-xs text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl px-4 py-2.5 outline-none focus:border-primary"
               />
               <button
                 onClick={() => handleSendMessage(inputValue)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl p-2.5 cursor-pointer shadow-lg transition-colors flex items-center justify-center shrink-0"
+                className="bg-primary hover:bg-primary/90 text-white rounded-xl p-2.5 cursor-pointer shadow-lg transition-colors flex items-center justify-center shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
