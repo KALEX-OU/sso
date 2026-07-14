@@ -17,7 +17,18 @@ const ModalBase: React.FC<ModalProps> = (
       return <Skeleton className={`klx-modal-skeleton ${className}`} />;
     }
 
-    const content = (
+    // A11y (L0.4): Modal e ModalRoot di HeroUI montano entrambi un DialogTrigger react-aria,
+    // che senza figlio pressable emette "A PressResponder was rendered without a pressable
+    // child" a ogni mount. Nell'uso controllato (isOpen definito, nessun Modal.Trigger — tutti
+    // i dialoghi del framework) si soddisfa il PressResponder con un trigger inerte:
+    // sr-only lo nasconde visivamente restando focusabile (requisito di Pressable),
+    // tabIndex=-1 lo toglie dal tab order e aria-hidden dall'albero di accessibilità.
+    const content = props.isOpen !== undefined ? (
+      <HeroModalRoot {...props}>
+        <HeroModalTrigger aria-hidden tabIndex={-1} className="sr-only" />
+        {children}
+      </HeroModalRoot>
+    ) : (
       <HeroModal
         {...props}
       >

@@ -33,10 +33,14 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       isSkeleton,
       tooltip,
       disabled,
+      "aria-label": ariaLabel,
       ...props
     },
     ref
   ) => {
+    // A11y (L0.4): senza label visibile react-aria esige aria-label/aria-labelledby.
+    // Fallback: aria-label esplicito, altrimenti il placeholder (già localizzato al call site).
+    const fieldAriaLabel = ariaLabel ?? (label ? undefined : placeholder);
     if (isSkeleton) {
       return (
         <div className="flex flex-col gap-1.5 w-full">
@@ -70,7 +74,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     );
 
     return (
-      <TextField className="klx-field-container" isRequired={isRequired} isInvalid={!!error}>
+      <TextField className="klx-field-container" isRequired={isRequired} isInvalid={!!error} aria-label={fieldAriaLabel}>
         {label && (
           <Label className="klx-label">
             {label}

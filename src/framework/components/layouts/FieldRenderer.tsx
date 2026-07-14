@@ -221,6 +221,7 @@ export function FieldRenderer({
               {resolvedLabel} {isRequired && <span className="text-danger ms-0.5">*</span>}
             </Label>
             <Textarea
+              aria-label={resolvedLabel}
               placeholder={resolvedPlaceholder}
               disabled={isBusy}
               value={value === undefined || value === null ? "" : (typeof value === "object" ? JSON.stringify(value) : (value as string))}
@@ -252,6 +253,7 @@ export function FieldRenderer({
             </Label>
             <Input
               type={field.type === "Float" ? "number" : "text"}
+              aria-label={resolvedLabel}
               placeholder={resolvedPlaceholder}
               disabled={isBusy}
               value={value === undefined || value === null ? "" : (value as string)}

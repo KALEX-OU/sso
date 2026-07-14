@@ -61,10 +61,15 @@ const SelectComponent = React.forwardRef<React.ElementRef<typeof HeroSelect>, Se
       children,
       disabled,
       isDisabled,
+      "aria-label": ariaLabel,
       ...props
     },
     ref
   ) => {
+    // A11y (L0.4): la label visibile del wrapper è un <label> HTML non collegato al controllo
+    // react-aria, quindi l'accessible name va SEMPRE fornito via aria-label (esplicito,
+    // altrimenti label o placeholder, già localizzati al call site).
+    const fieldAriaLabel = ariaLabel ?? label ?? placeholder;
     if (isSkeleton) {
       return (
         <div className="flex flex-col gap-1.5 w-full">
@@ -92,6 +97,7 @@ const SelectComponent = React.forwardRef<React.ElementRef<typeof HeroSelect>, Se
         isDisabled={disabled || isDisabled}
         isRequired={isRequired}
         placeholder={placeholder}
+        aria-label={fieldAriaLabel}
         {...props}
       >
         {children}
@@ -105,6 +111,7 @@ const SelectComponent = React.forwardRef<React.ElementRef<typeof HeroSelect>, Se
         isDisabled={disabled || isDisabled}
         isRequired={isRequired}
         placeholder={placeholder}
+        aria-label={fieldAriaLabel}
         {...props}
       >
         <HeroSelectTrigger className="w-full flex items-center justify-between px-3.5 h-[48px] border border-slate-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-slate-950/40 text-sm text-slate-900 dark:text-white outline-none">
