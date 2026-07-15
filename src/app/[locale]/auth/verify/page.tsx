@@ -11,6 +11,7 @@ import { useI18n, useCurrentLocale } from "@/locales/client";
 import { Card, CardContent, Button } from "@/framework/components/ui";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { GlobalLoader } from "@/framework/components/ui";
+import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
 
 // Configurazione brand speculare a quella di auth/page.tsx.
@@ -358,11 +359,12 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className={`min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans p-6 bg-gradient-to-br ${activeBgGradient}`}>
+    <AuthLayout variant="centered" className={`bg-gradient-to-br ${activeBgGradient}`}>
       {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
 
-      <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 text-center rounded-3xl relative z-10">
+      <AuthLayout.Form>
+      <Card className="w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 text-center rounded-3xl">
         <CardContent className="flex flex-col items-center justify-center p-2">
           {/* Logo Brand */}
           <div className="text-center mb-6">
@@ -412,6 +414,7 @@ export default function VerifyEmailPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </AuthLayout.Form>
+    </AuthLayout>
   );
 }

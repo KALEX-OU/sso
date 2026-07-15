@@ -20,6 +20,8 @@ import {
   InputGroup,
   InputGroupPrefix
 } from "@/framework/components/ui";
+import { AuthLayout } from "@/framework/components/auth/AuthLayout";
+import { GlobalLoader } from "@/framework/components/ui";
 import { useTheme } from "next-themes";
 import { useI18n, useCurrentLocale } from "@/locales/client";
 import { Sun, Moon, Mail, Lock, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -242,9 +244,7 @@ function ResetPasswordPortal() {
   }, [currentLocale, router, searchParams]);
 
   return (
-    <div
-      className={`min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans p-6 bg-gradient-to-br ${activeBgGradient}`}
-    >
+    <AuthLayout variant="centered" className={`bg-gradient-to-br ${activeBgGradient}`}>
       {/* Glow Ambientale — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
       <div
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full filter blur-[120px] pointer-events-none ${activeGlowColor} opacity-50`}
@@ -267,7 +267,8 @@ function ResetPasswordPortal() {
         </Button>
       </div>
 
-      <Card className="max-w-md w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 rounded-3xl relative z-10">
+      <AuthLayout.Form>
+      <Card className="w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 rounded-3xl">
         <CardContent className="flex flex-col p-2">
           {/* Logo e Titolo */}
           <div className="text-center mb-6">
@@ -478,19 +479,14 @@ function ResetPasswordPortal() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </AuthLayout.Form>
+    </AuthLayout>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-4">
-          <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white/20"></span>
-        </div>
-      }
-    >
+    <Suspense fallback={<GlobalLoader />}>
       <ResetPasswordPortal />
     </Suspense>
   );

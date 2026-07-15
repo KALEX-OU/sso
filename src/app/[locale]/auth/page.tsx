@@ -66,6 +66,8 @@ import {
   Checkbox,
   GlobalLoader
 } from "@/framework/components/ui";
+// L2: shell auth del framework — split 1/3-2/3 con landmark main/aside.
+import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { useTheme } from "next-themes";
 import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
 import { Sun, Moon, Globe, Mail, Lock, User as UserIcon } from "lucide-react";
@@ -1033,9 +1035,9 @@ function AuthPortal() {
 
   if (needsVerification) {
     return (
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row relative overflow-hidden font-sans transition-colors duration-500">
+      <AuthLayout>
         {/* Left Column (Forms and Dynamic States) */}
-        <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-20 relative z-10 w-full">
+        <AuthLayout.Form className="lg:p-20">
           {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2); con start-1/2 il translate fisico non centrerebbe in RTL */}
           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
 
@@ -1186,18 +1188,18 @@ function AuthPortal() {
               <a href={`/${currentLocale}/terms?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-white dark:hover:text-white transition-colors">Termini</a>
             </div>
           </div>
-        </div>
+        </AuthLayout.Form>
 
         {/* Right Column (Marketing panel) */}
         {renderMarketingPanel({ ...brand, name: brandName }, t, isDark)}
-      </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row relative overflow-hidden font-sans transition-colors duration-500">
+    <AuthLayout>
       {/* Left Column (Forms and Dynamic States) */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-16 relative z-10 w-full">
+      <AuthLayout.Form className="lg:p-16">
         {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2); con start-1/2 il translate fisico non centrerebbe in RTL */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
 
@@ -2108,11 +2110,11 @@ function AuthPortal() {
             <a href={`/${currentLocale}/terms?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || "")}&state=${encodeURIComponent(state)}${pkcePreserveParams}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">Termini</a>
           </div>
         </div>
-      </div>
+      </AuthLayout.Form>
 
       {/* Right Column (Marketing panel) */}
       {renderMarketingPanel({ ...brand, name: brandName }, t, isDark)}
-    </div>
+    </AuthLayout>
   );
 }
 
@@ -2132,7 +2134,7 @@ function renderMarketingPanel(
   const glowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
 
   return (
-    <div className="hidden lg:flex flex-1 relative flex-col justify-between items-center p-16 overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-black border-s border-slate-200 dark:border-white/5 transition-colors duration-500">
+    <AuthLayout.Aside>
       {/* Radial glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full filter blur-[150px] pointer-events-none ${glowColor} opacity-75 transition-all duration-700`}></div>
       
@@ -2179,17 +2181,13 @@ function renderMarketingPanel(
       {/* Footer of Marketing panel */}
       <div className="relative z-10 flex justify-between items-center text-xs text-gray-500">
       </div>
-    </div>
+    </AuthLayout.Aside>
   );
 }
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white font-sans px-4">
-        <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white/20"></span>
-      </div>
-    }>
+    <Suspense fallback={<GlobalLoader />}>
       <AuthPortal />
     </Suspense>
   );

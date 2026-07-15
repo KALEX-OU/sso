@@ -9,6 +9,7 @@ import { useCurrentLocale } from "@/locales/client";
 // NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
 // stato ridotto di conseguenza per mantenere l'ingombro precedente.
 import { Card, CardContent, Button, Input, Label, TextField } from "@/framework/components/ui";
+import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { Shield, AlertTriangle, CheckCircle2, Lock } from "lucide-react";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
 
@@ -162,12 +163,12 @@ export default function FinalizeOnboardingPage() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center relative p-6 overflow-hidden bg-gradient-to-tr ${activeBgGradient} transition-all duration-700`}>
+    <AuthLayout variant="centered" className={`bg-gradient-to-tr ${activeBgGradient} transition-all duration-700`}>
       {/* Background Glows — RTL: fisico voluto, coppia decorativa simmetrica (left-1/4 / right-1/4 + translate-x speculari) */}
       <div className={`absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full blur-[10rem] -translate-x-1/2 -translate-y-1/2 ${activeGlowColor} pointer-events-none transition-all duration-700`} />
       <div className={`absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full blur-[9rem] translate-x-1/2 translate-y-1/2 ${activeGlowColor} pointer-events-none transition-all duration-700`} />
 
-      <div className="w-full max-w-md relative z-10 flex flex-col items-center">
+      <AuthLayout.Form>
         {/* Logo Brand */}
         <div className="flex items-center gap-2 mb-8 select-none scale-90 md:scale-100">
           <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${brand.logoColor} flex items-center justify-center shadow-lg`}>
@@ -260,7 +261,7 @@ export default function FinalizeOnboardingPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </AuthLayout.Form>
+    </AuthLayout>
   );
 }
