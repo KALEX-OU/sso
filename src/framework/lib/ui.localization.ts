@@ -110,6 +110,13 @@ const it = {
       backupSubmit: "Reimposta",
       backupCancel: "Annulla",
     },
+    reset: {
+      title: "Reimposta Password",
+      sendLink: "Invia link di reset",
+      newPassword: "Nuova Password",
+      confirmPassword: "Conferma Password",
+      forLabel: "Per:",
+    },
     verify: {
       title: "Verifica la tua Email",
       desc: "Abbiamo inviato un link di verifica all'indirizzo {email}. Controlla la tua casella di posta e fai clic sul link per attivare il tuo account.",
@@ -518,6 +525,13 @@ const en: UIStrings = {
       backupSubmit: "Reset",
       backupCancel: "Cancel",
     },
+    reset: {
+      title: "Reset Password",
+      sendLink: "Send reset link",
+      newPassword: "New Password",
+      confirmPassword: "Confirm Password",
+      forLabel: "For:",
+    },
     verify: {
       title: "Verify your Email",
       desc: "We sent a verification link to {email}. Check your inbox and click the link to activate your account.",
@@ -917,6 +931,13 @@ const es: UIStrings = {
       backupPrompt: "Introduce uno de los códigos de respaldo que guardaste al configurar la 2FA. Restableceremos el segundo factor; luego inicia sesión con tu contraseña.",
       backupSubmit: "Restablecer",
       backupCancel: "Cancelar",
+    },
+    reset: {
+      title: "Restablecer Contraseña",
+      sendLink: "Enviar enlace de restablecimiento",
+      newPassword: "Nueva Contraseña",
+      confirmPassword: "Confirmar Contraseña",
+      forLabel: "Para:",
     },
     verify: {
       title: "Verifica tu Correo",

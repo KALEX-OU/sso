@@ -97,7 +97,7 @@ function RegisterPortal() {
     defaultValues: {
       regType: "personal",
       country: currentLocale === "es" ? "ES" : "IT",
-      acceptTerms: false as unknown as true,
+      acceptTerms: false,
       fullName: "",
       email: "",
       password: "",
@@ -115,12 +115,20 @@ function RegisterPortal() {
     const formEl = registerFormRef.current;
     if (!formEl) return;
 
+    // SOLO i campi registrati in RHF: il listener serve a sincronizzare
+    // l'autofill del browser. Campi non-RHF (es. indirizzo, stato locale React)
+    // NON vanno toccati: il setValue fantasma innesca un re-render che
+    // ripristina il valore del controlled input PRIMA che React dispatci
+    // l'onChange → i caratteri digitati spariscono (bug campo indirizzo).
+    const RHF_TEXT_FIELDS = new Set<keyof RegisterInput>([
+      "fullName", "email", "password", "vatNumber", "companyName",
+      "sdiCode", "officeCode", "cigCode", "cupCode",
+    ]);
     const handleNativeInput = (e: Event) => {
       const target = e.target as HTMLInputElement;
-      if (target && target.name) {
-        const name = target.name as keyof RegisterInput;
-        const val = target.value;
-        setValueReg(name, val, { shouldValidate: true, shouldDirty: true });
+      const name = target?.name as keyof RegisterInput | undefined;
+      if (name && RHF_TEXT_FIELDS.has(name)) {
+        setValueReg(name, target.value, { shouldValidate: true, shouldDirty: true });
       }
     };
 
@@ -609,11 +617,17 @@ function RegisterPortal() {
           const valid = EU_COUNTRIES.find((c) => c === code);
           if (valid) setValueReg("country", valid, { shouldValidate: true });
         }}
-        countries={EU_COUNTRIES.map((code) => ({
-          code,
-          name: EU_COUNTRY_NAMES[code][currentLocale as "it" | "en" | "es"] || EU_COUNTRY_NAMES[code].en,
-          flag: EU_COUNTRY_FLAGS[code],
-        }))}
+        countries={EU_COUNTRIES
+          // Paesi attivi al lancio: SOLO Italia e Spagna (owner, 2026-07-15).
+          // Schema/VIES supportano tutta la UE: per riattivare gli altri paesi
+          // rimuovere il filtro qui sotto (erano: AT BE BG CY CZ DE DK EE EL/GR
+          // FI FR HR HU IE LT LU LV MT NL PL PT RO SE SI SK…).
+          .filter((code) => code === "IT" || code === "ES")
+          .map((code) => ({
+            code,
+            name: EU_COUNTRY_NAMES[code][currentLocale as "it" | "en" | "es"] || EU_COUNTRY_NAMES[code].en,
+            flag: EU_COUNTRY_FLAGS[code],
+          }))}
         values={{
           fullName: fullNameRegValue,
           email: emailRegValue,
@@ -629,7 +643,7 @@ function RegisterPortal() {
           setValueReg(field, value, { shouldValidate: true, shouldDirty: true })
         }
         acceptTerms={!!acceptTermsValue}
-        onAcceptTermsChange={(v) => setValueReg("acceptTerms", v as unknown as true, { shouldValidate: true })}
+        onAcceptTermsChange={(v) => setValueReg("acceptTerms", v, { shouldValidate: true })}
         errors={{
           fullName: getErrorMessage(errorsReg.fullName),
           email: getErrorMessage(errorsReg.email),

@@ -112,12 +112,14 @@ function LoginPortal() {
     const formEl = loginFormRef.current;
     if (!formEl) return;
 
+    // SOLO i campi testuali RHF (sync autofill browser): vedi nota gemella
+    // nella pagina register — setValue su nomi estranei rompe i controlled input.
+    const RHF_TEXT_FIELDS = new Set<keyof LoginInput>(["email", "password"]);
     const handleNativeInput = (e: Event) => {
       const target = e.target as HTMLInputElement;
-      if (target && target.name) {
-        const name = target.name as keyof LoginInput;
-        const val = target.value;
-        setValueLogin(name, val, { shouldValidate: true, shouldDirty: true });
+      const name = target?.name as keyof LoginInput | undefined;
+      if (name && RHF_TEXT_FIELDS.has(name)) {
+        setValueLogin(name, target.value, { shouldValidate: true, shouldDirty: true });
       }
     };
 

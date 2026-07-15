@@ -13,18 +13,13 @@ import {
   Button,
   Card,
   CardContent,
-  TextField,
-  Label,
-  Input,
-  FieldError,
-  InputGroup,
-  InputGroupPrefix
 } from "@/framework/components/ui";
 import { AuthLayout } from "@/framework/components/auth/AuthLayout";
+import { AuthFormResetPassword } from "@/framework/components/auth/AuthFormResetPassword";
 import { GlobalLoader } from "@/framework/components/ui";
 import { useTheme } from "next-themes";
 import { useI18n, useCurrentLocale } from "@/locales/client";
-import { Sun, Moon, Mail, Lock, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Sun, Moon, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useForm, SubmitHandler, useWatch } from "react-hook-form";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -120,8 +115,8 @@ function ResetPasswordPortal() {
 
   // React Hook Form per la richiesta di Reset (Scenario A)
   const {
-    register: registerRequest,
     handleSubmit: handleSubmitRequest,
+    setValue: setValueRequest,
     control: controlRequest,
     formState: { errors: errorsRequest }
   } = useForm<RequestResetInput>({
@@ -131,8 +126,8 @@ function ResetPasswordPortal() {
 
   // React Hook Form per l'impostazione nuova password (Scenario B)
   const {
-    register: registerNewPass,
     handleSubmit: handleSubmitNewPass,
+    setValue: setValueNewPass,
     control: controlNewPass,
     formState: { errors: errorsNewPass }
   } = useForm<NewPasswordInput>({
@@ -233,6 +228,14 @@ function ResetPasswordPortal() {
   );
 
   // Ritorno al login mantenendo i query params (es. client_id)
+  const getErrorMessage = useCallback((errorObj?: { message?: string }) => {
+    if (!errorObj || !errorObj.message) return "";
+    if (errorObj.message.startsWith("validation.")) {
+      return t(errorObj.message as Parameters<typeof t>[0]);
+    }
+    return errorObj.message;
+  }, [t]);
+
   const handleBackToLogin = useCallback(() => {
     const loginUrl = new URL(`${window.location.origin}/${currentLocale}/auth`);
     searchParams.forEach((value, key) => {
@@ -321,53 +324,16 @@ function ResetPasswordPortal() {
 
           {/* SCENARIO A: RICHIESTA RESET EMAIL (Codice oobCode assente) */}
           {!oobCode && !emailSent && !verifyingCode && !codeError && (
-            <form onSubmit={handleSubmitRequest(onSubmitRequest)} className="space-y-5">
-              <div className="text-center mb-4">
-                <h3 className="text-md font-bold text-slate-800 dark:text-white">
-                  {t("auth.resetPasswordTitle")}
-                </h3>
-              </div>
-
-              <TextField isInvalid={!!errorsRequest.email} className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
-                  {t("auth.email")}
-                </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                  <InputGroupPrefix className="flex items-center justify-center me-2">
-                    <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
-                  </InputGroupPrefix>
-                  {/* Il wrapper Input è sempre controllato: il valore va bindato via watch (RHF) */}
-                  <Input
-                    type="email"
-                    placeholder="name@example.com"
-                    className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                    {...registerRequest("email")}
-                    value={emailRequestValue}
-                  />
-                </InputGroup>
-                <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
-              </TextField>
-
-              <Button
-                unstyled
-                type="submit"
-                isDisabled={loading}
-                className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
-              >
-                {loading && (
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>
-                )}
-                {t("auth.sendResetLink")}
-              </Button>
-
-              <button
-                type="button"
-                onClick={handleBackToLogin}
-                className="w-full text-center text-xs font-semibold text-secondary hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
-              >
-                {t("auth.backToLogin")}
-              </button>
-            </form>
+            <AuthFormResetPassword
+              mode="request"
+              email={emailRequestValue}
+              onEmailChange={(v) => setValueRequest("email", v, { shouldValidate: true, shouldDirty: true })}
+              emailError={getErrorMessage(errorsRequest.email)}
+              onSubmit={handleSubmitRequest(onSubmitRequest)}
+              onBack={handleBackToLogin}
+              loading={loading}
+              gradientClassName={brand.logoColor}
+            />
           )}
 
           {/* EMAIL INVIATA CON SUCCESSO */}
@@ -392,70 +358,20 @@ function ResetPasswordPortal() {
 
           {/* SCENARIO B: IMPOSTAZIONE NUOVA PASSWORD (Codice oobCode presente e valido) */}
           {oobCode && !resetSuccess && !verifyingCode && !codeError && (
-            <form onSubmit={handleSubmitNewPass(onSubmitNewPass)} className="space-y-5">
-              <div className="text-center mb-2">
-                <h3 className="text-md font-bold text-slate-800 dark:text-white">
-                  {t("auth.resetPasswordTitle")}
-                </h3>
-                {codeEmail && (
-                  <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 font-medium">
-                    Per: <span className="text-slate-700 dark:text-slate-200 font-semibold">{codeEmail}</span>
-                  </p>
-                )}
-              </div>
-
-              <TextField isInvalid={!!errorsNewPass.password} className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
-                  {t("auth.newPassword")}
-                </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                  <InputGroupPrefix className="flex items-center justify-center me-2">
-                    <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
-                  </InputGroupPrefix>
-                  {/* Il wrapper Input è sempre controllato: il valore va bindato via watch (RHF) */}
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                    {...registerNewPass("password")}
-                    value={passwordNewValue}
-                  />
-                </InputGroup>
-                <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
-              </TextField>
-
-              <TextField isInvalid={!!errorsNewPass.confirmPassword} className="flex flex-col gap-1.5 w-full">
-                <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
-                  {t("auth.confirmPassword")}
-                </Label>
-                <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                  <InputGroupPrefix className="flex items-center justify-center me-2">
-                    <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
-                  </InputGroupPrefix>
-                  {/* Il wrapper Input è sempre controllato: il valore va bindato via watch (RHF) */}
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                    {...registerNewPass("confirmPassword")}
-                    value={confirmPasswordNewValue}
-                  />
-                </InputGroup>
-                <FieldError className="text-[11px] font-medium text-red-500 block mt-1" />
-              </TextField>
-
-              <Button
-                unstyled
-                type="submit"
-                isDisabled={loading}
-                className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
-              >
-                {loading && (
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>
-                )}
-                {t("auth.resetPasswordTitle")}
-              </Button>
-            </form>
+            <AuthFormResetPassword
+              mode="confirm"
+              targetEmail={codeEmail || undefined}
+              password={passwordNewValue}
+              confirmPassword={confirmPasswordNewValue}
+              onPasswordChange={(v) => setValueNewPass("password", v, { shouldValidate: true, shouldDirty: true })}
+              onConfirmPasswordChange={(v) => setValueNewPass("confirmPassword", v, { shouldValidate: true, shouldDirty: true })}
+              passwordError={getErrorMessage(errorsNewPass.password)}
+              confirmPasswordError={getErrorMessage(errorsNewPass.confirmPassword)}
+              onSubmit={handleSubmitNewPass(onSubmitNewPass)}
+              onBack={handleBackToLogin}
+              loading={loading}
+              gradientClassName={brand.logoColor}
+            />
           )}
 
           {/* SUCCESSO RESET PASSWORD */}

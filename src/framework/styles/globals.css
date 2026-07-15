@@ -480,7 +480,11 @@ body {
   @apply w-full;
 }
 .klx-select-trigger {
-  @apply w-full flex items-center justify-between h-12 rounded-2xl px-3.5 text-sm bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white outline-none transition-all cursor-pointer;
+  @apply w-full flex items-center justify-between h-12 rounded-2xl px-3.5 text-sm font-normal bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-none outline-none transition-all cursor-pointer;
+}
+/* Valore selezionato del Select: layout riga (bandiera + nome distanziati) */
+.klx-select-trigger [data-slot="select-value"] {
+  @apply flex items-center gap-2 truncate;
 }
 .klx-select-trigger[data-focused="true"],
 .klx-select-trigger:focus-visible {

@@ -98,9 +98,10 @@ export const RegisterSchema = z.object({
   fullName: z.string().min(1, { message: "validation.fullNameRequired" }),
   email: z.string().email({ message: "validation.emailInvalid" }),
   password: z.string().min(8, { message: "validation.passwordMin" }),
-  acceptTerms: z.literal(true, {
-    message: "validation.acceptTermsRequired"
-  }),
+  // Boolean al livello base: con z.literal(true) lo schema base fallirebbe
+  // finché il consenso non è spuntato e zod SALTEREBBE la superRefine
+  // (CF/DNI/P.IVA mai validati live). L'obbligo è imposto nella superRefine.
+  acceptTerms: z.boolean(),
   regType: z.enum(["personal", "business", "government", "education"]),
   country: z.enum(EU_COUNTRIES),
   
@@ -112,6 +113,15 @@ export const RegisterSchema = z.object({
   cigCode: z.string().optional(),
   cupCode: z.string().optional()
 }).superRefine((data, ctx) => {
+  // Consenso obbligatorio (spostato dal base schema: vedi nota su acceptTerms)
+  if (!data.acceptTerms) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["acceptTerms"],
+      message: "validation.acceptTermsRequired"
+    });
+  }
+
   if (data.regType === "personal") {
     if (data.vatNumber && data.vatNumber.trim() !== "") {
       const val = data.vatNumber.trim().toUpperCase();
