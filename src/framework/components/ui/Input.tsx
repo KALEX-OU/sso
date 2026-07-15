@@ -71,7 +71,7 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
         value={value}
         onChange={handleInputChange}
         disabled={disabled}
-        className={`klx-input ${error ? "klx-input--error" : ""} ${className}`}
+        className={`klx-input ${icon ? "klx-input--with-icon" : ""} ${error ? "klx-input--error" : ""} ${className}`}
         {...props}
       />
     );

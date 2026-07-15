@@ -68,6 +68,7 @@ import {
 } from "@/framework/components/ui";
 // L2: shell auth del framework — split 1/3-2/3 con landmark main/aside.
 import { AuthLayout } from "@/framework/components/auth/AuthLayout";
+import { AuthForm } from "@/framework/components/auth/AuthForm";
 import { useTheme } from "next-themes";
 import { useI18n, useChangeLocale, useCurrentLocale } from "@/locales/client";
 import { Sun, Moon, Globe, Mail, Lock, User as UserIcon } from "lucide-react";
@@ -258,7 +259,6 @@ function AuthPortal() {
 
   // React Hook Form per Login
   const {
-    register: registerLogin,
     handleSubmit: handleSubmitLogin,
     setValue: setValueLogin,
     getValues: getValuesLogin,
@@ -357,6 +357,7 @@ function AuthPortal() {
   const cupCodeValue = useWatch({ control: controlReg, name: "cupCode" }) || "";
   const emailLoginValue = useWatch({ control: controlLogin, name: "email" }) || "";
   const passwordLoginValue = useWatch({ control: controlLogin, name: "password" }) || "";
+  const rememberMeLoginValue = useWatch({ control: controlLogin, name: "rememberMe" }) ?? true;
 
   // Automatismo Geo-IP per il paese di default e la lingua locale iniziale (attivo sia per login che per registrazione)
   useEffect(() => {
@@ -1396,89 +1397,21 @@ function AuthPortal() {
                 </button>
               </form>
             ) : isLogin ? (
-              /* FORM DI LOGIN CON HEROUI V3 */
-              <form ref={loginFormRef} onSubmit={handleSubmitLogin(onSubmitLogin)} className="space-y-5">
-                <TextField isInvalid={!!errorsLogin.email} className="flex flex-col gap-1.5 w-full">
-                  <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
-                    {t("auth.email")}
-                  </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                    <InputGroupPrefix className="flex items-center justify-center me-2">
-                      <Mail className="text-slate-400 flex-shrink-0 w-4 h-4" />
-                    </InputGroupPrefix>
-                    <Input
-                      type="email"
-                      placeholder="name@example.com"
-                      autoComplete="username"
-                      className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                      {...registerLogin("email")}
-                      value={emailLoginValue}
-                    />
-                  </InputGroup>
-                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsLogin.email)}</FieldError>
-                </TextField>
-
-                <TextField isInvalid={!!errorsLogin.password} className="flex flex-col gap-1.5 w-full">
-                  <Label className="text-xs font-bold text-slate-700 dark:text-gray-300 block mb-0.5">
-                    {t("auth.password")}
-                  </Label>
-                  <InputGroup className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] transition-all w-full">
-                    <InputGroupPrefix className="flex items-center justify-center me-2">
-                      <Lock className="text-slate-400 flex-shrink-0 w-4 h-4" />
-                    </InputGroupPrefix>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      className="bg-transparent border-0 outline-none w-full h-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                      {...registerLogin("password")}
-                      value={passwordLoginValue}
-                    />
-                  </InputGroup>
-                  <FieldError className="text-[11px] font-medium text-red-500 block mt-1">{getErrorMessage(errorsLogin.password)}</FieldError>
-                </TextField>
-
-                <div className="flex items-center justify-between px-1 mt-1">
-                  <Controller
-                    name="rememberMe"
-                    control={controlLogin}
-                    render={({ field }) => (
-                      <Checkbox
-                        id="rememberMe"
-                        isSelected={!!field.value}
-                        onChange={field.onChange}
-                        className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex items-center gap-3"
-                      >
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Content>
-                          <Label className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer">
-                            {t("auth.rememberMe")}
-                          </Label>
-                        </Checkbox.Content>
-                      </Checkbox>
-                    )}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/${currentLocale}/auth/reset-password`)}
-                    className="text-xs font-semibold text-secondary hover:underline cursor-pointer bg-transparent border-0 outline-none"
-                  >
-                    {t("auth.forgotPassword")}
-                  </button>
-                </div>
-
-                <Button
-                  unstyled
-                  type="submit"
-                  isDisabled={loading}
-                  className={`w-full py-6 font-bold bg-gradient-to-r ${brand.logoColor} text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6`}
-                >
-                  {loading && <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>}
-                  {t("auth.login")}
-                </Button>
-              </form>
+              /* FORM DI LOGIN — componente DS auth/AuthForm (campi klx globali) */
+              <AuthForm
+                formRef={loginFormRef}
+                email={emailLoginValue}
+                password={passwordLoginValue}
+                rememberMe={rememberMeLoginValue}
+                onEmailChange={(v) => setValueLogin("email", v, { shouldValidate: true, shouldDirty: true })}
+                onPasswordChange={(v) => setValueLogin("password", v, { shouldValidate: true, shouldDirty: true })}
+                onRememberMeChange={(v) => setValueLogin("rememberMe", v)}
+                onSubmit={handleSubmitLogin(onSubmitLogin)}
+                onForgotPassword={() => router.push(`/${currentLocale}/auth/reset-password`)}
+                emailError={getErrorMessage(errorsLogin.email)}
+                passwordError={getErrorMessage(errorsLogin.password)}
+                loading={loading}
+              />
             ) : (
               /* FORM DI REGISTRAZIONE CON HEROUI V3 */
               <form ref={registerFormRef} onSubmit={handleSubmitReg(onSubmitRegister)} className="space-y-5">

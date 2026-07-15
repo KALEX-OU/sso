@@ -190,7 +190,7 @@ export function FieldRenderer({
             <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
               {resolvedLabel} {isRequired && <span className="text-danger ms-0.5">*</span>}
             </Label>
-            <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus-within:!border-primary focus-within:shadow-[0_0_12px_var(--klx-glow-primary)] rounded-2xl px-3.5 py-2 flex items-center justify-between h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all cursor-pointer">
+            <SelectTrigger className="klx-select-trigger">
               <SelectValue />
             </SelectTrigger>
             <SelectPopover className="bg-slate-950 border border-slate-900 rounded-2xl shadow-2xl p-1.5 text-slate-200 min-w-[240px] z-50">
@@ -266,7 +266,7 @@ export function FieldRenderer({
                 }
               }}
               onBlur={onBlur}
-              className={`bg-white/50 dark:bg-slate-950/40 border ${errors[fieldKey] ? "border-red-500 focus:border-red-500" : "border-slate-200 dark:border-white/10 focus:border-primary"} rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all`}
+              className={errors[fieldKey] ? "klx-input--error" : ""}
             />
             {errors[fieldKey] && (
               <span className="text-[10px] text-red-500 font-semibold mt-0.5">

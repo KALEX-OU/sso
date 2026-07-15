@@ -47,6 +47,7 @@
   /* Glow/ombre e scrollbar DERIVATE via color-mix: seguono automaticamente
      il brand attivo, quindi NON vanno ridefinite nei blocchi [data-brand]. */
   --klx-glow-primary: color-mix(in srgb, var(--klx-primary) 15%, transparent);
+  --klx-glow-secondary: color-mix(in srgb, var(--klx-secondary) 15%, transparent);
   --klx-glow-success: color-mix(in srgb, var(--klx-success) 15%, transparent);
   --klx-glow-danger: color-mix(in srgb, var(--klx-danger) 15%, transparent);
 
@@ -422,6 +423,55 @@ body {
 }
 .klx-detail-footer {
   @apply px-6 py-4 border-t border-slate-200/60 dark:border-slate-900/50 bg-slate-50/60 dark:bg-slate-950/60 flex items-center justify-end gap-3 rounded-es-3xl;
+}
+
+/* ── Campi form (DS): pill standard KALEX in un punto solo ──────────────────
+   Stile dei marker dei wrapper ui/ (Input/Select): sfondo, bordo, raggio e
+   ALTEZZA del campo vivono QUI — mai ricostruire la pill nelle pagine.
+   Le classi klx-* sono fuori layer e vincono sulle utility. La larghezza del
+   campo è SEMPRE il 100% del contenitore: è il parent a decidere quanto è largo. */
+.klx-field-container {
+  @apply w-full;
+}
+.klx-input {
+  @apply w-full h-12 rounded-2xl px-3.5 text-sm bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 shadow-none outline-none transition-all;
+}
+.klx-input:focus,
+.klx-input[data-focused="true"] {
+  @apply border-secondary bg-white/70 dark:bg-slate-950/60 shadow-[0_0_12px_var(--klx-glow-secondary)];
+}
+.klx-input--error,
+.klx-input[data-invalid="true"] {
+  @apply border-danger;
+}
+/* Campo con icona del wrapper (icona assoluta a inizio riga → spazio logico) */
+.klx-input--with-icon {
+  @apply ps-10;
+}
+/* Dentro un InputGroup il campo È lo slot interno: niente doppia pill.
+   Sana anche le composizioni legacy `<InputGroup><Input/></InputGroup>`. */
+.input-group .klx-field-container {
+  @apply w-full;
+}
+.input-group .klx-input,
+.input-group .klx-input:focus,
+.input-group .klx-input[data-focused="true"] {
+  @apply w-full h-full rounded-none border-0 bg-transparent shadow-none px-0;
+}
+/* Trigger del Select: stessa pill del campo (usata dal wrapper e dal FieldRenderer) */
+.klx-select {
+  @apply w-full;
+}
+.klx-select-trigger {
+  @apply w-full flex items-center justify-between h-12 rounded-2xl px-3.5 text-sm bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white outline-none transition-all cursor-pointer;
+}
+.klx-select-trigger[data-focused="true"],
+.klx-select-trigger:focus-visible {
+  @apply border-secondary shadow-[0_0_12px_var(--klx-glow-secondary)];
+}
+/* Autocomplete: il root riempie il contenitore come ogni campo */
+.klx-autocomplete {
+  @apply w-full;
 }
 
 /* Filter & Active Filter Chips */

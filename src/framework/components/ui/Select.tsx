@@ -114,7 +114,7 @@ const SelectComponent = React.forwardRef<React.ElementRef<typeof HeroSelect>, Se
         aria-label={fieldAriaLabel}
         {...props}
       >
-        <HeroSelectTrigger className="w-full flex items-center justify-between px-3.5 h-[48px] border border-slate-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-slate-950/40 text-sm text-slate-900 dark:text-white outline-none">
+        <HeroSelectTrigger className="klx-select-trigger">
           <HeroSelectValue />
         </HeroSelectTrigger>
         <HeroSelectPopover className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl shadow-xl p-1.5 z-50 min-w-[200px]">
