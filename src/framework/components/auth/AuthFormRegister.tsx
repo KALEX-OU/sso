@@ -501,7 +501,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
           <Checkbox
             isSelected={acceptTerms}
             onChange={onAcceptTermsChange}
-            className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex items-center gap-3"
+            className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex flex-row items-center gap-3"
           >
             <Checkbox.Control>
               <Checkbox.Indicator />

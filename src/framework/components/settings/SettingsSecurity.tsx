@@ -21,7 +21,7 @@ import {
 } from "firebase/auth";
 import { forceCleanSession } from "../../lib/auth";
 import { useBrand } from "../providers/BrandProvider";
-import { useUIStrings } from "../../lib/ui.localization";
+import { fmtUI, useUIStrings } from "../../lib/ui.localization";
 import { useI18n } from "@/locales/client";
 
 // E4.2 — Sezione "Sicurezza" delle impostazioni, estratta meccanicamente da settings.tsx:
@@ -36,6 +36,17 @@ interface DeviceSession {
   lastSeenAt: string;
   userAgent: string;
   ip: string;
+  current: boolean;
+}
+
+// Dispositivo fidato MFA restituito da /api/auth/mfa/trusted-devices (N3)
+interface TrustedDevice {
+  id: string;
+  createdAt: string;
+  lastUsedAt: string;
+  userAgent: string;
+  ip: string;
+  expiresAt: string;
   current: boolean;
 }
 
@@ -65,6 +76,11 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionRevokePending, setSessionRevokePending] = useState("");
   const [revokeOthersPending, setRevokeOthersPending] = useState(false);
+
+  // Stati per i dispositivi fidati MFA (N3)
+  const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>([]);
+  const [trustedLoading, setTrustedLoading] = useState(false);
+  const [trustedRevokePending, setTrustedRevokePending] = useState("");
 
   // Funzione per validare la forza della password
   const passwordStrength = useMemo(() => {
@@ -99,6 +115,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
         setNewPassword("");
         setConfirmPassword("");
         showToast(t("settings.toast.pwdUpdated"), "success");
+        void invalidateTrustedDevices(); // N3: nuova password → fiducia device azzerata
       } catch (err) {
         const authErr = err as { code?: string };
         if (authErr.code === "auth/requires-recent-login") {
@@ -122,6 +139,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
       setNewPassword("");
       setConfirmPassword("");
       showToast(t("settings.toast.pwdUpdated"), "success");
+      void invalidateTrustedDevices(); // N3: nuova password → fiducia device azzerata
     } catch (err) {
       const authErr = err as { code?: string };
       if (authErr.code === "auth/requires-recent-login" || authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential") {
@@ -153,6 +171,52 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
     // Deferred per evitare setState sincrono nell'effect (cascading renders)
     void Promise.resolve().then(() => loadDeviceSessions());
   }, [loadDeviceSessions]);
+
+  // === DISPOSITIVI FIDATI MFA (N3) — "non chiedere per 30 giorni" ===
+  const loadTrustedDevices = useCallback(async () => {
+    setTrustedLoading(true);
+    try {
+      const res = await fetchAuthedClient<{ success: boolean; devices: TrustedDevice[] }>("/api/auth/mfa/trusted-devices", { method: "GET" });
+      if (res.success && res.data && Array.isArray(res.data.devices)) {
+        setTrustedDevices(res.data.devices);
+      }
+    } catch (err) {
+      console.warn("[Settings] Impossibile caricare i dispositivi fidati:", err);
+    } finally {
+      setTrustedLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void Promise.resolve().then(() => loadTrustedDevices());
+  }, [loadTrustedDevices]);
+
+  const revokeTrustedDevice = async (device: TrustedDevice) => {
+    setTrustedRevokePending(device.id);
+    try {
+      const res = await fetchAuthedClient<Record<string, unknown>>(`/api/auth/mfa/trusted-devices/${device.id}`, { method: "DELETE" });
+      if (!res.success) {
+        throw new Error(res.error?.message || s.settings.trustedRevokeFail);
+      }
+      showToast(s.settings.trustedRevoked, "success");
+      await loadTrustedDevices();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : s.settings.trustedRevokeFail, "error");
+    } finally {
+      setTrustedRevokePending("");
+    }
+  };
+
+  // Al cambio password la fiducia decade su TUTTI i device (best-effort, come da
+  // invariante N3: chi avesse rubato sessione+cookie di fiducia perde il bypass).
+  const invalidateTrustedDevices = useCallback(async () => {
+    try {
+      await fetchAuthedClient<{ success: boolean; revoked: number }>("/api/auth/mfa/trusted-devices/revoke-all", { method: "POST" });
+      await loadTrustedDevices();
+    } catch (err) {
+      console.warn("[Settings] Invalidazione dispositivi fidati non riuscita (best-effort):", err);
+    }
+  }, [loadTrustedDevices]);
 
   const revokeDeviceSession = async (session: DeviceSession) => {
     setSessionRevokePending(session.id);
@@ -369,6 +433,58 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
                     variant="danger-soft"
                   >
                     {sessionRevokePending === session.id ? t("settings.sessions.disconnecting") : t("settings.sessions.disconnect")}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* SEC 3C: DISPOSITIVI FIDATI MFA (N3) — bypass step-up "non chiedere per 30 giorni" */}
+      <Card className="klx-settings-card--full">
+        <CardBody>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-secondary" />
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+                {s.settings.trustedTitle}
+              </h3>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+            {s.settings.trustedDesc}
+          </p>
+          {trustedLoading && trustedDevices.length === 0 ? (
+            <p className="text-xs text-slate-400">{s.settings.trustedLoading}</p>
+          ) : trustedDevices.length === 0 ? (
+            <p className="text-xs text-slate-400">{s.settings.trustedEmpty}</p>
+          ) : (
+            <div className="space-y-2">
+              {trustedDevices.map((device) => (
+                <div
+                  key={device.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5"
+                >
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                      {describeDevice(device.userAgent)}
+                      {device.current && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full">
+                          {s.settings.trustedThisDevice}
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-slate-400 truncate">
+                      {fmtUI(s.settings.trustedExpires, { date: device.expiresAt ? new Date(device.expiresAt).toLocaleDateString() : "—" })}
+                    </span>
+                  </div>
+                  <Button
+                    onClick={() => void revokeTrustedDevice(device)}
+                    isDisabled={trustedRevokePending === device.id}
+                    variant="danger-soft"
+                  >
+                    {s.settings.trustedRevoke}
                   </Button>
                 </div>
               ))}

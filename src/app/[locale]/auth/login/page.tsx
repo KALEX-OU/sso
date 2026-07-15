@@ -64,6 +64,8 @@ function LoginPortal() {
 
   // MFA — solo TOTP (app di autenticazione); l'SMS è stato rimosso (NIST lo scoraggia).
   const [mfaRequired, setMfaRequired] = useState(false);
+  // Fiducia dispositivo (N3): opt-in al challenge TOTP, concretizzata dopo il resolveSignIn.
+  const [trustDevice, setTrustDevice] = useState(false);
   const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
   const [mfaCode, setMfaCode] = useState("");
   const [mfaHint, setMfaHint] = useState("");
@@ -392,6 +394,21 @@ function LoginPortal() {
       const multiFactorAssertion = TotpMultiFactorGenerator.assertionForSignIn(mfaTotpUid, mfaCode);
       const userCredential = await mfaResolver.resolveSignIn(multiFactorAssertion);
 
+      // Fiducia dispositivo (N3): SOLO dopo il secondo fattore riuscito. Best-effort e
+      // atteso (il Set-Cookie kalex_trust deve arrivare prima del redirect); il token è
+      // fresco e contiene sign_in_second_factor — requisiti verificati dal server.
+      if (trustDevice) {
+        try {
+          const trustToken = await userCredential.user.getIdToken();
+          await fetch("/api/auth/mfa/trust-device", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${trustToken}` },
+          });
+        } catch (trustErr) {
+          console.warn("[Login] Registrazione dispositivo fidato non riuscita (best-effort):", trustErr);
+        }
+      }
+
       setMfaRequired(false);
       setMfaResolver(null);
 
@@ -472,6 +489,8 @@ function LoginPortal() {
           onBackupSubmit={() => void handleBackupRecover()}
           backupLoading={backupRecoverLoading}
           backupMessage={backupRecoverMsg}
+          trustDevice={trustDevice}
+          onTrustDeviceChange={setTrustDevice}
           onBack={() => {
             setMfaRequired(false);
             setMfaResolver(null);

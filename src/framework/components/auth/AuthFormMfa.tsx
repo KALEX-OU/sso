@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Input, InputOTP, Label } from "../ui";
+import { Checkbox, Input, InputOTP, Label } from "../ui";
 import { AuthForm } from "./AuthForm";
 import { fmtUI, useUIStrings } from "../../lib/ui.localization";
 
@@ -30,6 +30,9 @@ export interface AuthFormMfaProps {
   backupLoading?: boolean;
   backupMessage?: { type: "ok" | "err"; text: string } | null;
   onBack: () => void;
+  /** Fiducia dispositivo (N3): checkbox "non chiedere per 30 giorni". Mostrata solo se onTrustDeviceChange è fornita. */
+  trustDevice?: boolean;
+  onTrustDeviceChange?: (value: boolean) => void;
   gradientClassName?: string;
   className?: string;
 }
@@ -48,6 +51,8 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
   backupLoading = false,
   backupMessage = null,
   onBack,
+  trustDevice = false,
+  onTrustDeviceChange,
   gradientClassName,
   className = "",
 }) => {
@@ -155,6 +160,27 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
           </InputOTP>
         </div>
       </div>
+
+      {/* Fiducia dispositivo (N3): opt-in "non chiedere per 30 giorni" — il consumer
+          la concretizza SOLO dopo il resolveSignIn riuscito (POST trust-device). */}
+      {onTrustDeviceChange && (
+        <div className="mt-4 flex justify-center">
+          <Checkbox
+            isSelected={trustDevice}
+            onChange={onTrustDeviceChange}
+            className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex flex-row items-center gap-3"
+          >
+            <Checkbox.Control>
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+            <Checkbox.Content>
+              <Label className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer">
+                {s.auth.mfa.trustDevice}
+              </Label>
+            </Checkbox.Content>
+          </Checkbox>
+        </div>
+      )}
 
     </AuthForm>
   );

@@ -117,6 +117,7 @@ const it = {
       backupPrompt: "Inserisci uno dei codici di backup salvati quando hai configurato la 2FA. Reimposteremo il secondo fattore; poi accedi con la tua password.",
       backupSubmit: "Reimposta",
       backupCancel: "Annulla",
+      trustDevice: "Fidati di questo dispositivo per 30 giorni",
     },
     reauth: {
       title: "Conferma la tua identità",
@@ -365,6 +366,15 @@ const it = {
     avatarAlt: "Avatar",
     subdomainPlaceholder: "la-tua-org",
     customDomainPlaceholder: "app.tuazienda.com",
+    trustedTitle: "Dispositivi fidati (MFA)",
+    trustedDesc: "Su questi dispositivi le operazioni sensibili non richiedono di nuovo la conferma di password/codice per 30 giorni. La fiducia si concede al login, dopo il codice di verifica.",
+    trustedEmpty: "Nessun dispositivo fidato.",
+    trustedLoading: "Caricamento…",
+    trustedRevoke: "Revoca",
+    trustedRevoked: "Fiducia del dispositivo revocata.",
+    trustedRevokeFail: "Impossibile revocare il dispositivo.",
+    trustedThisDevice: "Questo dispositivo",
+    trustedExpires: "Scade il {date}",
   },
   dialogs: {
     support: {
@@ -563,6 +573,7 @@ const en: UIStrings = {
       backupPrompt: "Enter one of the backup codes you saved when setting up 2FA. We'll reset the second factor; then sign in with your password.",
       backupSubmit: "Reset",
       backupCancel: "Cancel",
+      trustDevice: "Trust this device for 30 days",
     },
     reauth: {
       title: "Confirm your identity",
@@ -811,6 +822,15 @@ const en: UIStrings = {
     avatarAlt: "Avatar",
     subdomainPlaceholder: "your-org",
     customDomainPlaceholder: "app.yourcompany.com",
+    trustedTitle: "Trusted devices (MFA)",
+    trustedDesc: "On these devices, sensitive operations will not ask for your password/code again for 30 days. Trust is granted at login, after the verification code.",
+    trustedEmpty: "No trusted devices.",
+    trustedLoading: "Loading…",
+    trustedRevoke: "Revoke",
+    trustedRevoked: "Device trust revoked.",
+    trustedRevokeFail: "Could not revoke the device.",
+    trustedThisDevice: "This device",
+    trustedExpires: "Expires on {date}",
   },
   dialogs: {
     support: {
@@ -1001,6 +1021,7 @@ const es: UIStrings = {
       backupPrompt: "Introduce uno de los códigos de respaldo que guardaste al configurar la 2FA. Restableceremos el segundo factor; luego inicia sesión con tu contraseña.",
       backupSubmit: "Restablecer",
       backupCancel: "Cancelar",
+      trustDevice: "Confiar en este dispositivo durante 30 días",
     },
     reauth: {
       title: "Confirma tu identidad",
@@ -1249,6 +1270,15 @@ const es: UIStrings = {
     avatarAlt: "Avatar",
     subdomainPlaceholder: "tu-organizacion",
     customDomainPlaceholder: "app.tuempresa.com",
+    trustedTitle: "Dispositivos de confianza (MFA)",
+    trustedDesc: "En estos dispositivos, las operaciones sensibles no volverán a pedir tu contraseña/código durante 30 días. La confianza se concede al iniciar sesión, tras el código de verificación.",
+    trustedEmpty: "Ningún dispositivo de confianza.",
+    trustedLoading: "Cargando…",
+    trustedRevoke: "Revocar",
+    trustedRevoked: "Confianza del dispositivo revocada.",
+    trustedRevokeFail: "No se pudo revocar el dispositivo.",
+    trustedThisDevice: "Este dispositivo",
+    trustedExpires: "Caduca el {date}",
   },
   dialogs: {
     support: {
