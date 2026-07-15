@@ -16,10 +16,11 @@ import {
 } from "@/framework/components/ui";
 import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { AuthFormResetPassword } from "@/framework/components/auth/AuthFormResetPassword";
+import { AuthStatusCard } from "@/framework/components/auth/AuthStatusCard";
 import { GlobalLoader } from "@/framework/components/ui";
 import { useTheme } from "next-themes";
 import { useI18n, useCurrentLocale } from "@/locales/client";
-import { Sun, Moon, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Sun, Moon, Loader2 } from "lucide-react";
 import { useForm, SubmitHandler, useWatch } from "react-hook-form";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -304,22 +305,12 @@ function ResetPasswordPortal() {
 
           {/* CODE VERIFICATION ERROR */}
           {codeError && !verifyingCode && (
-            <div className="text-center my-6 space-y-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <h3 className="text-md font-bold text-red-500">Codice Non Valido</h3>
-              <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
-                {codeError}
-              </p>
-              <Button
-                unstyled
-                onClick={handleBackToLogin}
-                className="mt-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-5 px-6 cursor-pointer"
-              >
-                {t("auth.backToLogin")}
-              </Button>
-            </div>
+            <AuthStatusCard
+              variant="error"
+              title="Codice Non Valido"
+              description={codeError || undefined}
+              primaryAction={{ label: t("auth.backToLogin"), onClick: handleBackToLogin }}
+            />
           )}
 
           {/* SCENARIO A: RICHIESTA RESET EMAIL (Codice oobCode assente) */}
@@ -338,22 +329,12 @@ function ResetPasswordPortal() {
 
           {/* EMAIL INVIATA CON SUCCESSO */}
           {emailSent && !oobCode && (
-            <div className="text-center my-6 space-y-4">
-              <div className="w-12 h-12 bg-success/10 border border-success/25 dark:border-success/20 rounded-full flex items-center justify-center mx-auto text-success">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-md font-bold text-success">{t("auth.resetEmailSentTitle")}</h3>
-              <p className="text-xs text-slate-600 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
-                {t("auth.resetPasswordEmailSent")}
-              </p>
-              <Button
-                unstyled
-                onClick={handleBackToLogin}
-                className="mt-6 w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-6 cursor-pointer"
-              >
-                {t("auth.backToLogin")}
-              </Button>
-            </div>
+            <AuthStatusCard
+              variant="success"
+              title={t("auth.resetEmailSentTitle")}
+              description={t("auth.resetPasswordEmailSent")}
+              primaryAction={{ label: t("auth.backToLogin"), onClick: handleBackToLogin }}
+            />
           )}
 
           {/* SCENARIO B: IMPOSTAZIONE NUOVA PASSWORD (Codice oobCode presente e valido) */}
@@ -376,22 +357,12 @@ function ResetPasswordPortal() {
 
           {/* SUCCESSO RESET PASSWORD */}
           {resetSuccess && (
-            <div className="text-center my-6 space-y-4">
-              <div className="w-12 h-12 bg-success/10 border border-success/25 dark:border-success/20 rounded-full flex items-center justify-center mx-auto text-success">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-md font-bold text-success">{t("auth.passwordUpdatedTitle")}</h3>
-              <p className="text-xs text-slate-600 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
-                {t("auth.passwordResetSuccess")}
-              </p>
-              <Button
-                unstyled
-                onClick={handleBackToLogin}
-                className="mt-6 w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-6 cursor-pointer"
-              >
-                {t("auth.backToLogin")}
-              </Button>
-            </div>
+            <AuthStatusCard
+              variant="success"
+              title={t("auth.passwordUpdatedTitle")}
+              description={t("auth.passwordResetSuccess")}
+              primaryAction={{ label: t("auth.backToLogin"), onClick: handleBackToLogin }}
+            />
           )}
         </CardContent>
       </Card>

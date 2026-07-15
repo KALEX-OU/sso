@@ -55,13 +55,13 @@ export const AuthVerifyNotice: React.FC<AuthVerifyNoticeProps> = ({
       </p>
 
       {error && (
-        <div className="bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-300 rounded-2xl p-3 text-xs mb-4 text-center font-medium w-full">
+        <div role="alert" className="bg-danger/10 border border-danger/25 dark:border-danger/20 text-danger rounded-2xl p-3 text-xs mb-4 text-center font-medium w-full">
           {error}
         </div>
       )}
 
       {resendSuccess && (
-        <div className="bg-success/10 border border-success/25 dark:border-success/20 text-success rounded-2xl p-3 text-xs mb-4 text-center font-medium w-full">
+        <div role="status" className="bg-success/10 border border-success/25 dark:border-success/20 text-success rounded-2xl p-3 text-xs mb-4 text-center font-medium w-full">
           {resendSuccess}
         </div>
       )}

@@ -8,8 +8,9 @@ import { useI18n, useCurrentLocale } from "@/locales/client";
 // E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
 // NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
 // stato ridotto di conseguenza per mantenere l'ingombro precedente.
-import { Card, CardContent, Button } from "@/framework/components/ui";
-import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/framework/components/ui";
+import { Loader2 } from "lucide-react";
+import { AuthStatusCard } from "@/framework/components/auth/AuthStatusCard";
 import { GlobalLoader } from "@/framework/components/ui";
 import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
@@ -386,31 +387,20 @@ export default function VerifyEmailPage() {
 
           {/* Errore */}
           {error && (
-            <div className="my-6 space-y-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <h3 className="text-md font-bold text-red-500">{t("auth.verifyFailedTitle")}</h3>
-              <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">{error}</p>
-              <Button
-                unstyled
-                onClick={() => router.push(`/${currentLocale}/auth${window.location.search}`)}
-                className="mt-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl py-5 px-6 cursor-pointer"
-              >
-                {t("auth.backToLogin") || "Torna al login"}
-              </Button>
-            </div>
+            <AuthStatusCard
+              variant="error"
+              title={t("auth.verifyFailedTitle")}
+              description={error}
+              primaryAction={{
+                label: t("auth.backToLogin"),
+                onClick: () => router.push(`/${currentLocale}/auth${window.location.search}`),
+              }}
+            />
           )}
 
           {/* Successo */}
           {successMessage && !loading && (
-            <div className="my-6 space-y-4">
-              <div className="w-12 h-12 bg-success/10 border border-success/25 dark:border-success/20 rounded-full flex items-center justify-center mx-auto text-success">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-md font-bold text-success">{successMessage}</h3>
-              <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">{statusMessage}</p>
-            </div>
+            <AuthStatusCard variant="success" title={successMessage} description={statusMessage} />
           )}
         </CardContent>
       </Card>

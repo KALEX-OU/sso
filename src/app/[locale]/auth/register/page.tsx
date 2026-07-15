@@ -682,6 +682,8 @@ function RegisterPortal() {
         }}
         lockedAddress={isVatVerified && isAddressFromVies ? viesAddress : null}
         onSubmit={handleSubmitReg(onSubmitRegister)}
+        privacyHref={`/${currentLocale}/privacy${authQuery}`}
+        termsHref={`/${currentLocale}/terms${authQuery}`}
         loading={loading}
         canSubmit={isValidReg}
         gradientClassName={gradient}

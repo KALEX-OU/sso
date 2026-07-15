@@ -32,7 +32,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
       {header && <div className="text-center mb-8">{header}</div>}
 
       {error && (
-        <div className="bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-300 rounded-2xl p-3 text-xs mb-6 text-center font-medium w-full">
+        <div role="alert" className="bg-danger/10 border border-danger/25 dark:border-danger/20 text-danger rounded-2xl p-3 text-xs mb-6 text-center font-medium w-full">
           {error}
         </div>
       )}

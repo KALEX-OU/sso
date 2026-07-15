@@ -509,6 +509,10 @@ body {
    Dove HeroUI ha uno standard (Description/FieldError/Card.Title…) i wrapper
    usano lo slot NUDO; qui vivono SOLO le personalizzazioni deliberate KALEX
    e i messaggi fuori contesto react-aria. Tutto tokenizzato. */
+/* Hint di campo non bloccante (es. avviso Blocco maiuscole sui password) */
+.klx-field-hint {
+  @apply px-1 text-xs text-warning mt-0.5;
+}
 /* Errore di campo fuori dal contesto FieldError (es. wrapper Select) —
    allineato ai token di .field-error HeroUI */
 .klx-field-error {

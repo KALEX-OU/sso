@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import { KeyRound } from "lucide-react";
-import { Input } from "../ui";
+import React, { useRef } from "react";
+import { Input, InputOTP, Label } from "../ui";
 import { AuthForm } from "./AuthForm";
 import { fmtUI, useUIStrings } from "../../lib/ui.localization";
 
@@ -53,6 +52,7 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
   className = "",
 }) => {
   const s = useUIStrings();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const backupSection = !showBackup ? (
     <button
@@ -102,6 +102,7 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
   return (
     <AuthForm
       onSubmit={onSubmit}
+      formRef={formRef}
       submitLabel={s.auth.mfa.submit}
       loading={loading}
       gradientClassName={gradientClassName}
@@ -126,18 +127,34 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
         </p>
       </div>
 
-      <Input
-        type="text"
-        name="mfaCode"
-        maxLength={6}
-        autoComplete="one-time-code"
-        label={s.auth.mfa.code}
-        placeholder="123456"
-        icon={<KeyRound className="w-4 h-4" />}
-        className="text-center tracking-widest font-mono"
-        value={code}
-        onValueChange={onCodeChange}
-      />
+      {/* Codice a 6 cifre su InputOTP: autofocus, paste supportato e
+          AUTO-SUBMIT al completamento (requestSubmit sul form della base). */}
+      <div className="flex flex-col gap-1.5">
+        <Label className="klx-label">{s.auth.mfa.code}</Label>
+        <div className="flex justify-center">
+          <InputOTP
+            maxLength={6}
+            autoFocus
+            value={code}
+            onChange={onCodeChange}
+            onComplete={() => formRef.current?.requestSubmit()}
+            aria-label={s.auth.mfa.code}
+            autoComplete="one-time-code"
+          >
+            <InputOTP.Group>
+              <InputOTP.Slot index={0} />
+              <InputOTP.Slot index={1} />
+              <InputOTP.Slot index={2} />
+            </InputOTP.Group>
+            <InputOTP.Separator />
+            <InputOTP.Group>
+              <InputOTP.Slot index={3} />
+              <InputOTP.Slot index={4} />
+              <InputOTP.Slot index={5} />
+            </InputOTP.Group>
+          </InputOTP>
+        </div>
+      </div>
 
     </AuthForm>
   );

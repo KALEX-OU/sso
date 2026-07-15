@@ -84,6 +84,10 @@ export interface AuthFormRegisterProps {
   /** Indirizzo sede legale arrivato dal VIES → textarea sola lettura al posto del campo. */
   lockedAddress?: string | null;
   onSubmit: React.FormEventHandler<HTMLFormElement>;
+  /** Link a privacy/termini nel consenso (costruiti dalla pagina con la query
+   *  OAuth preservata). Se assenti, il consenso resta testo semplice. */
+  privacyHref?: string;
+  termsHref?: string;
   loading?: boolean;
   canSubmit?: boolean;
   gradientClassName?: string;
@@ -126,6 +130,8 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
   address,
   lockedAddress = null,
   onSubmit,
+  privacyHref,
+  termsHref,
   loading = false,
   canSubmit = true,
   gradientClassName,
@@ -502,7 +508,35 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
             </Checkbox.Control>
             <Checkbox.Content>
               <Label className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer">
-                {r.acceptTerms}
+                {privacyHref && termsHref ? (
+                  <>
+                    {r.acceptTermsPrefix}{" "}
+                    <a
+                      href={privacyHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline font-semibold hover:text-secondary"
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      {r.privacyPolicy}
+                    </a>{" "}
+                    {r.acceptTermsConj}{" "}
+                    <a
+                      href={termsHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline font-semibold hover:text-secondary"
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      {r.termsOfService}
+                    </a>
+                    {r.acceptTermsSuffix}
+                  </>
+                ) : (
+                  r.acceptTerms
+                )}
               </Label>
             </Checkbox.Content>
           </Checkbox>
