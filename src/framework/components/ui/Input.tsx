@@ -11,6 +11,8 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   error?: string;
   description?: string;
   icon?: React.ReactNode;
+  /** Contenuto a fine campo (stati di validazione, spinner…): aggiunge pe-10 al campo. */
+  suffix?: React.ReactNode;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
@@ -33,6 +35,7 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
       error,
       description,
       icon,
+      suffix,
       value = "",
       onChange,
       onValueChange,
@@ -71,7 +74,7 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
         value={value}
         onChange={handleInputChange}
         disabled={disabled}
-        className={`klx-input ${icon ? "klx-input--with-icon" : ""} ${error ? "klx-input--error" : ""} ${className}`}
+        className={`klx-input ${icon ? "klx-input--with-icon" : ""} ${suffix ? "klx-input--with-suffix" : ""} ${error ? "klx-input--error" : ""} ${className}`}
         {...props}
       />
     );
@@ -96,6 +99,7 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
           <div className="w-full">
             {inputWithTooltip}
           </div>
+          {suffix && <span className="absolute end-3.5 flex items-center text-slate-400 dark:text-slate-500">{suffix}</span>}
         </div>
 
         {description && <Description className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{description}</Description>}

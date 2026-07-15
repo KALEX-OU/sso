@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Mail, Lock } from "lucide-react";
-import { Button, Checkbox, Input, Label } from "../ui";
+import { Checkbox, Input, Label } from "../ui";
+import { AuthSubmitButton } from "./AuthSubmitButton";
 import { useUIStrings } from "../../lib/ui.localization";
 
 /**
@@ -30,6 +31,8 @@ export interface AuthFormProps {
   emailError?: string;
   passwordError?: string;
   loading?: boolean;
+  /** Classi del gradiente brand della CTA (default secondary→accent). */
+  gradientClassName?: string;
   header?: React.ReactNode;
   footer?: React.ReactNode;
   formRef?: React.Ref<HTMLFormElement>;
@@ -49,6 +52,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   emailError,
   passwordError,
   loading = false,
+  gradientClassName,
   header,
   footer,
   formRef,
@@ -112,17 +116,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           )}
         </div>
 
-        <Button
-          unstyled
-          type="submit"
-          isDisabled={loading}
-          className="w-full py-6 font-bold bg-gradient-to-r from-secondary to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 mt-6"
-        >
-          {loading && (
-            <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>
-          )}
+        <AuthSubmitButton loading={loading} gradientClassName={gradientClassName}>
           {loading ? s.auth.signingIn : s.auth.signIn}
-        </Button>
+        </AuthSubmitButton>
       </form>
 
       {onRegister && (

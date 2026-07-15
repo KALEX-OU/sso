@@ -448,6 +448,23 @@ body {
 .klx-input--with-icon {
   @apply ps-10;
 }
+/* Campo con suffisso (stati di validazione/spinner a fine riga) */
+.klx-input--with-suffix {
+  @apply pe-10;
+}
+/* Stati di validazione esterna del campo (es. VIES sulla P.IVA) */
+.klx-input--success,
+.klx-input--success:focus {
+  @apply border-success shadow-[0_0_10px_var(--klx-glow-success)];
+}
+.klx-input--warning,
+.klx-input--warning:focus {
+  @apply border-warning shadow-[0_0_10px_color-mix(in_srgb,var(--klx-warning)_15%,transparent)];
+}
+/* Campo bloccato (valore che arriva da una fonte autorevole, es. VIES) */
+.klx-input--locked {
+  @apply bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/5 text-slate-500 cursor-not-allowed opacity-75;
+}
 /* Dentro un InputGroup il campo È lo slot interno: niente doppia pill.
    Sana anche le composizioni legacy `<InputGroup><Input/></InputGroup>`. */
 .input-group .klx-field-container {
