@@ -56,10 +56,10 @@ export function MfaPolicyToggle(): React.ReactElement | null {
           <div className="flex items-start gap-3 min-w-0">
             <ShieldCheck className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
                 {t("settings.mfaPolicy.title")}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{t("settings.mfaPolicy.desc")}</p>
+              <p className="text-xs text-ink-muted mt-1">{t("settings.mfaPolicy.desc")}</p>
             </div>
           </div>
           <button

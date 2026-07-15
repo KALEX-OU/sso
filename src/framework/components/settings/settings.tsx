@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
+import { apiEnvelopeSchema } from "../../lib/schemas/api";
+import { toAuthError } from "../../lib/auth-error";
 import { Card, CardBody, Tabs, Tab, TabList, Input } from "../ui";
 import { DomainManagement } from "./DomainManagement";
 import { SettingsProfile } from "./SettingsProfile";
@@ -88,7 +90,7 @@ export function Settings() {
       showToast(t("settings.toast.reauthOk"), "success");
       if (pending) await pending();
     } catch (err) {
-      const authErr = err as { code?: string };
+      const authErr = toAuthError(err);
       // Utente con MFA (TOTP) attiva: la reauth richiede il secondo fattore → codice dell'app.
       if (authErr.code === "auth/multi-factor-auth-required") {
         try {
@@ -155,6 +157,8 @@ export function Settings() {
         // 1. Chiama l'endpoint del backend per eliminare i dati da PostgreSQL, team e Firestore
         const resData = await fetchAuthedClient<Record<string, unknown>>(`/api/user/${userId}/account`, {
           method: "DELETE"
+        }, {
+          validate: (raw): Record<string, unknown> => apiEnvelopeSchema.parse(raw)
         });
 
         if (!resData.success) {
@@ -173,7 +177,7 @@ export function Settings() {
         await forceCleanSession();
         window.location.href = "/auth";
       } catch (err) {
-        const authErr = err as { code?: string };
+        const authErr = toAuthError(err);
         if (authErr.code === "auth/requires-recent-login") {
           executeWithReauthChallenge(action);
         } else {

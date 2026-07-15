@@ -1,23 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView } from "../layouts/ListView";
-import { Table } from "../ui";
+import { DataTable, type DataColumn } from "../layouts/DataTable";
 import { useBrand } from "../providers/BrandProvider";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
+import { assignHttpUrl } from "../../lib/safe-url";
+import { useResourceList } from "../../lib/use-resource-list";
 import {
   apiErrorMessage,
   productListResponseSchema,
   checkoutSessionResponseSchema,
   type ProductItem
 } from "../../lib/schemas/api";
-
-interface Column<T> {
-  key: string;
-  header: string;
-  render?: (item: T) => React.ReactNode;
-  sortable?: boolean;
-}
 
 interface ProductModuleProps {
   organizationId: string;
@@ -32,9 +27,6 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
   fetchAuthed,
   showToast
 }) => {
-  const [products, setProducts] = useState<ProductItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [purchasingProduct, setPurchasingProduct] = useState<string | null>(null);
   const brand = useBrand();
@@ -46,40 +38,17 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     sRef.current = s;
   }, [s]);
 
-  const loadProducts = useCallback(async () => {
-    setLoading(true);
-    setError(undefined);
-    try {
-      const res = await fetchAuthed(`/api/product/list?appId=sso&orgId=${organizationId}`);
-      // Validazione Zod della risposta (E3.5): payload malformato → log + errore i18n, mai dato corrotto.
-      const parsed = productListResponseSchema.safeParse(await res.json());
-      if (!parsed.success) {
-        console.error("[ProductModule] Risposta /product/list non conforme allo schema:", parsed.error);
-        setError(sRef.current.modules.product.errLoad);
-        return;
-      }
-      const data = parsed.data;
-      if (data.success) {
-        setProducts(data.items ?? []);
-      } else {
-        setError(apiErrorMessage(data) ?? sRef.current.modules.product.errLoad);
-      }
-    } catch (err) {
-      console.error("[ProductModule] Load Error:", err);
-      setError(sRef.current.modules.product.errConnection);
-    } finally {
-      setLoading(false);
-    }
-  }, [organizationId, fetchAuthed]);
-
-  useEffect(() => {
-    if (organizationId) {
-      const timer = setTimeout(() => {
-        void loadProducts();
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [organizationId, loadProducts]);
+  // Fetch + Zod + loading/error via hook condiviso (S4): payload malformato → errore i18n.
+  const { items: products, loading, error } = useResourceList({
+    path: organizationId ? `/api/product/list?appId=sso&orgId=${organizationId}` : "",
+    fetchAuthed,
+    schema: productListResponseSchema,
+    select: (data) => data.items ?? [],
+    errorMessage: apiErrorMessage,
+    errLoad: s.modules.product.errLoad,
+    errConnection: s.modules.product.errConnection,
+    logTag: "ProductModule",
+  });
 
   const handleBuyProduct = async (productId: string) => {
     if (activeRole !== "owner" && activeRole !== "admin") {
@@ -110,7 +79,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
       }
       const data = parsed.data;
       if (data.success && data.url) {
-        window.location.assign(data.url);
+        assignHttpUrl(data.url);
       } else {
         const errorMsg = data.error?.message || s.modules.product.errCheckout;
         showToast(errorMsg, "error");
@@ -133,7 +102,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
     );
   });
 
-  const columns: Column<ProductItem>[] = [
+  const columns: DataColumn<ProductItem>[] = [
     {
       key: "name",
       header: s.modules.product.colProduct,
@@ -211,38 +180,17 @@ export const ProductModule: React.FC<ProductModuleProps> = ({
           onSearchChange={setSearch}
           searchPlaceholder={s.modules.product.searchPlaceholder}
         >
-          <Table aria-label={s.modules.product.tableAria}>
-            <Table.ScrollContainer>
-              <Table.Content>
-                <Table.Header>
-                  {/* react-aria richiede almeno una colonna isRowHeader (nome accessibile delle righe) */}
-                  {columns.map((col, idx) => (
-                    <Table.Column key={col.key} id={col.key} isRowHeader={idx === 0} className="text-xs font-bold">{col.header}</Table.Column>
-                  ))}
-                </Table.Header>
-                <Table.Body
-                  renderEmptyState={() => (
-                    <div className="text-center py-8 text-muted-foreground text-xs">
-                      {s.modules.product.emptyState}
-                    </div>
-                  )}
-                >
-                  {filteredProducts.map(item => (
-                    <Table.Row key={item.productId} id={item.productId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
-                      {columns.map(col => (
-                        <Table.Cell key={col.key} id={`${item.productId}-${col.key}`}>
-                          {col.render ? col.render(item) : String(item[col.key as keyof ProductItem] || "")}
-                        </Table.Cell>
-                      ))}
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
-          </Table>
+          <DataTable
+            ariaLabel={s.modules.product.tableAria}
+            columns={columns}
+            items={filteredProducts}
+            getRowId={(item) => item.productId}
+            emptyState={s.modules.product.emptyState}
+          />
         </ListView>
       </div>
     </BaseModuleLayout>
   );
 };
-export type { Column };
+/** @deprecated usare `DataColumn` da layouts/DataTable (alias di transizione S4). */
+export type { DataColumn as Column } from "../layouts/DataTable";

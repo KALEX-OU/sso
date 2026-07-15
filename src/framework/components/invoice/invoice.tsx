@@ -1,23 +1,19 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState } from "react";
 import { FileText, Download } from "lucide-react";
 import { useCurrentLocale } from "@/locales/client";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { ListView, ActiveFilter } from "../layouts/ListView";
-import { Table, SelectRoot, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui";
+import { DataTable, type DataColumn } from "../layouts/DataTable";
+import { SelectRoot, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui";
 import { useBrand } from "../providers/BrandProvider";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
+import { safeHttpHref } from "../../lib/safe-url";
+import { useResourceList } from "../../lib/use-resource-list";
 import {
   apiErrorMessage,
   invoiceListResponseSchema,
   type InvoiceItem
 } from "../../lib/schemas/api";
-
-interface Column<T> {
-  key: string;
-  header: string;
-  render?: (item: T) => React.ReactNode;
-  sortable?: boolean;
-}
 
 interface InvoiceModuleProps {
   organizationId: string;
@@ -28,56 +24,25 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
   organizationId,
   fetchAuthed
 }) => {
-  const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
   const brand = useBrand();
   const locale = useCurrentLocale();
   const s = useUIStrings();
-  // Ref alle stringhe correnti: le callback leggono sempre l'ultima lingua
-  // senza aggiungere `s` alle dipendenze (il cambio lingua non ri-innesca i fetch).
-  const sRef = useRef(s);
-  useEffect(() => {
-    sRef.current = s;
-  }, [s]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
-  
+
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "received" | "issued">("all");
 
-  const loadInvoices = useCallback(async () => {
-    setLoading(true);
-    setError(undefined);
-    try {
-      const res = await fetchAuthed("/api/invoice/list");
-      // Validazione Zod della risposta (E3.5): payload malformato → log + errore i18n, mai dato corrotto.
-      const parsed = invoiceListResponseSchema.safeParse(await res.json());
-      if (!parsed.success) {
-        console.error("[InvoiceModule] Risposta /invoice/list non conforme allo schema:", parsed.error);
-        setError(sRef.current.modules.invoice.errLoad);
-        return;
-      }
-      const data = parsed.data;
-      if (data.success) {
-        setInvoices(data.items ?? data.invoices ?? []);
-      } else {
-        setError(apiErrorMessage(data) ?? sRef.current.modules.invoice.errLoad);
-      }
-    } catch (err) {
-      console.error("[InvoiceModule] Load Error:", err);
-      setError(sRef.current.modules.invoice.errConnection);
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchAuthed]);
-
-  useEffect(() => {
-    if (organizationId) {
-      const timer = setTimeout(() => {
-        void loadInvoices();
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [organizationId, loadInvoices]);
+  // Fetch + Zod + loading/error via hook condiviso (S4): payload malformato → errore i18n.
+  const { items: invoices, loading, error } = useResourceList({
+    path: "/api/invoice/list",
+    fetchAuthed,
+    schema: invoiceListResponseSchema,
+    select: (data) => data.items ?? data.invoices ?? [],
+    errorMessage: apiErrorMessage,
+    errLoad: s.modules.invoice.errLoad,
+    errConnection: s.modules.invoice.errConnection,
+    logTag: "InvoiceModule",
+    enabled: Boolean(organizationId),
+  });
 
   const activeFilters: ActiveFilter[] = [];
   if (filterType !== "all") {
@@ -111,14 +76,14 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
     );
   });
 
-  const columns: Column<InvoiceItem>[] = [
+  const columns: DataColumn<InvoiceItem>[] = [
     {
       key: "invoiceId",
       header: s.modules.invoice.colInvoiceId,
       render: (item) => (
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-secondary flex-shrink-0" />
-          <div className="font-mono text-[13px] font-semibold text-slate-900 dark:text-white" title={item.invoiceId}>
+          <div className="font-mono text-[13px] font-semibold text-ink" title={item.invoiceId}>
             {item.invoiceId.substring(0, 8)}...{item.invoiceId.substring(item.invoiceId.length - 4)}
           </div>
         </div>
@@ -143,11 +108,11 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       key: "partner",
       header: s.modules.invoice.colCounterparty,
       render: (item) => (
-        <div className="text-[13px] text-slate-600 dark:text-slate-400">
+        <div className="text-[13px] text-ink-muted">
           {item.type === "received" ? (
-            <span>{s.modules.invoice.fromPrefix} <strong className="text-slate-900 dark:text-white">{item.seller?.name || brand.sellerName}</strong></span>
+            <span>{s.modules.invoice.fromPrefix} <strong className="text-ink">{item.seller?.name || brand.sellerName}</strong></span>
           ) : (
-            <span>{s.modules.invoice.toPrefix} <strong className="text-slate-900 dark:text-white">{item.buyer?.name || s.modules.invoice.partnerCustomer}</strong></span>
+            <span>{s.modules.invoice.toPrefix} <strong className="text-ink">{item.buyer?.name || s.modules.invoice.partnerCustomer}</strong></span>
           )}
         </div>
       )
@@ -171,7 +136,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
       header: s.modules.invoice.colGrossAmount,
       render: (item) => (
         <div className="flex flex-col">
-          <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+          <span className="text-sm font-extrabold text-ink">
             {new Intl.NumberFormat(brand.numberLocale, { style: "currency", currency: brand.currency }).format(item.amount)}
           </span>
           {item.taxAmount !== undefined && item.taxAmount !== null && (
@@ -209,7 +174,7 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
         }
         return (
           <a
-            href={item.pdfUrl}
+            href={safeHttpHref(item.pdfUrl)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-secondary/20 bg-secondary/5 text-secondary hover:bg-secondary hover:text-white hover:border-secondary transition-all cursor-pointer"
@@ -233,10 +198,10 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
         }}
         aria-label={s.modules.invoice.filterAria}
       >
-        <SelectTrigger className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center justify-between h-[40px] w-full text-xs text-slate-900 dark:text-white">
+        <SelectTrigger className="bg-surface-2 border border-line rounded-2xl px-3.5 py-2 flex items-center justify-between h-[40px] w-full text-xs text-ink">
           <SelectValue />
         </SelectTrigger>
-        <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
+        <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-line rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
           <ListBox>
             <ListBoxItem id="all" textValue={s.modules.invoice.filterAllFlows}>{s.modules.invoice.filterAllFlows}</ListBoxItem>
             <ListBoxItem id="received" textValue={s.modules.invoice.filterReceivedInvoices}>{s.modules.invoice.filterReceivedInvoices}</ListBoxItem>
@@ -261,35 +226,13 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
           onClearAllFilters={handleClearAllFilters}
           filterContent={filterContent}
         >
-          <Table aria-label={s.modules.invoice.tableAria}>
-            <Table.ScrollContainer>
-              <Table.Content>
-                <Table.Header>
-                  {/* react-aria richiede almeno una colonna isRowHeader (nome accessibile delle righe) */}
-                  {columns.map((col, idx) => (
-                    <Table.Column key={col.key} id={col.key} isRowHeader={idx === 0} className="text-xs font-bold">{col.header}</Table.Column>
-                  ))}
-                </Table.Header>
-                <Table.Body
-                  renderEmptyState={() => (
-                    <div className="text-center py-8 text-slate-400 text-xs">
-                      {s.modules.invoice.emptyState}
-                    </div>
-                  )}
-                >
-                  {filteredInvoices.map(item => (
-                    <Table.Row key={item.invoiceId} id={item.invoiceId} className="border-b border-divider/40 last:border-0 hover:bg-default-50/50 transition-colors">
-                      {columns.map(col => (
-                        <Table.Cell key={col.key} id={`${item.invoiceId}-${col.key}`}>
-                          {col.render ? col.render(item) : String(item[col.key as keyof InvoiceItem] || "")}
-                        </Table.Cell>
-                      ))}
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
-          </Table>
+          <DataTable
+            ariaLabel={s.modules.invoice.tableAria}
+            columns={columns}
+            items={filteredInvoices}
+            getRowId={(item) => item.invoiceId}
+            emptyState={s.modules.invoice.emptyState}
+          />
         </ListView>
       </div>
     </BaseModuleLayout>

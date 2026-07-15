@@ -79,7 +79,7 @@ export function ViewSwitcher({
           <div
             role="group"
             aria-label={s.layout.views.switcher.list}
-            className="flex items-center gap-1 p-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-slate-900/50 shrink-0"
+            className="flex items-center gap-1 p-1 rounded-2xl border border-line bg-slate-100/70 dark:bg-slate-900/50 shrink-0"
           >
             {available.map(({ kind, icon: Icon }) => (
               <Tooltip key={kind} delay={300}>
@@ -93,8 +93,8 @@ export function ViewSwitcher({
                     onClick={() => setPersisted(kind)}
                     className={`rounded-xl transition-colors ${
                       activeKind === kind
-                        ? "bg-white dark:bg-slate-950 text-primary shadow-sm"
-                        : "text-slate-500 dark:text-slate-400"
+                        ? "bg-surface text-primary shadow-sm"
+                        : "text-ink-muted"
                     }`}
                   >
                     <Icon className="w-4 h-4" />

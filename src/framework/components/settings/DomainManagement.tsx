@@ -139,20 +139,20 @@ export function DomainManagement(): React.ReactElement {
   const subdomainUrl = subdomain && baseDomain ? `https://${subdomain}.${baseDomain}` : null;
 
   const inputCls =
-    "bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full";
+    "bg-surface-2 border border-line focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full";
 
   return (
     <div className="space-y-6">
       {/* --- Sottodominio white-label --- */}
       <Card className="klx-settings-card--full">
         <CardBody>
-          <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+          <div className="flex items-center gap-2 mb-6 border-b border-line pb-4">
             <Globe className="w-4 h-4 text-secondary" />
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
               {t("settings.domains.subdomainTitle")}
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-gray-400 mb-4">{t("settings.domains.subdomainDesc")}</p>
+          <p className="text-xs text-ink-muted mb-4">{t("settings.domains.subdomainDesc")}</p>
 
           <div className="flex flex-col gap-1.5 w-full">
             <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
@@ -167,7 +167,7 @@ export function DomainManagement(): React.ReactElement {
                   onChange={(e) => setSubdomainInput(e.target.value)}
                   className={`${inputCls} rounded-e-none`}
                 />
-                <span className="h-[48px] flex items-center px-3 rounded-2xl rounded-s-none border border-s-0 border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900 text-sm text-slate-500 dark:text-gray-400 whitespace-nowrap">
+                <span className="h-[48px] flex items-center px-3 rounded-2xl rounded-s-none border border-s-0 border-line bg-slate-100 dark:bg-slate-900 text-sm text-ink-muted whitespace-nowrap">
                   .{baseDomain}
                 </span>
               </div>
@@ -193,13 +193,13 @@ export function DomainManagement(): React.ReactElement {
       {/* --- Domini custom --- */}
       <Card className="klx-settings-card--full">
         <CardBody>
-          <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+          <div className="flex items-center gap-2 mb-6 border-b border-line pb-4">
             <Globe className="w-4 h-4 text-secondary" />
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
               {t("settings.domains.customTitle")}
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-gray-400 mb-4">{t("settings.domains.customDesc")}</p>
+          <p className="text-xs text-ink-muted mb-4">{t("settings.domains.customDesc")}</p>
 
           <div className="flex items-center gap-2 flex-wrap mb-5">
             <Input
@@ -232,11 +232,11 @@ export function DomainManagement(): React.ReactElement {
                 return (
                   <div
                     key={d.domainId}
-                    className="rounded-2xl border border-slate-200 dark:border-white/10 p-4 bg-white/40 dark:bg-slate-950/30"
+                    className="rounded-2xl border border-line p-4 bg-white/40 dark:bg-slate-950/30"
                   >
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm font-semibold text-slate-800 dark:text-white truncate">{d.domain}</span>
+                        <span className="text-sm font-semibold text-ink truncate">{d.domain}</span>
                         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${cls}`}>
                           {statusLabel}
                         </span>
@@ -252,12 +252,12 @@ export function DomainManagement(): React.ReactElement {
                     </div>
 
                     {d.status !== "ACTIVE" && (
-                      <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 p-3">
-                        <p className="text-[11px] text-slate-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                      <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-line p-3">
+                        <p className="text-[11px] text-ink-muted mb-2 flex items-center gap-1">
                           <RefreshCw className="w-3 h-3" />
                           {t("settings.domains.cnameHint")}
                         </p>
-                        <div className="flex items-center justify-between gap-2 font-mono text-xs bg-white dark:bg-slate-950 rounded-lg px-3 py-2 border border-slate-200 dark:border-white/10">
+                        <div className="flex items-center justify-between gap-2 font-mono text-xs bg-surface rounded-lg px-3 py-2 border border-line">
                           <span className="truncate text-slate-700 dark:text-gray-200">
                             {d.domain} &nbsp;CNAME&nbsp; {cnameTarget}
                           </span>

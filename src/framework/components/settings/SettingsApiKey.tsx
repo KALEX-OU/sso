@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
+import { apiKeyStatusResponseSchema, apiKeyGenerateResponseSchema } from "../../lib/schemas/api";
 import { Card, CardBody, Button } from "../ui";
 import { Key, Check, AlertTriangle, Copy } from "lucide-react";
 import { useI18n } from "@/locales/client";
@@ -34,17 +35,11 @@ export function SettingsApiKey() {
     if (!userId) return;
     try {
       setLoadingApiKey(true);
-      const res = await fetchAuthedClient<{
-        success: boolean;
-        hasKey: boolean;
-        keyHash?: string;
-        name?: string;
-        isActive?: boolean;
-        createdAt?: string;
-      }>(`/api/user/${userId}/apikey`);
+      // Tipo inferito dallo schema Zod (Z1): niente generic inline da tenere allineato.
+      const res = await fetchAuthedClient(`/api/user/${userId}/apikey`, undefined, { validate: (raw) => apiKeyStatusResponseSchema.parse(raw) });
       if (res.success && res.data) {
         setApiKeyData({
-          hasKey: res.data.hasKey,
+          hasKey: res.data.hasKey ?? false,
           keyHash: res.data.keyHash,
           name: res.data.name,
           isActive: res.data.isActive,
@@ -64,16 +59,11 @@ export function SettingsApiKey() {
     try {
       setLoadingApiKey(true);
       setGeneratedKey(null);
-      const res = await fetchAuthedClient<{
-        success: boolean;
-        apiKey: string;
-        keyHash: string;
-        message: string;
-      }>(`/api/user/${userId}/apikey`, {
+      const res = await fetchAuthedClient(`/api/user/${userId}/apikey`, {
         method: "POST"
-      });
+      }, { validate: (raw) => apiKeyGenerateResponseSchema.parse(raw) });
       if (res.success && res.data) {
-        setGeneratedKey(res.data.apiKey);
+        setGeneratedKey(res.data.apiKey ?? null);
         showToast(t("settings.toast.apiKeyGenerated"), "success");
         await fetchUserApiKey();
       } else {
@@ -98,10 +88,10 @@ export function SettingsApiKey() {
   return (
     <Card className="klx-settings-card--full">
       <CardBody>
-        <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+        <div className="flex items-center justify-between mb-6 border-b border-line pb-4">
           <div className="flex items-center gap-2">
             <Key className="w-4 h-4 text-secondary" />
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
               {t("settings.apikey.title")}
             </h2>
           </div>
@@ -113,7 +103,7 @@ export function SettingsApiKey() {
         </div>
 
         <div className="space-y-6">
-          <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed max-w-3xl">
+          <p className="text-xs text-ink-muted leading-relaxed max-w-3xl">
             {t("settings.apikey.desc", { brand: brand.name })}
           </p>
 
@@ -124,7 +114,7 @@ export function SettingsApiKey() {
                 <AlertTriangle className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">{t("settings.apikey.saveNowTitle")}</span>
               </div>
-              <p className="text-[11px] text-slate-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-[11px] text-ink-muted leading-relaxed">
                 {t("settings.apikey.saveNowDesc")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -163,7 +153,7 @@ export function SettingsApiKey() {
                     {apiKeyData.keyHash}
                   </code>
                 </div>
-                <div className="text-[10px] text-slate-500 dark:text-gray-400">
+                <div className="text-[10px] text-ink-muted">
                   {t("settings.apikey.generatedOn")} <span className="font-bold">{apiKeyData.createdAt ? new Date(apiKeyData.createdAt).toLocaleDateString() : "-"}</span>
                 </div>
               </div>

@@ -230,7 +230,7 @@ export function FieldRenderer({
                 onChange(val);
               }}
               onBlur={onBlur}
-              className={`bg-white/50 dark:bg-slate-950/40 border ${errors[fieldKey] ? "border-red-500 focus:border-red-500" : "border-slate-200 dark:border-white/10 focus:border-primary"} rounded-2xl px-3.5 py-2 flex items-center min-h-[80px] text-sm text-slate-900 dark:text-white outline-none w-full transition-all`}
+              className={`bg-surface-2 border ${errors[fieldKey] ? "border-red-500 focus:border-red-500" : "border-line focus:border-primary"} rounded-2xl px-3.5 py-2 flex items-center min-h-[80px] text-sm text-ink outline-none w-full transition-all`}
             />
             {errors[fieldKey] && (
               <span className="text-[10px] text-red-500 font-semibold mt-0.5">

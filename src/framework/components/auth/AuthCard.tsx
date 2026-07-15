@@ -26,7 +26,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
   contentClassName = "",
 }) => (
   <Card
-    className={`max-w-xl w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/35 backdrop-blur-2xl shadow-2xl p-1 sm:p-3 relative z-10 rounded-3xl transition-all ${className}`}
+    className={`max-w-xl w-full border border-line bg-white/70 dark:bg-slate-900/35 backdrop-blur-2xl shadow-2xl p-1 sm:p-3 relative z-10 rounded-3xl transition-all ${className}`}
   >
     <CardContent className={`p-4 ${contentClassName}`}>
       {header && <div className="text-center mb-8">{header}</div>}

@@ -62,14 +62,14 @@ export const AuthVerifyNotice: React.FC<AuthVerifyNoticeProps> = ({
 
   return (
     <div className={`flex flex-col items-center text-center ${className}`}>
-      <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-center mb-6 animate-pulse">
-        <Mail className="w-8 h-8 text-slate-800 dark:text-white" />
+      <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 border border-line rounded-2xl flex items-center justify-center mb-6 animate-pulse">
+        <Mail className="w-8 h-8 text-ink" />
       </div>
 
-      <h2 className="text-2xl font-bold mb-3 tracking-tight text-slate-900 dark:text-white">
+      <h2 className="text-2xl font-bold mb-3 tracking-tight text-ink">
         {s.auth.verify.title}
       </h2>
-      <p className="text-slate-600 dark:text-gray-300 text-sm mb-6 leading-relaxed">
+      <p className="text-ink-muted text-sm mb-6 leading-relaxed">
         {fmtUI(s.auth.verify.desc, { email })}
       </p>
 
@@ -103,7 +103,7 @@ export const AuthVerifyNotice: React.FC<AuthVerifyNoticeProps> = ({
           onClick={handleResend}
           isDisabled={resendLoading || cooldownActive}
           variant="outline"
-          className="w-full py-6 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full py-6 border border-line hover:bg-slate-100 dark:hover:bg-white/5 text-ink text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {resendLoading && (
             <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-800 dark:border-white border-t-transparent"></span>

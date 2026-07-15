@@ -15,7 +15,6 @@ import { AIDataDialog } from "@/framework/components/user/AIDataDialog";
 import { Avatar, Button, Tooltip, ScrollShadow } from "@/framework/components/ui";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
 import { useUIStrings, fmtUI } from "@/framework/lib/ui.localization";
-import * as LucideIcons from "lucide-react";
 import {
   LayoutDashboard,
   Bell,
@@ -39,11 +38,8 @@ import {
 // - `inDrawer`: variante per il Drawer mobile (sempre espansa, niente toggle collasso).
 
 // Helper per risolvere l'icona del modulo dinamicamente dal registro SSOT
-const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> => {
-  if (!iconName) return LayoutDashboard;
-  const IconComponent = LucideIcons[iconName] as React.ComponentType<{ className?: string }>;
-  return IconComponent || LayoutDashboard;
-};
+const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> =>
+  resolveLucideIcon(iconName, LayoutDashboard);
 
 export interface UserSidebarProps {
   appId: string;
@@ -379,7 +375,7 @@ export function UserSidebar({
         {!isCollapsed && (
           <div className="klx-sidebar-copyright">
             <span>{brand.copyright}</span>
-            <span className="bg-slate-100 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-mono text-[8px]">
+            <span className="bg-slate-100 dark:bg-slate-900/80 text-ink-muted px-1.5 py-0.5 rounded font-mono text-[8px]">
               v{pkg.version}
             </span>
           </div>
@@ -394,3 +390,4 @@ export function UserSidebar({
     </aside>
   );
 }
+import { resolveLucideIcon } from "../../lib/lucide-icon";

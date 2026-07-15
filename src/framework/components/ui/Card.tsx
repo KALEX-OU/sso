@@ -25,7 +25,7 @@ const CardBase: React.FC<CardProps> = (
   ({ className = "", title, description, footer, isSkeleton, tooltip, unstyled, children, ...props }) => {
     if (isSkeleton) {
       return (
-        <div className={`klx-card klx-card--skeleton p-4 border border-slate-200 dark:border-white/10 rounded-2xl flex flex-col gap-3 ${className}`}>
+        <div className={`klx-card klx-card--skeleton p-4 border border-line rounded-2xl flex flex-col gap-3 ${className}`}>
           <Skeleton className="h-6 w-1/3 rounded" />
           <Skeleton className="h-4 w-2/3 rounded" />
           <Skeleton className="h-24 w-full rounded-xl" />

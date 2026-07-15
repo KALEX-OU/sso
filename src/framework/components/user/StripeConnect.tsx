@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { fetchAuthedClient } from "../../lib/api";
+import { assignHttpUrl } from "../../lib/safe-url";
 import { stripeConnectStatusSchema, stripeUrlResponseSchema } from "../../lib/schemas";
 import { Button, Card, Badge, Skeleton, Spinner } from "../ui";
 import { useBrand } from "../providers/BrandProvider";
@@ -78,7 +79,7 @@ export function StripeConnect() {
         validate: (raw) => stripeUrlResponseSchema.parse(raw)
       });
       if (res.success && res.data?.url) {
-        window.location.href = res.data.url;
+        assignHttpUrl(res.data.url);
       } else {
         throw new Error(res.error?.message || sRef.current.dialogs.stripeConnect.errOnboardLink);
       }
@@ -117,7 +118,7 @@ export function StripeConnect() {
     return (
       <div className="w-full space-y-6">
         <Skeleton className="h-10 w-2/3 rounded-xl bg-slate-200 dark:bg-slate-800" />
-        <Card className="p-8 bg-white/70 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 space-y-6 rounded-3xl">
+        <Card className="p-8 bg-surface-raised border border-slate-200 dark:border-white/5 space-y-6 rounded-3xl">
           <Skeleton className="h-8 w-1/3 rounded-lg bg-slate-200 dark:bg-slate-800" />
           <Skeleton className="h-20 w-full rounded-2xl bg-slate-200 dark:bg-slate-800" />
           <Skeleton className="h-12 w-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
@@ -136,7 +137,7 @@ export function StripeConnect() {
           </div>
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-red-400">{s.dialogs.stripeConnect.accessDeniedTitle}</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+            <p className="text-ink-muted text-sm leading-relaxed">
               {s.dialogs.stripeConnect.accessDeniedBody}
             </p>
             <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 text-slate-500 text-xs rounded-xl">
@@ -159,7 +160,7 @@ export function StripeConnect() {
         <h1 className="text-2xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
           {s.dialogs.stripeConnect.pageTitle}
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm">
+        <p className="text-ink-muted text-sm">
           {s.dialogs.stripeConnect.pageDesc}
         </p>
       </div>
@@ -173,7 +174,7 @@ export function StripeConnect() {
 
       {/* STATO 1: Conto Connesso & Verificato */}
       {isConfigured && isOnboarded && (
-        <Card className="p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-3xl space-y-6 shadow-2xl">
+        <Card className="p-8 bg-surface-raised backdrop-blur-md border border-line rounded-3xl space-y-6 shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3.5 bg-success/10 border border-success/20 text-success rounded-2xl flex-shrink-0">
@@ -181,10 +182,10 @@ export function StripeConnect() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{s.dialogs.stripeConnect.activeTitle}</h3>
+                  <h3 className="text-lg font-bold text-ink">{s.dialogs.stripeConnect.activeTitle}</h3>
                   <Badge color="success" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-success/20 bg-success/8 text-success">{s.dialogs.stripeConnect.activeBadge}</Badge>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+                <p className="text-ink-muted text-xs mt-1">
                   {s.dialogs.stripeConnect.accountIdLabel} <code className="font-mono text-secondary font-semibold">{status?.stripeConnectAccountId}</code>
                 </p>
               </div>
@@ -225,7 +226,7 @@ export function StripeConnect() {
               <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <strong className="font-bold">{s.dialogs.stripeConnect.futureChecksTitle}</strong>
-                <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                <p className="text-ink-muted leading-relaxed">
                   {fmtUI(s.dialogs.stripeConnect.futureChecksBody, { list: eventuallyDueList.join(", ") })}
                 </p>
               </div>
@@ -236,7 +237,7 @@ export function StripeConnect() {
 
       {/* STATO 2: Conto Configurato ma Onboarding Pendente / KYC richiesto */}
       {isConfigured && !isOnboarded && (
-        <Card className="p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-3xl space-y-6 shadow-2xl">
+        <Card className="p-8 bg-surface-raised backdrop-blur-md border border-line rounded-3xl space-y-6 shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex-shrink-0">
@@ -244,10 +245,10 @@ export function StripeConnect() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{s.dialogs.stripeConnect.incompleteTitle}</h3>
+                  <h3 className="text-lg font-bold text-ink">{s.dialogs.stripeConnect.incompleteTitle}</h3>
                   <Badge color="warning" className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-amber-500/20 bg-amber-500/8 text-amber-400">{s.dialogs.stripeConnect.kycBadge}</Badge>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+                <p className="text-ink-muted text-xs mt-1">
                   {s.dialogs.stripeConnect.accountIdLabel} <code className="font-mono text-amber-400 font-semibold">{status?.stripeConnectAccountId}</code>
                 </p>
               </div>
@@ -269,13 +270,13 @@ export function StripeConnect() {
               <span>{s.dialogs.stripeConnect.kycNotice}</span>
             </div>
             {currentlyDueList.length > 0 ? (
-              <ul className="list-disc ps-5 text-slate-500 dark:text-slate-400 text-xs space-y-1.5">
+              <ul className="list-disc ps-5 text-ink-muted text-xs space-y-1.5">
                 {currentlyDueList.map((req, i) => (
                   <li key={i} className="capitalize">{req.replace(/\./g, " ").replace(/_/g, " ")}</li>
                 ))}
               </ul>
             ) : (
-              <p className="text-slate-500 dark:text-slate-400 text-xs">
+              <p className="text-ink-muted text-xs">
                 {s.dialogs.stripeConnect.kycFallback}
               </p>
             )}
@@ -285,14 +286,14 @@ export function StripeConnect() {
 
       {/* STATO 3: Non Configurata (Nessun account Connect associato) */}
       {!isConfigured && (
-        <Card className="p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-3xl space-y-6 shadow-2xl flex flex-col md:flex-row items-start gap-6">
+        <Card className="p-8 bg-surface-raised backdrop-blur-md border border-line rounded-3xl space-y-6 shadow-2xl flex flex-col md:flex-row items-start gap-6">
           <div className="p-4 bg-secondary/10 border border-secondary/20 text-secondary rounded-2xl flex-shrink-0">
             <CreditCard className="w-8 h-8" />
           </div>
           <div className="space-y-6 flex-grow">
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{s.dialogs.stripeConnect.enableTitle}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-bold text-ink">{s.dialogs.stripeConnect.enableTitle}</h3>
+              <p className="text-ink-muted text-sm leading-relaxed">
                 {fmtUI(s.dialogs.stripeConnect.enableBody, { brand: brand.name })}
               </p>
             </div>

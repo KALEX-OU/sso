@@ -107,8 +107,14 @@ export async function fetchAuthedClient<T>(
     headers.set("X-Firebase-AppCheck", appCheckToken);
   }
   
+  // Header di debug App Check SOLO in sviluppo locale (stesso guard di lib/auth.ts):
+  // se la env finisse in un build di produzione, il token non deve raggiungere i client.
   const debugToken = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN;
-  if (debugToken) {
+  const isLocalDev =
+    process.env.NODE_ENV !== "production" &&
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  if (isLocalDev && debugToken) {
     headers.set("X-Firebase-AppCheck-Debug", debugToken);
   }
 

@@ -97,7 +97,7 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
       status={
         countdown > 0 ? (
           <div className="py-2 px-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 inline-block text-xs font-bold text-secondary">
-            {s.providers.waitPrefix} <span className="text-slate-900 dark:text-white text-sm font-black mx-1">{countdown}</span> {s.providers.waitSuffix}
+            {s.providers.waitPrefix} <span className="text-ink text-sm font-black mx-1">{countdown}</span> {s.providers.waitSuffix}
           </div>
         ) : (
           <div className="py-2 px-4 rounded-xl bg-success/10 border border-success/20 inline-block text-xs font-bold text-success">
@@ -133,7 +133,7 @@ function RateLimitGuard({ onRetry, initialCountdown = 5 }: RateLimitGuardProps) 
             unstyled
             size="md"
             variant="ghost"
-            className="w-full font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+            className="w-full font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 text-ink-muted hover:text-slate-900 dark:hover:text-white cursor-pointer"
             onClick={handleGoBack}
           >
             {/* Freccia "indietro": direzionale, si specchia in RTL */}

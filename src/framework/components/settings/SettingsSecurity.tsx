@@ -3,6 +3,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
+import { deviceSessionsResponseSchema, trustedDevicesResponseSchema, type DeviceSessionData, type TrustedDeviceData } from "../../lib/schemas/api";
+import { toAuthError } from "../../lib/auth-error";
 import { Card, CardBody, Button, Input, Label } from "../ui";
 import { SettingsMfa } from "./SettingsMfa";
 import { SettingsApiKey } from "./SettingsApiKey";
@@ -29,26 +31,10 @@ import { useI18n } from "@/locales/client";
 // attivi (3.2), chiave API personale (SettingsApiKey) e danger zone GDPR (il dialog di
 // conferma eliminazione è posseduto dal wrapper Settings, aperto via onRequestAccountDeletion).
 
-// Sessione/dispositivo attivo restituito da /api/auth/sessions (3.2)
-interface DeviceSession {
-  id: string;
-  createdAt: string;
-  lastSeenAt: string;
-  userAgent: string;
-  ip: string;
-  current: boolean;
-}
-
-// Dispositivo fidato MFA restituito da /api/auth/mfa/trusted-devices (N3)
-interface TrustedDevice {
-  id: string;
-  createdAt: string;
-  lastUsedAt: string;
-  userAgent: string;
-  ip: string;
-  expiresAt: string;
-  current: boolean;
-}
+// Tipi delle risposte derivati dagli schemi Zod condivisi (Z1): niente drift
+// tra validazione runtime e tipo statico.
+type DeviceSession = DeviceSessionData;
+type TrustedDevice = TrustedDeviceData;
 
 interface SettingsSecurityProps {
   /** Avvia la challenge di riautenticazione (posseduta dal wrapper) e riesegue l'azione al successo */
@@ -117,7 +103,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
         showToast(t("settings.toast.pwdUpdated"), "success");
         void invalidateTrustedDevices(); // N3: nuova password → fiducia device azzerata
       } catch (err) {
-        const authErr = err as { code?: string };
+        const authErr = toAuthError(err);
         if (authErr.code === "auth/requires-recent-login") {
           executeWithReauthChallenge(action);
         } else {
@@ -141,7 +127,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
       showToast(t("settings.toast.pwdUpdated"), "success");
       void invalidateTrustedDevices(); // N3: nuova password → fiducia device azzerata
     } catch (err) {
-      const authErr = err as { code?: string };
+      const authErr = toAuthError(err);
       if (authErr.code === "auth/requires-recent-login" || authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential") {
         showToast(t("settings.toast.pwdCredWrong"), "error");
       } else {
@@ -156,7 +142,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
   const loadDeviceSessions = useCallback(async () => {
     setSessionsLoading(true);
     try {
-      const res = await fetchAuthedClient<{ success: boolean; sessions: DeviceSession[] }>("/api/auth/sessions", { method: "GET" });
+      const res = await fetchAuthedClient("/api/auth/sessions", { method: "GET" }, { validate: (raw) => deviceSessionsResponseSchema.parse(raw) });
       if (res.success && res.data && Array.isArray(res.data.sessions)) {
         setDeviceSessions(res.data.sessions);
       }
@@ -176,7 +162,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
   const loadTrustedDevices = useCallback(async () => {
     setTrustedLoading(true);
     try {
-      const res = await fetchAuthedClient<{ success: boolean; devices: TrustedDevice[] }>("/api/auth/mfa/trusted-devices", { method: "GET" });
+      const res = await fetchAuthedClient("/api/auth/mfa/trusted-devices", { method: "GET" }, { validate: (raw) => trustedDevicesResponseSchema.parse(raw) });
       if (res.success && res.data && Array.isArray(res.data.devices)) {
         setTrustedDevices(res.data.devices);
       }
@@ -283,9 +269,9 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
         {/* SEC 2: CAMBIO PASSWORD */}
         <Card className="klx-settings-card--full">
           <CardBody>
-            <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+            <div className="flex items-center gap-2 mb-6 border-b border-line pb-4">
               <Key className="w-4 h-4 text-secondary" />
-              <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
                 {t("settings.pwd.title")}
               </h2>
             </div>
@@ -302,7 +288,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
                     required
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full pe-10"
+                    className="bg-surface-2 border border-line focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full pe-10"
                   />
                   <button
                     type="button"
@@ -324,7 +310,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full"
+                  className="bg-surface-2 border border-line focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full"
                 />
                 {passwordStrength && (
                   <div className="space-y-1.5 mt-1">
@@ -355,7 +341,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full"
+                  className="bg-surface-2 border border-line focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full"
                 />
               </div>
 
@@ -385,7 +371,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-ink">
                 {t("settings.sessions.title")}
               </h3>
             </div>
@@ -400,7 +386,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
               </Button>
             </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+          <p className="text-xs text-ink-muted leading-relaxed mb-4">
             {t("settings.sessions.desc", { brand: brand.name })}
           </p>
           {sessionsLoading && deviceSessions.length === 0 ? (
@@ -412,10 +398,10 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
               {deviceSessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface-2 px-3.5 py-2.5"
                 >
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span className="text-xs font-bold text-ink flex items-center gap-2">
                       {describeDevice(session.userAgent)}
                       {session.current && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full">
@@ -447,12 +433,12 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-secondary" />
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-ink">
                 {s.settings.trustedTitle}
               </h3>
             </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+          <p className="text-xs text-ink-muted leading-relaxed mb-4">
             {s.settings.trustedDesc}
           </p>
           {trustedLoading && trustedDevices.length === 0 ? (
@@ -464,10 +450,10 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
               {trustedDevices.map((device) => (
                 <div
                   key={device.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface-2 px-3.5 py-2.5"
                 >
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span className="text-xs font-bold text-ink flex items-center gap-2">
                       {describeDevice(device.userAgent)}
                       {device.current && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-success/15 border border-success/30 text-success rounded-full">

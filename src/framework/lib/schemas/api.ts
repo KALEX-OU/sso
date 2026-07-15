@@ -191,3 +191,49 @@ export const organizationSettingsSchema = z.looseObject({
 });
 
 export type OrganizationSettingsData = z.infer<typeof organizationSettingsSchema>;
+
+/* ── Settings / sicurezza account (Z1 DS_FOUNDATION_HARDENING_PLAN) ──────────
+   Prima questi fetch erano "fidati" (solo tipizzati): ora ogni res.json()
+   dei settings passa da validate: → payload malformato = api/invalid-response. */
+
+export const deviceSessionSchema = z.looseObject({
+  id: z.string(),
+  createdAt: z.string(),
+  lastSeenAt: z.string(),
+  userAgent: z.string(),
+  ip: z.string(),
+  current: z.boolean()
+});
+export type DeviceSessionData = z.infer<typeof deviceSessionSchema>;
+
+export const deviceSessionsResponseSchema = apiEnvelopeSchema.extend({
+  sessions: z.array(deviceSessionSchema).optional()
+});
+
+export const trustedDeviceSchema = z.looseObject({
+  id: z.string(),
+  createdAt: z.string(),
+  lastUsedAt: z.string(),
+  userAgent: z.string(),
+  ip: z.string(),
+  expiresAt: z.string(),
+  current: z.boolean()
+});
+export type TrustedDeviceData = z.infer<typeof trustedDeviceSchema>;
+
+export const trustedDevicesResponseSchema = apiEnvelopeSchema.extend({
+  devices: z.array(trustedDeviceSchema).optional()
+});
+
+export const apiKeyStatusResponseSchema = apiEnvelopeSchema.extend({
+  hasKey: z.boolean().optional(),
+  keyHash: z.string().optional(),
+  name: z.string().optional(),
+  isActive: z.boolean().optional(),
+  createdAt: z.string().optional()
+});
+
+export const apiKeyGenerateResponseSchema = apiEnvelopeSchema.extend({
+  apiKey: z.string().optional(),
+  keyHash: z.string().optional()
+});

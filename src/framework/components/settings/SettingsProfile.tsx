@@ -193,10 +193,10 @@ export function SettingsProfile() {
       {/* Form Profilo Base */}
       <Card className="lg:col-span-2 klx-settings-card">
         <CardBody>
-          <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+          <div className="flex items-center justify-between mb-6 border-b border-line pb-4">
             <div className="flex items-center gap-2">
               <UserIcon className="w-4 h-4 text-secondary" />
-              <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
                 {t("settings.profile.personalInfo")}
               </h2>
             </div>
@@ -216,10 +216,10 @@ export function SettingsProfile() {
       <Card className="lg:col-span-1 klx-settings-card flex flex-col h-full justify-between items-center">
         <CardBody className="flex flex-col items-center justify-between h-full w-full py-2">
           <div className="flex flex-col items-center w-full space-y-5">
-            <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4 w-full">
+            <div className="flex items-center justify-between mb-6 border-b border-line pb-4 w-full">
               <div className="flex items-center gap-2">
                 <Camera className="w-4 h-4 text-secondary" />
-                <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+                <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
                   {t("settings.profile.imageTitle")}
                 </h2>
               </div>

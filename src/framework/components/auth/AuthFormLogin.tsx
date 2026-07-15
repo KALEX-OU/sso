@@ -70,12 +70,12 @@ export const AuthFormLogin: React.FC<AuthFormLoginProps> = ({
       footer={
         <>
           {onRegister && (
-            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-center text-sm text-ink-muted">
               {s.auth.noAccount}{" "}
               <button
                 type="button"
                 onClick={onRegister}
-                className="font-bold text-slate-900 dark:text-white hover:underline cursor-pointer bg-transparent border-0 outline-none"
+                className="font-bold text-ink hover:underline cursor-pointer bg-transparent border-0 outline-none"
               >
                 {s.auth.registerNow}
               </button>
@@ -113,13 +113,13 @@ export const AuthFormLogin: React.FC<AuthFormLoginProps> = ({
         <Checkbox
           isSelected={rememberMe}
           onChange={onRememberMeChange}
-          className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex items-center gap-3"
+          className="text-xs text-ink-muted select-none cursor-pointer flex items-center gap-3"
         >
           <Checkbox.Control>
             <Checkbox.Indicator />
           </Checkbox.Control>
           <Checkbox.Content>
-            <Label className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer">
+            <Label className="text-xs text-ink-muted select-none cursor-pointer">
               {s.auth.rememberMe}
             </Label>
           </Checkbox.Content>

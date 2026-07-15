@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
+import { toAuthError } from "../../lib/auth-error";
 import { useBrand } from "../providers/BrandProvider";
 import { Card, CardBody, Button } from "../ui";
 import { Shield, Check } from "lucide-react";
@@ -70,7 +71,7 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
   //    (bootstrap SSO), il cui first-factor "custom" non consente l'enrollment MFA. La reauth
   //    con EmailAuthProvider porta il first-factor a email/password e sblocca l'operazione.
   const handleMfaError = (err: unknown, retriableAction: () => Promise<void>) => {
-    const authErr = err as { code?: string; message?: string };
+    const authErr = toAuthError(err);
     if (
       authErr.code === "auth/requires-recent-login" ||
       authErr.code === "auth/unsupported-first-factor"
@@ -206,10 +207,10 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
   return (
     <Card className="klx-settings-card--full">
       <CardBody>
-        <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+        <div className="flex items-center justify-between mb-6 border-b border-line pb-4">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-secondary" />
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
               {t("settings.mfa.title")}
             </h2>
           </div>
@@ -227,7 +228,7 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
         </div>
 
         <div className="space-y-4">
-          <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
+          <p className="text-xs text-ink-muted leading-relaxed">
             {t("settings.mfa.intro")}
           </p>
 
@@ -237,12 +238,12 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
               {enrolledFactors.map((factor) => (
                 <div
                   key={factor.uid}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface-2 px-3.5 py-2.5"
                 >
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-success" />
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-800 dark:text-white">
+                      <span className="text-xs font-bold text-ink">
                         {factor.displayName || (factor.factorId === TotpMultiFactorGenerator.FACTOR_ID ? t("settings.mfa.factorAppName") : t("settings.mfa.factorGeneric"))}
                       </span>
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
@@ -296,7 +297,7 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
                   <p className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-white/90">
                     {t("settings.mfa.backupTitle")}
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-[11px] text-ink-muted mt-0.5">
                     {backupStatus && backupStatus.total > 0
                       ? t("settings.mfa.backupRemaining", { remaining: String(backupStatus.remaining), total: String(backupStatus.total) })
                       : t("settings.mfa.backupNone")}

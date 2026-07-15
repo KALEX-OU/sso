@@ -46,7 +46,7 @@ export function EmptyState({ icon, title, description, action, size = "md", clas
       <div className="space-y-0.5">
         <p className={`font-bold text-slate-700 dark:text-slate-200 ${sz.title}`}>{resolvedTitle}</p>
         {resolvedDescription && (
-          <p className={`text-slate-500 dark:text-slate-400 max-w-xs ${sz.desc}`}>{resolvedDescription}</p>
+          <p className={`text-ink-muted max-w-xs ${sz.desc}`}>{resolvedDescription}</p>
         )}
       </div>
       {action && <div className="mt-2">{action}</div>}

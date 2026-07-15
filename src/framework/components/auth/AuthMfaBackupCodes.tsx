@@ -62,7 +62,7 @@ export const AuthMfaBackupCodes: React.FC<AuthMfaBackupCodesProps> = ({
       <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 leading-relaxed">
         {s.auth.mfaBackup.warning}
       </p>
-      <div className="grid grid-cols-2 gap-1.5 font-mono text-sm text-slate-800 dark:text-white">
+      <div className="grid grid-cols-2 gap-1.5 font-mono text-sm text-ink">
         {codes.map((code) => (
           <span key={code} className="tracking-wider select-all">{code}</span>
         ))}

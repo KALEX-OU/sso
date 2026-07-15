@@ -80,9 +80,9 @@ export const AuthFormResetPassword: React.FC<AuthFormResetPasswordProps> = ({
       }
     >
       <div className="text-center mb-2">
-        <h3 className="text-md font-bold text-slate-800 dark:text-white">{s.auth.reset.title}</h3>
+        <h3 className="text-md font-bold text-ink">{s.auth.reset.title}</h3>
         {mode === "confirm" && targetEmail && (
-          <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 font-medium">
+          <p className="text-[11px] text-ink-muted mt-1 font-medium">
             {s.auth.reset.forLabel}{" "}
             <span className="text-slate-700 dark:text-slate-200 font-semibold">{targetEmail}</span>
           </p>

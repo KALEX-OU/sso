@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Input, InputOTP, Label, Modal } from "../ui";
 import { Lock, AlertTriangle } from "lucide-react";
 import { fmtUI, useUIStrings } from "../../lib/ui.localization";
@@ -47,11 +47,16 @@ export const AuthReauthDialog: React.FC<AuthReauthDialogProps> = ({
   const [code, setCode] = useState("");
   const otpFormRef = useRef<HTMLFormElement>(null);
 
-  // Reset dei campi a ogni apertura/cambio step (hook PRIMA dell'early-return).
-  useEffect(() => {
+  // Reset dei campi a ogni apertura/cambio step — pattern "adjust state during
+  // render" (niente setState negli effect: evita i cascading renders).
+  // Hook PRIMA dell'early-return.
+  const [prevKey, setPrevKey] = useState(`${isOpen}:${step}`);
+  const renderKey = `${isOpen}:${step}`;
+  if (prevKey !== renderKey) {
+    setPrevKey(renderKey);
     setPassword("");
     setCode("");
-  }, [isOpen, step]);
+  }
 
   // Montato solo quando aperto (regola a11y sui dialoghi controllati).
   if (!isOpen) return null;
@@ -82,7 +87,7 @@ export const AuthReauthDialog: React.FC<AuthReauthDialogProps> = ({
         <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
           <Modal.Dialog
             aria-label={s.auth.reauth.title}
-            className={`bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 w-full shadow-2xl klx-motion-overlay-in flex flex-col gap-4 ${className}`}
+            className={`bg-surface border border-line rounded-3xl p-6 w-full shadow-2xl klx-motion-overlay-in flex flex-col gap-4 ${className}`}
           >
             <div className="flex items-center gap-3 text-secondary">
               <Lock className="w-5 h-5" aria-hidden />
@@ -103,7 +108,7 @@ export const AuthReauthDialog: React.FC<AuthReauthDialogProps> = ({
 
             {step === "mfa" ? (
               <>
-                <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
+                <p className="text-xs text-ink-muted leading-relaxed">
                   {fmtUI(s.auth.reauth.mfaPrompt, { factor: factorHint })}
                 </p>
                 <form
@@ -145,7 +150,7 @@ export const AuthReauthDialog: React.FC<AuthReauthDialogProps> = ({
               </>
             ) : (
               <>
-                <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
+                <p className="text-xs text-ink-muted leading-relaxed">
                   {s.auth.reauth.passwordPrompt}
                 </p>
                 <form

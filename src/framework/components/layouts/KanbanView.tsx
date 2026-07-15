@@ -71,7 +71,7 @@ export function KanbanView<T>({ items, adapter, columns, renderItem, onItemMove,
             className={`flex flex-col shrink-0 w-72 rounded-3xl border transition-colors ${
               isDropTarget
                 ? "border-primary/50 bg-primary/5"
-                : "border-slate-200 dark:border-white/10 bg-slate-100/60 dark:bg-slate-900/40"
+                : "border-line bg-slate-100/60 dark:bg-slate-900/40"
             }`}
             onDragOver={draggable ? (e) => {
               e.preventDefault();
@@ -113,7 +113,7 @@ export function KanbanView<T>({ items, adapter, columns, renderItem, onItemMove,
                         e.dataTransfer.setData("text/klx-from-column", col.id);
                         e.dataTransfer.effectAllowed = "move";
                       } : undefined}
-                      className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/60 shadow-sm p-3.5 text-start ${
+                      className={`rounded-2xl border border-line bg-white dark:bg-slate-950/60 shadow-sm p-3.5 text-start ${
                         draggable ? "cursor-grab active:cursor-grabbing" : ""
                       }`}
                     >
@@ -121,11 +121,11 @@ export function KanbanView<T>({ items, adapter, columns, renderItem, onItemMove,
                         renderItem(item)
                       ) : (
                         <>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                          <p className="text-sm font-bold text-ink leading-snug">
                             {adapter.getTitle(item)}
                           </p>
                           {adapter.getSubtitle?.(item) && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            <p className="text-xs text-ink-muted mt-1">
                               {adapter.getSubtitle(item)}
                             </p>
                           )}

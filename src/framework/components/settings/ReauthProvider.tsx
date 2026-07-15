@@ -21,6 +21,7 @@ import {
   type MultiFactorResolver
 } from "firebase/auth";
 import { auth } from "../../lib/auth";
+import { toAuthError } from "../../lib/auth-error";
 import { registerReauthHandler } from "../../lib/reauth-bridge";
 import { AuthReauthDialog } from "../auth/AuthReauthDialog";
 import { useI18n } from "@/locales/client";
@@ -82,7 +83,7 @@ export function ReauthProvider({ children }: { children: React.ReactNode }) {
       await reauthenticateWithCredential(user, credential);
       finish(true); // reauth completata senza secondo fattore
     } catch (err) {
-      const authErr = err as { code?: string };
+      const authErr = toAuthError(err);
       if (authErr.code === "auth/multi-factor-auth-required") {
         try {
           const resolver = getMultiFactorResolver(auth, err as Parameters<typeof getMultiFactorResolver>[1]);

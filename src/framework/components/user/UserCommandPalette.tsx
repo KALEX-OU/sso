@@ -7,7 +7,6 @@ import { getModuleLabel } from "@/framework/lib/module-labels";
 import { useCurrentLocale } from "@/locales/client";
 import { Modal, ListBox, ListBoxItem, Kbd } from "@/framework/components/ui";
 import { useUIStrings } from "@/framework/lib/ui.localization";
-import * as LucideIcons from "lucide-react";
 import { LayoutDashboard, Search } from "lucide-react";
 
 /**
@@ -19,11 +18,8 @@ import { LayoutDashboard, Search } from "lucide-react";
  * router.push), così il componente resta testabile senza next/navigation.
  */
 
-const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> => {
-  if (!iconName) return LayoutDashboard;
-  const IconComponent = LucideIcons[iconName] as React.ComponentType<{ className?: string }>;
-  return IconComponent || LayoutDashboard;
-};
+const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> =>
+  resolveLucideIcon(iconName, LayoutDashboard);
 
 export interface UserCommandPaletteProps {
   appId: string;
@@ -72,7 +68,7 @@ export function UserCommandPalette({ appId, isOpen, onOpenChange, onNavigate }: 
       <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-start justify-center p-4 pt-[15vh]">
         {/* Container Hero = wrapper di posizionamento (default a tutta altezza): neutralizzato; il pannello è Modal.Dialog. */}
         <Modal.Container className="h-auto w-full max-w-lg flex-none p-0 sm:w-full sm:p-0">
-          <Modal.Dialog aria-label={s.layout.palette.title} className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl w-full shadow-2xl overflow-hidden klx-motion-overlay-in flex flex-col">
+          <Modal.Dialog aria-label={s.layout.palette.title} className="bg-surface border border-line rounded-3xl w-full shadow-2xl overflow-hidden klx-motion-overlay-in flex flex-col">
             {/* Ricerca */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200 dark:border-slate-900/60">
               <Search className="w-4 h-4 text-slate-400 shrink-0" />
@@ -126,3 +122,4 @@ export function UserCommandPalette({ appId, isOpen, onOpenChange, onNavigate }: 
     </Modal>
   );
 }
+import { resolveLucideIcon } from "../../lib/lucide-icon";

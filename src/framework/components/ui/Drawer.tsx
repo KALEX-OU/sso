@@ -6,6 +6,11 @@ import { Tooltip } from "./Tooltip";
 import { Skeleton } from "./Skeleton";
 
 export type DrawerProps = React.ComponentProps<typeof HeroDrawer> & {
+  /**
+   * Efficace SOLO sullo skeleton (`isSkeleton`). Il Drawer vivo non ha un nodo
+   * DOM root (il DialogTrigger react-aria non renderizza nulla): il pannello si
+   * stilizza su `Drawer.Backdrop` / `Drawer.Content` / `Drawer.Dialog`.
+   */
   className?: string;
   isSkeleton?: boolean;
   tooltip?: string;

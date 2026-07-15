@@ -6,6 +6,12 @@ import { Tooltip } from "./Tooltip";
 import { Skeleton } from "./Skeleton";
 
 export type ModalProps = React.ComponentProps<typeof HeroModal> & {
+  /**
+   * Efficace SOLO sullo skeleton (`isSkeleton`). Il Modal vivo non ha un nodo
+   * DOM root (il DialogTrigger react-aria non renderizza nulla): il pannello si
+   * stilizza su `Modal.Backdrop` / `Modal.Container` / `Modal.Dialog` (pannello
+   * = Dialog; il Container è il wrapper di posizionamento a tutta altezza).
+   */
   className?: string;
   isSkeleton?: boolean;
   tooltip?: string;

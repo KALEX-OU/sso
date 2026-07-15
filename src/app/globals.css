@@ -57,6 +57,17 @@
   /* Scrollbar minimalista (derivata da --klx-secondary) */
   --klx-scrollbar-thumb: color-mix(in srgb, var(--klx-secondary) 30%, transparent);
   --klx-scrollbar-thumb-hover: color-mix(in srgb, var(--klx-secondary) 60%, transparent);
+
+  /* TOKEN SEMANTICI light/dark (S1 DS_FOUNDATION_HARDENING_PLAN) — sostituiscono
+     le coppie `x dark:y` ripetute a mano. Il flip avviene QUI (blocco .dark più
+     sotto), così i componenti scrivono una sola classe (bg-surface, text-ink…)
+     e un brand può ridefinire anche il dark senza toccare i componenti. */
+  --klx-surface: #ffffff;                          /* pannelli (dialoghi, card piene) */
+  --klx-surface-2: rgb(255 255 255 / 0.5);         /* superfici soft/inset (righe liste) */
+  --klx-surface-raised: rgb(255 255 255 / 0.7);    /* card vetrose (con backdrop-blur) */
+  --klx-line: #e2e8f0;                             /* bordi standard (slate-200) */
+  --klx-ink: #0f172a;                              /* testo forte (slate-900) */
+  --klx-ink-muted: #64748b;                        /* testo secondario (slate-500) */
 }
 
 /* ==========================================================================
@@ -87,6 +98,15 @@
   --color-success: var(--klx-success);
   --color-warning: var(--klx-warning);
   --color-danger: var(--klx-danger);
+
+  /* Utility semantiche light/dark: bg-surface{,-2,-raised}, border-line,
+     text-ink, text-ink-muted (+ modificatori /NN via color-mix di Tailwind). */
+  --color-surface: var(--klx-surface);
+  --color-surface-2: var(--klx-surface-2);
+  --color-surface-raised: var(--klx-surface-raised);
+  --color-line: var(--klx-line);
+  --color-ink: var(--klx-ink);
+  --color-ink-muted: var(--klx-ink-muted);
 }
 
 :root {
@@ -109,6 +129,14 @@
 
   --heroui-background: var(--background);
   --heroui-foreground: var(--foreground);
+
+  /* Flip dei token semantici (vedi blocco :root) */
+  --klx-surface: #020617;                          /* slate-950 */
+  --klx-surface-2: rgb(2 6 23 / 0.4);              /* slate-950/40 */
+  --klx-surface-raised: rgb(15 23 42 / 0.4);       /* slate-900/40 */
+  --klx-line: rgb(255 255 255 / 0.1);              /* white/10 */
+  --klx-ink: #ffffff;
+  --klx-ink-muted: #94a3b8;                        /* slate-400 */
 }
 
 body {
@@ -250,7 +278,7 @@ body {
 
 .klx-sidebar-menu-item {
   @apply flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-200 relative;
-  @apply text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/5;
+  @apply text-ink-muted hover:text-primary hover:bg-primary/5;
 }
 
 .klx-sidebar-menu-item--active {
@@ -259,7 +287,7 @@ body {
 
 .klx-sidebar-menu-item-icon {
   @apply w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110;
-  @apply text-slate-500 dark:text-slate-400 group-hover:text-primary;
+  @apply text-ink-muted group-hover:text-primary;
 }
 
 .klx-sidebar-menu-item--active .klx-sidebar-menu-item-icon {
@@ -272,7 +300,7 @@ body {
 
 /* Tooltip personalizzato */
 .klx-sidebar-tooltip {
-  @apply bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-[10px] font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-900 shadow-xl;
+  @apply bg-surface text-ink text-[10px] font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-900 shadow-xl;
 }
 
 /* Footer della Sidebar */
@@ -290,7 +318,7 @@ body {
 }
 
 .klx-sidebar-action-btn {
-  @apply relative p-2 min-w-0 h-auto rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-900 transition-all cursor-pointer;
+  @apply relative p-2 min-w-0 h-auto rounded-xl text-ink-muted hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-900 transition-all cursor-pointer;
 }
 
 .klx-sidebar-action-btn--notif {
@@ -344,7 +372,7 @@ body {
 }
 
 .klx-sidebar-footer-btn {
-  @apply flex items-center justify-center p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-900 transition-all relative cursor-pointer;
+  @apply flex items-center justify-center p-2 rounded-xl text-ink-muted hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-900 transition-all relative cursor-pointer;
   @apply flex-1 gap-2 text-[10px] font-bold uppercase tracking-wider;
 }
 
@@ -389,7 +417,7 @@ body {
   @apply flex items-center justify-between;
 }
 .klx-layout-skeleton-body {
-  @apply border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-6 space-y-4 shadow-xl;
+  @apply border border-line bg-surface-raised backdrop-blur-xl rounded-3xl p-6 space-y-4 shadow-xl;
 }
 .klx-layout-skeleton-row {
   @apply flex justify-between items-center py-2.5 border-b border-slate-200/40 dark:border-white/5 last:border-0;
@@ -413,10 +441,10 @@ body {
   @apply flex items-center justify-between px-6 py-5 border-b border-slate-200/60 dark:border-slate-900/50;
 }
 .klx-detail-title {
-  @apply text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white;
+  @apply text-lg font-black uppercase tracking-tight text-ink;
 }
 .klx-detail-subtitle {
-  @apply text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium;
+  @apply text-xs text-ink-muted mt-0.5 font-medium;
 }
 .klx-detail-close-btn {
   @apply min-w-0 active:scale-95 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all;
@@ -437,7 +465,7 @@ body {
   @apply w-full;
 }
 .klx-input {
-  @apply w-full h-12 rounded-2xl px-3.5 text-sm bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 shadow-none outline-none transition-all;
+  @apply w-full h-12 rounded-2xl px-3.5 text-sm bg-surface-2 border border-line text-ink placeholder:text-slate-400 shadow-none outline-none transition-all;
 }
 .klx-input:focus,
 .klx-input[data-focused="true"] {
@@ -483,7 +511,7 @@ body {
   @apply w-full;
 }
 .klx-select-trigger {
-  @apply w-full flex items-center justify-between h-12 rounded-2xl px-3.5 text-sm font-normal bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-none outline-none transition-all cursor-pointer;
+  @apply w-full flex items-center justify-between h-12 rounded-2xl px-3.5 text-sm font-normal bg-surface-2 border border-line text-ink shadow-none outline-none transition-all cursor-pointer;
 }
 /* Valore selezionato del Select: layout riga (bandiera + nome distanziati) */
 .klx-select-trigger [data-slot="select-value"] {
@@ -497,7 +525,7 @@ body {
    La tipografia resta lo STANDARD HeroUI (popover text-sm, item eredita,
    stati focused/hovered gestiti dagli slot): nessuna forzatura di taglia. */
 .klx-select-popover {
-  @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50;
+  @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-line rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50;
 }
 
 /* Autocomplete: il root riempie il contenitore come ogni campo */
@@ -520,7 +548,7 @@ body {
 }
 /* Card strutturata: header KALEX (uppercase) sopra lo slot Hero card__title */
 .klx-card-title {
-  @apply font-bold uppercase tracking-wider text-slate-800 dark:text-white;
+  @apply font-bold uppercase tracking-wider text-ink;
 }
 .klx-card-description {
   @apply text-xs;
@@ -537,7 +565,7 @@ body {
   @apply text-sm font-semibold text-slate-700 dark:text-slate-200;
 }
 .klx-loader-submessage {
-  @apply text-xs text-slate-500 dark:text-slate-400;
+  @apply text-xs text-ink-muted;
 }
 
 /* Filter & Active Filter Chips */
@@ -568,10 +596,10 @@ body {
   @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/60 dark:border-white/10 pb-5;
 }
 .klx-listview-title {
-  @apply text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase;
+  @apply text-2xl font-black tracking-tight text-ink uppercase;
 }
 .klx-listview-desc {
-  @apply text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium;
+  @apply text-sm text-ink-muted mt-1 font-medium;
 }
 .klx-listview-actions {
   @apply flex items-center gap-2 self-start sm:self-center;
@@ -583,10 +611,10 @@ body {
   @apply w-full md:max-w-md;
 }
 .klx-listview-search-input-group {
-  @apply bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center h-[42px] transition-all focus-within:!border-primary/80 focus-within:shadow-[0_0_12px_var(--klx-glow-primary)] w-full;
+  @apply bg-surface-2 border border-line rounded-2xl px-3.5 py-2 flex items-center h-[42px] transition-all focus-within:!border-primary/80 focus-within:shadow-[0_0_12px_var(--klx-glow-primary)] w-full;
 }
 .klx-listview-search-input {
-  @apply bg-transparent border-0 outline-none w-full text-xs text-slate-900 dark:text-white placeholder:text-slate-400 font-medium;
+  @apply bg-transparent border-0 outline-none w-full text-xs text-ink placeholder:text-slate-400 font-medium;
 }
 .klx-listview-content {
   @apply w-full bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 shadow-xl;
@@ -614,7 +642,7 @@ body {
   @apply shrink-0;
 }
 .klx-toast-message {
-  @apply text-slate-800 dark:text-white text-xs font-bold leading-relaxed pe-2;
+  @apply text-ink text-xs font-bold leading-relaxed pe-2;
 }
 .klx-toast-close-btn {
   @apply ms-auto shrink-0 p-1 rounded-lg transition-colors cursor-pointer outline-none;
@@ -644,7 +672,7 @@ body {
 }
 
 .klx-btn--ghost {
-  @apply bg-transparent border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-900;
+  @apply bg-transparent border border-line text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-900;
 }
 
 .klx-btn--sm {
@@ -668,11 +696,11 @@ body {
 }
 
 .klx-settings-header-title {
-  @apply text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2;
+  @apply text-xl font-extrabold text-ink uppercase tracking-wider flex items-center gap-2;
 }
 
 .klx-settings-header-desc {
-  @apply text-slate-500 dark:text-gray-400 text-xs mt-1;
+  @apply text-ink-muted text-xs mt-1;
 }
 
 .klx-settings-grid {
@@ -680,15 +708,15 @@ body {
 }
 
 .klx-settings-card {
-  @apply border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-6;
+  @apply border border-line bg-surface-raised backdrop-blur-xl shadow-xl rounded-3xl p-6;
 }
 
 .klx-settings-card--full {
-  @apply border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-8;
+  @apply border border-line bg-surface-raised backdrop-blur-xl shadow-xl rounded-3xl p-8;
 }
 
 .klx-settings-card--danger {
-  @apply border border-danger/20 dark:border-danger/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-8;
+  @apply border border-danger/20 dark:border-danger/10 bg-surface-raised backdrop-blur-xl shadow-xl rounded-3xl p-8;
 }
 
 .klx-settings-profile-avatar-wrapper {
@@ -704,7 +732,7 @@ body {
 }
 
 .klx-settings-profile-name {
-  @apply text-lg font-bold text-slate-900 dark:text-white mt-4;
+  @apply text-lg font-bold text-ink mt-4;
 }
 
 .klx-settings-profile-email {
@@ -734,7 +762,7 @@ body {
 }
 
 .klx-settings-tab-trigger {
-  @apply px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-wider rounded-xl cursor-pointer outline-none transition-all duration-300 border-none select-none text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 data-[selected=true]:bg-secondary data-[selected=true]:text-white data-[selected=true]:shadow-lg;
+  @apply px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-wider rounded-xl cursor-pointer outline-none transition-all duration-300 border-none select-none text-ink-muted hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 data-[selected=true]:bg-secondary data-[selected=true]:text-white data-[selected=true]:shadow-lg;
 }
 
 /* Scrollbar Minimalista da 4px */

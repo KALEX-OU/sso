@@ -80,7 +80,7 @@ export function MfaEnrollmentGate({ children }: { children: React.ReactNode }): 
             <ShieldAlert className="w-7 h-7 shrink-0" />
             <h2 className="text-base font-extrabold uppercase tracking-wider">{t("mfaGate.title")}</h2>
           </div>
-          <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">{t("mfaGate.desc")}</p>
+          <p className="text-sm text-ink-muted leading-relaxed">{t("mfaGate.desc")}</p>
 
           {step === "intro" && (
             <Button variant="primary" isDisabled={busy} onClick={() => void startEnrollment()} className="w-full">
@@ -90,14 +90,14 @@ export function MfaEnrollmentGate({ children }: { children: React.ReactNode }): 
 
           {step === "qr" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500 dark:text-gray-400">{t("mfaGate.scan")}</p>
+              <p className="text-xs text-ink-muted">{t("mfaGate.scan")}</p>
               {qrUri && (
                 <div className="flex justify-center bg-white p-3 rounded-2xl">
                   <QRCode value={qrUri} size={160} />
                 </div>
               )}
               {secret && (
-                <div className="flex items-center justify-between gap-2 font-mono text-xs bg-slate-100 dark:bg-slate-900 rounded-lg px-3 py-2 border border-slate-200 dark:border-white/10">
+                <div className="flex items-center justify-between gap-2 font-mono text-xs bg-slate-100 dark:bg-slate-900 rounded-lg px-3 py-2 border border-line">
                   <span className="truncate">{secret.secretKey}</span>
                   <button
                     type="button"
@@ -118,7 +118,7 @@ export function MfaEnrollmentGate({ children }: { children: React.ReactNode }): 
                 value={code}
                 placeholder={t("mfaGate.codePlaceholder")}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 h-[48px] text-center tracking-[0.4em] text-lg font-bold w-full outline-none"
+                className="bg-surface-2 border border-line rounded-2xl px-3.5 h-[48px] text-center tracking-[0.4em] text-lg font-bold w-full outline-none"
               />
               <Button
                 variant="primary"

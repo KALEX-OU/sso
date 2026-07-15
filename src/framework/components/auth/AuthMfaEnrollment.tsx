@@ -64,7 +64,7 @@ export const AuthMfaEnrollment: React.FC<AuthMfaEnrollmentProps> = ({
       <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
         {s.auth.mfaEnroll.title}
       </Label>
-      <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">
+      <p className="text-[11px] text-ink-muted leading-relaxed">
         {s.auth.mfaEnroll.instructions}
       </p>
 
@@ -84,8 +84,8 @@ export const AuthMfaEnrollment: React.FC<AuthMfaEnrollmentProps> = ({
       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 self-start">
         {s.auth.mfaEnroll.manualKeyLabel}
       </span>
-      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5">
-        <code className="text-xs font-mono tracking-wider text-slate-800 dark:text-white break-all flex-1">
+      <div className="flex items-center gap-2 rounded-2xl border border-line bg-surface-2 px-3.5 py-2.5">
+        <code className="text-xs font-mono tracking-wider text-ink break-all flex-1">
           {secretKey}
         </code>
         <button

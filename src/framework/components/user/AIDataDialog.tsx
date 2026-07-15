@@ -115,7 +115,7 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
       <Modal.Backdrop isDismissable={true} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
         {/* Container Hero = wrapper di posizionamento (default a tutta altezza): neutralizzato; il pannello è Modal.Dialog. */}
         <Modal.Container className="h-auto w-full max-w-2xl flex-none p-0 sm:w-full sm:p-0">
-          <Modal.Dialog className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <Modal.Dialog className="bg-surface border border-line rounded-3xl p-6 w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-900/60 pb-3">
               <div className="flex items-center gap-3">
@@ -133,7 +133,7 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
               </div>
               <button
                 onClick={onClose}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 text-ink-muted hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

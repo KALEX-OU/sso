@@ -3,6 +3,7 @@ import { CreditCard, UserCheck, ExternalLink, AlertCircle } from "lucide-react";
 import { BaseModuleLayout } from "../layouts/BaseModuleLayout";
 import { useBrand } from "../providers/BrandProvider";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
+import { assignHttpUrl } from "../../lib/safe-url";
 import {
   apiErrorMessage,
   subscriptionListResponseSchema,
@@ -216,7 +217,7 @@ export const SubscriptionModule: React.FC<SubscriptionModuleProps> = ({
       }
       const data = parsed.data;
       if (data.success && data.url) {
-        window.location.assign(data.url);
+        assignHttpUrl(data.url);
       } else {
         showToast(s.modules.subscription.errPortalOpen, "error");
       }

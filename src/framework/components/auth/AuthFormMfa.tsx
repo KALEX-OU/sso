@@ -68,8 +68,8 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
       {s.auth.mfa.backupCta}
     </button>
   ) : (
-    <div className="flex flex-col gap-2 mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 p-3">
-      <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">{s.auth.mfa.backupPrompt}</p>
+    <div className="flex flex-col gap-2 mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-line p-3">
+      <p className="text-[11px] text-ink-muted leading-relaxed">{s.auth.mfa.backupPrompt}</p>
       <div className="flex gap-2 items-center">
         <Input
           type="text"
@@ -126,8 +126,8 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
       }
     >
       <div className="text-center mb-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1">{s.auth.mfa.title}</h3>
-        <p className="text-xs text-slate-500 dark:text-gray-400">
+        <h3 className="text-sm font-bold text-ink mb-1">{s.auth.mfa.title}</h3>
+        <p className="text-xs text-ink-muted">
           {fmtUI(s.auth.mfa.totpPrompt, { factor: factorHint })}
         </p>
       </div>
@@ -168,13 +168,13 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
           <Checkbox
             isSelected={trustDevice}
             onChange={onTrustDeviceChange}
-            className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex flex-row items-center gap-3"
+            className="text-xs text-ink-muted select-none cursor-pointer flex flex-row items-center gap-3"
           >
             <Checkbox.Control>
               <Checkbox.Indicator />
             </Checkbox.Control>
             <Checkbox.Content>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer">
+              <Label className="text-xs text-ink-muted select-none cursor-pointer">
                 {s.auth.mfa.trustDevice}
               </Label>
             </Checkbox.Content>

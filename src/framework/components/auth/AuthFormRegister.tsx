@@ -242,7 +242,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
         onValueChange={address.onChange}
       />
       {address.predictions.length > 0 && (
-        <div className="absolute top-full mt-1 start-0 end-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 max-h-[180px] overflow-y-auto">
+        <div className="absolute top-full mt-1 start-0 end-0 bg-white dark:bg-slate-900 border border-line rounded-2xl shadow-2xl p-1.5 z-50 max-h-[180px] overflow-y-auto">
           <ul className="outline-none space-y-0.5">
             {address.predictions.map((pred) => (
               <li
@@ -279,7 +279,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
             onClick={() => onTypeChange(type)}
             className={`py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all capitalize cursor-pointer ${
               regType === type
-                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/5"
+                ? "bg-white dark:bg-slate-900 text-ink shadow-sm border border-slate-200/50 dark:border-white/5"
                 : "text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white"
             }`}
           >
@@ -363,7 +363,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
       ) : (
         /* Organizzazione: box dettagli con VIES */
         <div className="space-y-4 p-4 bg-slate-100/50 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 rounded-2xl mt-4 animate-in fade-in duration-300">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
             {r.orgDetails} ({typeLabel[regType]})
           </h3>
 
@@ -501,13 +501,13 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
           <Checkbox
             isSelected={acceptTerms}
             onChange={onAcceptTermsChange}
-            className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer flex flex-row items-center gap-3"
+            className="text-xs text-ink-muted select-none cursor-pointer flex flex-row items-center gap-3"
           >
             <Checkbox.Control>
               <Checkbox.Indicator />
             </Checkbox.Control>
             <Checkbox.Content>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 select-none cursor-pointer">
+              <Label className="text-xs text-ink-muted select-none cursor-pointer">
                 {privacyHref && termsHref ? (
                   <>
                     {r.acceptTermsPrefix}{" "}

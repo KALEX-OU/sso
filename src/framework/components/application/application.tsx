@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Cloud, CheckCircle2, ArrowRight, UserCheck } from "lucide-react";
-import * as LucideIcons from "lucide-react";
 import { Card, Button, Chip, Spinner } from "../ui";
 import { useAuth } from "@/framework/lib/auth";
 import { stripeUrlResponseSchema } from "@/framework/lib/schemas";
@@ -14,6 +13,8 @@ import {
 } from "@/framework/lib/schemas/api";
 import { useBrand } from "../providers/BrandProvider";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
+import { resolveLucideIcon } from "../../lib/lucide-icon";
+import { assignHttpUrl } from "../../lib/safe-url";
 import type { LucideIconName } from "@/framework/lib/resources.config";
 
 interface ApplicationModuleProps {
@@ -23,11 +24,8 @@ interface ApplicationModuleProps {
 }
 
 // Risolve l'icona dell'app dal catalogo del brand attivo (fallback: Cloud)
-const getAppIcon = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> => {
-  if (!iconName) return Cloud;
-  const IconComponent = LucideIcons[iconName] as React.ComponentType<{ className?: string }>;
-  return IconComponent || Cloud;
-};
+const getAppIcon = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> =>
+  resolveLucideIcon(iconName, Cloud);
 
 export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
   organizationId,
@@ -122,7 +120,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
       }
       const data = parsed.data;
       if (data.success && data.url) {
-        window.location.assign(data.url);
+        assignHttpUrl(data.url);
       } else {
         showToast(data.error?.message || s.modules.application.errCheckoutSession, "error");
         setActionLoading(null);
@@ -154,7 +152,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
       }
       const data = parsed.data;
       if (data.success && data.url) {
-        window.location.assign(data.url);
+        assignHttpUrl(data.url);
       } else {
         showToast(data.error?.message || s.modules.application.errBillingPortal, "error");
         setActionLoading(null);
@@ -217,14 +215,14 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h2 className="text-2xl font-black tracking-tight text-slate-800 dark:text-white">{fmtUI(s.modules.application.title, { brand: brand.name })}</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <h2 className="text-2xl font-black tracking-tight text-ink">{fmtUI(s.modules.application.title, { brand: brand.name })}</h2>
+        <p className="text-xs text-ink-muted mt-1">
           {s.modules.application.description}
         </p>
       </div>
 
       {products.length === 0 ? (
-        <div className="p-8 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-slate-500 dark:text-slate-400 text-sm">
+        <div className="p-8 text-center border border-dashed border-line rounded-2xl text-ink-muted text-sm">
           {s.modules.application.emptyState}
         </div>
       ) : (
@@ -278,8 +276,8 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
 
                   {/* Info Principali */}
                   <div className="flex-1 flex flex-col gap-2">
-                    <h3 className="font-bold text-base text-slate-800 dark:text-white">{product.name}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3">
+                    <h3 className="font-bold text-base text-ink">{product.name}</h3>
+                    <p className="text-xs text-ink-muted line-clamp-3">
                       {product.description || s.modules.application.noDescription}
                     </p>
                     
@@ -302,7 +300,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
                         </>
                       ) : (
                         <div className="flex flex-col">
-                          <span className="font-extrabold text-sm text-slate-800 dark:text-white">
+                          <span className="font-extrabold text-sm text-ink">
                             {priceFormatted}
                           </span>
                           <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
@@ -317,7 +315,7 @@ export const ApplicationModule: React.FC<ApplicationModuleProps> = ({
                   {isSubscribed && (
                     <div className="border-t border-slate-200/40 dark:border-slate-800/40 pt-3 flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <span className="text-xs text-ink-muted flex items-center gap-1.5">
                           <UserCheck className="w-3.5 h-3.5 text-secondary" />
                           {s.modules.application.onboardingLabel}
                         </span>

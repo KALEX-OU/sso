@@ -113,7 +113,7 @@ export function GanttView<T>({
   const gridTemplate = { gridTemplateColumns: `repeat(${totalDays}, ${ZOOM_DAY_WIDTH[zoom]})` };
 
   return (
-    <div className={`rounded-3xl border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-slate-900/40 p-4 ${className}`}>
+    <div className={`rounded-3xl border border-line bg-white/60 dark:bg-slate-900/40 p-4 ${className}`}>
       {/* Toolbar zoom */}
       <div className="flex items-center justify-end gap-1.5 mb-3">
         {(["week", "month"] as const).map((z) => (
@@ -133,7 +133,7 @@ export function GanttView<T>({
       <div className="overflow-x-auto klx-scrollbar-minimalist">
         <div className="min-w-max">
           {/* Intestazione timeline */}
-          <div className="grid border-b border-slate-200 dark:border-white/10 pb-1.5 mb-2" style={gridTemplate}>
+          <div className="grid border-b border-line pb-1.5 mb-2" style={gridTemplate}>
             {Array.from({ length: totalDays }, (_, i) => {
               const day = new Date(rangeStart.getTime() + i * DAY_MS);
               const isLabel = i % headerStep === 0;

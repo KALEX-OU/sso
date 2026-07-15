@@ -15,7 +15,13 @@ import type { AppCheck } from "firebase/app-check";
 import type { CustomClaims } from "./types.js";
 import { decodeClaims } from "./claims-codec";
 
-// Configurazione pubblica predefinita per Firebase Client SDK
+// Configurazione pubblica per Firebase Client SDK. Il fallback hardcoded punta a
+// kalex-dev ed è consentito SOLO fuori produzione: un build prod senza le env
+// NEXT_PUBLIC_FIREBASE_* deve FALLIRE subito (fail-loud, come la site key App
+// Check più sotto), mai puntare silenziosamente all'ambiente di sviluppo.
+if (process.env.NODE_ENV === "production" && (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID)) {
+  throw new Error("[Auth] Config Firebase mancante in produzione: NEXT_PUBLIC_FIREBASE_API_KEY / NEXT_PUBLIC_FIREBASE_PROJECT_ID sono obbligatorie (il fallback kalex-dev è solo per lo sviluppo).");
+}
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAVJIh68g3ESxvd_0s2OhxixResOLq9wf4",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "kalex-dev.firebaseapp.com",

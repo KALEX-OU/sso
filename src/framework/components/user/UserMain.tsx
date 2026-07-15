@@ -48,9 +48,9 @@ const UserPageHeader: React.FC<UserPageHeaderProps> = ({ title, description, bre
     )}
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">{title}</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink">{title}</h1>
         {description && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
+          <p className="text-sm text-ink-muted">{description}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2.5 shrink-0">{actions}</div>}
@@ -104,8 +104,8 @@ class ContentErrorBoundary extends React.Component<ContentErrorBoundaryProps, Co
             <AlertCircle className="w-8 h-8" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{this.props.title}</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">{this.props.body}</p>
+            <h2 className="text-lg font-bold text-ink">{this.props.title}</h2>
+            <p className="text-sm text-ink-muted max-w-sm">{this.props.body}</p>
           </div>
           <Button variant="outline" onClick={() => this.setState({ hasError: false })} className="rounded-2xl">
             {this.props.retryLabel}
@@ -155,7 +155,7 @@ const UserMainBase: React.FC<UserMainProps> = ({
             variant="ghost"
             onClick={onOpenMobileNav}
             aria-label={s.layout.openMenu}
-            className="rounded-xl border border-slate-200 dark:border-white/10"
+            className="rounded-xl border border-line"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -164,13 +164,13 @@ const UserMainBase: React.FC<UserMainProps> = ({
 
       {/* Banner di errore globale */}
       {error && (
-        <div className="bg-danger/15 border border-danger/40 text-slate-900 dark:text-white rounded-2xl p-4 text-xs font-bold shadow-xl flex items-center gap-3">
+        <div className="bg-danger/15 border border-danger/40 text-ink rounded-2xl p-4 text-xs font-bold shadow-xl flex items-center gap-3">
           <AlertCircle className="w-4 h-4 text-danger shrink-0" />
           <span className="flex-1">{error}</span>
           {onErrorDismiss && (
             <button
               onClick={onErrorDismiss}
-              className="ms-auto p-1 rounded-lg hover:bg-slate-900/10 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              className="ms-auto p-1 rounded-lg hover:bg-slate-900/10 dark:hover:bg-white/10 text-ink-muted hover:text-slate-900 dark:hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

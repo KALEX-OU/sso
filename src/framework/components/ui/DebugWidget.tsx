@@ -71,7 +71,7 @@ export function DebugWidget() {
       {/* Finestra di debug */}
       <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
         <ModalBackdrop isDismissable={true} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <ModalContainer className="dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <ModalContainer className="dark:bg-slate-950 border border-line rounded-3xl p-6 max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <ModalDialog className="flex flex-col h-full overflow-hidden">
               
               <ModalHeader className="flex items-center gap-2 border-b border-white/5 pb-4">
