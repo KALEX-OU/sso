@@ -51,8 +51,8 @@ const CardBase: React.FC<CardProps> = (
       >
         {title || description ? (
           <HeroCardHeader className="klx-card-header flex flex-col items-start gap-1 p-5 border-b border-slate-200/60 dark:border-slate-900/60">
-            {title && <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">{title}</h3>}
-            {description && <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>}
+            {title && <HeroCard.Title className="klx-card-title">{title}</HeroCard.Title>}
+            {description && <HeroCard.Description className="klx-card-description">{description}</HeroCard.Description>}
           </HeroCardHeader>
         ) : null}
 

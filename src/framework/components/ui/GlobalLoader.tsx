@@ -33,10 +33,10 @@ export function GlobalLoader({ message, subMessage, fullScreen = true, size = "m
     <div className="flex flex-col items-center justify-center gap-4 text-center">
       <Loader2 className={`${spinnerSize} text-primary animate-spin`} aria-hidden />
       {message && (
-        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-xs px-4">{message}</p>
+        <p className="klx-loader-message max-w-xs px-4">{message}</p>
       )}
       {subMessage && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs px-4">{subMessage}</p>
+        <p className="klx-loader-submessage max-w-xs px-4">{subMessage}</p>
       )}
     </div>
   );

@@ -152,7 +152,7 @@ const SelectComponent = React.forwardRef<React.ElementRef<typeof HeroSelect>, Se
         <div className="w-full relative">
           {selectWithTooltip}
         </div>
-        {error && <span className="text-[10px] text-danger font-semibold mt-0.5">{error}</span>}
+        {error && <span className="klx-field-error">{error}</span>}
       </div>
     );
   }

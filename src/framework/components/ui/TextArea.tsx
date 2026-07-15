@@ -86,8 +86,8 @@ const TextAreaBase = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           {textAreaWithTooltip}
         </div>
 
-        {description && <Description className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{description}</Description>}
-        {error && <FieldError className="text-[10px] text-danger font-semibold mt-0.5">{error}</FieldError>}
+        {description && <Description className="mt-0.5">{description}</Description>}
+        {error && <FieldError className="mt-0.5">{error}</FieldError>}
       </TextField>
     );
   }

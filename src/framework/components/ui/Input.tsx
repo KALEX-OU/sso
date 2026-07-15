@@ -102,8 +102,8 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
           {suffix && <span className="absolute end-3.5 flex items-center text-slate-400 dark:text-slate-500">{suffix}</span>}
         </div>
 
-        {description && <Description className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{description}</Description>}
-        {error && <FieldError className="text-[10px] text-red-500 font-semibold mt-0.5">{error}</FieldError>}
+        {description && <Description className="mt-0.5">{description}</Description>}
+        {error && <FieldError className="mt-0.5">{error}</FieldError>}
       </TextField>
     );
   }
