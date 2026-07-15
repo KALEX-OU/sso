@@ -3,11 +3,12 @@
 import React from "react";
 import { KeyRound } from "lucide-react";
 import { Input } from "../ui";
-import { AuthSubmitButton } from "./AuthSubmitButton";
+import { AuthForm } from "./AuthForm";
 import { fmtUI, useUIStrings } from "../../lib/ui.localization";
 
 /**
  * Step MFA del login (challenge TOTP) — card DS `auth/AuthFormMfa`.
+ * Costruito sulla BASE `AuthForm` (CTA/footer comuni alla famiglia).
  *
  * NON è una route: il MultiFactorResolver Firebase vive in memoria JS, quindi
  * questo componente è renderizzato condizionalmente dentro `/auth/login`.
@@ -53,8 +54,71 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
 }) => {
   const s = useUIStrings();
 
+  const backupSection = !showBackup ? (
+    <button
+      type="button"
+      onClick={() => onToggleBackup(true)}
+      className="w-full text-center text-[11px] font-semibold text-slate-400 hover:text-secondary dark:hover:text-secondary underline mt-2 cursor-pointer bg-transparent border-0 outline-none block"
+    >
+      {s.auth.mfa.backupCta}
+    </button>
+  ) : (
+    <div className="flex flex-col gap-2 mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 p-3">
+      <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">{s.auth.mfa.backupPrompt}</p>
+      <div className="flex gap-2 items-center">
+        <Input
+          type="text"
+          name="backupCode"
+          aria-label={s.auth.mfa.backupCta}
+          placeholder="XXXXX-XXXXX"
+          className="text-center tracking-wider font-mono"
+          value={backupCode}
+          onValueChange={onBackupCodeChange}
+        />
+        <button
+          type="button"
+          onClick={onBackupSubmit}
+          disabled={backupLoading || !backupCode.trim()}
+          className="px-4 h-12 shrink-0 font-bold bg-slate-800 dark:bg-white/10 text-white rounded-xl cursor-pointer whitespace-nowrap text-sm disabled:opacity-50 disabled:cursor-not-allowed border-0"
+        >
+          {s.auth.mfa.backupSubmit}
+        </button>
+      </div>
+      {backupMessage && (
+        <p className={`text-[11px] font-semibold ${backupMessage.type === "ok" ? "text-success" : "text-danger"}`}>
+          {backupMessage.text}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => onToggleBackup(false)}
+        className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-500 self-start bg-transparent border-0 cursor-pointer outline-none"
+      >
+        {s.auth.mfa.backupCancel}
+      </button>
+    </div>
+  );
+
   return (
-    <form onSubmit={onSubmit} className={`space-y-5 ${className}`}>
+    <AuthForm
+      onSubmit={onSubmit}
+      submitLabel={s.auth.mfa.submit}
+      loading={loading}
+      gradientClassName={gradientClassName}
+      className={className}
+      footer={
+        <>
+          {backupSection}
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full text-center text-xs font-semibold text-secondary hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
+          >
+            {s.auth.backToLogin}
+          </button>
+        </>
+      }
+    >
       <div className="text-center mb-4">
         <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1">{s.auth.mfa.title}</h3>
         <p className="text-xs text-slate-500 dark:text-gray-400">
@@ -75,64 +139,7 @@ export const AuthFormMfa: React.FC<AuthFormMfaProps> = ({
         onValueChange={onCodeChange}
       />
 
-      <AuthSubmitButton loading={loading} gradientClassName={gradientClassName}>
-        {s.auth.mfa.submit}
-      </AuthSubmitButton>
-
-      {/* Recovery con codice di backup: degrada l'account a password-only lato server */}
-      {!showBackup ? (
-        <button
-          type="button"
-          onClick={() => onToggleBackup(true)}
-          className="w-full text-center text-[11px] font-semibold text-slate-400 hover:text-secondary dark:hover:text-secondary underline mt-2 cursor-pointer bg-transparent border-0 outline-none block"
-        >
-          {s.auth.mfa.backupCta}
-        </button>
-      ) : (
-        <div className="flex flex-col gap-2 mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 p-3">
-          <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">{s.auth.mfa.backupPrompt}</p>
-          <div className="flex gap-2 items-center">
-            <Input
-              type="text"
-              name="backupCode"
-              aria-label={s.auth.mfa.backupCta}
-              placeholder="XXXXX-XXXXX"
-              className="text-center tracking-wider font-mono"
-              value={backupCode}
-              onValueChange={onBackupCodeChange}
-            />
-            <button
-              type="button"
-              onClick={onBackupSubmit}
-              disabled={backupLoading || !backupCode.trim()}
-              className="px-4 h-12 shrink-0 font-bold bg-slate-800 dark:bg-white/10 text-white rounded-xl cursor-pointer whitespace-nowrap text-sm disabled:opacity-50 disabled:cursor-not-allowed border-0"
-            >
-              {s.auth.mfa.backupSubmit}
-            </button>
-          </div>
-          {backupMessage && (
-            <p className={`text-[11px] font-semibold ${backupMessage.type === "ok" ? "text-success" : "text-danger"}`}>
-              {backupMessage.text}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => onToggleBackup(false)}
-            className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-500 self-start bg-transparent border-0 cursor-pointer outline-none"
-          >
-            {s.auth.mfa.backupCancel}
-          </button>
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={onBack}
-        className="w-full text-center text-xs font-semibold text-secondary hover:underline mt-4 cursor-pointer bg-transparent border-0 outline-none block"
-      >
-        {s.auth.backToLogin}
-      </button>
-    </form>
+    </AuthForm>
   );
 };
 

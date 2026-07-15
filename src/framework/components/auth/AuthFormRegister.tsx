@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui";
-import { AuthSubmitButton } from "./AuthSubmitButton";
+import { AuthForm } from "./AuthForm";
 import { useUIStrings } from "../../lib/ui.localization";
 
 /**
@@ -258,7 +258,15 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
   );
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className={`space-y-5 ${className}`}>
+    <AuthForm
+      onSubmit={onSubmit}
+      submitLabel={r.register}
+      loading={loading}
+      canSubmit={canSubmit}
+      gradientClassName={gradientClassName}
+      formRef={formRef}
+      className={className}
+    >
       {/* Tipo di account */}
       <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 dark:bg-slate-950/50 rounded-2xl border border-slate-200/50 dark:border-white/5 mb-2">
         {(["personal", "business", "government", "education"] as const).map((type) => (
@@ -507,10 +515,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
         )}
       </div>
 
-      <AuthSubmitButton loading={loading} disabled={!canSubmit} gradientClassName={gradientClassName}>
-        {r.register}
-      </AuthSubmitButton>
-    </form>
+    </AuthForm>
   );
 };
 

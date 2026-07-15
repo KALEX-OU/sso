@@ -26,7 +26,7 @@ import {
 import { useForm, SubmitHandler, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GlobalLoader } from "@/framework/components/ui";
-import { AuthForm } from "@/framework/components/auth/AuthForm";
+import { AuthFormLogin } from "@/framework/components/auth/AuthFormLogin";
 import { AuthFormMfa } from "@/framework/components/auth/AuthFormMfa";
 import { AuthVerifyNotice } from "@/framework/components/auth/AuthVerifyNotice";
 import { useI18n, useCurrentLocale } from "@/locales/client";
@@ -478,7 +478,7 @@ function LoginPortal() {
           gradientClassName={gradient}
         />
       ) : (
-        <AuthForm
+        <AuthFormLogin
           formRef={loginFormRef}
           email={emailLoginValue}
           password={passwordLoginValue}
