@@ -172,7 +172,10 @@ export {
 };
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const SelectIndicator = HeroSelect.Indicator;
+
 export const Select = Object.assign(SelectComponent, {
+  Indicator: HeroSelect.Indicator,
   Trigger: HeroSelectTrigger,
   Value: HeroSelectValue,
   Popover: HeroSelectPopover,

@@ -40,7 +40,19 @@ export const Tab = HeroTab;
 export const TabList = HeroTabList;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const TabsRoot = HeroTabs.Root;
+export const TabsListContainer = HeroTabs.ListContainer;
+export const TabsTab = HeroTabs.Tab;
+export const TabsIndicator = HeroTabs.Indicator;
+export const TabsSeparator = HeroTabs.Separator;
+export const TabsPanel = HeroTabs.Panel;
+
 export const Tabs = Object.assign(TabsBase, {
-  Tab,
+  Root: HeroTabs.Root,
+  ListContainer: HeroTabs.ListContainer,
+  Tab: HeroTabs.Tab,
+  Indicator: HeroTabs.Indicator,
+  Separator: HeroTabs.Separator,
+  Panel: HeroTabs.Panel,
   List: TabList
 });

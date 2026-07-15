@@ -24,7 +24,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
  * - callback: `onChange(event)` e `onValueChange(value)` vengono invocate ENTRAMBE, in quest'ordine.
  * Componente controllato: `value` ha default `""`.
  */
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       className = "",
@@ -105,4 +105,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = "Input";
+InputBase.displayName = "Input";
+
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const InputRoot = HeroInput.Root;
+
+export const Input = Object.assign(InputBase, {
+  Root: HeroInput.Root,
+});

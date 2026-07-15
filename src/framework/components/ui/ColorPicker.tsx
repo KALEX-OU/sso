@@ -40,7 +40,10 @@ export const ColorPickerTrigger = HeroColorPickerTrigger;
 export const ColorPickerPopover = HeroColorPickerPopover;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ColorPickerRoot = HeroColorPicker.Root;
+
 export const ColorPicker = Object.assign(ColorPickerBase, {
+  Root: HeroColorPicker.Root,
   Trigger: ColorPickerTrigger,
   Popover: ColorPickerPopover
 });

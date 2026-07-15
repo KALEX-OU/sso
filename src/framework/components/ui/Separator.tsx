@@ -11,7 +11,7 @@ export type SeparatorProps = React.ComponentProps<typeof HeroSeparator> & {
   tooltip?: string;
 };
 
-export const Separator: React.FC<SeparatorProps> = (
+const SeparatorBase: React.FC<SeparatorProps> = (
   ({ className = "", isSkeleton, tooltip, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-separator-skeleton ${className}`} />;
@@ -33,5 +33,13 @@ export const Separator: React.FC<SeparatorProps> = (
   }
 );
 
-Separator.displayName = "Separator";
+SeparatorBase.displayName = "Separator";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const SeparatorRoot = HeroSeparator.Root;
+
+export const Separator = Object.assign(SeparatorBase, {
+  Root: HeroSeparator.Root,
+});

@@ -11,7 +11,7 @@ export type LabelProps = React.ComponentProps<typeof HeroLabel> & {
   tooltip?: string;
 };
 
-export const Label: React.FC<LabelProps> = (
+const LabelBase: React.FC<LabelProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-label-skeleton ${className}`} />;
@@ -34,5 +34,13 @@ export const Label: React.FC<LabelProps> = (
   }
 );
 
-Label.displayName = "Label";
+LabelBase.displayName = "Label";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const LabelRoot = HeroLabel.Root;
+
+export const Label = Object.assign(LabelBase, {
+  Root: HeroLabel.Root,
+});

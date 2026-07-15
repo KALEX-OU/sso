@@ -59,7 +59,10 @@ const CheckboxComponent = React.forwardRef<React.ElementRef<typeof HeroCheckbox>
 CheckboxComponent.displayName = "Checkbox";
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const CheckboxRoot = HeroCheckbox.Root;
+
 export const Checkbox = Object.assign(CheckboxComponent, {
+  Root: HeroCheckbox.Root,
   Control: HeroCheckbox.Control,
   Indicator: HeroCheckbox.Indicator,
   Content: HeroCheckbox.Content,

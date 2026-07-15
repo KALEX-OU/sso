@@ -11,7 +11,7 @@ export type SpinnerProps = React.ComponentProps<typeof HeroSpinner> & {
   tooltip?: string;
 };
 
-export const Spinner: React.FC<SpinnerProps> = (
+const SpinnerBase: React.FC<SpinnerProps> = (
   ({ className = "", isSkeleton, tooltip, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-spinner-skeleton ${className}`} />;
@@ -33,5 +33,13 @@ export const Spinner: React.FC<SpinnerProps> = (
   }
 );
 
-Spinner.displayName = "Spinner";
+SpinnerBase.displayName = "Spinner";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const SpinnerRoot = HeroSpinner.Root;
+
+export const Spinner = Object.assign(SpinnerBase, {
+  Root: HeroSpinner.Root,
+});

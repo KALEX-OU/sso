@@ -11,7 +11,7 @@ export type KbdProps = React.ComponentProps<typeof HeroKbd> & {
   tooltip?: string;
 };
 
-export const Kbd: React.FC<KbdProps> = (
+const KbdBase: React.FC<KbdProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-kbd-skeleton ${className}`} />;
@@ -34,5 +34,17 @@ export const Kbd: React.FC<KbdProps> = (
   }
 );
 
-Kbd.displayName = "Kbd";
+KbdBase.displayName = "Kbd";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const KbdRoot = HeroKbd.Root;
+export const KbdAbbr = HeroKbd.Abbr;
+export const KbdContent = HeroKbd.Content;
+
+export const Kbd = Object.assign(KbdBase, {
+  Root: HeroKbd.Root,
+  Abbr: HeroKbd.Abbr,
+  Content: HeroKbd.Content,
+});

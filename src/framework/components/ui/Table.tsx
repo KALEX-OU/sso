@@ -46,7 +46,20 @@ const TableComponent: React.FC<TableProps> = (
 TableComponent.displayName = "Table";
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const TableCollection = HeroTable.Collection;
+export const TableColumnResizer = HeroTable.ColumnResizer;
+export const TableLoadMore = HeroTable.LoadMore;
+export const TableLoadMoreContent = HeroTable.LoadMoreContent;
+export const TableResizableContainer = HeroTable.ResizableContainer;
+export const TableRoot = HeroTable.Root;
+
 export const Table = Object.assign(TableComponent, {
+  Collection: HeroTable.Collection,
+  ColumnResizer: HeroTable.ColumnResizer,
+  LoadMore: HeroTable.LoadMore,
+  LoadMoreContent: HeroTable.LoadMoreContent,
+  ResizableContainer: HeroTable.ResizableContainer,
+  Root: HeroTable.Root,
   Body: HeroTableBody,
   Cell: HeroTableCell,
   Column: HeroTableColumn,

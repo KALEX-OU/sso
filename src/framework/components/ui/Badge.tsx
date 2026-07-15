@@ -11,7 +11,7 @@ export type BadgeProps = React.ComponentProps<typeof HeroBadge> & {
   tooltip?: string;
 };
 
-export const Badge: React.FC<BadgeProps> = (
+const BadgeBase: React.FC<BadgeProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-badge-skeleton ${className}`} />;
@@ -34,5 +34,17 @@ export const Badge: React.FC<BadgeProps> = (
   }
 );
 
-Badge.displayName = "Badge";
+BadgeBase.displayName = "Badge";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const BadgeAnchor = HeroBadge.Anchor;
+export const BadgeLabel = HeroBadge.Label;
+export const BadgeRoot = HeroBadge.Root;
+
+export const Badge = Object.assign(BadgeBase, {
+  Anchor: HeroBadge.Anchor,
+  Label: HeroBadge.Label,
+  Root: HeroBadge.Root,
+});

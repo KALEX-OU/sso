@@ -11,7 +11,7 @@ export type FieldErrorProps = React.ComponentProps<typeof HeroFieldError> & {
   tooltip?: string;
 };
 
-export const FieldError: React.FC<FieldErrorProps> = (
+const FieldErrorBase: React.FC<FieldErrorProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-field-error-skeleton ${className}`} />;
@@ -34,5 +34,13 @@ export const FieldError: React.FC<FieldErrorProps> = (
   }
 );
 
-FieldError.displayName = "FieldError";
+FieldErrorBase.displayName = "FieldError";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const FieldErrorRoot = HeroFieldError.Root;
+
+export const FieldError = Object.assign(FieldErrorBase, {
+  Root: HeroFieldError.Root,
+});

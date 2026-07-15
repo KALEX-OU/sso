@@ -18,7 +18,7 @@ export interface TextAreaProps extends Omit<React.TextareaHTMLAttributes<HTMLTex
   tooltip?: string;
 }
 
-export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
+const TextAreaBase = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   (
     {
       className = "",
@@ -93,8 +93,17 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   }
 );
 
-TextArea.displayName = "TextArea";
+TextAreaBase.displayName = "TextArea";
 
 // Nome canonico: `TextArea` (nomenclatura ufficiale HeroUI v3). `Textarea` è un alias di
 // retrocompatibilità per i consumer esistenti: nei nuovi usi importare `TextArea`.
 export { TextArea as Textarea };
+
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const TextAreaRoot = HeroTextArea.Root;
+
+export const TextArea = Object.assign(TextAreaBase, {
+  Root: HeroTextArea.Root,
+});

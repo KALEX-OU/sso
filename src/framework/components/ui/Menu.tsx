@@ -40,7 +40,12 @@ export const MenuItem = HeroMenuItem;
 export const MenuSection = HeroMenuSection;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const MenuRoot = HeroMenu.Root;
+export const MenuItemIndicator = HeroMenu.ItemIndicator;
+
 export const Menu = Object.assign(MenuBase, {
+  Root: HeroMenu.Root,
+  ItemIndicator: HeroMenu.ItemIndicator,
   Item: MenuItem,
   Section: MenuSection
 });

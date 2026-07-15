@@ -11,7 +11,7 @@ export type MeterProps = React.ComponentProps<typeof HeroMeter> & {
   tooltip?: string;
 };
 
-export const Meter: React.FC<MeterProps> = (
+const MeterBase: React.FC<MeterProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-meter-skeleton ${className}`} />;
@@ -34,5 +34,20 @@ export const Meter: React.FC<MeterProps> = (
   }
 );
 
-Meter.displayName = "Meter";
+MeterBase.displayName = "Meter";
+
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const MeterRoot = HeroMeter.Root;
+export const MeterOutput = HeroMeter.Output;
+export const MeterTrack = HeroMeter.Track;
+export const MeterFill = HeroMeter.Fill;
+
+export const Meter = Object.assign(MeterBase, {
+  Root: HeroMeter.Root,
+  Output: HeroMeter.Output,
+  Track: HeroMeter.Track,
+  Fill: HeroMeter.Fill
+});
 

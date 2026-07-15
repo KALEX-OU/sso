@@ -140,7 +140,10 @@ const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonProps>(
 ButtonBase.displayName = "Button";
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ButtonRoot = HeroButton.Root;
+
 export const Button = Object.assign(ButtonBase, {
+  Root: HeroButton.Root,
   Group: ButtonGroup
 });
 

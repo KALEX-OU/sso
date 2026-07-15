@@ -40,7 +40,14 @@ export const PopoverContent = HeroPopoverContent;
 export const PopoverRoot = HeroPopoverRoot;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const PopoverDialog = HeroPopover.Dialog;
+export const PopoverArrow = HeroPopover.Arrow;
+export const PopoverHeading = HeroPopover.Heading;
+
 export const Popover = Object.assign(PopoverBase, {
+  Dialog: HeroPopover.Dialog,
+  Arrow: HeroPopover.Arrow,
+  Heading: HeroPopover.Heading,
   Trigger: PopoverTrigger,
   Content: PopoverContent,
   Root: PopoverRoot

@@ -42,7 +42,10 @@ export const TagRemoveButton = HeroTagRemoveButton;
 export const TagGroupList = HeroTagGroupList;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const TagGroupRoot = HeroTagGroup.Root;
+
 export const TagGroup = Object.assign(TagGroupBase, {
+  Root: HeroTagGroup.Root,
   List: TagGroupList,
   Tag,
   RemoveButton: TagRemoveButton

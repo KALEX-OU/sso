@@ -39,6 +39,13 @@ ColorSwatchPickerBase.displayName = "ColorSwatchPicker";
 export const ColorSwatchPickerItem = HeroColorSwatchPickerItem;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ColorSwatchPickerRoot = HeroColorSwatchPicker.Root;
+export const ColorSwatchPickerSwatch = HeroColorSwatchPicker.Swatch;
+export const ColorSwatchPickerIndicator = HeroColorSwatchPicker.Indicator;
+
 export const ColorSwatchPicker = Object.assign(ColorSwatchPickerBase, {
+  Root: HeroColorSwatchPicker.Root,
+  Swatch: HeroColorSwatchPicker.Swatch,
+  Indicator: HeroColorSwatchPicker.Indicator,
   Item: ColorSwatchPickerItem
 });

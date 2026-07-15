@@ -44,7 +44,12 @@ const TooltipBase: React.FC<TooltipProps> = ({
 TooltipBase.displayName = "Tooltip";
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const TooltipRoot = HeroTooltip.Root;
+export const TooltipArrow = HeroTooltip.Arrow;
+
 export const Tooltip = Object.assign(TooltipBase, {
+  Root: HeroTooltip.Root,
+  Arrow: HeroTooltip.Arrow,
   Trigger: HeroTooltipTrigger,
   Content: HeroTooltipContent
 });

@@ -40,7 +40,12 @@ export const FieldsetLegend = HeroFieldsetLegend;
 export const FieldsetActions = HeroFieldsetActions;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const FieldsetRoot = HeroFieldset.Root;
+export const FieldsetGroup = HeroFieldset.Group;
+
 export const Fieldset = Object.assign(FieldsetBase, {
+  Root: HeroFieldset.Root,
+  Group: HeroFieldset.Group,
   Legend: FieldsetLegend,
   Actions: FieldsetActions
 });

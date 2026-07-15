@@ -11,7 +11,7 @@ export type CloseButtonProps = React.ComponentProps<typeof HeroCloseButton> & {
   tooltip?: string;
 };
 
-export const CloseButton: React.FC<CloseButtonProps> = (
+const CloseButtonBase: React.FC<CloseButtonProps> = (
   ({ className = "", isSkeleton, tooltip, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-close-button-skeleton ${className}`} />;
@@ -33,5 +33,13 @@ export const CloseButton: React.FC<CloseButtonProps> = (
   }
 );
 
-CloseButton.displayName = "CloseButton";
+CloseButtonBase.displayName = "CloseButton";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const CloseButtonRoot = HeroCloseButton.Root;
+
+export const CloseButton = Object.assign(CloseButtonBase, {
+  Root: HeroCloseButton.Root,
+});

@@ -11,7 +11,7 @@ export type ToggleButtonGroupProps = React.ComponentProps<typeof HeroToggleButto
   tooltip?: string;
 };
 
-export const ToggleButtonGroup: React.FC<ToggleButtonGroupProps> = (
+const ToggleButtonGroupBase: React.FC<ToggleButtonGroupProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-toggle-button-group-skeleton ${className}`} />;
@@ -34,5 +34,15 @@ export const ToggleButtonGroup: React.FC<ToggleButtonGroupProps> = (
   }
 );
 
-ToggleButtonGroup.displayName = "ToggleButtonGroup";
+ToggleButtonGroupBase.displayName = "ToggleButtonGroup";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const ToggleButtonGroupRoot = HeroToggleButtonGroup.Root;
+export const ToggleButtonGroupSeparator = HeroToggleButtonGroup.Separator;
+
+export const ToggleButtonGroup = Object.assign(ToggleButtonGroupBase, {
+  Root: HeroToggleButtonGroup.Root,
+  Separator: HeroToggleButtonGroup.Separator,
+});

@@ -11,7 +11,7 @@ export type ColorSwatchProps = React.ComponentProps<typeof HeroColorSwatch> & {
   tooltip?: string;
 };
 
-export const ColorSwatch: React.FC<ColorSwatchProps> = (
+const ColorSwatchBase: React.FC<ColorSwatchProps> = (
   ({ className = "", isSkeleton, tooltip, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-color-swatch-skeleton ${className}`} />;
@@ -33,5 +33,13 @@ export const ColorSwatch: React.FC<ColorSwatchProps> = (
   }
 );
 
-ColorSwatch.displayName = "ColorSwatch";
+ColorSwatchBase.displayName = "ColorSwatch";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const ColorSwatchRoot = HeroColorSwatch.Root;
+
+export const ColorSwatch = Object.assign(ColorSwatchBase, {
+  Root: HeroColorSwatch.Root,
+});

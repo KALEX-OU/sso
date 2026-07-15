@@ -11,7 +11,7 @@ export type InputOTPProps = React.ComponentProps<typeof HeroInputOTP> & {
   tooltip?: string;
 };
 
-export const InputOTP: React.FC<InputOTPProps> = (
+const InputOTPBase: React.FC<InputOTPProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-input-otp-skeleton ${className}`} />;
@@ -34,5 +34,19 @@ export const InputOTP: React.FC<InputOTPProps> = (
   }
 );
 
-InputOTP.displayName = "InputOTP";
+InputOTPBase.displayName = "InputOTP";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const InputOTPRoot = HeroInputOTP.Root;
+export const InputOTPGroup = HeroInputOTP.Group;
+export const InputOTPSlot = HeroInputOTP.Slot;
+export const InputOTPSeparator = HeroInputOTP.Separator;
+
+export const InputOTP = Object.assign(InputOTPBase, {
+  Root: HeroInputOTP.Root,
+  Group: HeroInputOTP.Group,
+  Slot: HeroInputOTP.Slot,
+  Separator: HeroInputOTP.Separator,
+});

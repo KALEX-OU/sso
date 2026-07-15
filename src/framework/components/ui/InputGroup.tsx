@@ -40,7 +40,14 @@ export const InputGroupPrefix = HeroInputGroupPrefix;
 export const InputGroupSuffix = HeroInputGroupSuffix;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const InputGroupRoot = HeroInputGroup.Root;
+export const InputGroupInput = HeroInputGroup.Input;
+export const InputGroupTextArea = HeroInputGroup.TextArea;
+
 export const InputGroup = Object.assign(InputGroupBase, {
+  Root: HeroInputGroup.Root,
+  Input: HeroInputGroup.Input,
+  TextArea: HeroInputGroup.TextArea,
   Prefix: InputGroupPrefix,
   Suffix: InputGroupSuffix
 });

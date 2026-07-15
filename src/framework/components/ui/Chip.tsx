@@ -11,7 +11,7 @@ export type ChipProps = React.ComponentProps<typeof HeroChip> & {
   tooltip?: string;
 };
 
-export const Chip: React.FC<ChipProps> = (
+const ChipBase: React.FC<ChipProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-chip-skeleton ${className}`} />;
@@ -34,5 +34,15 @@ export const Chip: React.FC<ChipProps> = (
   }
 );
 
-Chip.displayName = "Chip";
+ChipBase.displayName = "Chip";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const ChipRoot = HeroChip.Root;
+export const ChipLabel = HeroChip.Label;
+
+export const Chip = Object.assign(ChipBase, {
+  Root: HeroChip.Root,
+  Label: HeroChip.Label,
+});

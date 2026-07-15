@@ -39,6 +39,15 @@ RadioBase.displayName = "Radio";
 export const RadioGroup = HeroRadioGroup;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const RadioRoot = HeroRadio.Root;
+export const RadioContent = HeroRadio.Content;
+export const RadioControl = HeroRadio.Control;
+export const RadioIndicator = HeroRadio.Indicator;
+
 export const Radio = Object.assign(RadioBase, {
+  Root: HeroRadio.Root,
+  Content: HeroRadio.Content,
+  Control: HeroRadio.Control,
+  Indicator: HeroRadio.Indicator,
   Group: RadioGroup
 });

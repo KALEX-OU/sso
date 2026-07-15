@@ -11,7 +11,7 @@ export type LinkProps = React.ComponentProps<typeof HeroLink> & {
   tooltip?: string;
 };
 
-export const Link: React.FC<LinkProps> = (
+const LinkBase: React.FC<LinkProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-link-skeleton ${className}`} />;
@@ -34,5 +34,15 @@ export const Link: React.FC<LinkProps> = (
   }
 );
 
-Link.displayName = "Link";
+LinkBase.displayName = "Link";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const LinkRoot = HeroLink.Root;
+export const LinkIcon = HeroLink.Icon;
+
+export const Link = Object.assign(LinkBase, {
+  Root: HeroLink.Root,
+  Icon: HeroLink.Icon,
+});

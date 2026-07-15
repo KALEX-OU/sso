@@ -11,7 +11,7 @@ export type TimeFieldProps = React.ComponentProps<typeof HeroTimeField> & {
   tooltip?: string;
 };
 
-export const TimeField = React.forwardRef<React.ElementRef<typeof HeroTimeField>, TimeFieldProps>(
+const TimeFieldBase = React.forwardRef<React.ElementRef<typeof HeroTimeField>, TimeFieldProps>(
   ({ className = "", isSkeleton, tooltip, children, ...props }, ref) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-time-field-skeleton ${className}`} />;
@@ -35,5 +35,25 @@ export const TimeField = React.forwardRef<React.ElementRef<typeof HeroTimeField>
   }
 );
 
-TimeField.displayName = "TimeField";
+TimeFieldBase.displayName = "TimeField";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const TimeFieldRoot = HeroTimeField.Root;
+export const TimeFieldGroup = HeroTimeField.Group;
+export const TimeFieldInput = HeroTimeField.Input;
+export const TimeFieldInputContainer = HeroTimeField.InputContainer;
+export const TimeFieldSegment = HeroTimeField.Segment;
+export const TimeFieldPrefix = HeroTimeField.Prefix;
+export const TimeFieldSuffix = HeroTimeField.Suffix;
+
+export const TimeField = Object.assign(TimeFieldBase, {
+  Root: HeroTimeField.Root,
+  Group: HeroTimeField.Group,
+  Input: HeroTimeField.Input,
+  InputContainer: HeroTimeField.InputContainer,
+  Segment: HeroTimeField.Segment,
+  Prefix: HeroTimeField.Prefix,
+  Suffix: HeroTimeField.Suffix
+});

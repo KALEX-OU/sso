@@ -11,7 +11,7 @@ export type DatePickerProps = React.ComponentProps<typeof HeroDatePicker> & {
   tooltip?: string;
 };
 
-export const DatePicker: React.FC<DatePickerProps> = (
+const DatePickerBase: React.FC<DatePickerProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-date-picker-skeleton ${className}`} />;
@@ -34,5 +34,19 @@ export const DatePicker: React.FC<DatePickerProps> = (
   }
 );
 
-DatePicker.displayName = "DatePicker";
+DatePickerBase.displayName = "DatePicker";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const DatePickerRoot = HeroDatePicker.Root;
+export const DatePickerTrigger = HeroDatePicker.Trigger;
+export const DatePickerTriggerIndicator = HeroDatePicker.TriggerIndicator;
+export const DatePickerPopover = HeroDatePicker.Popover;
+
+export const DatePicker = Object.assign(DatePickerBase, {
+  Root: HeroDatePicker.Root,
+  Trigger: HeroDatePicker.Trigger,
+  TriggerIndicator: HeroDatePicker.TriggerIndicator,
+  Popover: HeroDatePicker.Popover,
+});

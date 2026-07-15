@@ -43,7 +43,10 @@ export const DisclosureIndicator = HeroDisclosureIndicator;
 export const DisclosureTrigger = HeroDisclosureTrigger;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const DisclosureRoot = HeroDisclosure.Root;
+
 export const Disclosure = Object.assign(DisclosureBase, {
+  Root: HeroDisclosure.Root,
   Body: DisclosureBody,
   Content: DisclosureContent,
   Heading: DisclosureHeading,

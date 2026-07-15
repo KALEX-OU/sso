@@ -11,7 +11,7 @@ export type DateRangePickerProps = React.ComponentProps<typeof HeroDateRangePick
   tooltip?: string;
 };
 
-export const DateRangePicker: React.FC<DateRangePickerProps> = (
+const DateRangePickerBase: React.FC<DateRangePickerProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-date-range-picker-skeleton ${className}`} />;
@@ -34,5 +34,21 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = (
   }
 );
 
-DateRangePicker.displayName = "DateRangePicker";
+DateRangePickerBase.displayName = "DateRangePicker";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const DateRangePickerRoot = HeroDateRangePicker.Root;
+export const DateRangePickerTrigger = HeroDateRangePicker.Trigger;
+export const DateRangePickerTriggerIndicator = HeroDateRangePicker.TriggerIndicator;
+export const DateRangePickerRangeSeparator = HeroDateRangePicker.RangeSeparator;
+export const DateRangePickerPopover = HeroDateRangePicker.Popover;
+
+export const DateRangePicker = Object.assign(DateRangePickerBase, {
+  Root: HeroDateRangePicker.Root,
+  Trigger: HeroDateRangePicker.Trigger,
+  TriggerIndicator: HeroDateRangePicker.TriggerIndicator,
+  RangeSeparator: HeroDateRangePicker.RangeSeparator,
+  Popover: HeroDateRangePicker.Popover,
+});

@@ -54,7 +54,10 @@ export const DrawerTrigger = HeroDrawerTrigger;
 export const DrawerRoot = HeroDrawerRoot;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const DrawerHandle = HeroDrawer.Handle;
+
 export const Drawer = Object.assign(DrawerBase, {
+  Handle: HeroDrawer.Handle,
   Backdrop: DrawerBackdrop,
   Content: DrawerContent,
   Dialog: DrawerDialog,

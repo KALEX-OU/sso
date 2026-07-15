@@ -39,6 +39,9 @@ BreadcrumbsBase.displayName = "Breadcrumbs";
 export const BreadcrumbsItem = HeroBreadcrumbsItem;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const BreadcrumbsRoot = HeroBreadcrumbs.Root;
+
 export const Breadcrumbs = Object.assign(BreadcrumbsBase, {
+  Root: HeroBreadcrumbs.Root,
   Item: BreadcrumbsItem
 });

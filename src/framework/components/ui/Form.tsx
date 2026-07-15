@@ -5,10 +5,19 @@ import { Form as HeroForm } from "@heroui/react";
 
 export type FormProps = React.ComponentProps<typeof HeroForm>;
 
-export const Form = React.forwardRef<HTMLFormElement, FormProps>(
+const FormBase = React.forwardRef<HTMLFormElement, FormProps>(
   ({ className = "", ...props }, ref) => {
     return <HeroForm ref={ref} className={`klx-form ${className}`} {...props} />;
   }
 );
 
-Form.displayName = "Form";
+FormBase.displayName = "Form";
+
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const FormRoot = HeroForm.Root;
+
+export const Form = Object.assign(FormBase, {
+  Root: HeroForm.Root,
+});

@@ -11,7 +11,7 @@ export type SurfaceProps = React.ComponentProps<typeof HeroSurface> & {
   tooltip?: string;
 };
 
-export const Surface: React.FC<SurfaceProps> = (
+const SurfaceBase: React.FC<SurfaceProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-surface-skeleton ${className}`} />;
@@ -34,5 +34,13 @@ export const Surface: React.FC<SurfaceProps> = (
   }
 );
 
-Surface.displayName = "Surface";
+SurfaceBase.displayName = "Surface";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const SurfaceRoot = HeroSurface.Root;
+
+export const Surface = Object.assign(SurfaceBase, {
+  Root: HeroSurface.Root,
+});

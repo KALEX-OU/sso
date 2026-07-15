@@ -11,7 +11,7 @@ export type ColorSliderProps = React.ComponentProps<typeof HeroColorSlider> & {
   tooltip?: string;
 };
 
-export const ColorSlider: React.FC<ColorSliderProps> = (
+const ColorSliderBase: React.FC<ColorSliderProps> = (
   ({ className = "", isSkeleton, tooltip, children, ...props }) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-color-slider-skeleton ${className}`} />;
@@ -34,5 +34,19 @@ export const ColorSlider: React.FC<ColorSliderProps> = (
   }
 );
 
-ColorSlider.displayName = "ColorSlider";
+ColorSliderBase.displayName = "ColorSlider";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const ColorSliderRoot = HeroColorSlider.Root;
+export const ColorSliderOutput = HeroColorSlider.Output;
+export const ColorSliderTrack = HeroColorSlider.Track;
+export const ColorSliderThumb = HeroColorSlider.Thumb;
+
+export const ColorSlider = Object.assign(ColorSliderBase, {
+  Root: HeroColorSlider.Root,
+  Output: HeroColorSlider.Output,
+  Track: HeroColorSlider.Track,
+  Thumb: HeroColorSlider.Thumb,
+});

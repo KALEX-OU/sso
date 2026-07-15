@@ -11,7 +11,7 @@ export type NumberFieldProps = React.ComponentProps<typeof HeroNumberField> & {
   tooltip?: string;
 };
 
-export const NumberField = React.forwardRef<React.ElementRef<typeof HeroNumberField>, NumberFieldProps>(
+const NumberFieldBase = React.forwardRef<React.ElementRef<typeof HeroNumberField>, NumberFieldProps>(
   ({ className = "", isSkeleton, tooltip, children, ...props }, ref) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-number-field-skeleton ${className}`} />;
@@ -35,5 +35,21 @@ export const NumberField = React.forwardRef<React.ElementRef<typeof HeroNumberFi
   }
 );
 
-NumberField.displayName = "NumberField";
+NumberFieldBase.displayName = "NumberField";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const NumberFieldRoot = HeroNumberField.Root;
+export const NumberFieldGroup = HeroNumberField.Group;
+export const NumberFieldInput = HeroNumberField.Input;
+export const NumberFieldIncrementButton = HeroNumberField.IncrementButton;
+export const NumberFieldDecrementButton = HeroNumberField.DecrementButton;
+
+export const NumberField = Object.assign(NumberFieldBase, {
+  Root: HeroNumberField.Root,
+  Group: HeroNumberField.Group,
+  Input: HeroNumberField.Input,
+  IncrementButton: HeroNumberField.IncrementButton,
+  DecrementButton: HeroNumberField.DecrementButton
+});

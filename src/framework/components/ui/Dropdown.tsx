@@ -41,7 +41,18 @@ export const DropdownSection = HeroDropdownSection;
 export const DropdownItem = HeroDropdownItem;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const DropdownRoot = HeroDropdown.Root;
+export const DropdownPopover = HeroDropdown.Popover;
+export const DropdownItemIndicator = HeroDropdown.ItemIndicator;
+export const DropdownSubmenuIndicator = HeroDropdown.SubmenuIndicator;
+export const DropdownSubmenuTrigger = HeroDropdown.SubmenuTrigger;
+
 export const Dropdown = Object.assign(DropdownBase, {
+  Root: HeroDropdown.Root,
+  Popover: HeroDropdown.Popover,
+  ItemIndicator: HeroDropdown.ItemIndicator,
+  SubmenuIndicator: HeroDropdown.SubmenuIndicator,
+  SubmenuTrigger: HeroDropdown.SubmenuTrigger,
   Trigger: DropdownTrigger,
   Menu: DropdownMenu,
   Section: DropdownSection,

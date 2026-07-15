@@ -40,7 +40,12 @@ export const ListBoxItem = HeroListBoxItem;
 export const ListBoxSection = HeroListBoxSection;
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign
+export const ListBoxRoot = HeroListBox.Root;
+export const ListBoxItemIndicator = HeroListBox.ItemIndicator;
+
 export const ListBox = Object.assign(ListBoxBase, {
+  Root: HeroListBox.Root,
+  ItemIndicator: HeroListBox.ItemIndicator,
   Item: ListBoxItem,
   Section: ListBoxSection
 });

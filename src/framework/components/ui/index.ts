@@ -28,6 +28,7 @@ export * from "./ColorSlider";
 export * from "./ColorSwatch";
 export * from "./ColorSwatchPicker";
 export * from "./ComboBox";
+export * from "./DateField";
 export * from "./DatePicker";
 export * from "./DateRangePicker";
 export * from "./DebugWidget";

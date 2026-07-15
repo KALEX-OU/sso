@@ -11,7 +11,7 @@ export type ColorFieldProps = React.ComponentProps<typeof HeroColorField> & {
   tooltip?: string;
 };
 
-export const ColorField = React.forwardRef<React.ElementRef<typeof HeroColorField>, ColorFieldProps>(
+const ColorFieldBase = React.forwardRef<React.ElementRef<typeof HeroColorField>, ColorFieldProps>(
   ({ className = "", isSkeleton, tooltip, children, ...props }, ref) => {
     if (isSkeleton) {
       return <Skeleton className={`klx-color-field-skeleton ${className}`} />;
@@ -35,5 +35,21 @@ export const ColorField = React.forwardRef<React.ElementRef<typeof HeroColorFiel
   }
 );
 
-ColorField.displayName = "ColorField";
+ColorFieldBase.displayName = "ColorField";
 
+// Sub-componenti slot di HeroUI ri-esportati: il root è a COMPOSIZIONE e senza
+// gli slot non dipinge contenuto. Pattern compound unico del framework:
+// Object.assign sul componente base + re-export nominali paralleli.
+export const ColorFieldRoot = HeroColorField.Root;
+export const ColorFieldGroup = HeroColorField.Group;
+export const ColorFieldInput = HeroColorField.Input;
+export const ColorFieldPrefix = HeroColorField.Prefix;
+export const ColorFieldSuffix = HeroColorField.Suffix;
+
+export const ColorField = Object.assign(ColorFieldBase, {
+  Root: HeroColorField.Root,
+  Group: HeroColorField.Group,
+  Input: HeroColorField.Input,
+  Prefix: HeroColorField.Prefix,
+  Suffix: HeroColorField.Suffix,
+});

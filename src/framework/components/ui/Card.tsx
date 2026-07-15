@@ -93,7 +93,12 @@ export {
 
 // Supporto per la sintassi a punti (Compound Components) — pattern unico del framework: Object.assign.
 // `Body` e `Content` sono alias dello stesso sub-componente HeroUI (coerenti coi re-export nominali).
+export const CardTitle = HeroCard.Title;
+export const CardDescription = HeroCard.Description;
+
 export const Card = Object.assign(CardBase, {
+  Title: HeroCard.Title,
+  Description: HeroCard.Description,
   Header: HeroCardHeader,
   Content: HeroCardContent,
   Body: HeroCardContent,
