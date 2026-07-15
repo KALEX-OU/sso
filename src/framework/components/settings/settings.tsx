@@ -10,9 +10,9 @@ import { SettingsSecurity } from "./SettingsSecurity";
 import { SettingsOrganization } from "./SettingsOrganization";
 import {
   User as UserIcon,
-  Lock,
   AlertTriangle
 } from "lucide-react";
+import { AuthReauthDialog } from "../auth/AuthReauthDialog";
 import {
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -38,13 +38,11 @@ export function Settings() {
 
   // Stati per il Dialog di Riautenticazione Generale
   const [reauthOpen, setReauthOpen] = useState(false);
-  const [reauthPassword, setReauthPassword] = useState("");
   const [reauthPending, setReauthPending] = useState(false);
   const [onReauthSuccess, setOnReauthSuccess] = useState<(() => Promise<void>) | null>(null);
   // Se la reauth richiede il secondo fattore (utente con MFA TOTP attiva), si risolve col
   // codice dell'app di autenticazione prima di completare la riautenticazione.
   const [reauthMfaResolver, setReauthMfaResolver] = useState<MultiFactorResolver | null>(null);
-  const [reauthMfaCode, setReauthMfaCode] = useState("");
   const [reauthMfaHint, setReauthMfaHint] = useState("");
   const [reauthMfaTotpUid, setReauthMfaTotpUid] = useState("");
   // Errore mostrato INLINE nel dialog di reauth: un toast finirebbe dietro il backdrop del modal.
@@ -63,31 +61,26 @@ export function Settings() {
   // Challenge di Riautenticazione
   const closeReauth = () => {
     setReauthOpen(false);
-    setReauthPassword("");
     setOnReauthSuccess(null);
     setReauthMfaResolver(null);
-    setReauthMfaCode("");
     setReauthMfaHint("");
     setReauthError("");
   };
 
   const executeWithReauthChallenge = (action: () => Promise<void>) => {
     setOnReauthSuccess(() => action);
-    setReauthPassword("");
     setReauthMfaResolver(null);
-    setReauthMfaCode("");
     setReauthMfaHint("");
     setReauthError("");
     setReauthOpen(true);
   };
 
-  const handleReauthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleReauthSubmit = async (password: string) => {
     if (!user || !user.email) return;
 
     try {
       setReauthPending(true);
-      const credential = EmailAuthProvider.credential(user.email, reauthPassword);
+      const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
       // Reauth completata senza secondo fattore.
       const pending = onReauthSuccess;
@@ -107,7 +100,6 @@ export function Settings() {
           setReauthMfaResolver(resolver);
           setReauthMfaTotpUid(totpHint.uid);
           setReauthMfaHint(totpHint.displayName || t("settings.reauth.defaultHint"));
-          setReauthMfaCode("");
           setReauthError("");
           showToast(t("settings.toast.mfaEnterCode"), "info");
         } catch (mfaErr) {
@@ -128,12 +120,11 @@ export function Settings() {
   };
 
   // Secondo step della reauth: verifica il codice TOTP del fattore esistente e completa la reauth.
-  const handleReauthMfaVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reauthMfaResolver || !reauthMfaCode) return;
+  const handleReauthMfaVerify = async (code: string) => {
+    if (!reauthMfaResolver || !code) return;
     try {
       setReauthPending(true);
-      const assertion = TotpMultiFactorGenerator.assertionForSignIn(reauthMfaTotpUid, reauthMfaCode);
+      const assertion = TotpMultiFactorGenerator.assertionForSignIn(reauthMfaTotpUid, code);
       await reauthMfaResolver.resolveSignIn(assertion);
       const pending = onReauthSuccess;
       closeReauth();
@@ -315,92 +306,17 @@ export function Settings() {
       {/* DIALOG DI RIAUTENTICAZIONE MODALE          */}
       {/* ========================================== */}
       {reauthOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border border-secondary/20 bg-slate-950 rounded-3xl p-6 shadow-2xl relative">
-            <CardBody className="space-y-4">
-              <div className="flex items-center gap-3 text-secondary">
-                <Lock className="w-5 h-5" />
-                <h3 className="text-base font-extrabold uppercase tracking-wider">
-                  {t("settings.reauth.title")}
-                </h3>
-              </div>
-
-              {reauthError && (
-                <div className="flex items-start gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 px-3.5 py-2.5 text-red-400">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span className="text-[11px] leading-relaxed">{reauthError}</span>
-                </div>
-              )}
-
-              {reauthMfaResolver ? (
-                <>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("settings.reauth.mfaPromptBefore")} <strong>{reauthMfaHint}</strong> {t("settings.reauth.mfaPromptAfter")}
-                  </p>
-                  <form onSubmit={handleReauthMfaVerify} className="space-y-4">
-                    <Input
-                      type="text"
-                      maxLength={6}
-                      placeholder={t("settings.reauth.codePlaceholder")}
-                      required
-                      value={reauthMfaCode}
-                      onChange={(e) => { setReauthMfaCode(e.target.value); if (reauthError) setReauthError(""); }}
-                      className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full text-center tracking-widest font-mono text-lg"
-                    />
-                    <div className="flex gap-3 justify-end pt-2">
-                      <button
-                        type="button"
-                        onClick={closeReauth}
-                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
-                      >
-                        {t("settings.common.cancel")}
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={reauthPending || reauthMfaCode.length < 6}
-                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-secondary/90 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
-                      >
-                        {reauthPending ? t("settings.reauth.verifying") : t("settings.reauth.confirmCode")}
-                      </button>
-                    </div>
-                  </form>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("settings.reauth.passwordPrompt")}
-                  </p>
-                  <form onSubmit={handleReauthSubmit} className="space-y-4">
-                    <Input
-                      type="password"
-                      placeholder={t("settings.reauth.passwordPlaceholder")}
-                      required
-                      value={reauthPassword}
-                      onChange={(e) => { setReauthPassword(e.target.value); if (reauthError) setReauthError(""); }}
-                      className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full"
-                    />
-                    <div className="flex gap-3 justify-end pt-2">
-                      <button
-                        type="button"
-                        onClick={closeReauth}
-                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
-                      >
-                        {t("settings.common.cancel")}
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={reauthPending || !reauthPassword}
-                        className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-secondary hover:bg-secondary/90 text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg cursor-pointer"
-                      >
-                        {reauthPending ? t("settings.reauth.verifying") : t("settings.reauth.reconfirm")}
-                      </button>
-                    </div>
-                  </form>
-                </>
-              )}
-            </CardBody>
-          </Card>
-        </div>
+        <AuthReauthDialog
+          isOpen={reauthOpen}
+          step={reauthMfaResolver ? "mfa" : "password"}
+          factorHint={reauthMfaHint}
+          error={reauthError}
+          loading={reauthPending}
+          onSubmitPassword={handleReauthSubmit}
+          onSubmitCode={handleReauthMfaVerify}
+          onCancel={closeReauth}
+          onErrorClear={() => setReauthError("")}
+        />
       )}
     </div>
   );

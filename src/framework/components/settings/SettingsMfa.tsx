@@ -4,15 +4,16 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
 import { useBrand } from "../providers/BrandProvider";
-import { Card, CardBody, Button, Input, Label } from "../ui";
-import { Shield, Check, Copy } from "lucide-react";
+import { Card, CardBody, Button } from "../ui";
+import { Shield, Check } from "lucide-react";
 import {
   multiFactor,
   TotpMultiFactorGenerator,
   type MultiFactorInfo,
   type TotpSecret
 } from "firebase/auth";
-import QRCode from "react-qr-code";
+import { AuthMfaEnrollment } from "../auth/AuthMfaEnrollment";
+import { AuthMfaBackupCodes } from "../auth/AuthMfaBackupCodes";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 import { useI18n } from "@/locales/client";
 
@@ -43,7 +44,6 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
   const [mfaPending, setMfaPending] = useState(false);
   const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
   const [totpUri, setTotpUri] = useState("");
-  const [totpCode, setTotpCode] = useState("");
   // Codici di backup MFA (173): recovery self-service. `backupCodes` è popolato SOLO subito dopo
   // la generazione (mostrati una volta); `backupStatus` è il conteggio residuo letto dal server.
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
@@ -61,7 +61,6 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
     setMfaStep("idle");
     setTotpSecret(null);
     setTotpUri("");
-    setTotpCode("");
   };
 
   // Gestione centralizzata degli errori MFA. Due casi richiedono una riautenticazione con la
@@ -109,7 +108,6 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
         const secret = await TotpMultiFactorGenerator.generateSecret(session);
         setTotpSecret(secret);
         setTotpUri(secret.generateQrCodeUrl(user.email || fmtUI(s.settings.totpAccountFallback, { issuer: brand.totpIssuer }), brand.totpIssuer));
-        setTotpCode("");
         setMfaStep("totp-verify");
       } catch (err) {
         handleMfaError(err, action);
@@ -120,12 +118,12 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
     await action();
   };
 
-  const confirmTotpEnrollment = async () => {
-    if (!user || !totpSecret || totpCode.length < 6) return;
+  const confirmTotpEnrollment = async (code: string) => {
+    if (!user || !totpSecret || code.length < 6) return;
     const action = async () => {
       setMfaPending(true);
       try {
-        const assertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, totpCode);
+        const assertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, code);
         await multiFactor(user).enroll(assertion, t("settings.mfa.factorAppName"));
         await user.reload();
         resetMfaFlow();
@@ -143,14 +141,9 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
     await action();
   };
 
-  const copyTotpSecret = async () => {
-    if (!totpSecret) return;
-    try {
-      await navigator.clipboard.writeText(totpSecret.secretKey);
-      showToast(t("settings.mfa.toastCopied"), "success");
-    } catch {
-      showToast(t("settings.mfa.toastCopyError"), "error");
-    }
+  // Esito copia (chiave TOTP / codici di backup) dai componenti auth → toast.
+  const onCopyResult = (ok: boolean) => {
+    showToast(ok ? t("settings.mfa.toastCopied") : t("settings.mfa.toastCopyError"), ok ? "success" : "error");
   };
 
   // === CODICI DI BACKUP MFA (173) — recovery self-service ===
@@ -180,15 +173,6 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
       showToast(err instanceof Error ? err.message : t("settings.mfa.backupToastError"), "error");
     } finally {
       setBackupPending(false);
-    }
-  };
-
-  const copyBackupCodes = async () => {
-    try {
-      await navigator.clipboard.writeText(backupCodes.join("\n"));
-      showToast(t("settings.mfa.toastCopied"), "success");
-    } catch {
-      showToast(t("settings.mfa.toastCopyError"), "error");
     }
   };
 
@@ -291,78 +275,17 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
             </div>
           )}
 
-          {/* Enrollment app di autenticazione (TOTP): QR + chiave manuale + verifica primo codice */}
+          {/* Enrollment app di autenticazione (TOTP): componente famiglia auth (N1) */}
           {mfaStep === "totp-verify" && totpSecret && (
-            <div className="flex flex-col gap-3 pt-2">
-              <Label className="text-xs font-bold text-slate-700 dark:text-gray-300">
-                {t("settings.mfa.enrollTitle")}
-              </Label>
-              <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-relaxed">
-                {t("settings.mfa.enrollInstructions")}
-              </p>
-
-              {/* QR code da scansionare con l'app mobile (sfondo bianco per la leggibilità anche in dark) */}
-              {totpUri && (
-                <div className="flex flex-col items-center gap-2 py-1">
-                  <div className="rounded-2xl bg-white p-3 shadow-sm">
-                    <QRCode value={totpUri} size={160} />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                    {t("settings.mfa.scanHint")}
-                  </span>
-                </div>
-              )}
-
-              {/* Chiave manuale: alternativa allo scan del QR */}
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 self-start">
-                {t("settings.mfa.manualKeyLabel")}
-              </span>
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-slate-950/40 px-3.5 py-2.5">
-                <code className="text-xs font-mono tracking-wider text-slate-800 dark:text-white break-all flex-1">
-                  {totpSecret.secretKey}
-                </code>
-                <button
-                  type="button"
-                  onClick={copyTotpSecret}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-white outline-none bg-transparent border-none cursor-pointer flex-shrink-0"
-                  aria-label={t("settings.mfa.copyAria")}
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-              {totpUri && (
-                <a
-                  href={totpUri}
-                  className="text-[10px] font-extrabold uppercase tracking-wider text-secondary hover:text-secondary self-start"
-                >
-                  {t("settings.mfa.openInApp")}
-                </a>
-              )}
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  maxLength={6}
-                  placeholder={t("settings.mfa.codePlaceholder")}
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value)}
-                  className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/10 focus:border-primary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-slate-900 dark:text-white outline-none w-full text-center tracking-widest font-mono text-lg"
-                />
-                <Button
-                  onClick={confirmTotpEnrollment}
-                  isDisabled={mfaPending || totpCode.length < 6}
-                  variant="primary"
-                >
-                  {t("settings.mfa.confirm")}
-                </Button>
-              </div>
-              <button
-                type="button"
-                onClick={resetMfaFlow}
-                className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 hover:text-slate-500 outline-none bg-transparent border-none cursor-pointer self-start"
-              >
-                {t("settings.mfa.cancel")}
-              </button>
-            </div>
+            <AuthMfaEnrollment
+              className="pt-2"
+              totpUri={totpUri}
+              secretKey={totpSecret.secretKey}
+              loading={mfaPending}
+              onConfirm={(code) => void confirmTotpEnrollment(code)}
+              onCancel={resetMfaFlow}
+              onCopyResult={onCopyResult}
+            />
           )}
 
           {/* Codici di backup MFA (173): recovery self-service, visibili solo con 2FA attiva */}
@@ -383,22 +306,12 @@ export function SettingsMfa({ executeWithReauthChallenge, revokeOtherDeviceSessi
                   {backupStatus && backupStatus.total > 0 ? t("settings.mfa.backupRegenerate") : t("settings.mfa.backupGenerate")}
                 </Button>
               </div>
-              {backupCodes.length > 0 && (
-                <div className="flex flex-col gap-2 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-3">
-                  <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 leading-relaxed">
-                    {t("settings.mfa.backupWarning")}
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5 font-mono text-sm text-slate-800 dark:text-white">
-                    {backupCodes.map((code) => (
-                      <span key={code} className="tracking-wider select-all">{code}</span>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button onClick={() => void copyBackupCodes()} variant="ghost">{t("settings.mfa.backupCopy")}</Button>
-                    <Button onClick={() => setBackupCodes([])} variant="primary">{t("settings.mfa.backupDone")}</Button>
-                  </div>
-                </div>
-              )}
+              <AuthMfaBackupCodes
+                codes={backupCodes}
+                onDone={() => setBackupCodes([])}
+                onCopyResult={onCopyResult}
+                downloadFileName={`${brand.totpIssuer.toLowerCase()}-backup-codes.txt`}
+              />
             </div>
           )}
         </div>

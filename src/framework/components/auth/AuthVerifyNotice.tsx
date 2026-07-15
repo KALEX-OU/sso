@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Mail } from "lucide-react";
 import { Button } from "../ui";
 import { fmtUI, useUIStrings } from "../../lib/ui.localization";
@@ -10,7 +10,8 @@ import { fmtUI, useUIStrings } from "../../lib/ui.localization";
  *
  * Step post-login/post-registrazione per account non verificati (NON è una
  * route: dipende da `auth.currentUser` in memoria). Presentazionale:
- * check/reinvio/uscita arrivano dal consumer.
+ * check/reinvio/uscita arrivano dal consumer. Il reinvio ha un cooldown
+ * client-side (N2, AUTH v1.2.1) allineato ai rate-limit API.
  */
 export interface AuthVerifyNoticeProps {
   /** Indirizzo a cui è stato inviato il link di verifica. */
@@ -23,6 +24,8 @@ export interface AuthVerifyNoticeProps {
   onBack: () => void;
   checking?: boolean;
   resendLoading?: boolean;
+  /** Secondi di attesa tra un reinvio e il successivo (0 = disattivato). */
+  resendCooldownSeconds?: number;
   gradientClassName?: string;
   className?: string;
 }
@@ -36,10 +39,26 @@ export const AuthVerifyNotice: React.FC<AuthVerifyNoticeProps> = ({
   onBack,
   checking = false,
   resendLoading = false,
+  resendCooldownSeconds = 30,
   gradientClassName = "from-secondary to-accent",
   className = "",
 }) => {
   const s = useUIStrings();
+
+  // Cooldown reinvio (N2): dopo un click il bottone resta disabilitato e mostra
+  // il countdown; si riabilita a zero. Un solo interval attivo per countdown.
+  const [cooldownLeft, setCooldownLeft] = useState(0);
+  const cooldownActive = cooldownLeft > 0;
+  useEffect(() => {
+    if (!cooldownActive) return;
+    const id = setInterval(() => setCooldownLeft((v) => Math.max(0, v - 1)), 1000);
+    return () => clearInterval(id);
+  }, [cooldownActive]);
+
+  const handleResend = () => {
+    onResend();
+    if (resendCooldownSeconds > 0) setCooldownLeft(resendCooldownSeconds);
+  };
 
   return (
     <div className={`flex flex-col items-center text-center ${className}`}>
@@ -81,15 +100,17 @@ export const AuthVerifyNotice: React.FC<AuthVerifyNoticeProps> = ({
 
         <Button
           unstyled
-          onClick={onResend}
-          isDisabled={resendLoading}
+          onClick={handleResend}
+          isDisabled={resendLoading || cooldownActive}
           variant="outline"
-          className="w-full py-6 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full py-6 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {resendLoading && (
             <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-800 dark:border-white border-t-transparent"></span>
           )}
-          {s.auth.verify.resendEmailButton}
+          {cooldownActive
+            ? fmtUI(s.auth.verify.resendCooldown, { n: String(cooldownLeft) })
+            : s.auth.verify.resendEmailButton}
         </Button>
 
         <button
