@@ -77,10 +77,13 @@ export const AuthReauthDialog: React.FC<AuthReauthDialogProps> = ({
         isDismissable
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-center justify-center p-4"
       >
-        <Modal.Container
-          className={`bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 max-w-md w-full shadow-2xl klx-motion-overlay-in ${className}`}
-        >
-          <Modal.Dialog aria-label={s.auth.reauth.title} className="flex flex-col gap-4">
+        {/* Il Container di Hero è il wrapper di POSIZIONAMENTO (default: alto quanto
+            il viewport): qui va neutralizzato; il pannello visibile è Modal.Dialog. */}
+        <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
+          <Modal.Dialog
+            aria-label={s.auth.reauth.title}
+            className={`bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 w-full shadow-2xl klx-motion-overlay-in flex flex-col gap-4 ${className}`}
+          >
             <div className="flex items-center gap-3 text-secondary">
               <Lock className="w-5 h-5" aria-hidden />
               <h3 className="text-base font-extrabold uppercase tracking-wider">
