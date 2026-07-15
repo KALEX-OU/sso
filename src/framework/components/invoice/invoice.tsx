@@ -265,8 +265,9 @@ export const InvoiceModule: React.FC<InvoiceModuleProps> = ({
             <Table.ScrollContainer>
               <Table.Content>
                 <Table.Header>
-                  {columns.map(col => (
-                    <Table.Column key={col.key} id={col.key} className="text-xs font-bold">{col.header}</Table.Column>
+                  {/* react-aria richiede almeno una colonna isRowHeader (nome accessibile delle righe) */}
+                  {columns.map((col, idx) => (
+                    <Table.Column key={col.key} id={col.key} isRowHeader={idx === 0} className="text-xs font-bold">{col.header}</Table.Column>
                   ))}
                 </Table.Header>
                 <Table.Body
