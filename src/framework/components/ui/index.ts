@@ -46,6 +46,7 @@ export * from "./InputOTP";
 export * from "./Kbd";
 export * from "./Label";
 export * from "./Link";
+export * from "./Logo";
 export * from "./ListBox";
 export * from "./Menu";
 export * from "./Meter";

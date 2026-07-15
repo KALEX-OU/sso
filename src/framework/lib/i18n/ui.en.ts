@@ -42,6 +42,10 @@ export const en: UIStrings = {
     noAccount: "Don't have an account yet?",
     registerNow: "Register now",
     backToLogin: "Back to login / Sign out",
+    titles: {
+      login: "Sign in to your account",
+      register: "Create your account",
+    },
     hasAccount: "Already have an account?",
     loginHere: "Login here",
     register: {

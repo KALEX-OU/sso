@@ -15,7 +15,7 @@ import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Globe } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/framework/components/ui";
+import { Button, Logo } from "@/framework/components/ui";
 import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { AuthCard } from "@/framework/components/auth/AuthCard";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
@@ -215,16 +215,14 @@ export function AuthPortalShell({
           className={cardClassName}
           error={error}
           header={
-            showHeader ? (
-              <>
-                <span className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}>
-                  {displayBrandName}
-                </span>
-                <p className="text-slate-500 dark:text-gray-400 text-xs font-semibold mt-2 tracking-wide uppercase">
-                  {t("auth.subtitle")}
-                </p>
-              </>
-            ) : undefined
+            /* Logo del VERTICALE su ogni step: pieno con tagline sugli step
+               principali, compatto (senza tagline) su MFA/verify. */
+            <Logo
+              name={displayBrandName}
+              gradientClassName={brand.logoColor}
+              size={showHeader ? "lg" : "md"}
+              tagline={showHeader ? t("auth.subtitle") : undefined}
+            />
           }
         >
           {children}

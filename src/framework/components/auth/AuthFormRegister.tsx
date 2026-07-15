@@ -263,6 +263,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
   return (
     <AuthForm
       onSubmit={onSubmit}
+      title={s.auth.titles.register}
       submitLabel={r.register}
       loading={loading}
       canSubmit={canSubmit}

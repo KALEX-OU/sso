@@ -43,6 +43,10 @@ export const it = {
     noAccount: "Non hai ancora un account?",
     registerNow: "Registrati ora",
     backToLogin: "Torna al login / Esci",
+    titles: {
+      login: "Accedi al tuo account",
+      register: "Crea il tuo account",
+    },
     hasAccount: "Hai già un account?",
     loginHere: "Accedi qui",
     register: {

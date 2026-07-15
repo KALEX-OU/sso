@@ -24,6 +24,8 @@ export interface AuthFormProps {
   gradientClassName?: string;
   /** Blocco brand sopra il form (logo + sottotitolo). */
   header?: React.ReactNode;
+  /** Titolo dello step (es. "Accedi al tuo account"), sotto il blocco brand. */
+  title?: string;
   /** Azioni secondarie sotto la CTA (link, recovery…), dentro il form. */
   footer?: React.ReactNode;
   formRef?: React.Ref<HTMLFormElement>;
@@ -38,12 +40,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   canSubmit = true,
   gradientClassName,
   header,
+  title,
   footer,
   formRef,
   className = "",
 }) => (
   <div className={`w-full flex flex-col gap-6 ${className}`}>
     {header}
+    {title && (
+      <h2 className="text-center text-lg font-bold text-ink -mt-2">{title}</h2>
+    )}
 
     <form ref={formRef} onSubmit={onSubmit} className="space-y-5">
       {children}

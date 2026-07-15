@@ -61,6 +61,7 @@ export const AuthFormLogin: React.FC<AuthFormLoginProps> = ({
   return (
     <AuthForm
       onSubmit={onSubmit}
+      title={s.auth.titles.login}
       submitLabel={loading ? s.auth.signingIn : s.auth.signIn}
       loading={loading}
       gradientClassName={gradientClassName}

@@ -42,6 +42,10 @@ export const es: UIStrings = {
     noAccount: "¿Aún no tienes una cuenta?",
     registerNow: "Regístrate ahora",
     backToLogin: "Volver al inicio de sesión / Salir",
+    titles: {
+      login: "Accede a tu cuenta",
+      register: "Crea tu cuenta",
+    },
     hasAccount: "¿Ya tienes una cuenta?",
     loginHere: "Inicia sesión aquí",
     register: {
