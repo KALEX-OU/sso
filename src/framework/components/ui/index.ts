@@ -34,6 +34,7 @@ export * from "./DebugWidget";
 export * from "./Disclosure";
 export * from "./DisclosureGroup";
 export * from "./Drawer";
+export * from "./EmptyState";
 export * from "./Dropdown";
 export * from "./FieldError";
 export * from "./Fieldset";

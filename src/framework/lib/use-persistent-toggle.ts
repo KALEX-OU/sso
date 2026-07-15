@@ -42,6 +42,45 @@ function notify(key: string): void {
  * valore salvato lato client. Usa `useSyncExternalStore` per restare conforme alle
  * regole degli hook di React 19.
  */
+/**
+ * Hook `[value, setValue]` per una STRINGA persistita in `localStorage` (L4.5:
+ * preferenza vista del ViewSwitcher e simili). Stessa meccanica del toggle:
+ * store esterno + useSyncExternalStore, sync tra tab e default in SSR.
+ */
+export function usePersistentString(
+  key: string,
+  defaultValue: string
+): [string, (value: string) => void] {
+  const subscribe = useCallback((cb: () => void) => subscribeKey(key, cb), [key]);
+
+  const getSnapshot = useCallback((): string => {
+    try {
+      const raw = window.localStorage.getItem(key);
+      return raw === null ? defaultValue : raw;
+    } catch {
+      return defaultValue;
+    }
+  }, [key, defaultValue]);
+
+  const getServerSnapshot = useCallback((): string => defaultValue, [defaultValue]);
+
+  const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const setValue = useCallback(
+    (next: string): void => {
+      try {
+        window.localStorage.setItem(key, next);
+      } catch {
+        // `localStorage` non disponibile (es. modalità privata) → nessuna persistenza.
+      }
+      notify(key);
+    },
+    [key]
+  );
+
+  return [value, setValue];
+}
+
 export function usePersistentToggle(
   key: string,
   defaultValue: boolean

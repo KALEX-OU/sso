@@ -162,6 +162,39 @@ body {
 }
 
 /* ==========================================================================
+   PRINT (L4.6) — DetailView e contenuti stampabili: via il chrome dell'app
+   (sidebar, toolbar, toast, overlay scuri), pannello di dettaglio a piena
+   pagina con superfici piatte. I consumer possono escludere elementi puntuali
+   con .klx-no-print. (!important: idiomatico nei fogli print, non è un bypass.)
+   ========================================================================== */
+
+@media print {
+  .klx-sidebar,
+  .klx-no-print,
+  .klx-toast {
+    display: none !important;
+  }
+  main {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  .klx-detail-overlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+  }
+  .klx-detail-panel {
+    width: 100% !important;
+    max-width: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+    background: white !important;
+  }
+}
+
+/* ==========================================================================
    SEMANTIC SIDEBAR STYLES (BEM) - KALEX Tech Premium Design System
    ========================================================================== */
 

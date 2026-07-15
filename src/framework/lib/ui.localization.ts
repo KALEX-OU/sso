@@ -64,6 +64,27 @@ const it = {
       noResults: "Nessun modulo trovato",
       hint: "naviga",
     },
+    views: {
+      empty: {
+        title: "Niente da mostrare",
+        description: "Non ci sono elementi da visualizzare qui.",
+      },
+      switcher: {
+        list: "Vista elenco",
+        kanban: "Vista kanban",
+        gantt: "Vista Gantt",
+      },
+      kanban: {
+        itemCount: "{n} elementi",
+        columnEmpty: "Nessun elemento",
+      },
+      gantt: {
+        week: "Settimana",
+        month: "Mese",
+        today: "Oggi",
+        withoutDates: "{n} elementi senza date non mostrati",
+      },
+    },
   },
   sidebar: {
     collapse: "Collassa Sidebar",
@@ -376,6 +397,27 @@ const en: UIStrings = {
       noResults: "No module found",
       hint: "navigate",
     },
+    views: {
+      empty: {
+        title: "Nothing to show",
+        description: "There are no items to display here.",
+      },
+      switcher: {
+        list: "List view",
+        kanban: "Kanban view",
+        gantt: "Gantt view",
+      },
+      kanban: {
+        itemCount: "{n} items",
+        columnEmpty: "No items",
+      },
+      gantt: {
+        week: "Week",
+        month: "Month",
+        today: "Today",
+        withoutDates: "{n} items without dates not shown",
+      },
+    },
   },
   sidebar: {
     collapse: "Collapse Sidebar",
@@ -679,6 +721,27 @@ const es: UIStrings = {
       placeholder: "Ir al módulo…",
       noResults: "Ningún módulo encontrado",
       hint: "navegar",
+    },
+    views: {
+      empty: {
+        title: "Nada que mostrar",
+        description: "No hay elementos para mostrar aquí.",
+      },
+      switcher: {
+        list: "Vista de lista",
+        kanban: "Vista kanban",
+        gantt: "Vista Gantt",
+      },
+      kanban: {
+        itemCount: "{n} elementos",
+        columnEmpty: "Sin elementos",
+      },
+      gantt: {
+        week: "Semana",
+        month: "Mes",
+        today: "Hoy",
+        withoutDates: "{n} elementos sin fechas no mostrados",
+      },
     },
   },
   sidebar: {

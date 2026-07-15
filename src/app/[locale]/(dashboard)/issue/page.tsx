@@ -7,6 +7,11 @@ import { AlertCircle, Send, HelpCircle, CheckCircle2, Clock } from "lucide-react
 // NB: il wrapper Card racchiude i children in un body `p-5`: i padding root sono
 // stati ridotti di conseguenza per mantenere l'ingombro precedente.
 import { Button, Card, Input, TextArea, TextField, Label } from "@/framework/components/ui";
+// L4.8: adozione dimostrativa del ViewSwitcher — List/Kanban/Gantt sullo stesso dataset.
+import { ViewSwitcher } from "@/framework/components/layouts/ViewSwitcher";
+import { KanbanView } from "@/framework/components/layouts/KanbanView";
+import { GanttView } from "@/framework/components/layouts/GanttView";
+import type { ViewDataAdapter } from "@/framework/lib/view-contract";
 import { useI18n } from "@/locales/client";
 
 interface TicketItem {
@@ -31,7 +36,9 @@ export default function SupportTicketsPage() {
     const timer = setTimeout(() => {
       setTickets([
         { id: "t1", title: "Problema con pagamento carta credito", category: "Fatturazione", status: "resolved", date: "2026-06-14T10:00:00Z", message: "Il pagamento è andato in errore ma la carta è stata addebitata." },
-        { id: "t2", title: "Configurazione sensore IoT in errore", category: "Dispositivi", status: "open", date: "2026-06-18T16:45:00Z", message: "Il firmware non carica le chiavi API all'avvio." }
+        { id: "t2", title: "Configurazione sensore IoT in errore", category: "Dispositivi", status: "open", date: "2026-06-18T16:45:00Z", message: "Il firmware non carica le chiavi API all'avvio." },
+        { id: "t3", title: "Richiesta fattura elettronica PA", category: "Fatturazione", status: "pending", date: "2026-06-21T09:30:00Z", message: "Servono CIG e CUP sulla prossima fattura." },
+        { id: "t4", title: "Accesso SSO da nuovo dominio", category: "SSO", status: "pending", date: "2026-06-24T14:10:00Z", message: "Il dominio custom non reindirizza al login." }
       ]);
       setLoading(false);
     }, 1200);
@@ -86,6 +93,31 @@ export default function SupportTicketsPage() {
     }
   };
 
+  // L4.8 — contratto viste: adapter tipizzato sul TicketItem (id/titolo/categoria/stato/date).
+  // Le date di fine sono derivate (+4 giorni) a scopo dimostrativo del Gantt.
+  const ticketAdapter: ViewDataAdapter<TicketItem> = {
+    getId: (tk) => tk.id,
+    getTitle: (tk) => tk.title,
+    getSubtitle: (tk) => tk.category,
+    getStatus: (tk) => tk.status,
+    getDateRange: (tk) => {
+      const start = new Date(tk.date);
+      return { start, end: new Date(start.getTime() + 4 * 24 * 60 * 60 * 1000) };
+    }
+  };
+  const kanbanColumns = [
+    { id: "open", label: t("issue.statusOpen"), accentClassName: "bg-danger" },
+    { id: "pending", label: t("issue.statusPending"), accentClassName: "bg-warning" },
+    { id: "resolved", label: t("issue.statusResolved"), accentClassName: "bg-success" }
+  ];
+  const isTicketStatus = (v: string): v is TicketItem["status"] =>
+    v === "open" || v === "pending" || v === "resolved";
+  const handleTicketMove = (itemId: string, _from: string, to: string) => {
+    if (!isTicketStatus(to)) return;
+    setTickets((prev) => prev.map((tk) => (tk.id === itemId ? { ...tk, status: to } : tk)));
+    showToast(t("issue.toastCreated"), "success");
+  };
+
   return (
     <div className="space-y-6 animate-fade-in font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -97,7 +129,21 @@ export default function SupportTicketsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">{t("issue.myTickets")}</h3>
+          <ViewSwitcher
+            persistKey="issue"
+            defaultView="list"
+            toolbarStart={<h3 className="text-sm font-bold text-slate-900 dark:text-white">{t("issue.myTickets")}</h3>}
+            renderKanban={() => (
+              <KanbanView
+                items={tickets}
+                adapter={ticketAdapter}
+                columns={kanbanColumns}
+                onItemMove={handleTicketMove}
+              />
+            )}
+            renderGantt={() => <GanttView items={tickets} adapter={ticketAdapter} />}
+            renderList={() => (
+              <div className="space-y-4">
           {tickets.length === 0 ? (
             <Card className="border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-7 text-center shadow-xl">
               <HelpCircle className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
@@ -131,6 +177,9 @@ export default function SupportTicketsPage() {
               </Card>
             ))
           )}
+              </div>
+            )}
+          />
         </div>
 
         <div>
