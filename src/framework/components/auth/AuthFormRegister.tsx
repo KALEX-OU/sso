@@ -203,17 +203,14 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
       <SelectTrigger className="klx-select-trigger">
         <SelectValue />
       </SelectTrigger>
-      <SelectPopover className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
+      <SelectPopover className="klx-select-popover">
         <ListBox className="outline-none">
+          {/* Item SENZA classi: layout/tipografia/stati = standard HeroUI
+              (.list-box-item); solo l'emoji bandiera ha una taglia sua. */}
           {countries.map((c) => (
-            <ListBoxItem
-              id={c.code}
-              key={c.code}
-              textValue={`${c.flag} ${c.name}`}
-              className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
-            >
+            <ListBoxItem id={c.code} key={c.code} textValue={`${c.flag} ${c.name}`}>
               <span className="text-base leading-none">{c.flag}</span>
-              <span className="text-xs">{c.name} ({c.code})</span>
+              <span>{c.name} ({c.code})</span>
             </ListBoxItem>
           ))}
         </ListBox>
@@ -245,7 +242,7 @@ export const AuthFormRegister: React.FC<AuthFormRegisterProps> = ({
               <li
                 key={pred.placeId}
                 onClick={() => address.onSelectPrediction(pred)}
-                className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                className="w-full text-start px-3 py-2 rounded-xl transition-colors flex items-center gap-2 cursor-pointer text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                 <span className="truncate">{pred.description}</span>

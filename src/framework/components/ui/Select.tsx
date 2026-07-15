@@ -117,13 +117,13 @@ const SelectComponent = React.forwardRef<React.ElementRef<typeof HeroSelect>, Se
         <HeroSelectTrigger className="klx-select-trigger">
           <HeroSelectValue />
         </HeroSelectTrigger>
-        <HeroSelectPopover className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl shadow-xl p-1.5 z-50 min-w-[200px]">
+        <HeroSelectPopover className="klx-select-popover min-w-[200px]">
           <HeroListBox className="flex flex-col gap-0.5">
             {options.map((opt) => (
               <HeroListBoxItem
                 key={opt.value}
                 id={opt.value}
-                className="px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-200 hover:bg-primary/5 hover:text-primary cursor-pointer outline-none transition-colors"
+                className=""
               >
                 {opt.label}
               </HeroListBoxItem>

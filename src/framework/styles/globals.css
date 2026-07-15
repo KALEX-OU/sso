@@ -1,5 +1,8 @@
-/* NB (enterprise): font caricato da Google Fonts a runtime; valutare il self-hosting (next/font). */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+/* Font del DS: Montserrat è SELF-HOSTED via next/font nei layout delle app
+   (variabile --font-montserrat). Niente @import Google a runtime: la race di
+   caricamento produceva render misti (campi/select con font di sistema).
+   Il fallback "Montserrat" resta per i contesti senza next/font (catalogo
+   Claude Design: @font-face locale prepesa allo snapshot compilato). */
 @import "tailwindcss";
 @import "@heroui/react/styles";
 
@@ -75,8 +78,8 @@
 /* @theme inline: le utility Tailwind (bg-primary, text-danger, from-primary…) referenziano
    direttamente i token --klx-* (per questo serve il modificatore `inline`). */
 @theme inline {
-  --font-sans: "Montserrat", system-ui, sans-serif;
-  --font-display: "Montserrat", system-ui, sans-serif;
+  --font-sans: var(--font-montserrat, "Montserrat"), system-ui, sans-serif;
+  --font-display: var(--font-montserrat, "Montserrat"), system-ui, sans-serif;
 
   --color-primary: var(--klx-primary);
   --color-secondary: var(--klx-secondary);
@@ -490,6 +493,13 @@ body {
 .klx-select-trigger:focus-visible {
   @apply border-secondary shadow-[0_0_12px_var(--klx-glow-secondary)];
 }
+/* Popover del Select klx: SOLO superficie brand (sfondo/blur/bordo/raggio).
+   La tipografia resta lo STANDARD HeroUI (popover text-sm, item eredita,
+   stati focused/hovered gestiti dagli slot): nessuna forzatura di taglia. */
+.klx-select-popover {
+  @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50;
+}
+
 /* Autocomplete: il root riempie il contenitore come ogni campo */
 .klx-autocomplete {
   @apply w-full;
