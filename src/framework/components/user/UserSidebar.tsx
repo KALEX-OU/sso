@@ -31,6 +31,13 @@ import {
   Cpu
 } from "lucide-react";
 
+// L3.1 (DS_LAYOUTS_V1_1_PLAN) — UserSidebar: migrazione della Sidebar nella shell user.
+// Differenze rispetto alla Sidebar storica:
+// - le azioni senza backend (Notifiche, Messaggi, Stato servizio) sono OPZIONALI:
+//   compaiono solo se l'app passa il rispettivo handler (niente bottoni finti di default);
+// - `aria-current="page"` sulla voce di menu attiva;
+// - `inDrawer`: variante per il Drawer mobile (sempre espansa, niente toggle collasso).
+
 // Helper per risolvere l'icona del modulo dinamicamente dal registro SSOT
 const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ className?: string }> => {
   if (!iconName) return LayoutDashboard;
@@ -38,13 +45,37 @@ const getIconComponent = (iconName?: LucideIconName): React.ComponentType<{ clas
   return IconComponent || LayoutDashboard;
 };
 
-interface SidebarProps {
+export interface UserSidebarProps {
   appId: string;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
+  /** Notifiche: il bottone compare solo se l'app fornisce l'handler. */
+  onNotifications?: () => void;
+  /** Pallino di notifica non lette (ha senso solo con onNotifications). */
+  hasUnreadNotifications?: boolean;
+  /** Messaggi: il bottone compare solo se l'app fornisce l'handler. */
+  onMessages?: () => void;
+  /** Stato del servizio: il bottone compare solo se l'app fornisce l'handler. */
+  onServiceStatus?: () => void;
+  /** Variante per il Drawer mobile: sempre espansa, senza toggle di collasso. */
+  inDrawer?: boolean;
+  /** Callback di navigazione (es. per chiudere il Drawer dopo il click su una voce). */
+  onNavigate?: () => void;
+  className?: string;
 }
 
-export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
+export function UserSidebar({
+  appId,
+  collapsed,
+  setCollapsed,
+  onNotifications,
+  hasUnreadNotifications,
+  onMessages,
+  onServiceStatus,
+  inDrawer = false,
+  onNavigate,
+  className = ""
+}: UserSidebarProps) {
   const { user, claims, logout, loginRedirect } = useAuth();
   const brand = useBrand();
   const s = useUIStrings();
@@ -55,10 +86,13 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
   const [supportOpen, setSupportOpen] = React.useState(false);
   const [aiOpen, setAiOpen] = React.useState(false);
 
+  // Nel Drawer la sidebar è sempre espansa e i tooltip da collasso non servono.
+  const isCollapsed = inDrawer ? false : collapsed;
+
   const userRole = (claims?.uRole || claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
   const displayName = user?.displayName || user?.email?.split("@")[0] || s.common.user;
   const roleName = (claims?.uRole || claims?.role) ? String(claims?.uRole || claims?.role).toUpperCase() : "VIEWER";
-  
+
   // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims rbac.apps
   const orgRole = (claims?.rbac?.apps?.[appId]?.mode || "buyer") as "buyer" | "seller" | "both";
 
@@ -77,24 +111,24 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         loginRedirect(appId);
       }
     } catch (err) {
-      console.error("[Sidebar] Errore logout:", err);
+      console.error("[UserSidebar] Errore logout:", err);
     }
   };
 
   return (
-    <aside className={`klx-sidebar ${collapsed ? "klx-sidebar--collapsed" : ""}`}>
+    <aside className={`klx-sidebar ${isCollapsed ? "klx-sidebar--collapsed" : ""} ${className}`}>
       {/* 1. HEADER (LOGO & TOGGLE SIDEBAR) */}
       <div className="klx-sidebar-header">
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="klx-sidebar-logo-container">
             <div className="klx-sidebar-logo-mark">{brand.logoMark}</div>
             <span className="klx-sidebar-logo-text">{brand.name}</span>
           </div>
         )}
-        {collapsed && (
+        {isCollapsed && (
           <div className="klx-sidebar-logo-mark">{brand.logoMark}</div>
         )}
-        {!collapsed && (
+        {!isCollapsed && !inDrawer && (
           <Button
             isIconOnly
             variant="ghost"
@@ -109,7 +143,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
       </div>
 
       {/* BOTTONE ESPANSIONE (QUANDO COLLASSED) */}
-      {collapsed && (
+      {isCollapsed && (
         <div className="flex justify-center py-2 border-b border-slate-200/60 dark:border-slate-900/50">
           <Button
             isIconOnly
@@ -130,7 +164,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
           const moduleInfo = getModuleInfo(moduleId);
           const Icon = getIconComponent(moduleInfo?.icon);
           const label = getModuleLabel(moduleId, currentLocale);
-          
+
           const modulePath = moduleId === "dashboard" ? "/dashboard" : `/${moduleId}`;
           const localizedPath = `/${currentLocale}${modulePath}`;
           const isActive = pathname === localizedPath || pathname.startsWith(localizedPath + "/");
@@ -138,17 +172,19 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
           return (
             <Tooltip
               key={moduleId}
-              isDisabled={!collapsed}
+              isDisabled={!isCollapsed}
               delay={0}
               closeDelay={0}
             >
               <Tooltip.Trigger>
                 <Link
                   href={localizedPath}
+                  onClick={onNavigate}
+                  aria-current={isActive ? "page" : undefined}
                   className={`klx-sidebar-menu-item group ${isActive ? "klx-sidebar-menu-item--active" : ""}`}
                 >
                   <Icon className="klx-sidebar-menu-item-icon" />
-                  {!collapsed && (
+                  {!isCollapsed && (
                     <span className="klx-sidebar-menu-item-label">{label}</span>
                   )}
                 </Link>
@@ -161,81 +197,73 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         })}
       </ScrollShadow>
 
-      {/* 3. FOOTER (NOTIFICHE, PROFILO, SUPPORTO & LOGOUT) */}
+      {/* 3. FOOTER (AZIONI, PROFILO, SUPPORTO & LOGOUT) */}
       <div className="klx-sidebar-footer">
-        {/* BOTTONI DI STATO E NOTIFICHE */}
+        {/* BOTTONI AZIONE — quelli applicativi compaiono SOLO con l'handler dell'app */}
         <div className="klx-sidebar-actions-grid">
-          {/* Notifiche */}
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
-            <Tooltip.Trigger>
-              <Button
-                isIconOnly
-                variant="ghost"
-                className="klx-sidebar-action-btn klx-sidebar-action-btn--notif"
-                aria-label={s.sidebar.notifications}
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-warning" />
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {s.sidebar.notifications}
-            </Tooltip.Content>
-          </Tooltip>
+          {onNotifications && (
+            <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  variant="ghost"
+                  onClick={onNotifications}
+                  className="klx-sidebar-action-btn klx-sidebar-action-btn--notif"
+                  aria-label={s.sidebar.notifications}
+                >
+                  <Bell className="w-4 h-4" />
+                  {hasUnreadNotifications && (
+                    <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-warning" />
+                  )}
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+                {s.sidebar.notifications}
+              </Tooltip.Content>
+            </Tooltip>
+          )}
 
-          {/* Messaggi */}
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
-            <Tooltip.Trigger>
-              <Button
-                isIconOnly
-                variant="ghost"
-                className="klx-sidebar-action-btn klx-sidebar-action-btn--msg"
-                aria-label={s.sidebar.messages}
-              >
-                <MessageSquare className="w-4 h-4" />
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {s.sidebar.messages}
-            </Tooltip.Content>
-          </Tooltip>
+          {onMessages && (
+            <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  variant="ghost"
+                  onClick={onMessages}
+                  className="klx-sidebar-action-btn klx-sidebar-action-btn--msg"
+                  aria-label={s.sidebar.messages}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+                {s.sidebar.messages}
+              </Tooltip.Content>
+            </Tooltip>
+          )}
 
-          {/* Stato del Servizio */}
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
-            <Tooltip.Trigger>
-              <Button
-                isIconOnly
-                variant="ghost"
-                className="klx-sidebar-action-btn klx-sidebar-action-btn--status"
-                aria-label={s.sidebar.serviceStatus}
-              >
-                <ActivitySquare className="w-4 h-4" />
-                <span className="absolute bottom-1 end-1 w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {s.sidebar.serviceStatusOk}
-            </Tooltip.Content>
-          </Tooltip>
+          {onServiceStatus && (
+            <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
+              <Tooltip.Trigger>
+                <Button
+                  isIconOnly
+                  variant="ghost"
+                  onClick={onServiceStatus}
+                  className="klx-sidebar-action-btn klx-sidebar-action-btn--status"
+                  aria-label={s.sidebar.serviceStatus}
+                >
+                  <ActivitySquare className="w-4 h-4" />
+                  <span className="absolute bottom-1 end-1 w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
+                {s.sidebar.serviceStatusOk}
+              </Tooltip.Content>
+            </Tooltip>
+          )}
 
           {/* Toggle Theme */}
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
+          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
             <Tooltip.Trigger>
               <Button
                 isIconOnly
@@ -254,14 +282,11 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
 
           {/* Settings (solo per l'owner dell'organizzazione) */}
           {userRole === "owner" && (
-            <Tooltip
-              isDisabled={!collapsed}
-              delay={0}
-              closeDelay={0}
-            >
+            <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
               <Tooltip.Trigger>
                 <Link
                   href={settingsUrl}
+                  onClick={onNavigate}
                   className="klx-sidebar-action-btn klx-sidebar-action-btn--settings"
                   aria-label={s.sidebar.settings}
                 >
@@ -284,7 +309,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
             <Avatar.Fallback className="text-white">{displayName.substring(0, 2).toUpperCase()}</Avatar.Fallback>
           </Avatar>
 
-          {!collapsed && (
+          {!isCollapsed && (
             <div className="klx-sidebar-profile-info">
               <p className="klx-sidebar-profile-name">
                 {displayName}
@@ -298,11 +323,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
 
         {/* BOTTONI SUPPORTO & LOGOUT */}
         <div className="klx-sidebar-footer-buttons">
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
+          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
             <Tooltip.Trigger>
               <Button
                 onClick={() => setSupportOpen(true)}
@@ -311,7 +332,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 aria-label={s.sidebar.openSupport}
               >
                 <LifeBuoy className="w-4 h-4" />
-                {!collapsed && <span>{s.sidebar.support}</span>}
+                {!isCollapsed && <span>{s.sidebar.support}</span>}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
@@ -319,11 +340,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
             </Tooltip.Content>
           </Tooltip>
 
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
+          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
             <Tooltip.Trigger>
               <Button
                 onClick={() => setAiOpen(true)}
@@ -332,7 +349,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 aria-label={s.sidebar.aiAgent}
               >
                 <Cpu className="w-4 h-4 text-secondary animate-pulse" />
-                {!collapsed && <span>{s.sidebar.aiAgent}</span>}
+                {!isCollapsed && <span>{s.sidebar.aiAgent}</span>}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
@@ -340,11 +357,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
             </Tooltip.Content>
           </Tooltip>
 
-          <Tooltip
-            isDisabled={!collapsed}
-            delay={0}
-            closeDelay={0}
-          >
+          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
             <Tooltip.Trigger>
               <Button
                 onClick={handleLogout}
@@ -353,7 +366,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
                 aria-label={s.sidebar.logout}
               >
                 <LogOut className="w-4 h-4" />
-                {!collapsed && <span>{s.sidebar.logout}</span>}
+                {!isCollapsed && <span>{s.sidebar.logout}</span>}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
@@ -363,7 +376,7 @@ export function Sidebar({ appId, collapsed, setCollapsed }: SidebarProps) {
         </div>
 
         {/* COPYRIGHT E VERSIONE FOOTER */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="klx-sidebar-copyright">
             <span>{brand.copyright}</span>
             <span className="bg-slate-100 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-mono text-[8px]">
