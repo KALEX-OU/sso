@@ -113,8 +113,9 @@ export function AIDataDialog({ isOpen, onClose }: AIDataDialogProps) {
   return (
     <Modal isOpen={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Modal.Backdrop isDismissable={true} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <Modal.Container className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-          <Modal.Dialog className="flex flex-col h-full overflow-hidden">
+        {/* Container Hero = wrapper di posizionamento (default a tutta altezza): neutralizzato; il pannello è Modal.Dialog. */}
+        <Modal.Container className="h-auto w-full max-w-2xl flex-none p-0 sm:w-full sm:p-0">
+          <Modal.Dialog className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-3xl p-6 w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-900/60 pb-3">
               <div className="flex items-center gap-3">
