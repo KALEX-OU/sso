@@ -386,8 +386,11 @@ export function UserSidebar({
         )}
       </div>
 
-      <SupportDialog isOpen={supportOpen} onClose={() => setSupportOpen(false)} />
-      <AIDataDialog isOpen={aiOpen} onClose={() => setAiOpen(false)} />
+      {/* Dialoghi montati SOLO quando aperti: su mobile la sidebar dockata è
+          display:none e i trigger inerti dei Modal (checkVisibility=false)
+          farebbero scattare il warning Pressable di react-aria. */}
+      {supportOpen && <SupportDialog isOpen={supportOpen} onClose={() => setSupportOpen(false)} />}
+      {aiOpen && <AIDataDialog isOpen={aiOpen} onClose={() => setAiOpen(false)} />}
     </aside>
   );
 }

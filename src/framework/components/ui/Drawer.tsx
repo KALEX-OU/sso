@@ -17,24 +17,14 @@ const DrawerBase: React.FC<DrawerProps> = (
       return <Skeleton className={`klx-drawer-skeleton ${className}`} />;
     }
 
-    // A11y (L0.4/L3.2): come il Modal, Drawer e DrawerRoot HeroUI montano un
-    // DialogTrigger react-aria che senza figlio pressable logga il warning
-    // "PressResponder was rendered without a pressable child". Nell'uso
-    // controllato (isOpen definito, nessun Drawer.Trigger) si soddisfa il
-    // PressResponder con un trigger inerte sr-only fuori da tab order e AT.
-    // Il tipo DrawerTriggerProps non dichiara tabIndex ma il componente lo
-    // inoltra al div interno: l'intersezione tipizza il prop extra senza cast.
-    const inertTriggerProps: React.ComponentProps<typeof HeroDrawerTrigger> & { tabIndex: number; "aria-hidden": boolean } = {
-      "aria-hidden": true,
-      tabIndex: -1,
-      className: "sr-only"
-    };
-    const content = props.isOpen !== undefined ? (
-      <HeroDrawerRoot {...props}>
-        <HeroDrawerTrigger {...inertTriggerProps} />
-        {children}
-      </HeroDrawerRoot>
-    ) : (
+    // A11y (L3.2): Drawer/DrawerRoot HeroUI montano un DialogTrigger react-aria
+    // che pretende un figlio pressable (e DrawerTrigger NON inoltra tabIndex,
+    // quindi il trucco del trigger inerte del Modal qui non funziona). Per
+    // l'USO CONTROLLATO usare Drawer.Backdrop STANDALONE con isOpen/onOpenChange
+    // (eredita ModalOverlay react-aria, che supporta il controllo diretto senza
+    // trigger): niente DialogTrigger → niente warning. Questo componente resta
+    // per l'uso con Drawer.Trigger reale.
+    const content = (
       <HeroDrawer
         {...props}
       >
