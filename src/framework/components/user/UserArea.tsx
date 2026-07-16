@@ -23,6 +23,10 @@ export { useDashboard } from "@/framework/components/layouts/DashboardContext";
 /**
  * ORCHESTRATORE dell'area privata (ex UserLayout monolitico, L3.4).
  *
+ * Nome: "UserArea" = l'area autenticata nel suo insieme — NON collide con la
+ * pagina /dashboard (la cui vista è layouts/DashboardView) né con UserMain
+ * (che resta il CONTENITORE dei contenuti dove vivono le viste modulo).
+ *
  * Possiede sessione e gate — useClaimsSync/useOnboarding/useRbacGuard,
  * MfaEnrollmentGate (174), ReauthProvider (178), DashboardContext — e compone
  * la shell PRESENTAZIONALE `UserLayout` (sidebar dockata + drawer mobile +
@@ -30,14 +34,14 @@ export { useDashboard } from "@/framework/components/layouts/DashboardContext";
  * tengono la logica, i componenti famiglia restano editabili su Claude Design.
  */
 
-export interface UserDashboardProps {
+export interface UserAreaProps {
   children: React.ReactNode;
   appId?: string;
   /** Handler opzionali delle azioni sidebar (Notifiche/Messaggi/Stato servizio). */
   sidebarActions?: Pick<UserSidebarProps, "onNotifications" | "hasUnreadNotifications" | "onMessages" | "onServiceStatus">;
 }
 
-export function UserDashboard({ children, appId = "sso", sidebarActions }: UserDashboardProps) {
+export function UserArea({ children, appId = "sso", sidebarActions }: UserAreaProps) {
   const s = useUIStrings();
   // Ref per usare le stringhe correnti dentro callback/effetti senza aggiungerle
   // alle dipendenze (il cambio lingua non deve ri-innescare fetch/refresh).
@@ -242,4 +246,4 @@ export function UserDashboard({ children, appId = "sso", sidebarActions }: UserD
   );
 }
 
-export default UserDashboard;
+export default UserArea;

@@ -11,8 +11,11 @@ import {
   Smartphone,
   QrCode,
   Check,
-  Laptop
+  Laptop,
+  Building2,
+  CreditCard
 } from "lucide-react";
+import { DashboardView } from "@/framework/components/layouts/DashboardView";
 
 interface DeviceSession {
   id: string;
@@ -66,6 +69,9 @@ export default function DashboardPage() {
 
   // Contratto /api/auth/dashboard: { user, organization } (org attiva con role).
   const activeOrg = dbData?.organization;
+  // Conteggio piatto degli item di sottoscrizione (stessa logica della sezione sotto).
+  const subsCount = ((activeOrg?.subscriptions as unknown as SubscriptionData[] | undefined) ?? [])
+    .reduce((n, sub) => n + (Array.isArray(sub.items) ? sub.items.length : 0), 0);
 
   const handleRevokeSession = (id: string) => {
     setSessions(sessions.filter((s) => s.id !== id));
@@ -145,7 +151,39 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans">
+    <div className="animate-fade-in font-sans">
+    {/* Vista dashboard (layouts/DashboardView): KPI in testa + sezioni come children */}
+    <DashboardView
+      stats={[
+        {
+          id: "org",
+          label: t("dashboard.title"),
+          value: activeOrg?.name || t("dashboard.noOrg"),
+          hint: activeOrg?.confirmed ? t("dashboard.statusApproved") : t("dashboard.statusInReview"),
+          tone: activeOrg?.confirmed ? "success" : "warning",
+          icon: <Building2 className="w-5 h-5" />
+        },
+        {
+          id: "subs",
+          label: t("dashboard.suiteSubs"),
+          value: String(subsCount),
+          icon: <CreditCard className="w-5 h-5" />
+        },
+        {
+          id: "mfa",
+          label: t("dashboard.mfaTitle"),
+          value: mfaEnabled ? t("dashboard.mfaEnabled") : t("dashboard.pending"),
+          tone: mfaEnabled ? "success" : "warning",
+          icon: <ShieldCheck className="w-5 h-5" />
+        },
+        {
+          id: "devices",
+          label: t("dashboard.deviceTitle"),
+          value: String(sessions.length),
+          icon: <Laptop className="w-5 h-5" />
+        }
+      ]}
+    >
       {/* 1. Anagrafica Organizzazione Info & Sottoscrizioni */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-xl rounded-3xl p-1">
@@ -310,6 +348,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+    </DashboardView>
     </div>
   );
 }

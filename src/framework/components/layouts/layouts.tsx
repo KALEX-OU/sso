@@ -1,7 +1,7 @@
 "use client";
 
 // L3.4 (DS_LAYOUTS_V1_1_PLAN): il DashboardLayout storico è assorbito dalla
-// shell user del framework — user/UserDashboard (orchestratore: session sync,
+// shell user del framework — user/UserArea (orchestratore: session sync,
 // gate RBAC/MFA/onboarding) che compone la shell presentazionale user/UserLayout
 // (UserSidebar dockata + Drawer mobile, UserMain, Command Palette ⌘K).
 //
@@ -10,7 +10,7 @@
 // default nella firma qui sotto è quindi un contratto del sync, non toccarlo.
 
 import React from "react";
-import { UserDashboard } from "@/framework/components/user/UserDashboard";
+import { UserArea } from "@/framework/components/user/UserArea";
 
 export { useDashboard } from "@/framework/components/layouts/DashboardContext";
 
@@ -20,7 +20,7 @@ export interface LayoutProps {
 }
 
 export function DashboardLayout({ children, appId = "sso" }: LayoutProps): React.ReactElement {
-  return <UserDashboard appId={appId}>{children}</UserDashboard>;
+  return <UserArea appId={appId}>{children}</UserArea>;
 }
 
 export default DashboardLayout;

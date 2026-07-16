@@ -10,7 +10,7 @@ import { Drawer } from "../ui";
  * UserLayout è la struttura pura — sidebar dockata da md in su, drawer di
  * navigazione mobile, area contenuti, overlay globali — con tutto via slot.
  * NIENTE hook di auth/router/claims qui: l'orchestrazione (session sync,
- * gate RBAC/MFA/onboarding, DashboardContext) vive in `UserDashboard`,
+ * gate RBAC/MFA/onboarding, DashboardContext) vive in `UserArea`,
  * che compone questa shell. È ciò che rende la shell editabile su Claude
  * Design con i mock demo, come le card auth.
  */
