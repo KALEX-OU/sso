@@ -12,7 +12,7 @@
  */
 
 import { useSearchParams } from "next/navigation";
-import { useBrand } from "@/framework/components/providers/BrandProvider";
+import { KALEX_BRAND } from "@/framework/lib/brand.config";
 import {
   AUTH_AREA_DEFAULT_BRAND,
   type AuthAreaBrand,
@@ -41,14 +41,15 @@ const BRAND_CONFIGS: Record<string, AuthAreaBrand> = {
 
 export function useAuthBrand() {
   const searchParams = useSearchParams();
-  const wlBrand = useBrand();
   const clientId = searchParams.get("client_id") || "default";
   const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
   return {
     clientId,
     brand,
-    /** Nome statico del brand (verticale o white-label). */
-    brandName: brand.name ?? wlBrand.name,
+    /** Nome statico del brand: verticale, altrimenti SEMPRE KALEX (il portale
+     *  auth è l'identity provider dell'ecosistema — decisione owner 2026-07-16;
+     *  il tenant white-label §3-bis resta prioritario dentro AuthArea). */
+    brandName: brand.name ?? KALEX_BRAND.name,
     /** Gradiente della CTA/logo del verticale attivo. */
     gradient: brand.logoColor,
   };

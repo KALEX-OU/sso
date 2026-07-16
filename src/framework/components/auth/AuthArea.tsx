@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Button, Logo } from "../ui";
 import { AuthLayout } from "./AuthLayout";
 import { AuthCard } from "./AuthCard";
-import { useBrand } from "../providers/BrandProvider";
+import { KALEX_BRAND } from "../../lib/brand.config";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 import { useChangeLocale, useCurrentLocale } from "@/locales/client";
 
@@ -40,9 +40,11 @@ export function preserveAuthQuery(searchParams: URLSearchParams): string {
 }
 
 /**
- * Estetica di un brand del portale auth (verticale o default white-label).
- * `name: null` = il nome segue il brand white-label attivo (useBrand):
- * niente identità cablata nel markup per la voce di default.
+ * Estetica di un brand del portale auth (verticale o default).
+ * `name: null` = wordmark KALEX: il portale di autenticazione è SEMPRE
+ * brandizzato KALEX (identity provider dell'ecosistema — decisione owner
+ * 2026-07-16). Il tenant white-label per-org (§3-bis) resta prioritario
+ * sul nome, risolto a runtime dall'host.
  */
 export interface AuthAreaBrand {
   name: string | null;
@@ -89,7 +91,6 @@ export function AuthArea({
   const changeLocale = useChangeLocale();
   const { setTheme, resolvedTheme } = useTheme();
   const searchParams = useSearchParams();
-  const wlBrand = useBrand();
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   // next-themes: `resolvedTheme` è indefinito in SSR — il gate `mounted` evita
@@ -105,7 +106,9 @@ export function AuthArea({
   const redirectUri = searchParams.get("redirect_uri");
   const isDark = mounted && resolvedTheme === "dark";
   const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
-  const staticBrandName = brandName ?? brand.name ?? wlBrand.name;
+  // Il portale auth è SEMPRE KALEX (identity provider): niente white-label
+  // runtime sul default; vincono solo il verticale (brand.name) e il tenant §3-bis.
+  const staticBrandName = brandName ?? brand.name ?? KALEX_BRAND.name;
   const displayBrandName = tenantName || staticBrandName;
   const legalQuery = preserveAuthQuery(searchParams);
 
@@ -218,7 +221,7 @@ export function AuthArea({
 
         {/* Footer legale */}
         <div className="mt-8 text-center text-xs text-slate-500 dark:text-gray-500 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-          <p>{wlBrand.copyright} · {s.auth.area.rightsReserved}</p>
+          <p>{KALEX_BRAND.copyright} · {s.auth.area.rightsReserved}</p>
           <span className="hidden sm:inline text-slate-300 dark:text-gray-600">|</span>
           <div className="flex gap-3">
             <a href={`/${currentLocale}/privacy${legalQuery}`} className="hover:text-slate-800 dark:hover:text-white transition-colors">{s.auth.area.legalPrivacy}</a>

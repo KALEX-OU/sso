@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Card, CardContent, Logo } from "../ui";
+import { KALEX_BRAND } from "../../lib/brand.config";
 
 /**
  * Cornice standard dei form di autenticazione (card DS `auth/*`):
@@ -11,8 +12,11 @@ import { Card, CardContent, Logo } from "../ui";
 export interface AuthCardProps {
   children: React.ReactNode;
   /**
-   * Blocco brand sopra il contenuto. Default: `<Logo size="lg" />` (wordmark
-   * del brand attivo) — passare `null` per sopprimerlo, o un nodo custom.
+   * Blocco brand sopra il contenuto. Default: `ui/Logo` con wordmark KALEX —
+   * il portale di autenticazione è SEMPRE brandizzato KALEX (identity provider
+   * dell'ecosistema), indipendentemente dal white-label attivo (decisione
+   * owner 2026-07-16). Passare `null` per sopprimerlo, o un nodo custom
+   * (es. il Logo del verticale/tenant che passa AuthArea).
    */
   header?: React.ReactNode;
   /** Messaggio di errore globale del form (banner rosso standard). */
@@ -32,9 +36,9 @@ export const AuthCard: React.FC<AuthCardProps> = ({
     className={`max-w-xl w-full border border-line bg-white/70 dark:bg-slate-900/35 backdrop-blur-2xl shadow-2xl p-1 sm:p-3 relative z-10 rounded-3xl transition-all ${className}`}
   >
     <CardContent className={`p-4 ${contentClassName}`}>
-      {/* undefined → logo di default; null → nessun header (scelta esplicita del consumer) */}
+      {/* undefined → logo di default (sempre KALEX); null → nessun header (scelta esplicita del consumer) */}
       {header !== null && (
-        <div className="text-center mb-8">{header ?? <Logo size="lg" />}</div>
+        <div className="text-center mb-8">{header ?? <Logo size="lg" name={KALEX_BRAND.name} />}</div>
       )}
 
       {error && (
