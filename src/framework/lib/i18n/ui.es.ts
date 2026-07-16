@@ -106,7 +106,7 @@ export const es: UIStrings = {
       backupPrompt: "Introduce uno de los códigos de respaldo que guardaste al configurar la 2FA. Restableceremos el segundo factor; luego inicia sesión con tu contraseña.",
       backupSubmit: "Restablecer",
       backupCancel: "Cancelar",
-      trustDevice: "Confiar en este dispositivo durante 30 días",
+      trustDevice: "Recordar este dispositivo durante 30 días (sin reconfirmaciones para operaciones sensibles)",
     },
     reauth: {
       title: "Confirma tu identidad",

@@ -106,7 +106,7 @@ export const en: UIStrings = {
       backupPrompt: "Enter one of the backup codes you saved when setting up 2FA. We'll reset the second factor; then sign in with your password.",
       backupSubmit: "Reset",
       backupCancel: "Cancel",
-      trustDevice: "Trust this device for 30 days",
+      trustDevice: "Remember this device for 30 days (no re-confirmation for sensitive operations)",
     },
     reauth: {
       title: "Confirm your identity",

@@ -107,7 +107,7 @@ export const it = {
       backupPrompt: "Inserisci uno dei codici di backup salvati quando hai configurato la 2FA. Reimposteremo il secondo fattore; poi accedi con la tua password.",
       backupSubmit: "Reimposta",
       backupCancel: "Annulla",
-      trustDevice: "Fidati di questo dispositivo per 30 giorni",
+      trustDevice: "Ricorda questo dispositivo per 30 giorni (niente riconferme per le operazioni sensibili)",
     },
     reauth: {
       title: "Conferma la tua identità",
