@@ -247,24 +247,14 @@ body {
   @apply h-16 flex items-center justify-between px-4 border-b border-slate-200/60 dark:border-slate-900/50;
 }
 
-.klx-sidebar-logo-container {
-  @apply flex items-center gap-2 select-none;
-}
-
+/* Wordmark espanso: componente ui/Logo (M4). Il quadratino logoMark resta
+   per lo stato collassato. */
 .klx-sidebar-logo-mark {
   @apply w-6 h-6 rounded-md bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-black text-white text-xs;
 }
 
 .klx-sidebar--collapsed .klx-sidebar-logo-mark {
   @apply mx-auto w-8 h-8 text-sm;
-}
-
-.klx-sidebar-logo-text {
-  /* Il gradiente del logo ACCOMPAGNA la direzione di lettura del testo:
-     in RTL parte quindi dal lato di inizio lettura (rtl:bg-gradient-to-l).
-     Gli altri gradienti del DS (CTA .klx-btn--primary, logo-mark to-br) sono
-     puramente decorativi e restano fisici — vedi nota su .klx-btn--primary. */
-  @apply text-sm font-black uppercase tracking-[0.2em] bg-clip-text text-transparent bg-gradient-to-r rtl:bg-gradient-to-l from-primary to-secondary;
 }
 
 .klx-sidebar-toggle-btn {
@@ -276,18 +266,20 @@ body {
   @apply flex-1 py-4 px-3 space-y-1.5 overflow-y-auto;
 }
 
+/* Voci di navigazione (M3): sentence case quiet — text-sm font-medium,
+   attivo = pill piena senza doppio segnale del bordo laterale. */
 .klx-sidebar-menu-item {
-  @apply flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-200 relative;
-  @apply text-ink-muted hover:text-primary hover:bg-primary/5;
+  @apply flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 relative;
+  @apply text-ink-muted hover:text-ink hover:bg-primary/5;
 }
 
 .klx-sidebar-menu-item--active {
-  @apply bg-primary/10 text-primary border-s-3 border-primary;
+  @apply bg-primary/10 text-primary font-semibold;
 }
 
 .klx-sidebar-menu-item-icon {
-  @apply w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110;
-  @apply text-ink-muted group-hover:text-primary;
+  @apply w-[18px] h-[18px] shrink-0 transition-transform duration-200 group-hover:scale-105;
+  @apply text-ink-muted group-hover:text-ink;
 }
 
 .klx-sidebar-menu-item--active .klx-sidebar-menu-item-icon {
@@ -333,61 +325,7 @@ body {
   @apply hover:text-success hover:bg-success/5;
 }
 
-.klx-sidebar-action-btn--settings {
-  @apply hover:text-primary hover:bg-primary/5;
-}
-
-/* Card del Profilo Utente */
-.klx-sidebar-profile-card {
-  @apply flex items-center gap-3 p-1.5 rounded-xl bg-slate-200/30 dark:bg-slate-900/30 justify-start;
-}
-
-.klx-sidebar--collapsed .klx-sidebar-profile-card {
-  @apply justify-center;
-}
-
-.klx-sidebar-profile-avatar {
-  @apply w-8 h-8 text-xs cursor-pointer ring-1 ring-slate-300 dark:ring-slate-800 ring-offset-1 ring-offset-white dark:ring-offset-slate-950 shrink-0;
-}
-
-.klx-sidebar-profile-info {
-  @apply text-start min-w-0 flex-1;
-}
-
-.klx-sidebar-profile-name {
-  @apply text-xs font-black text-slate-800 dark:text-slate-200 truncate uppercase tracking-wide;
-}
-
-.klx-sidebar-profile-role {
-  @apply text-[9px] font-bold text-slate-500 dark:text-slate-500 tracking-wider uppercase truncate;
-}
-
-/* Pulsanti Footer (Supporto, AI, Logout) */
-.klx-sidebar-footer-buttons {
-  @apply flex justify-between gap-1.5;
-}
-
-.klx-sidebar--collapsed .klx-sidebar-footer-buttons {
-  @apply flex-col gap-1 items-center;
-}
-
-.klx-sidebar-footer-btn {
-  @apply flex items-center justify-center p-2 rounded-xl text-ink-muted hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-900 transition-all relative cursor-pointer;
-  @apply flex-1 gap-2 text-[10px] font-bold uppercase tracking-wider;
-}
-
-.klx-sidebar--collapsed .klx-sidebar-footer-btn {
-  @apply w-8 h-8 p-0;
-}
-
-.klx-sidebar-footer-btn--logout {
-  @apply text-danger hover:text-danger/80 hover:bg-danger/10;
-}
-
-/* Copyright e versione */
-.klx-sidebar-copyright {
-  @apply flex items-center justify-between mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-900/60 text-[9px] text-slate-500 font-medium tracking-wide;
-}
+/* Profilo, supporto/AI/logout e copyright: assorbiti dal UserMenu (M1/M2). */
 
 
 /* ==========================================================================
