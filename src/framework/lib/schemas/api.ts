@@ -225,6 +225,22 @@ export const trustedDevicesResponseSchema = apiEnvelopeSchema.extend({
   devices: z.array(trustedDeviceSchema).optional()
 });
 
+/* ── Team (UserTeam: /api/team/list) ─────────────────────────────────────── */
+
+export const teamItemSchema = z.looseObject({
+  teamId: z.string(),
+  name: z.string(),
+  isTest: z.boolean().optional(),
+  createdAt: z.string().optional(),
+  memberCount: z.number().optional(),
+  rbac: z.object({ apps: z.record(z.string(), z.record(z.string(), z.number())) }).nullable().optional()
+});
+export type TeamItemData = z.infer<typeof teamItemSchema>;
+
+export const teamListResponseSchema = apiEnvelopeSchema.extend({
+  items: z.array(teamItemSchema).optional()
+});
+
 export const apiKeyStatusResponseSchema = apiEnvelopeSchema.extend({
   hasKey: z.boolean().optional(),
   keyHash: z.string().optional(),

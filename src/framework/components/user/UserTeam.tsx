@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
+import { fetchAuthedClient } from "../../lib/api";
+import { apiEnvelopeSchema, teamListResponseSchema, type TeamItemData } from "../../lib/schemas/api";
 import { UserPageHeader } from "./UserMain";
 import { UserCard } from "./UserCard";
 import {
@@ -40,8 +42,9 @@ import { useUIStrings, fmtUI } from "../../lib/ui.localization";
  * (P1-94), rimozioni. Raggiungibile dal UserMenu (owner), fuori dalla sidebar
  * (USER_MENU_MODULES).
  *
- * Dipendenze applicative via props (pattern dei moduli Product/Invoice):
- * `fetchAuthed` (fetch autenticata dell'app) e `listMembers` (Data Connect).
+ * Rete: fetchAuthedClient del framework (Bearer + App Check + CSRF + dialogo
+ * di riconferma step-up con retry sui 403). Unica dipendenza applicativa via
+ * props: `listMembers` (Data Connect dell'app).
  */
 
 interface MemberUser {
@@ -61,18 +64,10 @@ export interface TeamMemberItem {
   status?: string;
 }
 
-export interface TeamItem {
-  teamId: string;
-  name: string;
-  isTest: boolean;
-  createdAt: string;
-  memberCount?: number;
-  rbac?: RbacStructure | null;
-}
+/** Item team validato dallo schema condiviso (Z1: tipo derivato da Zod, zero drift). */
+export type TeamItem = TeamItemData;
 
 export interface UserTeamProps {
-  /** Fetch autenticata dell'app (Bearer + App Check inclusi). */
-  fetchAuthed: (url: string, init?: RequestInit) => Promise<Response>;
   /** Elenco membri dell'organizzazione (Data Connect dell'app). */
   listMembers: (orgId: string) => Promise<TeamMemberItem[]>;
 }
@@ -90,7 +85,7 @@ interface ConfirmState {
 const inputClass =
   "bg-surface-2 border border-line focus:border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full transition-all";
 
-export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
+export function UserTeam({ listMembers }: UserTeamProps) {
   const { dbData, showToast, claims, hasPermission } = useDashboard();
   const s = useUIStrings();
   // Pattern sRef (regola i18n): le callback dei fetch leggono le stringhe dalla
@@ -144,12 +139,13 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
   const loadTeams = useCallback(async () => {
     setLoadingTeams(true);
     try {
-      const response = await fetchAuthed("/api/team/list", { method: "GET" });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setTeams(data.items || []);
+      // fetchAuthedClient (framework): Bearer+App Check+CSRF automatici e, sui
+      // 403 auth/reauth-required dello step-up, dialogo di riconferma + retry.
+      const res = await fetchAuthedClient("/api/team/list", { method: "GET" }, { validate: (raw) => teamListResponseSchema.parse(raw) });
+      if (res.success && res.data) {
+        setTeams(res.data.items || []);
       } else {
-        throw new Error(typeof data.error === "object" && data.error && "message" in data.error ? String(data.error.message) : sRef.current.team.loadTeamsErr);
+        throw new Error(res.error?.message || sRef.current.team.loadTeamsErr);
       }
     } catch (err) {
       console.error("Errore caricamento team:", err);
@@ -157,7 +153,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
     } finally {
       setLoadingTeams(false);
     }
-  }, [fetchAuthed, showToast]);
+  }, [showToast]);
 
   useEffect(() => {
     if (!activeOrg?.orgId) return;
@@ -175,7 +171,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
     if (!activeOrg) return;
     setInviting(true);
     try {
-      const response = await fetchAuthed("/api/user/create", {
+      const res = await fetchAuthedClient("/api/user/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -185,10 +181,9 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
           orgId: activeOrg.orgId,
           teamIds: memberForm.teamIds
         })
-      });
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error?.message || s.team.inviteErr);
+      }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+      if (!res.success) {
+        throw new Error(res.error?.message || s.team.inviteErr);
       }
       showToast(s.team.inviteQueued, "success");
       // Feedback reattivo: membro pending in testa alla lista.
@@ -215,11 +210,11 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
     if (!activeOrg) return;
     showToast(s.team.retrying, "info");
     try {
-      await fetchAuthed("/api/user/create", {
+      await fetchAuthedClient("/api/user/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, fullName, role, orgId: activeOrg.orgId })
-      });
+      }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
       showToast(s.team.retryOk, "success");
       await loadMembers(activeOrg.orgId);
     } catch (err) {
@@ -235,13 +230,12 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
       confirmLabel: s.team.removeConfirm,
       onConfirm: async () => {
         if (!activeOrg) return;
-        const response = await fetchAuthed(`/api/user/${targetUserId}`, { method: "DELETE" });
-        const data = await response.json();
-        if (response.ok && data.success) {
+        const res = await fetchAuthedClient(`/api/user/${targetUserId}`, { method: "DELETE" }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+        if (res.success) {
           showToast(s.team.removed, "success");
           void loadMembers(activeOrg.orgId);
         } else {
-          throw new Error(typeof data.error === "string" ? data.error : s.team.removeErr);
+          throw new Error(res.error?.message || s.team.removeErr);
         }
       }
     });
@@ -256,17 +250,16 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
       reasonLabel: s.team.mfaReasonLabel,
       onConfirm: async (reason) => {
         if (!activeOrg) return;
-        const response = await fetchAuthed(`/api/user/${targetUserId}/mfa/admin-reset`, {
+        const res = await fetchAuthedClient(`/api/user/${targetUserId}/mfa/admin-reset`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reason: (reason || "").trim() })
-        });
-        const data = await response.json();
-        if (response.ok && data.success) {
+        }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+        if (res.success) {
           showToast(s.team.mfaResetOk, "success");
           void loadMembers(activeOrg.orgId);
         } else {
-          throw new Error(typeof data.error === "string" ? data.error : s.team.mfaResetErr);
+          throw new Error(res.error?.message || s.team.mfaResetErr);
         }
       }
     });
@@ -286,18 +279,17 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
     if (!newTeamName.trim()) return;
     setCreating(true);
     try {
-      const response = await fetchAuthed("/api/team/create", {
+      const res = await fetchAuthedClient("/api/team/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newTeamName, appId: "sso" })
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
+      }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+      if (res.success) {
         showToast(fmtUI(s.team.teamCreated, { name: newTeamName }), "success");
         setNewTeamName("");
         void loadTeams();
       } else {
-        throw new Error(typeof data.error === "object" && data.error && "message" in data.error ? String(data.error.message) : s.team.teamCreateErr);
+        throw new Error(res.error?.message || s.team.teamCreateErr);
       }
     } catch (err) {
       console.error(err);
@@ -313,13 +305,12 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
       body: fmtUI(s.team.confirmDeleteTeam, { name: teamName }),
       confirmLabel: s.team.removeConfirm,
       onConfirm: async () => {
-        const response = await fetchAuthed(`/api/team/${teamId}`, { method: "DELETE" });
-        const data = await response.json();
-        if (response.ok && data.success) {
+        const res = await fetchAuthedClient(`/api/team/${teamId}`, { method: "DELETE" }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+        if (res.success) {
           showToast(fmtUI(s.team.teamDeleted, { name: teamName }), "success");
           void loadTeams();
         } else {
-          throw new Error(typeof data.error === "object" && data.error && "message" in data.error ? String(data.error.message) : s.team.teamDeleteErr);
+          throw new Error(res.error?.message || s.team.teamDeleteErr);
         }
       }
     });
@@ -348,20 +339,19 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
     if (!permTarget) return;
     setSavingPerms(true);
     try {
-      const response =
+      const res =
         permTarget.kind === "member"
-          ? await fetchAuthed(`/api/user/${permTarget.member.user?.userId}`, {
+          ? await fetchAuthedClient(`/api/user/${permTarget.member.user?.userId}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ role: editingRole, rbac: editingRbac })
-            })
-          : await fetchAuthed(`/api/team/${permTarget.team.teamId}`, {
+            }, { validate: (raw) => apiEnvelopeSchema.parse(raw) })
+          : await fetchAuthedClient(`/api/team/${permTarget.team.teamId}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ name: permTarget.team.name, rbac: editingRbac })
-            });
-      const data = await response.json();
-      if (response.ok && data.success) {
+            }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+      if (res.success) {
         showToast(s.team.permsSaved, "success");
         setPermTarget(null);
         if (permTarget.kind === "member" && activeOrg) void loadMembers(activeOrg.orgId);
