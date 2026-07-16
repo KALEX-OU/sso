@@ -8,6 +8,7 @@ import { toAuthError } from "../../lib/auth-error";
 import { Card, CardBody, Button, Input, Label } from "../ui";
 import { SettingsMfa } from "./SettingsMfa";
 import { SettingsApiKey } from "./SettingsApiKey";
+import { UserCard } from "../user/UserCard";
 import {
   Key,
   Shield,
@@ -427,20 +428,13 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
         </CardBody>
       </Card>
 
-      {/* SEC 3C: DISPOSITIVI FIDATI MFA (N3) — bypass step-up "non chiedere per 30 giorni" */}
-      <Card className="klx-settings-card--full">
-        <CardBody>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-secondary" />
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-ink">
-                {s.settings.trustedTitle}
-              </h3>
-            </div>
-          </div>
-          <p className="text-xs text-ink-muted leading-relaxed mb-4">
-            {s.settings.trustedDesc}
-          </p>
+      {/* SEC 3C: DISPOSITIVI FIDATI MFA (N3) — bypass step-up "non chiedere per 30 giorni".
+          Prima adozione di user/UserCard (pannello standard della famiglia user). */}
+      <UserCard
+        title={s.settings.trustedTitle}
+        icon={<Shield className="w-4 h-4 text-secondary" />}
+        description={s.settings.trustedDesc}
+      >
           {trustedLoading && trustedDevices.length === 0 ? (
             <p className="text-xs text-slate-400">{s.settings.trustedLoading}</p>
           ) : trustedDevices.length === 0 ? (
@@ -476,8 +470,7 @@ export function SettingsSecurity({ executeWithReauthChallenge, onRequestAccountD
               ))}
             </div>
           )}
-        </CardBody>
-      </Card>
+      </UserCard>
 
       {/* SEC 4: CHIAVE API PERSONALE */}
       <SettingsApiKey />
