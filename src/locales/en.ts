@@ -1,6 +1,5 @@
 export default {
   "auth.welcome": "Welcome to",
-  "auth.subtitle": "SSO & Ecosystem Control Center",
   "auth.email": "Email Address",
   "auth.password": "Password",
   "auth.name": "Full Name",
@@ -142,7 +141,6 @@ export default {
   "auth.passwordStrong": "Strong ✨",
   "auth.sdiPlaceholder": "7 characters",
   "auth.officePlaceholder": "6 characters",
-  "auth.rightsReserved": "All rights reserved.",
   "auth.resetEmailSentTitle": "Email Sent",
   "auth.passwordUpdatedTitle": "Password Updated",
   "payment.subtitle": "View all payments made or attempted for {brand} SaaS services.",

@@ -5,54 +5,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { applyActionCode, onAuthStateChanged, User } from "firebase/auth";
 import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import { useI18n, useCurrentLocale } from "@/locales/client";
-// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
-// NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
-// stato ridotto di conseguenza per mantenere l'ingombro precedente.
-import { Card, CardContent } from "@/framework/components/ui";
-import { Loader2 } from "lucide-react";
 import { AuthStatusCard } from "@/framework/components/auth/AuthStatusCard";
 import { GlobalLoader } from "@/framework/components/ui";
-import { AuthLayout } from "@/framework/components/auth/AuthLayout";
-import { useBrand } from "@/framework/components/providers/BrandProvider";
-
-// Configurazione brand speculare a quella di auth/page.tsx.
-// `name: null` = il nome segue il brand white-label attivo (useBrand, E5.1).
-const BRAND_CONFIGS: Record<
-  string,
-  {
-    name: string | null;
-    bgGradientLight: string;
-    bgGradientDark: string;
-    glowColorLight: string;
-    glowColorDark: string;
-    logoColor: string;
-  }
-> = {
-  satefy: {
-    name: "SATEFY",
-    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
-    glowColorLight: "bg-success/5",
-    glowColorDark: "bg-success/10",
-    logoColor: "from-success to-teal-500"
-  },
-  standlo: {
-    name: "STANDLO",
-    bgGradientLight: "from-cyan-100/40 via-slate-50 to-blue-100/20",
-    bgGradientDark: "from-cyan-950/25 via-slate-950 to-blue-950/15",
-    glowColorLight: "bg-cyan-500/5",
-    glowColorDark: "bg-cyan-500/10",
-    logoColor: "from-cyan-400 to-blue-500"
-  },
-  default: {
-    name: null,
-    bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
-    bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
-    glowColorLight: "bg-secondary/5",
-    glowColorDark: "bg-secondary/10",
-    logoColor: "from-secondary to-accent"
-  }
-};
+// Cornice unica del portale auth (framework, speculare a user/UserArea):
+// glow, toggle tema/lingua, Logo del verticale, footer legale, marketing.
+import { AuthArea } from "@/framework/components/auth/AuthArea";
+import { useAuthBrand } from "../_shared/auth-portal";
 
 // Guardia anti doppio-apply a livello di MODULO: in dev il re-mount della pagina
 // (StrictMode + bailout Suspense di useSearchParams) crea una nuova istanza del componente,
@@ -96,13 +54,8 @@ export default function VerifyEmailPage() {
   // PKCE (3.1): challenge generato dalla RP, inoltrato tale e quale a /api/auth/code
   const codeChallenge = searchParams.get("code_challenge");
 
-  const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
-  // Brand white-label attivo: il default non cabla più "KALEX" (E5.1).
-  const wlBrand = useBrand();
-  const brandName = brand.name ?? wlBrand.name;
-  const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
-  const activeBgGradient = isDark ? brand.bgGradientDark : brand.bgGradientLight;
-  const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
+  // Estetica del verticale attivo (client_id → brand, _shared/auth-portal).
+  const { brand, brandName } = useAuthBrand();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -359,52 +312,27 @@ export default function VerifyEmailPage() {
     return <GlobalLoader message={statusMessage} />;
   }
 
+  // Cornice unica AuthArea (logo compatto senza tagline, come gli step MFA/verify
+  // del login); il loader a pagina intera resta il GlobalLoader qui sopra.
   return (
-    <AuthLayout variant="centered" className={`bg-gradient-to-br ${activeBgGradient}`}>
-      {/* Ambient Glow — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
-      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full filter blur-[100px] pointer-events-none ${activeGlowColor} opacity-50`}></div>
+    <AuthArea brand={brand} brandName={brandName} showHeader={false} cardClassName="max-w-md">
+      {/* Errore */}
+      {error && (
+        <AuthStatusCard
+          variant="error"
+          title={t("auth.verifyFailedTitle")}
+          description={error}
+          primaryAction={{
+            label: t("auth.backToLogin"),
+            onClick: () => router.push(`/${currentLocale}/auth${window.location.search}`),
+          }}
+        />
+      )}
 
-      <AuthLayout.Form>
-      <Card className="w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 text-center rounded-3xl">
-        <CardContent className="flex flex-col items-center justify-center p-2">
-          {/* Logo Brand */}
-          <div className="text-center mb-6">
-            <span className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}>
-              {brandName}
-            </span>
-            <p className="text-slate-500 dark:text-gray-400 text-[10px] font-bold mt-1 tracking-wider uppercase">
-              {t("auth.subtitle")}
-            </p>
-          </div>
-
-          {/* Loader / Stato */}
-          {loading && (
-            <div className="my-8">
-              <Loader2 className="w-12 h-12 text-secondary animate-spin mx-auto mb-4" />
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{statusMessage}</p>
-            </div>
-          )}
-
-          {/* Errore */}
-          {error && (
-            <AuthStatusCard
-              variant="error"
-              title={t("auth.verifyFailedTitle")}
-              description={error}
-              primaryAction={{
-                label: t("auth.backToLogin"),
-                onClick: () => router.push(`/${currentLocale}/auth${window.location.search}`),
-              }}
-            />
-          )}
-
-          {/* Successo */}
-          {successMessage && !loading && (
-            <AuthStatusCard variant="success" title={successMessage} description={statusMessage} />
-          )}
-        </CardContent>
-      </Card>
-      </AuthLayout.Form>
-    </AuthLayout>
+      {/* Successo */}
+      {successMessage && !loading && (
+        <AuthStatusCard variant="success" title={successMessage} description={statusMessage} />
+      )}
+    </AuthArea>
   );
 }

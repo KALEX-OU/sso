@@ -6,64 +6,18 @@ import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import {
   verifyPasswordResetCode
 } from "firebase/auth";
-// E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
-// NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
-// stato ridotto di conseguenza per mantenere l'ingombro precedente.
-import {
-  Button,
-  Card,
-  CardContent,
-} from "@/framework/components/ui";
-import { AuthLayout } from "@/framework/components/auth/AuthLayout";
 import { AuthFormResetPassword } from "@/framework/components/auth/AuthFormResetPassword";
 import { AuthStatusCard } from "@/framework/components/auth/AuthStatusCard";
 import { GlobalLoader } from "@/framework/components/ui";
-import { useTheme } from "next-themes";
+// Cornice unica del portale auth (framework, speculare a user/UserArea):
+// glow, toggle tema/lingua, Logo del verticale, footer legale, marketing.
+import { AuthArea } from "@/framework/components/auth/AuthArea";
+import { useAuthBrand } from "../_shared/auth-portal";
 import { useI18n, useCurrentLocale } from "@/locales/client";
-import { Sun, Moon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm, SubmitHandler, useWatch } from "react-hook-form";
-import { useBrand } from "@/framework/components/providers/BrandProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-// Configurazione brand speculare ad auth/page.tsx.
-// `name: null` = il nome segue il brand white-label attivo (useBrand, E5.1).
-const BRAND_CONFIGS: Record<
-  string,
-  {
-    name: string | null;
-    bgGradientLight: string;
-    bgGradientDark: string;
-    glowColorLight: string;
-    glowColorDark: string;
-    logoColor: string;
-  }
-> = {
-  satefy: {
-    name: "SATEFY",
-    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
-    glowColorLight: "bg-success/5",
-    glowColorDark: "bg-success/10",
-    logoColor: "from-success to-teal-500"
-  },
-  standlo: {
-    name: "STANDLO",
-    bgGradientLight: "from-cyan-100/40 via-slate-50 to-blue-100/20",
-    bgGradientDark: "from-cyan-950/25 via-slate-950 to-blue-950/15",
-    glowColorLight: "bg-cyan-500/5",
-    glowColorDark: "bg-cyan-500/10",
-    logoColor: "from-cyan-400 to-blue-500"
-  },
-  default: {
-    name: null,
-    bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
-    bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
-    glowColorLight: "bg-secondary/5",
-    glowColorDark: "bg-secondary/10",
-    logoColor: "from-secondary to-accent"
-  }
-};
 
 // Definizione schemi di validazione localmente
 const RequestResetSchema = z.object({
@@ -92,18 +46,10 @@ function ResetPasswordPortal() {
   const currentLocale = useCurrentLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setTheme, resolvedTheme } = useTheme();
 
   const oobCode = searchParams.get("oobCode");
-  const clientId = searchParams.get("client_id") || "default";
-  const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
-  // Brand white-label attivo: il default non cabla più "KALEX" (E5.1).
-  const wlBrand = useBrand();
-  const brandName = brand.name ?? wlBrand.name;
-
-  const isDark = resolvedTheme === "dark";
-  const activeBgGradient = isDark ? brand.bgGradientDark : brand.bgGradientLight;
-  const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
+  // Estetica del verticale attivo (client_id → brand, _shared/auth-portal).
+  const { brand, brandName } = useAuthBrand();
 
   // Stati logici
   const [verifyingCode, setVerifyingCode] = useState(false);
@@ -247,52 +193,10 @@ function ResetPasswordPortal() {
     router.push(loginUrl.pathname + loginUrl.search);
   }, [currentLocale, router, searchParams]);
 
+  // Cornice unica AuthArea: il banner errore globale usa la prop standard
+  // `error` della card (niente banner custom).
   return (
-    <AuthLayout variant="centered" className={`bg-gradient-to-br ${activeBgGradient}`}>
-      {/* Glow Ambientale — RTL: fisico voluto, centraggio simmetrico (left-1/2 + -translate-x-1/2) */}
-      <div
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full filter blur-[120px] pointer-events-none ${activeGlowColor} opacity-50`}
-      ></div>
-
-      {/* Decorative Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
-
-      {/* Controllo Tema in alto a destra */}
-      <div className="absolute top-6 end-6 z-20">
-        <Button
-          unstyled
-          isIconOnly
-          variant="ghost"
-          size="sm"
-          className="border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-800 dark:text-white cursor-pointer rounded-full transition-all"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-        >
-          {resolvedTheme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-        </Button>
-      </div>
-
-      <AuthLayout.Form>
-      <Card className="w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl p-3 rounded-3xl">
-        <CardContent className="flex flex-col p-2">
-          {/* Logo e Titolo */}
-          <div className="text-center mb-6">
-            <span
-              className={`text-4xl font-extrabold bg-gradient-to-r ${brand.logoColor} bg-clip-text text-transparent tracking-tighter`}
-            >
-              {brandName}
-            </span>
-            <p className="text-slate-500 dark:text-gray-400 text-[10px] font-bold mt-1 tracking-wider uppercase">
-              {t("auth.subtitle")}
-            </p>
-          </div>
-
-          {/* ERRORE GLOBALE O STRIPE/AUTH ERROR */}
-          {globalError && (
-            <div className="bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-300 rounded-2xl p-3 text-xs mb-6 text-center font-medium w-full">
-              {globalError}
-            </div>
-          )}
-
+    <AuthArea brand={brand} brandName={brandName} error={globalError || undefined}>
           {/* VERIFYING CODE LOADER */}
           {verifyingCode && (
             <div className="text-center my-8">
@@ -364,10 +268,7 @@ function ResetPasswordPortal() {
               primaryAction={{ label: t("auth.backToLogin"), onClick: handleBackToLogin }}
             />
           )}
-        </CardContent>
-      </Card>
-      </AuthLayout.Form>
-    </AuthLayout>
+    </AuthArea>
   );
 }
 

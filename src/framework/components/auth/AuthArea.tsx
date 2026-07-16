@@ -47,8 +47,6 @@ export function preserveAuthQuery(searchParams: URLSearchParams): string {
 export interface AuthAreaBrand {
   name: string | null;
   logoColor: string;
-  bgGradientLight: string;
-  bgGradientDark: string;
   glowColorLight: string;
   glowColorDark: string;
 }
@@ -57,8 +55,6 @@ export interface AuthAreaBrand {
 export const AUTH_AREA_DEFAULT_BRAND: AuthAreaBrand = {
   name: null,
   logoColor: "from-secondary to-accent",
-  bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
-  bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
   glowColorLight: "bg-secondary/5",
   glowColorDark: "bg-secondary/10",
 };
@@ -96,10 +92,18 @@ export function AuthArea({
   const wlBrand = useBrand();
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  // next-themes: `resolvedTheme` è indefinito in SSR — il gate `mounted` evita
+  // l'hydration mismatch su icona del toggle e classi del glow (primo render
+  // client identico al server: variante light, poi si allinea al tema reale).
+  // Deferred per evitare setState sincrono nell'effect (regola react-hooks).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    void Promise.resolve().then(() => setMounted(true));
+  }, []);
   // White-label (§3-bis): nome dell'org risolto dall'host (sottodominio o dominio custom).
   const [tenantName, setTenantName] = useState<string | null>(null);
   const redirectUri = searchParams.get("redirect_uri");
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
   const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
   const staticBrandName = brandName ?? brand.name ?? wlBrand.name;
   const displayBrandName = tenantName || staticBrandName;
@@ -190,7 +194,7 @@ export function AuthArea({
             className="border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 backdrop-blur-md text-slate-800 dark:text-white cursor-pointer rounded-full transition-all"
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
           >
-            {resolvedTheme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </Button>
         </div>
 

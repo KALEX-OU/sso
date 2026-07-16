@@ -27,16 +27,12 @@ const BRAND_CONFIGS: Record<string, AuthAreaBrand> = {
   satefy: {
     name: "SATEFY",
     logoColor: "from-success to-teal-500",
-    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
     glowColorLight: "bg-success/5",
     glowColorDark: "bg-success/10",
   },
   standlo: {
     name: "STANDLO",
     logoColor: "from-cyan-400 to-blue-500",
-    bgGradientLight: "from-cyan-100/40 via-slate-50 to-blue-100/20",
-    bgGradientDark: "from-cyan-950/25 via-slate-950 to-blue-950/15",
     glowColorLight: "bg-cyan-500/5",
     glowColorDark: "bg-cyan-500/10",
   },

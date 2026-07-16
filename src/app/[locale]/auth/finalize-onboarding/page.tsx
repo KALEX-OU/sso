@@ -6,50 +6,12 @@ import { isSignInWithEmailLink, signInWithEmailLink, updatePassword } from "fire
 import { auth, fetchWithAppCheck } from "@/lib/firebase/client";
 import { useCurrentLocale } from "@/locales/client";
 // E5.1: import dai wrapper del framework (vietato @heroui/react nelle pagine app).
-// NB: il wrapper Card racchiude i children in un body `p-5`: il padding root è
-// stato ridotto di conseguenza per mantenere l'ingombro precedente.
-import { Card, CardContent, Button, Input, Label, TextField } from "@/framework/components/ui";
-import { AuthLayout } from "@/framework/components/auth/AuthLayout";
-import { Shield, AlertTriangle, CheckCircle2, Lock } from "lucide-react";
-import { useBrand } from "@/framework/components/providers/BrandProvider";
-
-// `name: null` = il nome segue il brand white-label attivo (useBrand, E5.1).
-const BRAND_CONFIGS: Record<
-  string,
-  {
-    name: string | null;
-    bgGradientLight: string;
-    bgGradientDark: string;
-    glowColorLight: string;
-    glowColorDark: string;
-    logoColor: string;
-  }
-> = {
-  satefy: {
-    name: "SATEFY",
-    bgGradientLight: "from-success/10 via-slate-50 to-teal-100/20",
-    bgGradientDark: "from-success/10 via-slate-950 to-teal-950/15",
-    glowColorLight: "bg-success/5",
-    glowColorDark: "bg-success/10",
-    logoColor: "from-success to-teal-500"
-  },
-  standlo: {
-    name: "STANDLO",
-    bgGradientLight: "from-cyan-100/40 via-slate-50 to-blue-100/20",
-    bgGradientDark: "from-cyan-950/25 via-slate-950 to-blue-950/15",
-    glowColorLight: "bg-cyan-500/5",
-    glowColorDark: "bg-cyan-500/10",
-    logoColor: "from-cyan-400 to-blue-500"
-  },
-  default: {
-    name: null,
-    bgGradientLight: "from-secondary/10 via-slate-50 to-accent/20",
-    bgGradientDark: "from-secondary/15 via-slate-950 to-accent/15",
-    glowColorLight: "bg-secondary/5",
-    glowColorDark: "bg-secondary/10",
-    logoColor: "from-secondary to-accent"
-  }
-};
+import { Button, Input, Label, TextField } from "@/framework/components/ui";
+import { CheckCircle2, Lock } from "lucide-react";
+// Cornice unica del portale auth (framework, speculare a user/UserArea):
+// glow, toggle tema/lingua, Logo del verticale, footer legale, marketing.
+import { AuthArea } from "@/framework/components/auth/AuthArea";
+import { useAuthBrand } from "../_shared/auth-portal";
 
 export default function FinalizeOnboardingPage() {
   const currentLocale = useCurrentLocale();
@@ -57,15 +19,8 @@ export default function FinalizeOnboardingPage() {
   const searchParams = useSearchParams();
 
   const emailParam = searchParams.get("email") || "";
-  const clientId = searchParams.get("client_id") || "default";
-
-  const brand = BRAND_CONFIGS[clientId] || BRAND_CONFIGS.default;
-  // Brand white-label attivo: il default non cabla più "KALEX" (E5.1).
-  const wlBrand = useBrand();
-  const brandName = brand.name ?? wlBrand.name;
-  const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
-  const activeBgGradient = isDark ? brand.bgGradientDark : brand.bgGradientLight;
-  const activeGlowColor = isDark ? brand.glowColorDark : brand.glowColorLight;
+  // Estetica del verticale attivo (client_id → brand, _shared/auth-portal).
+  const { brand, brandName } = useAuthBrand();
 
   const [email, setEmail] = useState(emailParam);
   const [password, setPassword] = useState("");
@@ -162,36 +117,14 @@ export default function FinalizeOnboardingPage() {
     }
   };
 
+  // Cornice unica AuthArea (logo compatto, banner errore standard della card).
   return (
-    <AuthLayout variant="centered" className={`bg-gradient-to-tr ${activeBgGradient} transition-all duration-700`}>
-      {/* Background Glows — RTL: fisico voluto, coppia decorativa simmetrica (left-1/4 / right-1/4 + translate-x speculari) */}
-      <div className={`absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full blur-[10rem] -translate-x-1/2 -translate-y-1/2 ${activeGlowColor} pointer-events-none transition-all duration-700`} />
-      <div className={`absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full blur-[9rem] translate-x-1/2 translate-y-1/2 ${activeGlowColor} pointer-events-none transition-all duration-700`} />
-
-      <AuthLayout.Form>
-        {/* Logo Brand */}
-        <div className="flex items-center gap-2 mb-8 select-none scale-90 md:scale-100">
-          <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${brand.logoColor} flex items-center justify-center shadow-lg`}>
-            <Shield className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-          </div>
-          <span className="text-xl font-black tracking-widest text-slate-900 dark:text-white">
-            {brandName}
-          </span>
-        </div>
-
-        <Card className="w-full border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-2xl rounded-3xl p-3">
-          <CardContent className="space-y-6">
+    <AuthArea brand={brand} brandName={brandName} showHeader={false} cardClassName="max-w-md" error={error || undefined}>
+          <div className="space-y-6">
             <div className="text-center space-y-1">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Attiva il tuo Account</h2>
               <p className="text-xs text-slate-500 dark:text-gray-400">Imposta una password sicura per iniziare a collaborare.</p>
             </div>
-
-            {error && (
-              <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-2.5 text-xs text-red-500">
-                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                <span className="font-semibold leading-relaxed">{error}</span>
-              </div>
-            )}
 
             {success ? (
               <div className="text-center py-6 space-y-4">
@@ -259,9 +192,7 @@ export default function FinalizeOnboardingPage() {
                 </Button>
               </form>
             )}
-          </CardContent>
-        </Card>
-      </AuthLayout.Form>
-    </AuthLayout>
+          </div>
+    </AuthArea>
   );
 }
