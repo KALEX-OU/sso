@@ -348,6 +348,14 @@ export function getModulePolicyForContext(
   return null;
 }
 
+/**
+ * Moduli raggiungibili dal MENU UTENTE (UserMenu: Profilo/Team/Chiavi API) e
+ * quindi ESCLUSI dalla sidebar. Restano moduli a tutti gli effetti nel
+ * registry (`modules`): l'autorizzazione API (api/middlewares/auth.ts) e
+ * RBAC/FLS non cambiano — il filtro vale SOLO per la navigazione laterale.
+ */
+export const USER_MENU_MODULES = ["user", "team", "apikey"] as const;
+
 export function getVisibleModulesForSidebar(
   appId: AppIds,
   userRole: "owner" | "admin" | "member" | "viewer" | "device",
@@ -356,11 +364,15 @@ export function getVisibleModulesForSidebar(
   const app = RESOURCE_REGISTRY[appId];
   if (!app) return [];
 
+  const sidebarModules = Object.keys(app.modules).filter(
+    (moduleId) => !(USER_MENU_MODULES as readonly string[]).includes(moduleId)
+  );
+
   if (userRole === "owner") {
-    return Object.keys(app.modules);
+    return sidebarModules;
   }
 
-  return Object.keys(app.modules).filter((moduleId) => {
+  return sidebarModules.filter((moduleId) => {
     const policy = getModulePolicyForContext(
       moduleId as keyof typeof MODULE_REGISTRY,
       userRole,

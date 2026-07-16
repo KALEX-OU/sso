@@ -13,9 +13,11 @@ import {
   LogIn,
   UserPlus,
   LogOut,
-  Settings,
   LayoutDashboard,
   User as UserIcon,
+  Building2,
+  Users,
+  KeyRound,
   Globe,
   SunMoon,
   LifeBuoy,
@@ -230,15 +232,20 @@ export function UserMenu({
         {/* Header account */}
         <p className="px-2.5 pt-1.5 pb-2 text-[11px] text-ink-muted truncate">{userEmail}</p>
 
-        {/* Gruppo account */}
+        {/* Gruppo account — le voci di GESTIONE (org/team/chiavi) sono owner-only:
+            i rispettivi moduli sono fuori dalla sidebar (USER_MENU_MODULES). */}
         <MenuRow icon={<UserIcon className="w-4 h-4" />} label={s.userMenu.profile} onClick={() => navigate("/user")} />
         {isOwner && (
-          <MenuRow
-            icon={<Settings className="w-4 h-4" />}
-            label={s.userMenu.settings}
-            suffix={variant === "sidebar" ? <Kbd className="text-[10px]">⌘,</Kbd> : undefined}
-            onClick={() => navigate("/settings")}
-          />
+          <>
+            <MenuRow
+              icon={<Building2 className="w-4 h-4" />}
+              label={s.userMenu.organization}
+              suffix={variant === "sidebar" ? <Kbd className="text-[10px]">⌘,</Kbd> : undefined}
+              onClick={() => navigate("/settings")}
+            />
+            <MenuRow icon={<Users className="w-4 h-4" />} label={s.userMenu.team} onClick={() => navigate("/team")} />
+            <MenuRow icon={<KeyRound className="w-4 h-4" />} label={s.userMenu.apiKeys} onClick={() => navigate("/apikey")} />
+          </>
         )}
         <MenuRow
           icon={<Globe className="w-4 h-4" />}

@@ -5,16 +5,12 @@ import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
 import { apiEnvelopeSchema } from "../../lib/schemas/api";
 import { toAuthError } from "../../lib/auth-error";
-import { Card, CardBody, Tabs, Tab, TabList, Input } from "../ui";
-import { DomainManagement } from "./DomainManagement";
-import { SettingsProfile } from "./SettingsProfile";
-import { SettingsSecurity } from "./SettingsSecurity";
-import { SettingsOrganization } from "./SettingsOrganization";
-import {
-  User as UserIcon,
-  AlertTriangle
-} from "lucide-react";
+import { Button, Input, Modal } from "../ui";
+import { UserPageHeader } from "./UserMain";
+import { SettingsProfile } from "../settings/SettingsProfile";
+import { SettingsSecurity } from "../settings/SettingsSecurity";
 import { AuthReauthDialog } from "../auth/AuthReauthDialog";
+import { AlertTriangle } from "lucide-react";
 import {
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -23,20 +19,25 @@ import {
   type MultiFactorResolver
 } from "firebase/auth";
 import { auth, forceCleanSession } from "../../lib/auth";
+import { useUIStrings } from "../../lib/ui.localization";
 import { useI18n } from "@/locales/client";
 
-// E4.2 — Wrapper della pagina Impostazioni: possiede i Tabs (profilo/organizzazione/domini)
-// e compone le sezioni estratte (SettingsProfile, SettingsSecurity, SettingsOrganization,
-// DomainManagement). Possiede inoltre i due dialog modali condivisi, che devono restare
-// figli diretti del container (stesso DOM di prima dello split):
-//  - challenge di riautenticazione (password + eventuale secondo fattore TOTP), riusata da
-//    cambio password, gestione MFA ed eliminazione account (via executeWithReauthChallenge);
-//  - conferma eliminazione account GDPR (handlePurgeAccount usa la challenge di reauth).
-
-export function Settings() {
+/**
+ * Pagina PROFILO (/user) — tutto ciò che riguarda la PERSONA: anagrafica e
+ * preferenze (SettingsProfile) + sicurezza personale (SettingsSecurity:
+ * password, 2FA, sessioni, dispositivi fidati, chiave API personale, danger
+ * zone GDPR). Nato dallo split del vecchio wrapper settings a tab: la parte
+ * organizzazione vive in UserOrganization, i membri in UserTeam.
+ *
+ * Possiede i due dialog condivisi della parte utente:
+ * - challenge di riautenticazione (password + eventuale TOTP), riusata da
+ *   cambio password, gestione MFA ed eliminazione account;
+ * - conferma eliminazione account GDPR (ui/Modal, theme-aware).
+ */
+export function UserProfile() {
   const { user, showToast, claims } = useDashboard();
   const t = useI18n();
-  const [activeTab, setActiveTab] = useState("user");
+  const s = useUIStrings();
 
   // Stati per il Dialog di Riautenticazione Generale
   const [reauthOpen, setReauthOpen] = useState(false);
@@ -54,11 +55,6 @@ export function Settings() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletePending, setDeletePending] = useState(false);
-
-  // Ruolo dell'utente loggato nell'organizzazione (uRole / role fallback)
-  const activeRole = claims?.uRole || claims?.role;
-  const isOrgManager = activeRole === "owner" || activeRole === "admin";
-  const currentTab = isOrgManager ? activeTab : "user";
 
   // Challenge di Riautenticazione
   const closeReauth = () => {
@@ -193,122 +189,67 @@ export function Settings() {
   };
 
   return (
-    <div className="klx-settings-container">
-      <div>
-        <h1 className="klx-settings-header-title">
-          <UserIcon className="w-5 h-5 text-secondary" /> {t("settings.header.title")}
-        </h1>
-        <p className="klx-settings-header-desc">
-          {t("settings.header.desc")}
-        </p>
-      </div>
+    <div className="space-y-6">
+      <UserPageHeader title={s.userPages.profileTitle} description={s.userPages.profileDesc} />
 
-      {isOrgManager ? (
-        <Tabs
-          selectedKey={currentTab}
-          onSelectionChange={(key) => setActiveTab(key as string)}
-          aria-label={t("settings.tabs.ariaLabel")}
-          className="w-full"
-        >
-          <TabList className="klx-settings-tabs-list">
-            <Tab
-              id="user"
-              className="klx-settings-tab-trigger"
-            >
-              {t("settings.tabs.profile")}
-            </Tab>
-            <Tab
-              id="organization"
-              className="klx-settings-tab-trigger"
-            >
-              {t("settings.tabs.organization")}
-            </Tab>
-            <Tab
-              id="domains"
-              className="klx-settings-tab-trigger"
-            >
-              {t("settings.tabs.domains")}
-            </Tab>
-          </TabList>
-        </Tabs>
-      ) : null}
+      <SettingsProfile />
+      <SettingsSecurity
+        executeWithReauthChallenge={executeWithReauthChallenge}
+        onRequestAccountDeletion={() => setDeleteOpen(true)}
+      />
 
-      {/* ========================================== */}
-      {/* TAB 1: PROFILO & SICUREZZA                 */}
-      {/* ========================================== */}
-      {currentTab === "user" && (
-        <div className="space-y-8">
-          <SettingsProfile />
-          <SettingsSecurity
-            executeWithReauthChallenge={executeWithReauthChallenge}
-            onRequestAccountDeletion={() => setDeleteOpen(true)}
-          />
-        </div>
-      )}
-
-      {/* ========================================== */}
-      {/* TAB 2: DATI FISCALI ORGANIZZAZIONE          */}
-      {/* ========================================== */}
-      {currentTab === "organization" && isOrgManager && <SettingsOrganization />}
-
-      {/* ========================================== */}
-      {/* TAB 3: DOMINI (white-label §3-bis)         */}
-      {/* ========================================== */}
-      {currentTab === "domains" && isOrgManager && <DomainManagement />}
-
-      {/* ========================================== */}
-      {/* DIALOG DI CONFIRMA ELIMINAZIONE GDPR       */}
-      {/* ========================================== */}
+      {/* DIALOG DI CONFERMA ELIMINAZIONE GDPR — ui/Modal theme-aware (prima era
+          un overlay hardcoded dark, illeggibile in tema chiaro). Montato solo
+          quando aperto (regola dialoghi in alberi display:none). */}
       {deleteOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border border-red-500/30 bg-slate-950 rounded-3xl p-6 shadow-2xl relative">
-            <CardBody className="space-y-4">
-              <div className="flex items-center gap-3 text-red-500">
-                <AlertTriangle className="w-6 h-6" />
-                <h3 className="text-base font-extrabold uppercase tracking-wider">
-                  {t("settings.deleteDialog.title")}
-                </h3>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                {t("settings.deleteDialog.bodyBefore")} <span className="font-bold text-white uppercase tracking-widest font-mono bg-red-950 px-1 rounded">{t("settings.deleteDialog.confirmWord")}</span> {t("settings.deleteDialog.bodyAfter")}
-              </p>
-              <div className="space-y-2">
+        <Modal isOpen={deleteOpen} onOpenChange={(open) => { if (!open) { setDeleteOpen(false); setDeleteConfirmText(""); } }}>
+          <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
+              <Modal.Dialog className="w-full rounded-3xl border border-danger/30 bg-surface-raised backdrop-blur-xl shadow-2xl p-6 space-y-4">
+                <div className="flex items-center gap-3 text-danger">
+                  <AlertTriangle className="w-6 h-6" />
+                  <h3 className="text-base font-extrabold uppercase tracking-wider">
+                    {t("settings.deleteDialog.title")}
+                  </h3>
+                </div>
+                <p className="text-xs text-ink-muted leading-relaxed">
+                  {t("settings.deleteDialog.bodyBefore")} <span className="font-bold text-ink uppercase tracking-widest font-mono bg-danger/15 px-1 rounded">{t("settings.deleteDialog.confirmWord")}</span> {t("settings.deleteDialog.bodyAfter")}
+                </p>
                 <Input
                   type="text"
                   placeholder={t("settings.deleteDialog.placeholder", { word: t("settings.deleteDialog.confirmWord") })}
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  className="bg-white/5 dark:bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-white outline-none w-full text-center font-bold tracking-widest"
+                  className="bg-surface-2 border border-line rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full text-center font-bold tracking-widest"
                 />
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeleteOpen(false);
-                    setDeleteConfirmText("");
-                  }}
-                  className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-transparent border border-slate-800 hover:bg-slate-900 text-slate-400 rounded-xl cursor-pointer active:scale-95 transition-all"
-                >
-                  {t("settings.common.cancel")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePurgeAccount}
-                  disabled={deletePending || deleteConfirmText !== t("settings.deleteDialog.confirmWord")}
-                  className="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-widest bg-red-600 hover:bg-red-700 disabled:bg-red-900/50 disabled:text-red-400/50 disabled:cursor-not-allowed text-white rounded-xl active:scale-95 transition-all border-none flex items-center gap-1 shadow-lg"
-                >
-                  {deletePending ? t("settings.deleteDialog.deleting") : t("settings.deleteDialog.confirmDelete")}
-                </button>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
+                <div className="flex gap-3 justify-end pt-2">
+                  <Button
+                    unstyled
+                    variant="ghost"
+                    onClick={() => {
+                      setDeleteOpen(false);
+                      setDeleteConfirmText("");
+                    }}
+                    className="px-4 py-2.5 text-[10px] font-extrabold uppercase tracking-widest border border-line hover:bg-surface-2 text-ink-muted rounded-xl cursor-pointer active:scale-95 transition-all"
+                  >
+                    {t("settings.common.cancel")}
+                  </Button>
+                  <Button
+                    unstyled
+                    onClick={() => void handlePurgeAccount()}
+                    isDisabled={deletePending || deleteConfirmText !== t("settings.deleteDialog.confirmWord")}
+                    className="px-4 py-2.5 text-[10px] font-extrabold uppercase tracking-widest bg-danger hover:bg-danger/90 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl active:scale-95 transition-all cursor-pointer shadow-lg"
+                  >
+                    {deletePending ? t("settings.deleteDialog.deleting") : t("settings.deleteDialog.confirmDelete")}
+                  </Button>
+                </div>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
       )}
 
-      {/* ========================================== */}
-      {/* DIALOG DI RIAUTENTICAZIONE MODALE          */}
-      {/* ========================================== */}
+      {/* DIALOG DI RIAUTENTICAZIONE MODALE */}
       {reauthOpen && (
         <AuthReauthDialog
           isOpen={reauthOpen}
@@ -326,4 +267,4 @@ export function Settings() {
   );
 }
 
-export default Settings;
+export default UserProfile;

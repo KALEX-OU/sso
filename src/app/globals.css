@@ -625,21 +625,6 @@ body {
   @apply h-12 px-6 text-sm;
 }
 
-/* ========================================== */
-/* IMPOSTAZIONI ACCOUNT & AZIENDA (BEM) - KALEX Tech */
-/* ========================================== */
-
-.klx-settings-container {
-  @apply space-y-6 max-w-5xl mx-auto pb-16;
-}
-
-.klx-settings-header-title {
-  @apply text-xl font-extrabold text-ink uppercase tracking-wider flex items-center gap-2;
-}
-
-.klx-settings-header-desc {
-  @apply text-ink-muted text-xs mt-1;
-}
 
 .klx-settings-grid {
   @apply grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch;
@@ -694,14 +679,7 @@ body {
   @apply h-full transition-all duration-300;
 }
 
-/* Stili Premium per i Tab di Settings */
-.klx-settings-tabs-list {
-  @apply flex gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-950/60 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-white/5 mb-8 w-max;
-}
 
-.klx-settings-tab-trigger {
-  @apply px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-wider rounded-xl cursor-pointer outline-none transition-all duration-300 border-none select-none text-ink-muted hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 data-[selected=true]:bg-secondary data-[selected=true]:text-white data-[selected=true]:shadow-lg;
-}
 
 /* Scrollbar Minimalista da 4px */
 .klx-scrollbar-minimalist::-webkit-scrollbar {
