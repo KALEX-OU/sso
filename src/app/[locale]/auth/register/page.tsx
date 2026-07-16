@@ -5,8 +5,9 @@
  *
  * Route dedicata: qui vivono RHF + VIES + Places + geo-IP + persistenza
  * sessionStorage e la creazione account; la UI è del componente DS
- * AuthFormRegister dentro la shell condivisa. L'avviso "verifica email"
- * post-signup è uno step in pagina (AuthVerifyNotice).
+ * AuthFormRegister dentro `auth/AuthArea` (cornice del portale, verticale via
+ * useAuthBrand). L'avviso "verifica email" post-signup è uno step in pagina
+ * (AuthVerifyNotice).
  */
 
 import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
@@ -32,14 +33,15 @@ import {
   EU_COUNTRY_FLAGS,
   validateVatNumber,
 } from "@/lib/validation/auth";
-import { AuthPortalShell, preserveAuthQuery, useAuthBrand } from "../_shared/auth-portal";
+import { AuthArea } from "@/framework/components/auth/AuthArea";
+import { preserveAuthQuery, useAuthBrand } from "../_shared/auth-portal";
 
 function RegisterPortal() {
   const t = useI18n();
   const currentLocale = useCurrentLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { gradient } = useAuthBrand();
+  const { gradient, brand, brandName } = useAuthBrand();
   const authQuery = preserveAuthQuery(searchParams);
 
   const getErrorMessage = useCallback((errorObj?: { message?: string }) => {
@@ -564,7 +566,7 @@ function RegisterPortal() {
 
   if (needsVerification) {
     return (
-      <AuthPortalShell showHeader={false} cardClassName="max-w-md">
+      <AuthArea brand={brand} brandName={brandName} showHeader={false} cardClassName="max-w-md">
         <AuthVerifyNotice
           email={emailRegValue || auth.currentUser?.email || ""}
           error={error}
@@ -578,7 +580,7 @@ function RegisterPortal() {
           resendLoading={resendLoading}
           gradientClassName={gradient}
         />
-      </AuthPortalShell>
+      </AuthArea>
     );
   }
 
@@ -594,7 +596,9 @@ function RegisterPortal() {
     : "idle";
 
   return (
-    <AuthPortalShell
+    <AuthArea
+      brand={brand}
+      brandName={brandName}
       error={error}
       belowCard={
         <div className="mt-8 text-center text-xs text-slate-500 dark:text-gray-400">
@@ -688,7 +692,7 @@ function RegisterPortal() {
         canSubmit={isValidReg}
         gradientClassName={gradient}
       />
-    </AuthPortalShell>
+    </AuthArea>
   );
 }
 

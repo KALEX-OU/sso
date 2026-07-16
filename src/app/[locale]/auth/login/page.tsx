@@ -5,9 +5,9 @@
  *
  * Route dedicata: qui vivono SOLO la logica Firebase del login (password, MFA
  * TOTP, sessione server, redirect SSO) e il wiring RHF; la UI è dei componenti
- * DS del framework (AuthForm / AuthFormMfa / AuthVerifyNotice) dentro la shell
- * condivisa. MFA e avviso verifica NON sono route: il MultiFactorResolver vive
- * in memoria JS.
+ * DS del framework (AuthForm / AuthFormMfa / AuthVerifyNotice) dentro
+ * `auth/AuthArea` (cornice del portale, verticale via useAuthBrand). MFA e
+ * avviso verifica NON sono route: il MultiFactorResolver vive in memoria JS.
  */
 
 import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
@@ -31,14 +31,15 @@ import { AuthFormMfa } from "@/framework/components/auth/AuthFormMfa";
 import { AuthVerifyNotice } from "@/framework/components/auth/AuthVerifyNotice";
 import { useI18n, useCurrentLocale } from "@/locales/client";
 import { LoginSchema, LoginInput } from "@/lib/validation/auth";
-import { AuthPortalShell, preserveAuthQuery, useAuthBrand } from "../_shared/auth-portal";
+import { AuthArea } from "@/framework/components/auth/AuthArea";
+import { preserveAuthQuery, useAuthBrand } from "../_shared/auth-portal";
 
 function LoginPortal() {
   const t = useI18n();
   const currentLocale = useCurrentLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { clientId, gradient } = useAuthBrand();
+  const { clientId, gradient, brand, brandName } = useAuthBrand();
 
   const redirectUri = searchParams.get("redirect_uri");
   // PKCE (3.1): challenge generato dalla RP, inoltrato tale e quale a /api/auth/code
@@ -435,7 +436,7 @@ function LoginPortal() {
 
   if (needsVerification) {
     return (
-      <AuthPortalShell showHeader={false} cardClassName="max-w-md">
+      <AuthArea brand={brand} brandName={brandName} showHeader={false} cardClassName="max-w-md">
         <AuthVerifyNotice
           email={auth.currentUser?.email || emailLoginValue}
           error={error}
@@ -450,12 +451,14 @@ function LoginPortal() {
           resendLoading={resendLoading}
           gradientClassName={gradient}
         />
-      </AuthPortalShell>
+      </AuthArea>
     );
   }
 
   return (
-    <AuthPortalShell
+    <AuthArea
+      brand={brand}
+      brandName={brandName}
       error={error}
       belowCard={
         !mfaRequired ? (
@@ -515,7 +518,7 @@ function LoginPortal() {
           gradientClassName={gradient}
         />
       )}
-    </AuthPortalShell>
+    </AuthArea>
   );
 }
 
