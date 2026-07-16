@@ -38,7 +38,11 @@ export const UserCard: React.FC<UserCardProps> = ({
   className = "",
   contentClassName = "",
 }) => (
+  /* unstyled: il wrapper Card non-unstyled inietta un body p-5 attorno ai
+     children — sommato al p-6 qui sotto dava il doppio padding rispetto alle
+     sezioni settings (p-6 secco). */
   <Card
+    unstyled
     className={`w-full border border-line bg-surface-raised backdrop-blur-xl shadow-xl rounded-3xl transition-all ${className}`}
   >
     <CardContent className={`p-6 ${contentClassName}`}>

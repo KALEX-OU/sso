@@ -401,10 +401,15 @@ function LoginPortal() {
       if (trustDevice) {
         try {
           const trustToken = await userCredential.user.getIdToken();
-          await fetch("/api/auth/mfa/trust-device", {
+          const trustRes = await fetch("/api/auth/mfa/trust-device", {
             method: "POST",
             headers: { Authorization: `Bearer ${trustToken}` },
           });
+          if (!trustRes.ok) {
+            // fetch non lancia sugli HTTP error (es. 502 proxy → api giù): senza
+            // questo warn il fallimento del trust sarebbe del tutto invisibile.
+            console.warn("[Login] Registrazione dispositivo fidato fallita: HTTP", trustRes.status);
+          }
         } catch (trustErr) {
           console.warn("[Login] Registrazione dispositivo fidato non riuscita (best-effort):", trustErr);
         }

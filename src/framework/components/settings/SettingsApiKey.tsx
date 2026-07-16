@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
-import { apiKeyStatusResponseSchema, apiKeyGenerateResponseSchema } from "../../lib/schemas/api";
+import { apiKeyStatusResponseSchema, apiKeyGenerateResponseSchema, apiEnvelopeSchema } from "../../lib/schemas/api";
 import { Card, CardBody, Button } from "../ui";
-import { Key, Check, AlertTriangle, Copy } from "lucide-react";
+import { Key, Check, AlertTriangle, Copy, Trash2 } from "lucide-react";
 import { useI18n } from "@/locales/client";
 import { useBrand } from "../providers/BrandProvider";
 
@@ -72,6 +72,32 @@ export function SettingsApiKey() {
     } catch (err) {
       console.error(err);
       showToast(t("settings.toast.apiKeyGenFail"), "error");
+    } finally {
+      setLoadingApiKey(false);
+    }
+  };
+
+  // Eliminazione definitiva della chiave personale: le richieste firmate con
+  // la chiave vengono rifiutate da subito (coerente con revoca sessioni/device:
+  // azione diretta, niente dialogo — la rigenerazione è comunque possibile).
+  const handleDeleteApiKey = async () => {
+    const userId = claims?.uId || user?.uid;
+    if (!userId) return;
+    try {
+      setLoadingApiKey(true);
+      const res = await fetchAuthedClient(`/api/user/${userId}/apikey`, {
+        method: "DELETE"
+      }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+      if (res.success) {
+        setGeneratedKey(null);
+        setApiKeyData({ hasKey: false });
+        showToast(t("settings.toast.apiKeyDeleted"), "success");
+      } else {
+        showToast(t("settings.toast.apiKeyDeleteFail"), "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(t("settings.toast.apiKeyDeleteFail"), "error");
     } finally {
       setLoadingApiKey(false);
     }
@@ -166,6 +192,14 @@ export function SettingsApiKey() {
                   icon={<Key className="w-3.5 h-3.5" />}
                 >
                   {t("settings.apikey.regenerate")}
+                </Button>
+                <Button
+                  onClick={handleDeleteApiKey}
+                  isDisabled={loadingApiKey}
+                  variant="danger-soft"
+                  icon={<Trash2 className="w-3.5 h-3.5" />}
+                >
+                  {t("settings.apikey.delete")}
                 </Button>
               </div>
             </div>

@@ -6,6 +6,7 @@ import { fetchAuthedClient } from "../../lib/api";
 import { Card, CardBody } from "../ui";
 import { Form } from "../layouts/Form";
 import { MfaPolicyToggle } from "./MfaPolicyToggle";
+import { Building2 } from "lucide-react";
 import { useI18n } from "@/locales/client";
 import { organizationSettingsSchema } from "../../lib/schemas/api";
 
@@ -80,6 +81,15 @@ export function SettingsOrganization() {
     <div className="space-y-6">
       <Card className="klx-settings-card">
         <CardBody>
+          {/* Header standard di sezione (stessa grammatica delle card profilo). */}
+          <div className="flex items-center justify-between mb-6 border-b border-line pb-4">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-secondary" />
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-ink">
+                {t("settings.org.title")}
+              </h2>
+            </div>
+          </div>
           <Form
             moduleId="organization"
             initialData={orgInitialData}
