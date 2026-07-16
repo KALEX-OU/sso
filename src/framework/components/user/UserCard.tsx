@@ -39,11 +39,14 @@ export const UserCard: React.FC<UserCardProps> = ({
   contentClassName = "",
 }) => (
   <Card
-    className={`w-full border border-line bg-surface-raised backdrop-blur-xl rounded-3xl transition-all ${className}`}
+    className={`w-full border border-line bg-surface-raised backdrop-blur-xl shadow-xl rounded-3xl transition-all ${className}`}
   >
-    <CardContent className={`p-5 sm:p-6 ${contentClassName}`}>
+    <CardContent className={`p-6 ${contentClassName}`}>
+      {/* Header standard della famiglia (stessa grammatica delle sezioni
+          settings): icona secondary + titolo uppercase + azioni, chiuso dal
+          divider `border-b border-line pb-4`. */}
       {(title || actions) && (
-        <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center justify-between gap-3 mb-6 border-b border-line pb-4">
           <div className="flex items-center gap-2 min-w-0">
             {icon}
             {title && (

@@ -414,7 +414,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
             <Button
               unstyled
               onClick={() => setInviteOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 font-bold text-xs bg-gradient-to-r from-secondary to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
+              className="klx-btn klx-btn--primary"
             >
               <UserPlus className="w-4 h-4" />
               {s.team.inviteBtn}
@@ -492,6 +492,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
                             <Button
                               unstyled
                               isIconOnly
+                              variant="ghost"
                               aria-label={s.team.copyInviteLink}
                               className="p-2 text-ink-muted hover:text-ink hover:bg-surface-2 rounded-xl cursor-pointer transition-colors"
                               onClick={() => {
@@ -516,6 +517,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
                               <Button
                                 unstyled
                                 isIconOnly
+                                variant="ghost"
                                 aria-label={s.team.memberPermsTitle}
                                 className="p-2 text-ink-muted hover:text-ink hover:bg-surface-2 rounded-xl cursor-pointer transition-colors"
                                 onClick={() => openMemberPerms(member)}
@@ -534,6 +536,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
                               <Button
                                 unstyled
                                 isIconOnly
+                                variant="ghost"
                                 aria-label={s.team.removeConfirm}
                                 className="p-2 text-danger hover:bg-danger/10 rounded-xl cursor-pointer transition-colors"
                                 onClick={() => requestDeleteMember(u.userId, u.email)}
@@ -605,6 +608,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
                     <Button
                       unstyled
                       isIconOnly
+                      variant="ghost"
                       aria-label={s.team.teamPermsTitle}
                       isDisabled={!hasPermission("team", "update")}
                       className="p-2 text-ink-muted hover:text-ink hover:bg-surface rounded-xl cursor-pointer transition-colors"
@@ -615,6 +619,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
                     <Button
                       unstyled
                       isIconOnly
+                      variant="ghost"
                       aria-label={s.team.deleteTeamTitle}
                       isDisabled={!hasPermission("team", "delete")}
                       className="p-2 text-danger hover:bg-danger/10 rounded-xl cursor-pointer transition-colors"
@@ -708,7 +713,7 @@ export function UserTeam({ fetchAuthed, listMembers }: UserTeamProps) {
                       unstyled
                       type="submit"
                       isDisabled={inviting}
-                      className="px-4 py-2.5 font-bold text-xs bg-gradient-to-r from-secondary to-accent text-slate-950 rounded-xl active:scale-[0.98] transition-all cursor-pointer shadow-md"
+                      className="klx-btn klx-btn--primary"
                     >
                       {inviting ? s.team.inviting : s.team.inviteBtn}
                     </Button>
