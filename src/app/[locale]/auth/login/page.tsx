@@ -401,7 +401,9 @@ function LoginPortal() {
       if (trustDevice) {
         try {
           const trustToken = await userCredential.user.getIdToken();
-          const trustRes = await fetch("/api/auth/mfa/trust-device", {
+          // fetchWithAppCheck e NON fetch nuda: l'api rifiuta con 401
+          // appcheck/missing-token qualsiasi chiamata senza header App Check.
+          const trustRes = await fetchWithAppCheck("/api/auth/mfa/trust-device", {
             method: "POST",
             headers: { Authorization: `Bearer ${trustToken}` },
           });
