@@ -26,12 +26,12 @@ import {
   Spinner
 } from "../ui";
 import {
-  UserTeamPermissions,
+  UserPermission,
   buildDefaultRbac,
   getPermissionsFromMask,
   getMaskFromPermissions,
   type RbacStructure
-} from "./UserTeamPermissions";
+} from "./UserPermission";
 import { Users, Plus, Shield, Trash2, Settings2, Copy, UserPlus, AlertTriangle } from "lucide-react";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
@@ -758,7 +758,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
 
       {/* MODAL MATRICE PERMESSI (membro o team) */}
       {permTarget && (
-        <UserTeamPermissions
+        <UserPermission
           isOpen={!!permTarget}
           onOpenChange={(open) => { if (!open) setPermTarget(null); }}
           title={permTarget.kind === "member" ? s.team.memberPermsTitle : `${s.team.teamPermsTitle} — ${permTarget.team.name}`}

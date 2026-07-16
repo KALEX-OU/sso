@@ -7,9 +7,11 @@ import { Shield, Lock } from "lucide-react";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 /**
- * Matrice permessi RBAC (bitmask CRUD) condivisa tra membri e team — modale
- * di UserTeam. I moduli arrivano dal registry SSOT (listAppModules), MAI da
- * elenchi cablati: la matrice segue automaticamente l'evoluzione del registro.
+ * UserPermission — matrice permessi RBAC (bitmask CRUD) UNICA per membri e
+ * team, modale di UserTeam. I moduli arrivano dal registry SSOT
+ * (listAppModules), MAI da elenchi cablati: la matrice segue automaticamente
+ * l'evoluzione del registro. Con `roleEditor` (solo membri) espone anche il
+ * selettore del ruolo IAM principale.
  */
 
 export interface RbacStructure {
@@ -50,7 +52,7 @@ export function buildDefaultRbac(privileged: boolean): RbacStructure {
 const ROLES = ["owner", "admin", "member", "viewer"] as const;
 const ACTIONS = ["read", "create", "update", "delete"] as const;
 
-export interface UserTeamPermissionsProps {
+export interface UserPermissionProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   /** Titolo e sottotitolo del dialogo (membro o team, già localizzati). */
@@ -67,7 +69,7 @@ export interface UserTeamPermissionsProps {
   onSave: () => void;
 }
 
-export function UserTeamPermissions({
+export function UserPermission({
   isOpen,
   onOpenChange,
   title,
@@ -77,7 +79,7 @@ export function UserTeamPermissions({
   roleEditor,
   saving,
   onSave
-}: UserTeamPermissionsProps) {
+}: UserPermissionProps) {
   const s = useUIStrings();
 
   return (
@@ -85,26 +87,29 @@ export function UserTeamPermissions({
       <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <Modal.Container className="h-auto w-full max-w-3xl flex-none p-0 sm:w-full sm:p-0">
           <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface-raised backdrop-blur-xl shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
+            {/* Header standard dei dialoghi della famiglia (icona secondary +
+                titolo + divider), come invito membro e conferme. */}
             <Modal.Header className="flex flex-col gap-1 border-b border-line pb-4">
-              <h2 className="text-lg font-extrabold text-ink flex items-center gap-2">
-                <Shield className="text-secondary w-5 h-5" />
-                {title}
+              <h2 className="text-base font-extrabold text-ink flex items-center gap-2">
+                <Shield className="text-secondary w-4 h-4 shrink-0" />
+                <span className="truncate">{title}</span>
               </h2>
               <p className="text-ink-muted text-xs font-normal">{description}</p>
             </Modal.Header>
             <Modal.Body className="py-6 space-y-6">
               {roleEditor && (
-                <div className="bg-surface-2 p-4 rounded-2xl border border-line space-y-3">
+                <div className="space-y-3">
                   <Label className="text-xs font-bold text-ink block">{s.team.mainRoleLabel}</Label>
                   <div className="flex gap-2">
                     {ROLES.map((r) => (
                       <Button
                         unstyled
+                        variant="ghost"
                         key={r}
                         className={`flex-1 font-bold text-xs uppercase rounded-xl px-3 py-2.5 cursor-pointer transition-all border ${
                           roleEditor.role === r
-                            ? "bg-secondary text-white border-secondary"
-                            : "border-line text-ink-muted hover:bg-surface-2 hover:text-ink"
+                            ? "bg-secondary text-white border-secondary shadow-md"
+                            : "border-line bg-surface-2 text-ink-muted hover:text-ink hover:bg-surface"
                         }`}
                         onClick={() => roleEditor.onRoleChange(r)}
                       >
@@ -127,14 +132,17 @@ export function UserTeamPermissions({
                   const modules = listAppModules(appId);
                   const appName = getApplicationInfo(appId)?.name || appId;
                   return (
-                    <div key={appId} className="border border-line rounded-2xl bg-surface-2 overflow-hidden">
-                      <div className="bg-surface px-4 py-3 border-b border-line flex items-center justify-between">
+                    /* Card interna coerente col resto della pagina: superficie
+                       raised, header grigio (bg-surface-2) come le testate
+                       delle tabelle, righe divise da border-line. */
+                    <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden">
+                      <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
                         <span className="text-xs font-extrabold text-ink">{appName}</span>
                         <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
                       </div>
 
                       <div className="divide-y divide-line">
-                        <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-surface text-[10px] font-extrabold text-ink-muted uppercase">
+                        <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-surface-2/60 text-[10px] font-extrabold text-ink-muted uppercase">
                           <div className="col-span-4">{s.team.colModule}</div>
                           <div className="col-span-2 text-center">{s.team.colRead}</div>
                           <div className="col-span-2 text-center">{s.team.colCreate}</div>
@@ -146,7 +154,7 @@ export function UserTeamPermissions({
                           const currentVal = rbac?.apps?.[appId]?.[moduleKey] || 0;
                           const perms = getPermissionsFromMask(currentVal);
                           return (
-                            <div key={moduleKey} className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-surface transition-colors">
+                            <div key={moduleKey} className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-surface-2/60 transition-colors">
                               <div className="col-span-4">
                                 <p className="text-xs font-bold text-ink capitalize">{moduleKey.replace(/_/g, " ")}</p>
                               </div>
@@ -172,11 +180,16 @@ export function UserTeamPermissions({
                 })}
               </div>
             </Modal.Body>
-            <Modal.Footer className="pt-4 flex justify-end gap-2 border-t border-line">
-              <Button unstyled variant="ghost" className="rounded-xl font-bold cursor-pointer px-4 py-2.5 text-xs text-ink-muted hover:text-ink hover:bg-surface-2 transition-colors" onClick={() => onOpenChange(false)}>
+            <Modal.Footer className="pt-4 flex justify-end gap-3 border-t border-line">
+              <Button
+                unstyled
+                variant="ghost"
+                className="px-4 py-2.5 text-xs font-bold border border-line hover:bg-surface-2 text-ink-muted rounded-xl cursor-pointer transition-colors"
+                onClick={() => onOpenChange(false)}
+              >
                 {s.common.cancel}
               </Button>
-              <Button unstyled className="rounded-xl font-bold cursor-pointer px-4 py-2.5 text-xs bg-secondary hover:bg-secondary/90 text-white transition-colors" isDisabled={saving} onClick={onSave}>
+              <Button unstyled className="klx-btn klx-btn--primary" isDisabled={saving} onClick={onSave}>
                 {saving ? s.team.saving : s.common.save}
               </Button>
             </Modal.Footer>
