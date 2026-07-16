@@ -4,30 +4,22 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/framework/lib/auth";
-import { getSsoBaseUrl } from "@/framework/lib/urls";
 import { getVisibleModulesForSidebar, AppIds, LucideIconName, getModuleInfo } from "@/framework/lib/resources.config";
 import { getModuleLabel } from "@/framework/lib/module-labels";
-import { useTheme } from "next-themes";
 import { useCurrentLocale } from "@/locales/client";
-import pkg from "@/../package.json";
 import { SupportDialog } from "@/framework/components/user/SupportDialog";
 import { AIDataDialog } from "@/framework/components/user/AIDataDialog";
-import { Avatar, Button, Tooltip, ScrollShadow } from "@/framework/components/ui";
+import { UserMenu } from "@/framework/components/user/menu/UserMenu";
+import { Button, Tooltip, ScrollShadow, Logo } from "@/framework/components/ui";
 import { useBrand } from "@/framework/components/providers/BrandProvider";
-import { useUIStrings, fmtUI } from "@/framework/lib/ui.localization";
+import { useUIStrings } from "@/framework/lib/ui.localization";
 import {
   LayoutDashboard,
   Bell,
   MessageSquare,
   ActivitySquare,
-  LogOut,
   ChevronLeft,
-  ChevronRight,
-  Sun,
-  Moon,
-  LifeBuoy,
-  Settings,
-  Cpu
+  ChevronRight
 } from "lucide-react";
 
 // L3.1 (DS_LAYOUTS_V1_1_PLAN) — UserSidebar: migrazione della Sidebar nella shell user.
@@ -72,10 +64,9 @@ export function UserSidebar({
   onNavigate,
   className = ""
 }: UserSidebarProps) {
-  const { user, claims, logout, loginRedirect } = useAuth();
+  const { claims } = useAuth();
   const brand = useBrand();
   const s = useUIStrings();
-  const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const currentLocale = useCurrentLocale();
 
@@ -86,8 +77,6 @@ export function UserSidebar({
   const isCollapsed = inDrawer ? false : collapsed;
 
   const userRole = (claims?.uRole || claims?.role || "viewer") as "owner" | "admin" | "member" | "viewer" | "device";
-  const displayName = user?.displayName || user?.email?.split("@")[0] || s.common.user;
-  const roleName = (claims?.uRole || claims?.role) ? String(claims?.uRole || claims?.role).toUpperCase() : "VIEWER";
 
   // Ottiene il ruolo dell'organizzazione per questa applicazione dai custom claims rbac.apps
   const orgRole = (claims?.rbac?.apps?.[appId]?.mode || "buyer") as "buyer" | "seller" | "both";
@@ -95,32 +84,12 @@ export function UserSidebar({
   // Estrae la lista dei moduli visibili sulla base del ruolo utente e ruolo organizzazione (SSOT)
   const visibleModules = getVisibleModulesForSidebar(appId as AppIds, userRole, orgRole);
 
-  const ssoUrl = getSsoBaseUrl();
-  const settingsUrl = appId === "sso" ? `/${currentLocale}/settings` : `${ssoUrl}/${currentLocale}/settings`;
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      if (appId === "sso") {
-        window.location.href = `/${currentLocale}/auth`;
-      } else {
-        loginRedirect(appId);
-      }
-    } catch (err) {
-      console.error("[UserSidebar] Errore logout:", err);
-    }
-  };
-
   return (
     <aside className={`klx-sidebar ${isCollapsed ? "klx-sidebar--collapsed" : ""} ${className}`}>
-      {/* 1. HEADER (LOGO & TOGGLE SIDEBAR) */}
+      {/* 1. HEADER (LOGO & TOGGLE SIDEBAR) — wordmark ui/Logo (M4), white-label:
+          l'area privata segue il brand attivo, a differenza del portale auth. */}
       <div className="klx-sidebar-header">
-        {!isCollapsed && (
-          <div className="klx-sidebar-logo-container">
-            <div className="klx-sidebar-logo-mark">{brand.logoMark}</div>
-            <span className="klx-sidebar-logo-text">{brand.name}</span>
-          </div>
-        )}
+        {!isCollapsed && <Logo size="sm" className="ms-1" />}
         {isCollapsed && (
           <div className="klx-sidebar-logo-mark">{brand.logoMark}</div>
         )}
@@ -193,9 +162,11 @@ export function UserSidebar({
         })}
       </ScrollShadow>
 
-      {/* 3. FOOTER (AZIONI, PROFILO, SUPPORTO & LOGOUT) */}
+      {/* 3. FOOTER (AZIONI APP OPZIONALI + MENU UTENTE) — tema, impostazioni,
+          supporto, AI agent, logout e versione vivono nel UserMenu (M2). */}
       <div className="klx-sidebar-footer">
-        {/* BOTTONI AZIONE — quelli applicativi compaiono SOLO con l'handler dell'app */}
+        {/* BOTTONI AZIONE — compaiono SOLO con l'handler dell'app */}
+        {(onNotifications || onMessages || onServiceStatus) && (
         <div className="klx-sidebar-actions-grid">
           {onNotifications && (
             <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
@@ -257,129 +228,19 @@ export function UserSidebar({
               </Tooltip.Content>
             </Tooltip>
           )}
-
-          {/* Toggle Theme */}
-          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
-            <Tooltip.Trigger>
-              <Button
-                isIconOnly
-                variant="ghost"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="klx-sidebar-action-btn"
-                aria-label={s.sidebar.changeTheme}
-              >
-                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {fmtUI(s.sidebar.themeLabel, { mode: theme === "dark" ? "Light" : "Dark" })}
-            </Tooltip.Content>
-          </Tooltip>
-
-          {/* Settings (solo per l'owner dell'organizzazione) */}
-          {userRole === "owner" && (
-            <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
-              <Tooltip.Trigger>
-                <Link
-                  href={settingsUrl}
-                  onClick={onNavigate}
-                  className="klx-sidebar-action-btn klx-sidebar-action-btn--settings"
-                  aria-label={s.sidebar.settings}
-                >
-                  <Settings className="w-4 h-4" />
-                </Link>
-              </Tooltip.Trigger>
-              <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-                {s.sidebar.settings}
-              </Tooltip.Content>
-            </Tooltip>
-          )}
         </div>
-
-        {/* Profilo utente */}
-        <div className="klx-sidebar-profile-card">
-          <Avatar className="klx-sidebar-profile-avatar">
-            {(claims?.uAvatar || user?.photoURL) && (
-              <Avatar.Image src={(claims?.uAvatar as string) || user?.photoURL || undefined} alt={displayName} />
-            )}
-            <Avatar.Fallback className="text-white">{displayName.substring(0, 2).toUpperCase()}</Avatar.Fallback>
-          </Avatar>
-
-          {!isCollapsed && (
-            <div className="klx-sidebar-profile-info">
-              <p className="klx-sidebar-profile-name">
-                {displayName}
-              </p>
-              <p className="klx-sidebar-profile-role">
-                {roleName}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* BOTTONI SUPPORTO & LOGOUT */}
-        <div className="klx-sidebar-footer-buttons">
-          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
-            <Tooltip.Trigger>
-              <Button
-                onClick={() => setSupportOpen(true)}
-                variant="ghost"
-                className="klx-sidebar-footer-btn"
-                aria-label={s.sidebar.openSupport}
-              >
-                <LifeBuoy className="w-4 h-4" />
-                {!isCollapsed && <span>{s.sidebar.support}</span>}
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {s.sidebar.support}
-            </Tooltip.Content>
-          </Tooltip>
-
-          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
-            <Tooltip.Trigger>
-              <Button
-                onClick={() => setAiOpen(true)}
-                variant="ghost"
-                className="klx-sidebar-footer-btn"
-                aria-label={s.sidebar.aiAgent}
-              >
-                <Cpu className="w-4 h-4 text-secondary animate-pulse" />
-                {!isCollapsed && <span>{s.sidebar.aiAgent}</span>}
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {s.sidebar.aiAgent}
-            </Tooltip.Content>
-          </Tooltip>
-
-          <Tooltip isDisabled={!isCollapsed} delay={0} closeDelay={0}>
-            <Tooltip.Trigger>
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                className="klx-sidebar-footer-btn klx-sidebar-footer-btn--logout"
-                aria-label={s.sidebar.logout}
-              >
-                <LogOut className="w-4 h-4" />
-                {!isCollapsed && <span>{s.sidebar.logout}</span>}
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="right" className="klx-sidebar-tooltip">
-              {s.sidebar.disconnect}
-            </Tooltip.Content>
-          </Tooltip>
-        </div>
-
-        {/* COPYRIGHT E VERSIONE FOOTER */}
-        {!isCollapsed && (
-          <div className="klx-sidebar-copyright">
-            <span>{brand.copyright}</span>
-            <span className="bg-slate-100 dark:bg-slate-900/80 text-ink-muted px-1.5 py-0.5 rounded font-mono text-[8px]">
-              v{pkg.version}
-            </span>
-          </div>
         )}
+
+        {/* MENU UTENTE (M1/M2): trigger avatar+nome+ruolo, pannello con tema,
+            lingua, impostazioni, supporto, AI agent, logout e versione. */}
+        <UserMenu
+          variant="sidebar"
+          clientId={appId}
+          collapsed={isCollapsed}
+          onSupport={() => setSupportOpen(true)}
+          onAiAgent={() => setAiOpen(true)}
+          onNavigate={onNavigate}
+        />
       </div>
 
       {/* Dialoghi montati SOLO quando aperti: su mobile la sidebar dockata è

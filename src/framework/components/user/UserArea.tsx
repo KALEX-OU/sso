@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useCurrentLocale } from "@/locales/client";
 import { useAuth } from "@/framework/lib/auth";
+import { getSsoBaseUrl } from "@/framework/lib/urls";
 import { useSidebarCollapsedPreference } from "@/framework/lib/use-profile-preferences";
 import { UserLayout } from "@/framework/components/user/UserLayout";
 import { UserSidebar, UserSidebarProps } from "@/framework/components/user/UserSidebar";
@@ -51,6 +53,7 @@ export function UserArea({ children, appId = "sso", sidebarActions }: UserAreaPr
   }, [s]);
   const router = useRouter();
   const pathname = usePathname();
+  const currentLocale = useCurrentLocale();
   const { user: firebaseUser, loading: authLoading, claims: authClaims, loginRedirect } = useAuth();
 
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -69,17 +72,29 @@ export function UserArea({ children, appId = "sso", sidebarActions }: UserAreaPr
     }
   }, [toast]);
 
-  // Scorciatoia ⌘K / Ctrl+K per la Command Palette
+  // Scorciatoie globali: ⌘K/Ctrl+K per la Command Palette; ⌘,/Ctrl+, per le
+  // Impostazioni (solo owner — è il kbd hint mostrato nel UserMenu).
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setPaletteOpen((open) => !open);
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
+        const isOwner = (authClaims?.uRole || authClaims?.role) === "owner";
+        if (!isOwner) return;
+        e.preventDefault();
+        if (appId === "sso") {
+          router.push(`/${currentLocale}/settings`);
+        } else {
+          window.location.href = `${getSsoBaseUrl()}/${currentLocale}/settings`;
+        }
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [appId, authClaims, currentLocale, router]);
 
   // NB: il Drawer mobile si chiude via onNavigate della UserSidebar (click su
   // una voce) e via onOpenChange del Drawer stesso (backdrop/Escape) — nessun
