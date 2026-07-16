@@ -60,10 +60,15 @@ export interface UserPermissionProps {
   description: string;
   rbac: RbacStructure;
   onToggle: (appKey: string, moduleKey: string, action: (typeof ACTIONS)[number]) => void;
-  /** Editor del ruolo IAM (solo per i membri; i team non hanno ruolo). */
+  /** Editor del ruolo IAM (solo per i membri; i team non hanno ruolo).
+   *  ASSENTE quando il target è l'utente corrente (anti lock-out) o un owner
+   *  gestito da un non-owner; `lockedRoles` disabilita ruoli non assegnabili
+   *  dal chiamante (es. "owner" per gli admin). Il server applica comunque
+   *  gli stessi vincoli. */
   roleEditor?: {
     role: string;
     onRoleChange: (role: string) => void;
+    lockedRoles?: readonly string[];
   };
   saving: boolean;
   onSave: () => void;
@@ -101,21 +106,27 @@ export function UserPermission({
                 <div className="space-y-3">
                   <Label className="text-xs font-bold text-ink block">{s.team.mainRoleLabel}</Label>
                   <div className="flex gap-2">
-                    {ROLES.map((r) => (
-                      <Button
-                        unstyled
-                        variant="ghost"
-                        key={r}
-                        className={`flex-1 font-bold text-xs uppercase rounded-xl px-3 py-2.5 cursor-pointer transition-all border ${
-                          roleEditor.role === r
-                            ? "bg-secondary text-white border-secondary shadow-md"
-                            : "border-line bg-surface-2 text-ink-muted hover:text-ink hover:bg-surface"
-                        }`}
-                        onClick={() => roleEditor.onRoleChange(r)}
-                      >
-                        {r}
-                      </Button>
-                    ))}
+                    {ROLES.map((r) => {
+                      const locked = roleEditor.lockedRoles?.includes(r) ?? false;
+                      return (
+                        <Button
+                          unstyled
+                          variant="ghost"
+                          key={r}
+                          isDisabled={locked}
+                          className={`flex-1 font-bold text-xs uppercase rounded-xl px-3 py-2.5 transition-all border ${
+                            roleEditor.role === r
+                              ? "bg-secondary text-white border-secondary shadow-md cursor-pointer"
+                              : locked
+                                ? "border-line bg-surface-2 text-ink-muted opacity-40 cursor-not-allowed"
+                                : "border-line bg-surface-2 text-ink-muted hover:text-ink hover:bg-surface cursor-pointer"
+                          }`}
+                          onClick={() => roleEditor.onRoleChange(r)}
+                        >
+                          {r}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

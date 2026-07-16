@@ -86,7 +86,7 @@ const inputClass =
   "bg-surface-2 border border-line focus:border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full transition-all";
 
 export function UserTeam({ listMembers }: UserTeamProps) {
-  const { dbData, showToast, claims, hasPermission } = useDashboard();
+  const { user: currentUser, dbData, showToast, claims, hasPermission } = useDashboard();
   const s = useUIStrings();
   // Pattern sRef (regola i18n): le callback dei fetch leggono le stringhe dalla
   // ref, così il cambio lingua non ri-innesca i caricamenti.
@@ -123,6 +123,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   const activeOrg = dbData?.organization;
   const activeRole = claims?.uRole || claims?.role;
   const isManager = activeRole === "owner" || activeRole === "admin";
+  const currentUid = (typeof claims?.uId === "string" ? claims.uId : undefined) || currentUser?.uid;
 
   const loadMembers = useCallback(async (orgId: string) => {
     setLoadingMembers(true);
@@ -270,6 +271,21 @@ export function UserTeam({ listMembers }: UserTeamProps) {
     const privileged = member.role === "owner" || member.role === "admin";
     setEditingRbac(JSON.parse(JSON.stringify(member.rbac || buildDefaultRbac(privileged))));
     setPermTarget({ kind: "member", member });
+  };
+
+  /* Editor del ruolo IAM: MAI su sé stessi (anti lock-out: un owner non si
+     declassa, un admin non si auto-promuove — il server lo rifiuta comunque);
+     il ruolo di un owner lo tocca solo un altro owner; un non-owner non può
+     assegnare owner (bottone lockato). */
+  const roleEditorFor = (member: TeamMemberItem) => {
+    const isSelf = !!member.user?.userId && member.user.userId === currentUid;
+    if (isSelf) return undefined;
+    if (member.role === "owner" && activeRole !== "owner") return undefined;
+    return {
+      role: editingRole,
+      onRoleChange: setEditingRole,
+      lockedRoles: activeRole !== "owner" ? (["owner"] as const) : ([] as const)
+    };
   };
 
   /* -------------------------------- Team --------------------------------- */
@@ -523,6 +539,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                                   {s.team.resetMfa}
                                 </Button>
                               )}
+                              {u.userId !== currentUid && (member.role !== "owner" || activeRole === "owner") && (
                               <Button
                                 unstyled
                                 isIconOnly
@@ -533,6 +550,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
+                              )}
                             </>
                           )}
                         </div>
@@ -769,7 +787,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           }
           rbac={editingRbac}
           onToggle={handleToggleModulePerm}
-          roleEditor={permTarget.kind === "member" ? { role: editingRole, onRoleChange: setEditingRole } : undefined}
+          roleEditor={permTarget.kind === "member" ? roleEditorFor(permTarget.member) : undefined}
           saving={savingPerms}
           onSave={() => void handleSavePermissions()}
         />
