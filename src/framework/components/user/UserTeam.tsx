@@ -3,7 +3,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
-import { apiEnvelopeSchema, teamListResponseSchema, effectivePermissionsResponseSchema, type TeamItemData } from "../../lib/schemas/api";
+import { apiEnvelopeSchema, teamListResponseSchema, effectivePermissionsResponseSchema, type TeamItemData,
+  permissionAuditListResponseSchema,
+  type PermissionAuditItemData
+} from "../../lib/schemas/api";
 import { UserPageHeader } from "./UserMain";
 import { UserCard } from "./UserCard";
 import {
@@ -121,6 +124,10 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   const [effectiveLoading, setEffectiveLoading] = useState(false);
   const [memberTeamIds, setMemberTeamIds] = useState<string[]>([]);
   const [pendingTeamId, setPendingTeamId] = useState<string | null>(null);
+  // Timeline audit del target (N3) + baseline della matrice per il dirty state (N7)
+  const [auditItems, setAuditItems] = useState<PermissionAuditItemData[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [rbacBaseline, setRbacBaseline] = useState("");
 
   // Dialogo di conferma (rimozioni, reset MFA con motivo)
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
@@ -290,12 +297,42 @@ export function UserTeam({ listMembers }: UserTeamProps) {
     }
   }, []);
 
+  /** Ultime modifiche permessi del target (N3): rotta P3.3 filtrata per subjects. */
+  const loadAudit = useCallback(async (targetId: string) => {
+    const orgId = dbData?.organization?.orgId;
+    if (!orgId) return;
+    setAuditLoading(true);
+    setAuditItems([]);
+    try {
+      const res = await fetchAuthedClient(
+        `/api/organization/${orgId}/permission-audit?targetId=${encodeURIComponent(targetId)}&limit=10`,
+        { method: "GET" },
+        { validate: (raw) => permissionAuditListResponseSchema.parse(raw) }
+      );
+      if (res.success && res.data) setAuditItems(res.data.items || []);
+    } catch (err) {
+      // Timeline accessoria: un errore non blocca il dialogo (log e lista vuota).
+      console.error("Errore timeline audit:", err);
+    } finally {
+      setAuditLoading(false);
+    }
+  }, [dbData?.organization?.orgId]);
+
+  /** Uid attore → etichetta leggibile dai membri caricati (fallback uid accorciato). */
+  const resolveActor = useCallback((uid: string) => {
+    const actor = members.find((m) => m.user?.userId === uid);
+    return actor?.user?.fullName || actor?.user?.email || `${uid.slice(0, 8)}…`;
+  }, [members]);
+
   const openMemberPerms = (member: TeamMemberItem) => {
     setEditingRole(member.role);
     setEffective(null);
     setMemberTeamIds((member.user?.teamMembers_on_user || []).map((rel) => rel.team.teamId));
     setPermTarget({ kind: "member", member });
-    if (member.user?.userId) void loadEffective(member.user.userId);
+    if (member.user?.userId) {
+      void loadEffective(member.user.userId);
+      void loadAudit(member.user.userId);
+    }
   };
 
   /** Toggle appartenenza team (applicato SUBITO): la leva reale dei permessi fini. */
@@ -316,6 +353,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
       }
       showToast(fmtUI(join ? s.team.teamJoined : s.team.teamLeft, { name: teams.find((t) => t.teamId === teamId)?.name || "" }), "success");
       await loadEffective(targetUserId);
+      void loadAudit(targetUserId);
       void loadMembers(activeOrg.orgId);
     } catch (err) {
       console.error(err);
@@ -385,8 +423,11 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   };
 
   const openTeamPerms = (team: TeamItem) => {
-    setEditingRbac(JSON.parse(JSON.stringify(team.rbac || buildEmptyRbac())));
+    const initial = JSON.parse(JSON.stringify(team.rbac || buildEmptyRbac())) as RbacStructure;
+    setEditingRbac(initial);
+    setRbacBaseline(JSON.stringify(initial));
     setPermTarget({ kind: "team", team });
+    void loadAudit(team.teamId);
   };
 
   /* ------------------------ Salvataggio permessi ------------------------- */
@@ -853,12 +894,19 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           saving={savingPerms}
           onSave={() => void handleSavePermissions()}
           hideSave={!roleEditorFor(permTarget.member)}
+          audit={{ items: auditItems, loading: auditLoading, resolveActor }}
         />
       )}
       {permTarget && permTarget.kind === "team" && (
         <UserPermission
           isOpen
-          onOpenChange={(open) => { if (!open) setPermTarget(null); }}
+          onOpenChange={(open) => {
+            if (open) return;
+            // N7: delta pendente → conferma esplicita prima di scartare.
+            const isDirty = JSON.stringify(editingRbac) !== rbacBaseline;
+            if (isDirty && !window.confirm(s.team.unsavedConfirm)) return;
+            setPermTarget(null);
+          }}
           title={`${s.team.teamPermsTitle} — ${permTarget.team.name}`}
           description={s.team.teamPermsDesc}
           rbac={editingRbac}
@@ -866,6 +914,8 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           onApplyTemplate={(r) => setEditingRbac(buildRbacFromRole(r))}
           saving={savingPerms}
           onSave={() => void handleSavePermissions()}
+          audit={{ items: auditItems, loading: auditLoading, resolveActor }}
+          dirty={JSON.stringify(editingRbac) !== rbacBaseline}
         />
       )}
     </div>

@@ -255,6 +255,25 @@ export const effectivePermissionsResponseSchema = apiEnvelopeSchema.extend({
 });
 export type EffectivePermissionsResponse = z.infer<typeof effectivePermissionsResponseSchema>;
 
+/* ── Audit permessi (P3 RBAC_ENTERPRISE_PLAN: timeline modifiche) ─────────── */
+
+export const permissionAuditItemSchema = z.looseObject({
+  id: z.string(),
+  actorUid: z.string(),
+  actorRole: z.string(),
+  target: z.looseObject({ kind: z.string(), id: z.string(), label: z.string() }),
+  action: z.string(),
+  before: z.record(z.string(), z.unknown()).nullable().optional(),
+  after: z.record(z.string(), z.unknown()).nullable().optional(),
+  reason: z.string().optional(),
+  ts: z.string()
+});
+export type PermissionAuditItemData = z.infer<typeof permissionAuditItemSchema>;
+
+export const permissionAuditListResponseSchema = apiEnvelopeSchema.extend({
+  items: z.array(permissionAuditItemSchema).optional()
+});
+
 export const apiKeyStatusResponseSchema = apiEnvelopeSchema.extend({
   hasKey: z.boolean().optional(),
   keyHash: z.string().optional(),

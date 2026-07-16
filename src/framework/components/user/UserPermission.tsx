@@ -4,7 +4,8 @@ import React from "react";
 import { Button, Chip, Checkbox, Modal, Label, Spinner } from "../ui";
 import { listAppModules, getApplicationInfo } from "../../lib/resources.config";
 import { MATRIX_APPS, getPermissionsFromMask, type RbacStructure, type RbacTemplateRole } from "../../lib/rbac-templates";
-import { Shield, Lock, Check, Minus } from "lucide-react";
+import { Shield, Lock, Check, Minus, History } from "lucide-react";
+import type { PermissionAuditItemData } from "../../lib/schemas/api";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 /**
@@ -74,6 +75,15 @@ export interface UserPermissionProps {
   onSave: () => void;
   /** Nasconde il footer di salvataggio (readonly puro senza ruolo). */
   hideSave?: boolean;
+  /** Timeline audit del target (N3): ultime modifiche ai permessi da P3.3. */
+  audit?: {
+    items: PermissionAuditItemData[];
+    loading: boolean;
+    /** Risolve l'uid dell'attore in etichetta leggibile (email/nome dai membri caricati). */
+    resolveActor: (uid: string) => string;
+  };
+  /** Dirty state della matrice (N7): false → Salva disabilitato, true → badge modifiche. */
+  dirty?: boolean;
 }
 
 export function UserPermission({
@@ -90,13 +100,46 @@ export function UserPermission({
   teamsEditor,
   saving,
   onSave,
-  hideSave = false
+  hideSave = false,
+  audit,
+  dirty
 }: UserPermissionProps) {
   const s = useUIStrings();
   const isEdit = !!rbac && !!onToggle;
 
   /** Etichetta leggibile di una fonte ("role" → Ruolo; "team:X" → X). */
   const sourceLabel = (src: string) => (src === "role" ? s.team.sourceRole : src.replace(/^team:/, ""));
+
+  /** Descrizione i18n di un evento audit (N3) dal record P3. */
+  const auditLabel = (item: PermissionAuditItemData): string => {
+    const beforeRec = (item.before || {}) as Record<string, unknown>;
+    const afterRec = (item.after || {}) as Record<string, unknown>;
+    const str = (v: unknown) => (typeof v === "string" ? v : "");
+    switch (item.action) {
+      case "member.invite":
+        return fmtUI(s.team.actInvite, { role: str(afterRec.role) });
+      case "member.role_change":
+        return fmtUI(s.team.actRoleChange, { from: str(beforeRec.role), to: str(afterRec.role) });
+      case "member.remove":
+        return s.team.actMemberRemove;
+      case "member.mfa_reset":
+        return s.team.actMfaReset;
+      case "team.create":
+        return s.team.actTeamCreate;
+      case "team.update":
+        return s.team.actTeamUpdate;
+      case "team.delete":
+        return s.team.actTeamDelete;
+      case "team.member_add":
+        return fmtUI(s.team.actTeamMemberAdd, { name: str(afterRec.teamName) });
+      case "team.member_remove":
+        return fmtUI(s.team.actTeamMemberRemove, { name: str(beforeRec.teamName) });
+      case "ownership.transfer":
+        return s.team.actOwnershipTransfer;
+      default:
+        return item.action;
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -207,14 +250,18 @@ export function UserPermission({
                     const modules = listAppModules(appId);
                     const appName = getApplicationInfo(appId)?.name || appId;
                     return (
-                      <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden overflow-x-auto">
+                      <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden">
                         <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
                           <span className="text-xs font-extrabold text-ink">{appName}</span>
                           <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
                         </div>
 
                         {/* Tabella nativa: colonne dimensionate dalle intestazioni (nowrap),
-                            allineamento checkbox/etichette garantito per costruzione. */}
+                            allineamento checkbox/etichette garantito per costruzione.
+                            Lo scroll orizzontale vive in un wrapper DEDICATO: sul genitore
+                            overflow-hidden (per i rounded) azzererebbe lo scroll e
+                            taglierebbe le ultime colonne. */}
+                        <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="bg-surface-2/60 border-b border-line">
@@ -275,13 +322,47 @@ export function UserPermission({
                             })}
                           </tbody>
                         </table>
+                        </div>
                       </div>
                     );
                   })
                 )}
               </div>
+              {audit && (
+                <div className="space-y-3 border-t border-line pt-5">
+                  <h3 className="text-xs font-extrabold text-ink flex items-center gap-2">
+                    <History className="w-3.5 h-3.5 text-secondary" /> {s.team.auditTitle}
+                  </h3>
+                  {audit.loading ? (
+                    <div className="flex justify-center p-4"><Spinner /></div>
+                  ) : audit.items.length === 0 ? (
+                    <p className="text-xs text-ink-muted">{s.team.auditEmpty}</p>
+                  ) : (
+                    <ol className="space-y-2">
+                      {audit.items.map((item) => (
+                        <li key={item.id} className="flex items-start gap-3 text-xs">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" aria-hidden />
+                          <div className="min-w-0">
+                            <p className="text-ink font-semibold">{auditLabel(item)}</p>
+                            <p className="text-ink-muted">
+                              {fmtUI(s.team.auditBy, { actor: audit.resolveActor(item.actorUid) })} · {new Date(item.ts).toLocaleString()}
+                              {item.reason ? ` — ${item.reason}` : ""}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
+              )}
             </Modal.Body>
-            <Modal.Footer className="pt-4 flex justify-end gap-3 border-t border-line">
+            <Modal.Footer className="pt-4 flex items-center justify-end gap-3 border-t border-line">
+              {isEdit && dirty && (
+                <span className="me-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-warning">
+                  <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" aria-hidden />
+                  {s.team.unsavedBadge}
+                </span>
+              )}
               <Button
                 unstyled
                 variant="ghost"
@@ -291,7 +372,7 @@ export function UserPermission({
                 {hideSave ? s.common.close : s.common.cancel}
               </Button>
               {!hideSave && (
-                <Button unstyled className="klx-btn klx-btn--primary" isDisabled={saving} onClick={onSave}>
+                <Button unstyled className="klx-btn klx-btn--primary" isDisabled={saving || dirty === false} onClick={onSave}>
                   {saving ? s.team.saving : s.common.save}
                 </Button>
               )}
