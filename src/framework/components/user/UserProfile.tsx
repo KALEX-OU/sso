@@ -205,7 +205,7 @@ export function UserProfile() {
         <Modal isOpen={deleteOpen} onOpenChange={(open) => { if (!open) { setDeleteOpen(false); setDeleteConfirmText(""); } }}>
           <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
-              <Modal.Dialog className="w-full rounded-3xl border border-danger/30 bg-surface-raised backdrop-blur-xl shadow-2xl p-6 space-y-4">
+              <Modal.Dialog className="w-full rounded-3xl border border-danger/30 bg-surface shadow-2xl p-6 space-y-4">
                 <div className="flex items-center gap-3 text-danger">
                   <AlertTriangle className="w-6 h-6" />
                   <h3 className="text-base font-extrabold uppercase tracking-wider">

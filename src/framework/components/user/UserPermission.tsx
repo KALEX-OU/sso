@@ -85,8 +85,8 @@ export function UserPermission({
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <Modal.Container className="h-auto w-full max-w-3xl flex-none p-0 sm:w-full sm:p-0">
-          <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface-raised backdrop-blur-xl shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
+        <Modal.Container className="h-auto w-full max-w-4xl flex-none p-0 sm:w-full sm:p-0">
+          <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
             {/* Header standard dei dialoghi della famiglia (icona secondary +
                 titolo + divider), come invito membro e conferme. */}
             <Modal.Header className="flex flex-col gap-1 border-b border-line pb-4">
@@ -135,14 +135,14 @@ export function UserPermission({
                     /* Card interna coerente col resto della pagina: superficie
                        raised, header grigio (bg-surface-2) come le testate
                        delle tabelle, righe divise da border-line. */
-                    <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden">
+                    <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden overflow-x-auto">
                       <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
                         <span className="text-xs font-extrabold text-ink">{appName}</span>
                         <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
                       </div>
 
                       <div className="divide-y divide-line">
-                        <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-surface-2/60 text-[10px] font-extrabold text-ink-muted uppercase">
+                        <div className="grid grid-cols-12 gap-1 px-4 py-2 bg-surface-2/60 text-[9px] font-extrabold text-ink-muted uppercase tracking-tight min-w-[560px]">
                           <div className="col-span-4">{s.team.colModule}</div>
                           <div className="col-span-2 text-center">{s.team.colRead}</div>
                           <div className="col-span-2 text-center">{s.team.colCreate}</div>

@@ -630,7 +630,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
         <Modal isOpen={inviteOpen} onOpenChange={setInviteOpen}>
           <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
-              <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface-raised backdrop-blur-xl shadow-2xl p-6 space-y-4">
+              <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface shadow-2xl p-6 space-y-4">
                 <div>
                   <h3 className="text-base font-extrabold text-ink flex items-center gap-2">
                     <UserPlus className="w-4 h-4 text-secondary" /> {s.team.inviteTitle}
@@ -720,7 +720,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
         <Modal isOpen={!!confirmState} onOpenChange={(open) => { if (!open) closeConfirm(); }}>
           <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
-              <Modal.Dialog className="w-full rounded-3xl border border-danger/30 bg-surface-raised backdrop-blur-xl shadow-2xl p-6 space-y-4">
+              <Modal.Dialog className="w-full rounded-3xl border border-danger/30 bg-surface shadow-2xl p-6 space-y-4">
                 <div className="flex items-center gap-3 text-danger">
                   <AlertTriangle className="w-5 h-5" />
                   <h3 className="text-sm font-extrabold uppercase tracking-wider">{confirmState.title}</h3>
