@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
-import { apiEnvelopeSchema, teamListResponseSchema, type TeamItemData } from "../../lib/schemas/api";
+import { apiEnvelopeSchema, teamListResponseSchema, effectivePermissionsResponseSchema, type TeamItemData } from "../../lib/schemas/api";
 import { UserPageHeader } from "./UserMain";
 import { UserCard } from "./UserCard";
 import {
@@ -27,10 +27,12 @@ import {
 } from "../ui";
 import {
   UserPermission,
-  buildDefaultRbac,
+  buildEmptyRbac,
+  buildRbacFromRole,
   getPermissionsFromMask,
   getMaskFromPermissions,
-  type RbacStructure
+  type RbacStructure,
+  type EffectivePermissionsMap
 } from "./UserPermission";
 import { Users, Plus, Shield, Trash2, Settings2, Copy, UserPlus, AlertTriangle } from "lucide-react";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
@@ -114,6 +116,11 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   const [editingRole, setEditingRole] = useState("member");
   const [editingRbac, setEditingRbac] = useState<RbacStructure>({ apps: {} });
   const [savingPerms, setSavingPerms] = useState(false);
+  // Vista membro (P1): permessi effettivi dal server + team di appartenenza
+  const [effective, setEffective] = useState<EffectivePermissionsMap | null>(null);
+  const [effectiveLoading, setEffectiveLoading] = useState(false);
+  const [memberTeamIds, setMemberTeamIds] = useState<string[]>([]);
+  const [pendingTeamId, setPendingTeamId] = useState<string | null>(null);
 
   // Dialogo di conferma (rimozioni, reset MFA con motivo)
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
@@ -266,11 +273,56 @@ export function UserTeam({ listMembers }: UserTeamProps) {
     });
   };
 
+  /** Permessi effettivi del membro (P1): ruolo ∪ team con provenienza, dal server. */
+  const loadEffective = useCallback(async (targetUserId: string) => {
+    setEffectiveLoading(true);
+    try {
+      const res = await fetchAuthedClient(`/api/user/${targetUserId}/effective-permissions`, { method: "GET" }, { validate: (raw) => effectivePermissionsResponseSchema.parse(raw) });
+      if (res.success && res.data) {
+        setEffective(res.data.permissions || null);
+        setMemberTeamIds((res.data.teams || []).map((t) => t.teamId));
+      }
+    } catch (err) {
+      console.error("Errore permessi effettivi:", err);
+      setEffective(null);
+    } finally {
+      setEffectiveLoading(false);
+    }
+  }, []);
+
   const openMemberPerms = (member: TeamMemberItem) => {
     setEditingRole(member.role);
-    const privileged = member.role === "owner" || member.role === "admin";
-    setEditingRbac(JSON.parse(JSON.stringify(member.rbac || buildDefaultRbac(privileged))));
+    setEffective(null);
+    setMemberTeamIds((member.user?.teamMembers_on_user || []).map((rel) => rel.team.teamId));
     setPermTarget({ kind: "member", member });
+    if (member.user?.userId) void loadEffective(member.user.userId);
+  };
+
+  /** Toggle appartenenza team (applicato SUBITO): la leva reale dei permessi fini. */
+  const toggleTeamMembership = async (teamId: string, join: boolean) => {
+    const targetUserId = permTarget?.kind === "member" ? permTarget.member.user?.userId : undefined;
+    if (!targetUserId || !activeOrg) return;
+    setPendingTeamId(teamId);
+    try {
+      const res = join
+        ? await fetchAuthedClient(`/api/team/${teamId}/member`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: targetUserId })
+          }, { validate: (raw) => apiEnvelopeSchema.parse(raw) })
+        : await fetchAuthedClient(`/api/team/${teamId}/member/${targetUserId}`, { method: "DELETE" }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+      if (!res.success) {
+        throw new Error(res.error?.message || s.team.teamToggleErr);
+      }
+      showToast(fmtUI(join ? s.team.teamJoined : s.team.teamLeft, { name: teams.find((t) => t.teamId === teamId)?.name || "" }), "success");
+      await loadEffective(targetUserId);
+      void loadMembers(activeOrg.orgId);
+    } catch (err) {
+      console.error(err);
+      showToast(err instanceof Error ? err.message : s.team.teamToggleErr, "error");
+    } finally {
+      setPendingTeamId(null);
+    }
   };
 
   /* Editor del ruolo IAM: MAI su sé stessi (anti lock-out: un owner non si
@@ -333,13 +385,13 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   };
 
   const openTeamPerms = (team: TeamItem) => {
-    setEditingRbac(JSON.parse(JSON.stringify(team.rbac || buildDefaultRbac(false))));
+    setEditingRbac(JSON.parse(JSON.stringify(team.rbac || buildEmptyRbac())));
     setPermTarget({ kind: "team", team });
   };
 
   /* ------------------------ Salvataggio permessi ------------------------- */
 
-  const handleToggleModulePerm = (appKey: string, moduleKey: string, actionKey: "read" | "create" | "update" | "delete") => {
+  const handleToggleModulePerm = (appKey: string, moduleKey: string, actionKey: "read" | "list" | "create" | "update" | "delete") => {
     setEditingRbac((prev: RbacStructure) => {
       const copy = { ...prev, apps: { ...prev.apps } };
       if (!copy.apps[appKey]) copy.apps[appKey] = {};
@@ -360,10 +412,12 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           ? await fetchAuthedClient(`/api/user/${permTarget.member.user?.userId}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ role: editingRole, rbac: editingRbac })
+              // SOLO il ruolo: i permessi fini si ereditano dai team (P1, group-based).
+              body: JSON.stringify({ role: editingRole })
             }, { validate: (raw) => apiEnvelopeSchema.parse(raw) })
           : await fetchAuthedClient(`/api/team/${permTarget.team.teamId}`, {
-              method: "PUT",
+              // NB: la rotta di update team è POST /{teamId} (non PUT).
+              method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ name: permTarget.team.name, rbac: editingRbac })
             }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
@@ -775,19 +829,41 @@ export function UserTeam({ listMembers }: UserTeamProps) {
       )}
 
       {/* MODAL MATRICE PERMESSI (membro o team) */}
-      {permTarget && (
+      {/* MODAL PERMESSI — membro: ruolo + team + effettivi readonly (P1);
+          team: matrice editabile con template dal registry (P2). */}
+      {permTarget && permTarget.kind === "member" && (
         <UserPermission
-          isOpen={!!permTarget}
+          isOpen
           onOpenChange={(open) => { if (!open) setPermTarget(null); }}
-          title={permTarget.kind === "member" ? s.team.memberPermsTitle : `${s.team.teamPermsTitle} — ${permTarget.team.name}`}
-          description={
-            permTarget.kind === "member"
-              ? fmtUI(s.team.memberPermsDesc, { name: permTarget.member.user?.fullName || permTarget.member.user?.email || "" })
-              : s.team.teamPermsDesc
+          title={s.team.memberPermsTitle}
+          description={fmtUI(s.team.memberPermsDesc, { name: permTarget.member.user?.fullName || permTarget.member.user?.email || "" })}
+          effective={effective}
+          effectiveLoading={effectiveLoading}
+          roleEditor={roleEditorFor(permTarget.member)}
+          teamsEditor={
+            isManager
+              ? {
+                  teams: teams.map((t) => ({ teamId: t.teamId, name: t.name })),
+                  memberTeamIds,
+                  onToggleTeam: (teamId, join) => void toggleTeamMembership(teamId, join),
+                  pendingTeamId
+                }
+              : undefined
           }
+          saving={savingPerms}
+          onSave={() => void handleSavePermissions()}
+          hideSave={!roleEditorFor(permTarget.member)}
+        />
+      )}
+      {permTarget && permTarget.kind === "team" && (
+        <UserPermission
+          isOpen
+          onOpenChange={(open) => { if (!open) setPermTarget(null); }}
+          title={`${s.team.teamPermsTitle} — ${permTarget.team.name}`}
+          description={s.team.teamPermsDesc}
           rbac={editingRbac}
           onToggle={handleToggleModulePerm}
-          roleEditor={permTarget.kind === "member" ? roleEditorFor(permTarget.member) : undefined}
+          onApplyTemplate={(r) => setEditingRbac(buildRbacFromRole(r))}
           saving={savingPerms}
           onSave={() => void handleSavePermissions()}
         />

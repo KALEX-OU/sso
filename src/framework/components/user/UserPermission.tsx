@@ -1,56 +1,46 @@
 "use client";
 
 import React from "react";
-import { Button, Chip, Checkbox, Modal, Label } from "../ui";
-import { listAppModules, getApplicationInfo, AppIds } from "../../lib/resources.config";
-import { Shield, Lock } from "lucide-react";
+import { Button, Chip, Checkbox, Modal, Label, Spinner } from "../ui";
+import { listAppModules, getApplicationInfo } from "../../lib/resources.config";
+import { MATRIX_APPS, getPermissionsFromMask, type RbacStructure, type RbacTemplateRole } from "../../lib/rbac-templates";
+import { Shield, Lock, Check, Minus } from "lucide-react";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 /**
- * UserPermission — matrice permessi RBAC (bitmask CRUD) UNICA per membri e
- * team, modale di UserTeam. I moduli arrivano dal registry SSOT
- * (listAppModules), MAI da elenchi cablati: la matrice segue automaticamente
- * l'evoluzione del registro. Con `roleEditor` (solo membri) espone anche il
- * selettore del ruolo IAM principale.
+ * UserPermission — componente UNICO dei permessi (P1/P2 RBAC_ENTERPRISE_PLAN).
+ *
+ * Due modalità:
+ * - **edit** (team): matrice bitmask CRUD+List editabile, con template
+ *   "Parti da: admin/member/viewer" derivati dalle rolePolicies del REGISTRY
+ *   (buildRbacFromRole) — mai default cablati.
+ * - **readonly** (membro): permessi EFFETTIVI risolti dal server (ruolo ∪ team)
+ *   con colonna Origine (provenienza di ogni riga), più editor del ruolo IAM e
+ *   assegnazione ai team (le vere leve del modello group-based).
+ *
+ * I moduli arrivano SEMPRE dal registry (listAppModules): la matrice segue
+ * l'evoluzione del registro senza elenchi cablati.
  */
 
-export interface RbacStructure {
-  apps: Record<string, Record<string, number>>;
-}
-
-export const getPermissionsFromMask = (mask: number) => ({
-  read: (mask & 1) === 1,
-  create: (mask & 2) === 2,
-  update: (mask & 4) === 4,
-  delete: (mask & 8) === 8
-});
-
-export const getMaskFromPermissions = (perms: { read: boolean; create: boolean; update: boolean; delete: boolean }) => {
-  let mask = 0;
-  if (perms.read) mask |= 1;
-  if (perms.create) mask |= 2;
-  if (perms.update) mask |= 4;
-  if (perms.delete) mask |= 8;
-  return mask;
-};
-
-/** App mostrate nella matrice (moduli dal registry). */
-const MATRIX_APPS: readonly AppIds[] = ["sso", "web"] as const;
-
-/** Rbac di default derivato dal registry: full (15) per ruoli privilegiati, read (1) altrimenti. */
-export function buildDefaultRbac(privileged: boolean): RbacStructure {
-  const apps: Record<string, Record<string, number>> = {};
-  for (const appId of MATRIX_APPS) {
-    apps[appId] = {};
-    for (const moduleId of listAppModules(appId)) {
-      apps[appId][moduleId] = privileged ? 15 : 1;
-    }
-  }
-  return { apps };
-}
+export {
+  getPermissionsFromMask,
+  getMaskFromPermissions,
+  buildEmptyRbac,
+  buildRbacFromRole
+} from "../../lib/rbac-templates";
+export type { RbacStructure, RbacTemplateRole } from "../../lib/rbac-templates";
 
 const ROLES = ["owner", "admin", "member", "viewer"] as const;
-const ACTIONS = ["read", "create", "update", "delete"] as const;
+const TEMPLATE_ROLES: readonly RbacTemplateRole[] = ["admin", "member", "viewer"] as const;
+const ACTIONS = ["read", "list", "create", "update", "delete"] as const;
+
+/** Permessi effettivi dal server: app → modulo → { mask, sources }. */
+export type EffectivePermissionsMap = Record<string, Record<string, { mask: number; sources: string[] }>>;
+
+export interface UserPermissionTeamOption {
+  teamId: string;
+  name: string;
+}
 
 export interface UserPermissionProps {
   isOpen: boolean;
@@ -58,20 +48,32 @@ export interface UserPermissionProps {
   /** Titolo e sottotitolo del dialogo (membro o team, già localizzati). */
   title: string;
   description: string;
-  rbac: RbacStructure;
-  onToggle: (appKey: string, moduleKey: string, action: (typeof ACTIONS)[number]) => void;
-  /** Editor del ruolo IAM (solo per i membri; i team non hanno ruolo).
-   *  ASSENTE quando il target è l'utente corrente (anti lock-out) o un owner
-   *  gestito da un non-owner; `lockedRoles` disabilita ruoli non assegnabili
-   *  dal chiamante (es. "owner" per gli admin). Il server applica comunque
-   *  gli stessi vincoli. */
+  /** Matrice EDIT (team). Assente in modalità readonly. */
+  rbac?: RbacStructure;
+  onToggle?: (appKey: string, moduleKey: string, action: (typeof ACTIONS)[number]) => void;
+  /** Template "Parti da" (solo edit): applica buildRbacFromRole. */
+  onApplyTemplate?: (role: RbacTemplateRole) => void;
+  /** Permessi EFFETTIVI readonly (membro), con provenienza. */
+  effective?: EffectivePermissionsMap | null;
+  /** Caricamento della vista effective in corso. */
+  effectiveLoading?: boolean;
+  /** Editor del ruolo IAM (solo membri, MAI su sé stessi — anti lock-out). */
   roleEditor?: {
     role: string;
     onRoleChange: (role: string) => void;
     lockedRoles?: readonly string[];
   };
+  /** Assegnazione ai team (solo membri): applicata subito al toggle. */
+  teamsEditor?: {
+    teams: UserPermissionTeamOption[];
+    memberTeamIds: readonly string[];
+    onToggleTeam: (teamId: string, join: boolean) => void;
+    pendingTeamId?: string | null;
+  };
   saving: boolean;
   onSave: () => void;
+  /** Nasconde il footer di salvataggio (readonly puro senza ruolo). */
+  hideSave?: boolean;
 }
 
 export function UserPermission({
@@ -81,19 +83,26 @@ export function UserPermission({
   description,
   rbac,
   onToggle,
+  onApplyTemplate,
+  effective,
+  effectiveLoading = false,
   roleEditor,
+  teamsEditor,
   saving,
-  onSave
+  onSave,
+  hideSave = false
 }: UserPermissionProps) {
   const s = useUIStrings();
+  const isEdit = !!rbac && !!onToggle;
+
+  /** Etichetta leggibile di una fonte ("role" → Ruolo; "team:X" → X). */
+  const sourceLabel = (src: string) => (src === "role" ? s.team.sourceRole : src.replace(/^team:/, ""));
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <Modal.Container className="h-auto w-full max-w-4xl flex-none p-0 sm:w-full sm:p-0">
           <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
-            {/* Header standard dei dialoghi della famiglia (icona secondary +
-                titolo + divider), come invito membro e conferme. */}
             <Modal.Header className="flex flex-col gap-1 border-b border-line pb-4">
               <h2 className="text-base font-extrabold text-ink flex items-center gap-2">
                 <Shield className="text-secondary w-4 h-4 shrink-0" />
@@ -131,71 +140,145 @@ export function UserPermission({
                 </div>
               )}
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-ink">{s.team.matrixTitle}</h3>
-                  <span className="text-[10px] text-secondary font-bold bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                    <Lock className="w-3 h-3" /> {s.team.bitmaskBadge}
-                  </span>
-                </div>
-
-                {MATRIX_APPS.map((appId) => {
-                  const modules = listAppModules(appId);
-                  const appName = getApplicationInfo(appId)?.name || appId;
-                  return (
-                    /* Card interna coerente col resto della pagina: superficie
-                       raised, header grigio (bg-surface-2) come le testate
-                       delle tabelle, righe divise da border-line. */
-                    <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden overflow-x-auto">
-                      <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
-                        <span className="text-xs font-extrabold text-ink">{appName}</span>
-                        <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
-                      </div>
-
-                      {/* Tabella NATIVA (table-auto): le colonne azione si
-                          dimensionano sulle intestazioni (nowrap) e restano
-                          allineate alle checkbox per costruzione — un grid per
-                          riga non sincronizza le tracce e le etichette lunghe
-                          (MODIFICACIÓN/ELIMINACIÓN) finivano sovrapposte. */}
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-surface-2/60 border-b border-line">
-                            <th scope="col" className="text-start px-4 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap w-full">{s.team.colModule}</th>
-                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colRead}</th>
-                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colCreate}</th>
-                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colUpdate}</th>
-                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colDelete}</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-line">
-                          {modules.map((moduleKey) => {
-                            const currentVal = rbac?.apps?.[appId]?.[moduleKey] || 0;
-                            const perms = getPermissionsFromMask(currentVal);
-                            return (
-                              <tr key={moduleKey} className="hover:bg-surface-2/60 transition-colors">
-                                <th scope="row" className="text-start px-4 py-3 text-xs font-bold text-ink capitalize">{moduleKey.replace(/_/g, " ")}</th>
-                                {ACTIONS.map((action) => (
-                                  <td key={action} className="px-3 py-3 text-center">
-                                    <Checkbox
-                                      aria-label={fmtUI(s.team.permAria, { action, module: moduleKey })}
-                                      isSelected={perms[action]}
-                                      onChange={() => onToggle(appId, moduleKey, action)}
-                                      className="inline-flex"
-                                    >
-                                      <Checkbox.Control>
-                                        <Checkbox.Indicator />
-                                      </Checkbox.Control>
-                                    </Checkbox>
-                                  </td>
-                                ))}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+              {teamsEditor && (
+                <div className="space-y-3">
+                  <Label className="text-xs font-bold text-ink block">{s.team.memberTeamsLabel}</Label>
+                  {teamsEditor.teams.length === 0 ? (
+                    <p className="text-xs text-ink-muted">{s.team.noTeams}</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {teamsEditor.teams.map((team) => {
+                        const joined = teamsEditor.memberTeamIds.includes(team.teamId);
+                        const pending = teamsEditor.pendingTeamId === team.teamId;
+                        return (
+                          <Button
+                            unstyled
+                            variant="ghost"
+                            key={team.teamId}
+                            isDisabled={pending}
+                            className={`inline-flex items-center gap-1.5 font-bold text-xs rounded-xl px-3 py-2 transition-all border cursor-pointer ${
+                              joined
+                                ? "bg-secondary/10 text-secondary border-secondary/30"
+                                : "border-line bg-surface-2 text-ink-muted hover:text-ink hover:bg-surface"
+                            } ${pending ? "opacity-60" : ""}`}
+                            onClick={() => teamsEditor.onToggleTeam(team.teamId, !joined)}
+                          >
+                            {pending ? <Spinner className="w-3 h-3" /> : joined ? <Check className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5 opacity-40" />}
+                            {team.name}
+                          </Button>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <h3 className="text-sm font-bold text-ink">{isEdit ? s.team.matrixTitle : s.team.effectiveTitle}</h3>
+                  <div className="flex items-center gap-2">
+                    {isEdit && onApplyTemplate && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-ink-muted uppercase">{s.team.templatesLabel}</span>
+                        {TEMPLATE_ROLES.map((r) => (
+                          <Button
+                            unstyled
+                            variant="ghost"
+                            key={r}
+                            className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg border border-line bg-surface-2 text-ink-muted hover:text-ink hover:bg-surface cursor-pointer transition-colors"
+                            onClick={() => onApplyTemplate(r)}
+                          >
+                            {r}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                    <span className="text-[10px] text-secondary font-bold bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" /> {s.team.bitmaskBadge}
+                    </span>
+                  </div>
+                </div>
+                {!isEdit && <p className="text-xs text-ink-muted -mt-2">{s.team.effectiveDesc}</p>}
+
+                {effectiveLoading && !isEdit ? (
+                  <div className="flex justify-center p-8"><Spinner /></div>
+                ) : (
+                  MATRIX_APPS.map((appId) => {
+                    const modules = listAppModules(appId);
+                    const appName = getApplicationInfo(appId)?.name || appId;
+                    return (
+                      <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden overflow-x-auto">
+                        <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-ink">{appName}</span>
+                          <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
+                        </div>
+
+                        {/* Tabella nativa: colonne dimensionate dalle intestazioni (nowrap),
+                            allineamento checkbox/etichette garantito per costruzione. */}
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-surface-2/60 border-b border-line">
+                              <th scope="col" className="text-start px-4 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap w-full">{s.team.colModule}</th>
+                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colRead}</th>
+                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colList}</th>
+                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colCreate}</th>
+                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colUpdate}</th>
+                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colDelete}</th>
+                              {!isEdit && (
+                                <th scope="col" className="text-start px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colSource}</th>
+                              )}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-line">
+                            {modules.map((moduleKey) => {
+                              const mask = isEdit
+                                ? rbac?.apps?.[appId]?.[moduleKey] || 0
+                                : effective?.[appId]?.[moduleKey]?.mask || 0;
+                              const sources = !isEdit ? effective?.[appId]?.[moduleKey]?.sources || [] : [];
+                              const perms = getPermissionsFromMask(mask);
+                              return (
+                                <tr key={moduleKey} className="hover:bg-surface-2/60 transition-colors">
+                                  <th scope="row" className="text-start px-4 py-3 text-xs font-bold text-ink capitalize">{moduleKey.replace(/_/g, " ")}</th>
+                                  {ACTIONS.map((action) => (
+                                    <td key={action} className="px-3 py-3 text-center">
+                                      {isEdit ? (
+                                        <Checkbox
+                                          aria-label={fmtUI(s.team.permAria, { action, module: moduleKey })}
+                                          isSelected={perms[action]}
+                                          onChange={() => onToggle?.(appId, moduleKey, action)}
+                                          className="inline-flex"
+                                        >
+                                          <Checkbox.Control>
+                                            <Checkbox.Indicator />
+                                          </Checkbox.Control>
+                                        </Checkbox>
+                                      ) : perms[action] ? (
+                                        <Check className="w-4 h-4 text-success inline-block" aria-label={fmtUI(s.team.permAria, { action, module: moduleKey })} />
+                                      ) : (
+                                        <Minus className="w-3.5 h-3.5 text-ink-muted/40 inline-block" aria-hidden />
+                                      )}
+                                    </td>
+                                  ))}
+                                  {!isEdit && (
+                                    <td className="px-3 py-3">
+                                      <div className="flex flex-wrap gap-1">
+                                        {sources.map((src) => (
+                                          <Chip key={src} size="sm" variant="soft" className={`text-[9px] font-semibold ${src === "role" ? "bg-secondary/10 text-secondary border border-secondary/30" : "border border-line"}`}>
+                                            {sourceLabel(src)}
+                                          </Chip>
+                                        ))}
+                                      </div>
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </Modal.Body>
             <Modal.Footer className="pt-4 flex justify-end gap-3 border-t border-line">
@@ -205,11 +288,13 @@ export function UserPermission({
                 className="px-4 py-2.5 text-xs font-bold border border-line hover:bg-surface-2 text-ink-muted rounded-xl cursor-pointer transition-colors"
                 onClick={() => onOpenChange(false)}
               >
-                {s.common.cancel}
+                {hideSave ? s.common.close : s.common.cancel}
               </Button>
-              <Button unstyled className="klx-btn klx-btn--primary" isDisabled={saving} onClick={onSave}>
-                {saving ? s.team.saving : s.common.save}
-              </Button>
+              {!hideSave && (
+                <Button unstyled className="klx-btn klx-btn--primary" isDisabled={saving} onClick={onSave}>
+                  {saving ? s.team.saving : s.common.save}
+                </Button>
+              )}
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

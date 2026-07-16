@@ -241,6 +241,20 @@ export const teamListResponseSchema = apiEnvelopeSchema.extend({
   items: z.array(teamItemSchema).optional()
 });
 
+/* ── Permessi effettivi (P1 RBAC_ENTERPRISE_PLAN: ruolo ∪ team, con fonti) ── */
+
+export const effectiveModulePermissionSchema = z.object({
+  mask: z.number(),
+  sources: z.array(z.string())
+});
+
+export const effectivePermissionsResponseSchema = apiEnvelopeSchema.extend({
+  role: z.string().optional(),
+  teams: z.array(z.object({ teamId: z.string(), name: z.string() })).optional(),
+  permissions: z.record(z.string(), z.record(z.string(), effectiveModulePermissionSchema)).optional()
+});
+export type EffectivePermissionsResponse = z.infer<typeof effectivePermissionsResponseSchema>;
+
 export const apiKeyStatusResponseSchema = apiEnvelopeSchema.extend({
   hasKey: z.boolean().optional(),
   keyHash: z.string().optional(),
