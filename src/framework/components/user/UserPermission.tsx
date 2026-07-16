@@ -141,40 +141,47 @@ export function UserPermission({
                         <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
                       </div>
 
-                      <div className="divide-y divide-line">
-                        <div className="grid grid-cols-12 gap-1 px-4 py-2 bg-surface-2/60 text-[9px] font-extrabold text-ink-muted uppercase tracking-tight min-w-[560px]">
-                          <div className="col-span-4">{s.team.colModule}</div>
-                          <div className="col-span-2 text-center">{s.team.colRead}</div>
-                          <div className="col-span-2 text-center">{s.team.colCreate}</div>
-                          <div className="col-span-2 text-center">{s.team.colUpdate}</div>
-                          <div className="col-span-2 text-center">{s.team.colDelete}</div>
-                        </div>
-
-                        {modules.map((moduleKey) => {
-                          const currentVal = rbac?.apps?.[appId]?.[moduleKey] || 0;
-                          const perms = getPermissionsFromMask(currentVal);
-                          return (
-                            <div key={moduleKey} className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-surface-2/60 transition-colors">
-                              <div className="col-span-4">
-                                <p className="text-xs font-bold text-ink capitalize">{moduleKey.replace(/_/g, " ")}</p>
-                              </div>
-                              {ACTIONS.map((action) => (
-                                <div key={action} className="col-span-2 flex justify-center">
-                                  <Checkbox
-                                    aria-label={fmtUI(s.team.permAria, { action, module: moduleKey })}
-                                    isSelected={perms[action]}
-                                    onChange={() => onToggle(appId, moduleKey, action)}
-                                  >
-                                    <Checkbox.Control>
-                                      <Checkbox.Indicator />
-                                    </Checkbox.Control>
-                                  </Checkbox>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
-                      </div>
+                      {/* Tabella NATIVA (table-auto): le colonne azione si
+                          dimensionano sulle intestazioni (nowrap) e restano
+                          allineate alle checkbox per costruzione — un grid per
+                          riga non sincronizza le tracce e le etichette lunghe
+                          (MODIFICACIÓN/ELIMINACIÓN) finivano sovrapposte. */}
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-surface-2/60 border-b border-line">
+                            <th scope="col" className="text-start px-4 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap w-full">{s.team.colModule}</th>
+                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colRead}</th>
+                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colCreate}</th>
+                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colUpdate}</th>
+                            <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colDelete}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line">
+                          {modules.map((moduleKey) => {
+                            const currentVal = rbac?.apps?.[appId]?.[moduleKey] || 0;
+                            const perms = getPermissionsFromMask(currentVal);
+                            return (
+                              <tr key={moduleKey} className="hover:bg-surface-2/60 transition-colors">
+                                <th scope="row" className="text-start px-4 py-3 text-xs font-bold text-ink capitalize">{moduleKey.replace(/_/g, " ")}</th>
+                                {ACTIONS.map((action) => (
+                                  <td key={action} className="px-3 py-3 text-center">
+                                    <Checkbox
+                                      aria-label={fmtUI(s.team.permAria, { action, module: moduleKey })}
+                                      isSelected={perms[action]}
+                                      onChange={() => onToggle(appId, moduleKey, action)}
+                                      className="inline-flex"
+                                    >
+                                      <Checkbox.Control>
+                                        <Checkbox.Indicator />
+                                      </Checkbox.Control>
+                                    </Checkbox>
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   );
                 })}
