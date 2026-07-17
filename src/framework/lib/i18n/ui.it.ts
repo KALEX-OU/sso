@@ -326,6 +326,7 @@ export const it = {
     teamJoined: "Aggiunto al team {name}.",
     teamLeft: "Rimosso dal team {name}.",
     teamToggleErr: "Errore durante l'aggiornamento dei team del membro.",
+    appSelectLabel: "Applicazione",
     auditTitle: "Attività recente",
     auditEmpty: "Nessuna modifica ai permessi registrata.",
     auditBy: "da {actor}",

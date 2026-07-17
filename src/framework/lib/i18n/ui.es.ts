@@ -325,6 +325,7 @@ export const es: UIStrings = {
     teamJoined: "Añadido al equipo {name}.",
     teamLeft: "Eliminado del equipo {name}.",
     teamToggleErr: "Error al actualizar los equipos del miembro.",
+    appSelectLabel: "Aplicación",
     auditTitle: "Actividad reciente",
     auditEmpty: "No hay cambios de permisos registrados.",
     auditBy: "por {actor}",

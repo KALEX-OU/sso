@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Button, Chip, Checkbox, Modal, Label, Spinner } from "../ui";
-import { listAppModules, getApplicationInfo } from "../../lib/resources.config";
+import { Button, Chip, Checkbox, Modal, Label, Spinner, Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui";
+import { listAppModules, getApplicationInfo, type AppIds } from "../../lib/resources.config";
 import { MATRIX_APPS, getPermissionsFromMask, type RbacStructure, type RbacTemplateRole } from "../../lib/rbac-templates";
 import { Shield, Lock, Check, Minus, History } from "lucide-react";
 import type { PermissionAuditItemData } from "../../lib/schemas/api";
@@ -106,6 +106,9 @@ export function UserPermission({
 }: UserPermissionProps) {
   const s = useUIStrings();
   const isEdit = !!rbac && !!onToggle;
+  // Un'app per volta (richiesta owner): matrice sempre intera, niente scroll orizzontale.
+  const isMatrixApp = (v: string): v is AppIds => MATRIX_APPS.some((a) => a === v);
+  const [selectedApp, setSelectedApp] = React.useState<AppIds>(MATRIX_APPS[0]);
 
   /** Etichetta leggibile di una fonte ("role" → Ruolo; "team:X" → X). */
   const sourceLabel = (src: string) => (src === "role" ? s.team.sourceRole : src.replace(/^team:/, ""));
@@ -145,7 +148,9 @@ export function UserPermission({
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <Modal.Container className="h-auto w-full max-w-4xl flex-none p-0 sm:w-full sm:p-0">
-          <Modal.Dialog className="w-full rounded-3xl border border-line bg-surface shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
+          {/* max-w esplicito sul Dialog: il default HeroUI (max-w-md, 448px) vince
+              sul max-w del Container e strozzava la matrice tagliando le colonne. */}
+          <Modal.Dialog className="w-full max-w-4xl rounded-3xl border border-line bg-surface shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
             <Modal.Header className="flex flex-col gap-1 border-b border-line pb-4">
               <h2 className="text-base font-extrabold text-ink flex items-center gap-2">
                 <Shield className="text-secondary w-4 h-4 shrink-0" />
@@ -246,26 +251,43 @@ export function UserPermission({
                 {effectiveLoading && !isEdit ? (
                   <div className="flex justify-center p-8"><Spinner /></div>
                 ) : (
-                  MATRIX_APPS.map((appId) => {
+                  (() => {
+                    const appId = selectedApp;
                     const modules = listAppModules(appId);
-                    const appName = getApplicationInfo(appId)?.name || appId;
                     return (
                       <div key={appId} className="border border-line rounded-2xl bg-surface-raised overflow-hidden">
-                        <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
-                          <span className="text-xs font-extrabold text-ink">{appName}</span>
+                        <div className="bg-surface-2 px-4 py-2.5 border-b border-line flex items-center justify-between gap-3">
+                          <Select
+                            selectedKey={appId}
+                            onSelectionChange={(key) => { if (typeof key === "string" && isMatrixApp(key)) setSelectedApp(key); }}
+                            aria-label={s.team.appSelectLabel}
+                            className="min-w-0"
+                          >
+                            <SelectTrigger className="bg-surface border border-line rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs font-extrabold text-ink cursor-pointer hover:bg-surface-2 transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectPopover className="bg-surface border border-line rounded-2xl shadow-2xl p-1.5 max-h-[300px] overflow-y-auto z-50">
+                              <ListBox className="outline-none">
+                                {MATRIX_APPS.map((id) => (
+                                  <ListBoxItem key={id} id={id} textValue={getApplicationInfo(id)?.name || id} className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer text-ink hover:bg-surface-2">
+                                    {getApplicationInfo(id)?.name || id}
+                                  </ListBoxItem>
+                                ))}
+                              </ListBox>
+                            </SelectPopover>
+                          </Select>
                           <Chip size="sm" variant="soft" color="default" className="font-bold text-[9px] uppercase">{appId}</Chip>
                         </div>
 
-                        {/* Tabella nativa: colonne dimensionate dalle intestazioni (nowrap),
-                            allineamento checkbox/etichette garantito per costruzione.
-                            Lo scroll orizzontale vive in un wrapper DEDICATO: sul genitore
-                            overflow-hidden (per i rounded) azzererebbe lo scroll e
-                            taglierebbe le ultime colonne. */}
+                        {/* Tabella nativa a piena larghezza: un'app per volta e NIENTE
+                            width forzate sulle colonne (un w-full sul primo th spingeva
+                            la tabella oltre il contenitore tagliando le ultime colonne).
+                            Il wrapper overflow è solo salvagente per viewport minuscoli. */}
                         <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="bg-surface-2/60 border-b border-line">
-                              <th scope="col" className="text-start px-4 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap w-full">{s.team.colModule}</th>
+                              <th scope="col" className="text-start px-4 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colModule}</th>
                               <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colRead}</th>
                               <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colList}</th>
                               <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colCreate}</th>
@@ -325,7 +347,7 @@ export function UserPermission({
                         </div>
                       </div>
                     );
-                  })
+                  })()
                 )}
               </div>
               {audit && (
