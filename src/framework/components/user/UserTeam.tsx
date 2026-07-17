@@ -177,6 +177,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   const [rbacBaseline, setRbacBaseline] = useState("");
   // P4 transfer ownership (conferma digitata) + P5 export CSV + N11 revoca su downgrade
   const [transferTarget, setTransferTarget] = useState<TeamMemberItem | null>(null);
+  const [transferSelectId, setTransferSelectId] = useState<string>("");
   const [transferText, setTransferText] = useState("");
   const [transferPending, setTransferPending] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
@@ -867,8 +868,10 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                               {s.team.retryOnboarding}
                             </Button>
                           )}
-                          {u && status === "active" && isManager && (
+                          {u && isManager && (status === "active" || status === "pending") && (
                             <>
+                              {/* Dialogo permessi anche per i PENDING (collaudo owner):
+                                  ruolo e team si gestiscono già prima dell'onboarding. */}
                               <Button
                                 unstyled
                                 isIconOnly
@@ -879,7 +882,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                               >
                                 <Settings2 className="w-4 h-4" />
                               </Button>
-                              {activeRole === "owner" && member.role !== "owner" && (
+                              {status === "active" && activeRole === "owner" && member.role !== "owner" && (
                                 <Button
                                   unstyled
                                   className="font-bold text-[9px] rounded-lg cursor-pointer px-2.5 py-1.5 border border-warning/30 hover:bg-warning/10 text-warning transition-colors"
@@ -1022,6 +1025,60 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           </div>
         )}
       </UserCard>
+
+      {/* ZONA PERICOLOSA (P4.2, sede richiesta dall'owner): transfer ownership
+          con select del nuovo owner. La conferma chiede l'email digitata e la
+          PASSWORD anche da dispositivo fidato (step-up senza trust, lato server). */}
+      {activeRole === "owner" && (() => {
+        const eligible = members.filter(
+          (m) => m.user?.userId && m.user.userId !== currentUid && m.role !== "owner" && (m.status || "active") === "active"
+        );
+        return (
+          <UserCard
+            title={s.team.dangerZoneTitle}
+            description={s.team.dangerZoneDesc}
+            icon={<Crown className="w-4 h-4 text-danger" />}
+            className="border-danger/30"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-xs font-extrabold text-ink">{s.team.transferTitle}</p>
+                <p className="text-[11px] text-ink-muted mt-0.5">{s.team.transferHint}</p>
+              </div>
+              {eligible.length === 0 ? (
+                <p className="text-xs text-ink-muted italic">{s.team.transferNoEligible}</p>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <FilterSelect
+                    label={s.team.transferSelectLabel}
+                    value={transferSelectId || eligible[0]?.user?.userId || ""}
+                    onChange={setTransferSelectId}
+                    options={eligible.map((m) => ({
+                      value: m.user?.userId || "",
+                      label: m.user?.fullName || m.user?.email || ""
+                    }))}
+                  />
+                  <Button
+                    unstyled
+                    variant="ghost"
+                    onClick={() => {
+                      const targetId = transferSelectId || eligible[0]?.user?.userId;
+                      const target = eligible.find((m) => m.user?.userId === targetId);
+                      if (target) {
+                        setTransferText("");
+                        setTransferTarget(target);
+                      }
+                    }}
+                    className="shrink-0 px-3 py-2 text-xs font-bold rounded-xl border border-danger/40 text-danger hover:bg-danger/10 cursor-pointer transition-colors"
+                  >
+                    {s.team.transferAction}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </UserCard>
+        );
+      })()}
 
       {/* MODAL INVITO MEMBRO */}
       {inviteOpen && (
@@ -1180,15 +1237,6 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           onSave={() => void handleSavePermissions()}
           hideSave={!roleEditorFor(permTarget.member)}
           audit={{ items: auditItems, loading: auditLoading, resolveActor }}
-          onTransferOwnership={
-            activeRole === "owner" &&
-            permTarget.member.user?.userId &&
-            permTarget.member.user.userId !== currentUid &&
-            permTarget.member.role !== "owner" &&
-            (permTarget.member.status || "active") === "active"
-              ? () => { setTransferText(""); setTransferTarget(permTarget.member); }
-              : undefined
-          }
         />
       )}
       {permTarget && permTarget.kind === "team" && (
