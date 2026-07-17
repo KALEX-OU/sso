@@ -62,3 +62,46 @@ export function buildRbacFromRole(role: RbacTemplateRole): RbacStructure {
   }
   return { apps };
 }
+
+/* ── Team template dal registry (N9, RBAC_ENTERPRISE_PLAN) ─────────────────
+   Preset DICHIARATIVI: niente maschere cablate — il grant deriva dalle
+   rolePolicies del registry (policy admin) al momento della creazione, così
+   i template seguono l'evoluzione della SSOT. */
+
+export interface TeamTemplate {
+  id: "administration" | "billing" | "readonly";
+  /** Moduli inclusi per app; "all" = tutti i moduli del registry. */
+  scope: "all" | Partial<Record<AppIds, readonly string[]>>;
+  /** manage = mask della policy admin; read = soli bit Read+List di quella policy. */
+  grant: "manage" | "read";
+}
+
+export const TEAM_TEMPLATES: readonly TeamTemplate[] = [
+  { id: "administration", scope: "all", grant: "manage" },
+  {
+    id: "billing",
+    scope: { sso: ["subscription", "checkout", "invoice", "payment", "product", "productprice"] },
+    grant: "manage"
+  },
+  { id: "readonly", scope: "all", grant: "read" }
+] as const;
+
+export function buildRbacFromTemplate(template: TeamTemplate): RbacStructure {
+  const adminRbac = buildRbacFromRole("admin");
+  const apps: Record<string, Record<string, number>> = {};
+  for (const appId of MATRIX_APPS) {
+    const appModules = listAppModules(appId);
+    // Intersezione con i moduli REALI dell'app: chiavi ignote non passerebbero
+    // la validazione server (rbacStructureSchema strict).
+    const wanted =
+      template.scope === "all" ? appModules : (template.scope[appId] ?? []).filter((m) => appModules.some((real) => real === m));
+    if (wanted.length === 0) continue;
+    apps[appId] = {};
+    for (const moduleId of wanted) {
+      const adminMask = adminRbac.apps[appId]?.[moduleId] ?? 0;
+      const mask = template.grant === "read" ? adminMask & (1 | 16) : adminMask;
+      if (mask > 0) apps[appId][moduleId] = mask;
+    }
+  }
+  return { apps };
+}

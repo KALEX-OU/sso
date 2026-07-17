@@ -4,7 +4,7 @@ import React from "react";
 import { Button, Chip, Checkbox, Modal, Label, Spinner, Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui";
 import { listAppModules, getApplicationInfo, type AppIds } from "../../lib/resources.config";
 import { MATRIX_APPS, getPermissionsFromMask, type RbacStructure, type RbacTemplateRole } from "../../lib/rbac-templates";
-import { Shield, Lock, Check, Minus, History, Crown } from "lucide-react";
+import { Shield, Lock, Check, Minus, History, Crown, Copy } from "lucide-react";
 import type { PermissionAuditItemData } from "../../lib/schemas/api";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
@@ -52,6 +52,9 @@ export interface UserPermissionProps {
   /** Matrice EDIT (team). Assente in modalità readonly. */
   rbac?: RbacStructure;
   onToggle?: (appKey: string, moduleKey: string, action: (typeof ACTIONS)[number]) => void;
+  /** N6: toggle di massa — intera riga (modulo) o intera colonna (azione). */
+  onToggleRow?: (appKey: string, moduleKey: string) => void;
+  onToggleColumn?: (appKey: string, action: (typeof ACTIONS)[number]) => void;
   /** Template "Parti da" (solo edit): applica buildRbacFromRole. */
   onApplyTemplate?: (role: RbacTemplateRole) => void;
   /** Permessi EFFETTIVI readonly (membro), con provenienza. */
@@ -100,6 +103,8 @@ export function UserPermission({
   description,
   rbac,
   onToggle,
+  onToggleRow,
+  onToggleColumn,
   onApplyTemplate,
   effective,
   effectiveLoading = false,
@@ -117,6 +122,7 @@ export function UserPermission({
   // Un'app per volta (richiesta owner): matrice sempre intera, niente scroll orizzontale.
   const isMatrixApp = (v: string): v is AppIds => MATRIX_APPS.some((a) => a === v);
   const [selectedApp, setSelectedApp] = React.useState<AppIds>(MATRIX_APPS[0]);
+  const [effectiveCopied, setEffectiveCopied] = React.useState(false);
 
   /** Etichetta leggibile di una fonte ("role" → Ruolo; "team:X" → X). */
   const sourceLabel = (src: string) => (src === "role" ? s.team.sourceRole : src.replace(/^team:/, ""));
@@ -261,9 +267,28 @@ export function UserPermission({
                         ))}
                       </div>
                     )}
-                    <span className="text-[10px] text-secondary font-bold bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                    <span
+                      title={s.team.bitmaskTooltip}
+                      className="text-[10px] text-secondary font-bold bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full flex items-center gap-1.5 cursor-help"
+                    >
                       <Lock className="w-3 h-3" /> {s.team.bitmaskBadge}
                     </span>
+                    {!isEdit && effective && (
+                      <Button
+                        unstyled
+                        variant="ghost"
+                        aria-label={s.team.copyEffective}
+                        onClick={() => {
+                          void navigator.clipboard.writeText(JSON.stringify(effective, null, 2)).then(() => {
+                            setEffectiveCopied(true);
+                            window.setTimeout(() => setEffectiveCopied(false), 2000);
+                          });
+                        }}
+                        className="p-1.5 rounded-lg border border-line text-ink-muted hover:text-ink hover:bg-surface-2 cursor-pointer transition-colors"
+                      >
+                        {effectiveCopied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+                      </Button>
+                    )}
                   </div>
                 </div>
                 {!isEdit && <p className="text-xs text-ink-muted -mt-2">{s.team.effectiveDesc}</p>}
@@ -308,11 +333,29 @@ export function UserPermission({
                           <thead>
                             <tr className="bg-surface-2/60 border-b border-line">
                               <th scope="col" className="text-start px-4 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colModule}</th>
-                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colRead}</th>
-                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colList}</th>
-                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colCreate}</th>
-                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colUpdate}</th>
-                              <th scope="col" className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colDelete}</th>
+                              {([
+                                ["read", s.team.colRead],
+                                ["list", s.team.colList],
+                                ["create", s.team.colCreate],
+                                ["update", s.team.colUpdate],
+                                ["delete", s.team.colDelete]
+                              ] as const).map(([action, label]) => (
+                                <th key={action} scope="col" title={isEdit && onToggleColumn ? s.team.toggleColumnHint : undefined} className="text-center px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">
+                                  {isEdit && onToggleColumn ? (
+                                    <Button
+                                      unstyled
+                                      variant="ghost"
+                                      aria-label={`${label} — ${s.team.toggleColumnHint}`}
+                                      onClick={() => onToggleColumn(appId, action)}
+                                      className="uppercase font-extrabold text-[10px] text-ink-muted hover:text-secondary cursor-pointer transition-colors"
+                                    >
+                                      {label}
+                                    </Button>
+                                  ) : (
+                                    label
+                                  )}
+                                </th>
+                              ))}
                               {!isEdit && (
                                 <th scope="col" className="text-start px-3 py-2 text-[10px] font-extrabold text-ink-muted uppercase whitespace-nowrap">{s.team.colSource}</th>
                               )}
@@ -327,7 +370,21 @@ export function UserPermission({
                               const perms = getPermissionsFromMask(mask);
                               return (
                                 <tr key={moduleKey} className="hover:bg-surface-2/60 transition-colors">
-                                  <th scope="row" className="text-start px-4 py-3 text-xs font-bold text-ink capitalize">{moduleKey.replace(/_/g, " ")}</th>
+                                  <th scope="row" title={isEdit && onToggleRow ? s.team.toggleRowHint : undefined} className="text-start px-4 py-3 text-xs font-bold text-ink capitalize">
+                                    {isEdit && onToggleRow ? (
+                                      <Button
+                                        unstyled
+                                        variant="ghost"
+                                        aria-label={`${moduleKey} — ${s.team.toggleRowHint}`}
+                                        onClick={() => onToggleRow(appId, moduleKey)}
+                                        className="font-bold text-xs text-ink capitalize hover:text-secondary cursor-pointer transition-colors"
+                                      >
+                                        {moduleKey.replace(/_/g, " ")}
+                                      </Button>
+                                    ) : (
+                                      moduleKey.replace(/_/g, " ")
+                                    )}
+                                  </th>
                                   {ACTIONS.map((action) => (
                                     <td key={action} className="px-3 py-3 text-center">
                                       {isEdit ? (

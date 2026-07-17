@@ -38,6 +38,8 @@ import {
   type RbacStructure,
   type EffectivePermissionsMap
 } from "./UserPermission";
+import { TEAM_TEMPLATES, MATRIX_APPS, buildRbacFromTemplate, type TeamTemplate } from "../../lib/rbac-templates";
+import { listAppModules } from "../../lib/resources.config";
 import { Users, Plus, Shield, Trash2, Settings2, Copy, UserPlus, AlertTriangle, Download, Crown } from "lucide-react";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
@@ -91,6 +93,42 @@ interface ConfirmState {
 const inputClass =
   "bg-surface-2 border border-line focus:border-secondary rounded-2xl px-3.5 py-2 flex items-center h-[48px] text-sm text-ink outline-none w-full transition-all";
 
+/** Select compatto per la barra filtri membri (N1). */
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<{ value: string; label: string }>;
+}) {
+  return (
+    <Select
+      selectedKey={value}
+      onSelectionChange={(k) => { if (typeof k === "string" && k) onChange(k); }}
+      aria-label={label}
+      className="min-w-0"
+    >
+      <SelectTrigger className="bg-surface-2 border border-line rounded-xl px-3 h-9 flex items-center gap-1.5 text-xs font-semibold text-ink cursor-pointer hover:bg-surface transition-colors">
+        <span className="text-[10px] uppercase text-ink-muted font-bold">{label}</span>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectPopover className="bg-surface border border-line rounded-2xl shadow-2xl p-1.5 max-h-[260px] overflow-y-auto z-50">
+        <ListBox className="outline-none">
+          {options.map((o) => (
+            <ListBoxItem key={o.value} id={o.value} textValue={o.label} className="w-full text-start px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer text-ink hover:bg-surface-2">
+              {o.label}
+            </ListBoxItem>
+          ))}
+        </ListBox>
+      </SelectPopover>
+    </Select>
+  );
+}
+
 export function UserTeam({ listMembers }: UserTeamProps) {
   const { user: currentUser, dbData, showToast, claims, hasPermission } = useDashboard();
   const s = useUIStrings();
@@ -113,7 +151,15 @@ export function UserTeam({ listMembers }: UserTeamProps) {
 
   // Creazione team (inline)
   const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamTemplate, setNewTeamTemplate] = useState<string>("none");
   const [creating, setCreating] = useState(false);
+
+  // Filtri lista membri (N1): ricerca testuale + ruolo/stato/team, client-side
+  // (la paginazione keyset arriverà con listMembers paginata server-side).
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberRoleFilter, setMemberRoleFilter] = useState<string>("all");
+  const [memberStatusFilter, setMemberStatusFilter] = useState<string>("all");
+  const [memberTeamFilter, setMemberTeamFilter] = useState<string>("all");
 
   // Matrice permessi (membro O team)
   const [permTarget, setPermTarget] = useState<{ kind: "member"; member: TeamMemberItem } | { kind: "team"; team: TeamItem } | null>(null);
@@ -375,6 +421,26 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   const roleRank: Record<string, number> = { owner: 3, admin: 2, member: 1, viewer: 0 };
   const isDowngrade = (from: string, to: string) => (roleRank[to] ?? 0) < (roleRank[from] ?? 0);
 
+  /** N1: filtro client-side su ricerca + ruolo + stato + team. */
+  const filteredMembers = members.filter((m) => {
+    const q = memberSearch.trim().toLowerCase();
+    if (q && !`${m.user?.fullName || ""} ${m.user?.email || ""}`.toLowerCase().includes(q)) return false;
+    if (memberRoleFilter !== "all" && m.role !== memberRoleFilter) return false;
+    if (memberStatusFilter !== "all" && (m.status || "active") !== memberStatusFilter) return false;
+    if (memberTeamFilter !== "all" && !(m.user?.teamMembers_on_user || []).some((rel) => rel.team.teamId === memberTeamFilter)) return false;
+    return true;
+  });
+
+  /** N2: colore coerente del chip ruolo (owner=primary, admin=secondary, member=default, viewer=muted). */
+  const roleChipClass = (role: string) =>
+    role === "owner"
+      ? "bg-primary/10 text-primary border border-primary/30"
+      : role === "admin"
+        ? "bg-secondary/10 text-secondary border border-secondary/30"
+        : role === "viewer"
+          ? "bg-surface-2 text-ink-muted/70 border border-line"
+          : "bg-surface-2 text-ink border border-line";
+
   /** P5: report accessi CSV generato server-side, scaricato come file. */
   const handleExportCsv = async () => {
     if (!activeOrg) return;
@@ -454,19 +520,25 @@ export function UserTeam({ listMembers }: UserTeamProps) {
 
   /* -------------------------------- Team --------------------------------- */
 
-  const handleCreateTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTeamName.trim()) return;
+  /** Etichetta localizzata di un template team (N9). */
+  const templateLabel = (id: TeamTemplate["id"]) =>
+    id === "administration" ? s.team.tplAdministration : id === "billing" ? s.team.tplBilling : s.team.tplReadonly;
+
+  const createTeam = async (name: string, template?: TeamTemplate) => {
+    if (!name.trim()) return;
     setCreating(true);
     try {
+      // N9: l'rbac del template è DERIVATO dal registry al momento della creazione.
+      const rbac = template ? buildRbacFromTemplate(template) : undefined;
       const res = await fetchAuthedClient("/api/team/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newTeamName, appId: "sso" })
+        body: JSON.stringify({ name, appId: "sso", ...(rbac ? { rbac } : {}) })
       }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
       if (res.success) {
-        showToast(fmtUI(s.team.teamCreated, { name: newTeamName }), "success");
+        showToast(fmtUI(s.team.teamCreated, { name }), "success");
         setNewTeamName("");
+        setNewTeamTemplate("none");
         void loadTeams();
       } else {
         throw new Error(res.error?.message || s.team.teamCreateErr);
@@ -477,6 +549,12 @@ export function UserTeam({ listMembers }: UserTeamProps) {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleCreateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const template = TEAM_TEMPLATES.find((t) => t.id === newTeamTemplate);
+    await createTeam(newTeamName, template);
   };
 
   const requestDeleteTeam = (teamId: string, teamName: string) => {
@@ -514,6 +592,33 @@ export function UserTeam({ listMembers }: UserTeamProps) {
       const perms = getPermissionsFromMask(copy.apps[appKey][moduleKey] || 0);
       perms[actionKey] = !perms[actionKey];
       copy.apps[appKey][moduleKey] = getMaskFromPermissions(perms);
+      return copy;
+    });
+  };
+
+  /** N6: toggle di massa — riga = tutto il modulo (0↔31); colonna = stessa azione su tutti i moduli. */
+  const handleToggleRow = (appKey: string, moduleKey: string) => {
+    setEditingRbac((prev: RbacStructure) => {
+      const copy = { ...prev, apps: { ...prev.apps } };
+      copy.apps[appKey] = { ...(copy.apps[appKey] || {}) };
+      copy.apps[appKey][moduleKey] = (copy.apps[appKey][moduleKey] || 0) === 31 ? 0 : 31;
+      return copy;
+    });
+  };
+
+  const handleToggleColumn = (appKey: string, actionKey: "read" | "list" | "create" | "update" | "delete") => {
+    setEditingRbac((prev: RbacStructure) => {
+      const copy = { ...prev, apps: { ...prev.apps } };
+      copy.apps[appKey] = { ...(copy.apps[appKey] || {}) };
+      const app = copy.apps[appKey];
+      const bit = { read: 1, create: 2, update: 4, delete: 8, list: 16 }[actionKey];
+      const appId = MATRIX_APPS.find((a) => a === appKey);
+      if (!appId) return prev;
+      const moduleIds = listAppModules(appId);
+      const allOn = moduleIds.every((m) => ((app[m] || 0) & bit) === bit);
+      for (const m of moduleIds) {
+        app[m] = allOn ? (app[m] || 0) & ~bit : (app[m] || 0) | bit;
+      }
       return copy;
     });
   };
@@ -642,6 +747,44 @@ export function UserTeam({ listMembers }: UserTeamProps) {
         ) : members.length === 0 ? (
           <EmptyState size="sm" title={s.team.membersEmpty} />
         ) : (
+          <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              aria-label={s.team.memberSearchPlaceholder}
+              placeholder={s.team.memberSearchPlaceholder}
+              value={memberSearch}
+              onChange={(e) => setMemberSearch(e.target.value)}
+              className="bg-surface-2 border border-line focus:border-secondary rounded-xl px-3 h-9 text-xs text-ink outline-none w-56 transition-all"
+            />
+            <FilterSelect
+              label={s.team.filterRole}
+              value={memberRoleFilter}
+              onChange={setMemberRoleFilter}
+              options={[{ value: "all", label: s.team.filterAll }, ...["owner", "admin", "member", "viewer"].map((r) => ({ value: r, label: r }))]}
+            />
+            <FilterSelect
+              label={s.team.filterStatus}
+              value={memberStatusFilter}
+              onChange={setMemberStatusFilter}
+              options={[
+                { value: "all", label: s.team.filterAll },
+                { value: "active", label: s.team.statusActive },
+                { value: "pending", label: s.team.statusPending },
+                { value: "error", label: s.team.statusError }
+              ]}
+            />
+            {teams.length > 0 && (
+              <FilterSelect
+                label={s.team.filterTeam}
+                value={memberTeamFilter}
+                onChange={setMemberTeamFilter}
+                options={[{ value: "all", label: s.team.filterAll }, ...teams.map((t) => ({ value: t.teamId, label: t.name }))]}
+              />
+            )}
+          </div>
+          {filteredMembers.length === 0 ? (
+            <EmptyState size="sm" title={s.team.membersFilterEmpty} />
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-start border-collapse">
               <thead>
@@ -654,7 +797,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {members.map((member, idx) => {
+                {filteredMembers.map((member, idx) => {
                   const u = member.user;
                   const status = member.status || "active";
                   const memberTeams = u?.teamMembers_on_user || [];
@@ -691,7 +834,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                         </div>
                       </td>
                       <td className="px-4 py-3.5">
-                        <Chip size="sm" variant="soft" className="uppercase font-bold text-[9px]">{member.role}</Chip>
+                        <Chip size="sm" variant="soft" className={`uppercase font-bold text-[9px] ${roleChipClass(member.role)}`}>{member.role}</Chip>
                       </td>
                       <td className="px-4 py-3.5">
                         {status === "active" && <Chip size="sm" color="success" variant="soft" className="font-bold text-[9px]">{s.team.statusActive}</Chip>}
@@ -767,6 +910,8 @@ export function UserTeam({ listMembers }: UserTeamProps) {
               </tbody>
             </table>
           </div>
+          )}
+          </div>
         )}
       </UserCard>
 
@@ -785,6 +930,15 @@ export function UserTeam({ listMembers }: UserTeamProps) {
                 onChange={(e) => setNewTeamName(e.target.value)}
                 className="bg-surface-2 border border-line focus:border-secondary rounded-xl px-3 h-9 text-xs text-ink outline-none w-44 transition-all"
               />
+              <FilterSelect
+                label={s.team.tplLabel}
+                value={newTeamTemplate}
+                onChange={setNewTeamTemplate}
+                options={[
+                  { value: "none", label: s.team.tplNone },
+                  ...TEAM_TEMPLATES.map((t) => ({ value: t.id, label: templateLabel(t.id) }))
+                ]}
+              />
               <Button
                 unstyled
                 type="submit"
@@ -801,7 +955,27 @@ export function UserTeam({ listMembers }: UserTeamProps) {
         {loadingTeams ? (
           <div className="flex justify-center p-6"><Spinner /></div>
         ) : teams.length === 0 ? (
-          <EmptyState size="sm" title={s.team.teamsEmpty} />
+          <div className="space-y-4">
+            <EmptyState size="sm" title={s.team.teamsEmpty} />
+            {hasPermission("team", "create") && (
+              <div className="flex flex-wrap items-center justify-center gap-2 pb-2">
+                <span className="text-xs text-ink-muted font-semibold">{s.team.tplCreateFrom}</span>
+                {TEAM_TEMPLATES.map((t) => (
+                  <Button
+                    unstyled
+                    variant="ghost"
+                    key={t.id}
+                    isDisabled={creating}
+                    onClick={() => void createTeam(templateLabel(t.id), t)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-secondary/30 text-secondary bg-secondary/5 hover:bg-secondary/10 cursor-pointer transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {templateLabel(t.id)}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {teams.map((team) => (
@@ -1031,6 +1205,8 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           description={s.team.teamPermsDesc}
           rbac={editingRbac}
           onToggle={handleToggleModulePerm}
+          onToggleRow={handleToggleRow}
+          onToggleColumn={handleToggleColumn}
           onApplyTemplate={(r) => setEditingRbac(buildRbacFromRole(r))}
           saving={savingPerms}
           onSave={() => void handleSavePermissions()}
