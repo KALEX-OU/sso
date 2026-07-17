@@ -274,6 +274,13 @@ export const permissionAuditListResponseSchema = apiEnvelopeSchema.extend({
   items: z.array(permissionAuditItemSchema).optional()
 });
 
+/* ── Report accessi CSV (P5 RBAC_ENTERPRISE_PLAN) ─────────────────────────── */
+
+export const accessReportResponseSchema = apiEnvelopeSchema.extend({
+  filename: z.string().optional(),
+  csv: z.string().optional()
+});
+
 export const apiKeyStatusResponseSchema = apiEnvelopeSchema.extend({
   hasKey: z.boolean().optional(),
   keyHash: z.string().optional(),

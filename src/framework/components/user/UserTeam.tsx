@@ -5,7 +5,8 @@ import { useDashboard } from "../layouts/DashboardContext";
 import { fetchAuthedClient } from "../../lib/api";
 import { apiEnvelopeSchema, teamListResponseSchema, effectivePermissionsResponseSchema, type TeamItemData,
   permissionAuditListResponseSchema,
-  type PermissionAuditItemData
+  type PermissionAuditItemData,
+  accessReportResponseSchema
 } from "../../lib/schemas/api";
 import { UserPageHeader } from "./UserMain";
 import { UserCard } from "./UserCard";
@@ -37,7 +38,7 @@ import {
   type RbacStructure,
   type EffectivePermissionsMap
 } from "./UserPermission";
-import { Users, Plus, Shield, Trash2, Settings2, Copy, UserPlus, AlertTriangle } from "lucide-react";
+import { Users, Plus, Shield, Trash2, Settings2, Copy, UserPlus, AlertTriangle, Download, Crown } from "lucide-react";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
 /**
@@ -128,6 +129,12 @@ export function UserTeam({ listMembers }: UserTeamProps) {
   const [auditItems, setAuditItems] = useState<PermissionAuditItemData[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
   const [rbacBaseline, setRbacBaseline] = useState("");
+  // P4 transfer ownership (conferma digitata) + P5 export CSV + N11 revoca su downgrade
+  const [transferTarget, setTransferTarget] = useState<TeamMemberItem | null>(null);
+  const [transferText, setTransferText] = useState("");
+  const [transferPending, setTransferPending] = useState(false);
+  const [exportingCsv, setExportingCsv] = useState(false);
+  const [revokeOnDowngrade, setRevokeOnDowngrade] = useState(false);
 
   // Dialogo di conferma (rimozioni, reset MFA con motivo)
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
@@ -326,6 +333,7 @@ export function UserTeam({ listMembers }: UserTeamProps) {
 
   const openMemberPerms = (member: TeamMemberItem) => {
     setEditingRole(member.role);
+    setRevokeOnDowngrade(false);
     setEffective(null);
     setMemberTeamIds((member.user?.teamMembers_on_user || []).map((rel) => rel.team.teamId));
     setPermTarget({ kind: "member", member });
@@ -363,6 +371,68 @@ export function UserTeam({ listMembers }: UserTeamProps) {
     }
   };
 
+  /** Gerarchia IAM per riconoscere un DECLASSAMENTO reale (N11). */
+  const roleRank: Record<string, number> = { owner: 3, admin: 2, member: 1, viewer: 0 };
+  const isDowngrade = (from: string, to: string) => (roleRank[to] ?? 0) < (roleRank[from] ?? 0);
+
+  /** P5: report accessi CSV generato server-side, scaricato come file. */
+  const handleExportCsv = async () => {
+    if (!activeOrg) return;
+    setExportingCsv(true);
+    try {
+      const res = await fetchAuthedClient(
+        `/api/organization/${activeOrg.orgId}/access-report`,
+        { method: "GET" },
+        { validate: (raw) => accessReportResponseSchema.parse(raw) }
+      );
+      if (!res.success || !res.data?.csv) {
+        throw new Error(res.error?.message || s.team.exportCsvErr);
+      }
+      const blob = new Blob([res.data.csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.data.filename || "access-report.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      showToast(err instanceof Error ? err.message : s.team.exportCsvErr, "error");
+    } finally {
+      setExportingCsv(false);
+    }
+  };
+
+  /** P4: trasferimento proprietà (step-up SENZA trust: il server esige sessione fresca). */
+  const handleTransferOwnership = async () => {
+    const target = transferTarget;
+    const targetUserId = target?.user?.userId;
+    if (!target || !targetUserId || !activeOrg) return;
+    setTransferPending(true);
+    try {
+      const res = await fetchAuthedClient(`/api/organization/${activeOrg.orgId}/transfer-ownership`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId })
+      }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+      if (!res.success) {
+        throw new Error(res.error?.message || s.team.transferErr);
+      }
+      showToast(fmtUI(s.team.transferDone, { name: target.user?.fullName || target.user?.email || "" }), "success");
+      setTransferTarget(null);
+      setTransferText("");
+      setPermTarget(null);
+      void loadMembers(activeOrg.orgId);
+    } catch (err) {
+      console.error(err);
+      showToast(err instanceof Error ? err.message : s.team.transferErr, "error");
+    } finally {
+      setTransferPending(false);
+    }
+  };
+
   /* Editor del ruolo IAM: MAI su sé stessi (anti lock-out: un owner non si
      declassa, un admin non si auto-promuove — il server lo rifiuta comunque);
      il ruolo di un owner lo tocca solo un altro owner; un non-owner non può
@@ -374,7 +444,11 @@ export function UserTeam({ listMembers }: UserTeamProps) {
     return {
       role: editingRole,
       onRoleChange: setEditingRole,
-      lockedRoles: activeRole !== "owner" ? (["owner"] as const) : ([] as const)
+      lockedRoles: activeRole !== "owner" ? (["owner"] as const) : ([] as const),
+      // N11: proposta di disconnessione solo su declassamento reale del ruolo.
+      downgradeRevoke: isDowngrade(member.role, editingRole)
+        ? { checked: revokeOnDowngrade, onChange: setRevokeOnDowngrade }
+        : undefined
     };
   };
 
@@ -463,6 +537,25 @@ export function UserTeam({ listMembers }: UserTeamProps) {
               body: JSON.stringify({ name: permTarget.team.name, rbac: editingRbac })
             }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
       if (res.success) {
+        // N11: al declassamento confermato, disconnessione da tutti i dispositivi
+        // via rotta admin-revoke esistente (best-effort: l'update è già applicato).
+        if (
+          permTarget.kind === "member" &&
+          revokeOnDowngrade &&
+          isDowngrade(permTarget.member.role, editingRole) &&
+          permTarget.member.user?.userId
+        ) {
+          try {
+            await fetchAuthedClient(`/api/user/${permTarget.member.user.userId}/sessions/admin-revoke`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reason: "Role downgrade (auto, permissions dialog)" })
+            }, { validate: (raw) => apiEnvelopeSchema.parse(raw) });
+          } catch (revokeErr) {
+            console.error("Revoca sessioni post-declassamento fallita:", revokeErr);
+            showToast(s.team.revokeErr, "error");
+          }
+        }
         showToast(s.team.permsSaved, "success");
         setPermTarget(null);
         if (permTarget.kind === "member" && activeOrg) void loadMembers(activeOrg.orgId);
@@ -525,7 +618,25 @@ export function UserTeam({ listMembers }: UserTeamProps) {
       />
 
       {/* MEMBRI */}
-      <UserCard title={s.team.membersTitle} description={s.team.membersDesc} icon={<Users className="w-4 h-4 text-secondary" />}>
+      <UserCard
+        title={s.team.membersTitle}
+        description={s.team.membersDesc}
+        icon={<Users className="w-4 h-4 text-secondary" />}
+        actions={
+          isManager ? (
+            <Button
+              unstyled
+              variant="ghost"
+              onClick={() => void handleExportCsv()}
+              isDisabled={exportingCsv}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-line text-ink-muted hover:text-ink hover:bg-surface-2 cursor-pointer transition-colors"
+            >
+              {exportingCsv ? <Spinner className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+              {s.team.exportCsv}
+            </Button>
+          ) : undefined
+        }
+      >
         {loadingMembers ? (
           <div className="flex justify-center p-6"><Spinner /></div>
         ) : members.length === 0 ? (
@@ -895,6 +1006,15 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           onSave={() => void handleSavePermissions()}
           hideSave={!roleEditorFor(permTarget.member)}
           audit={{ items: auditItems, loading: auditLoading, resolveActor }}
+          onTransferOwnership={
+            activeRole === "owner" &&
+            permTarget.member.user?.userId &&
+            permTarget.member.user.userId !== currentUid &&
+            permTarget.member.role !== "owner" &&
+            (permTarget.member.status || "active") === "active"
+              ? () => { setTransferText(""); setTransferTarget(permTarget.member); }
+              : undefined
+          }
         />
       )}
       {permTarget && permTarget.kind === "team" && (
@@ -917,6 +1037,61 @@ export function UserTeam({ listMembers }: UserTeamProps) {
           audit={{ items: auditItems, loading: auditLoading, resolveActor }}
           dirty={JSON.stringify(editingRbac) !== rbacBaseline}
         />
+      )}
+
+      {/* CONFERMA DIGITATA TRANSFER OWNERSHIP (P4.2, pattern GDPR): l'email del
+          target va riscritta per esteso; lo step-up senza trust farà comunque
+          riconfermare la password al submit. */}
+      {transferTarget && (
+        <Modal isOpen onOpenChange={(open) => { if (!open) { setTransferTarget(null); setTransferText(""); } }}>
+          <Modal.Backdrop isDismissable className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Modal.Container className="h-auto w-full max-w-md flex-none p-0 sm:w-full sm:p-0">
+              <Modal.Dialog className="w-full rounded-3xl border border-danger/30 bg-surface shadow-2xl p-6">
+                <Modal.Header className="flex flex-col gap-1 border-b border-line pb-4">
+                  <h2 className="text-base font-extrabold text-ink flex items-center gap-2">
+                    <Crown className="text-danger w-4 h-4 shrink-0" />
+                    {s.team.transferTitle}
+                  </h2>
+                  <p className="text-ink-muted text-xs font-normal">
+                    {fmtUI(s.team.transferBody, { name: transferTarget.user?.fullName || transferTarget.user?.email || "" })}
+                  </p>
+                </Modal.Header>
+                <Modal.Body className="py-5 space-y-3">
+                  <p className="text-xs text-ink-muted">
+                    {s.team.transferTypePrompt}{" "}
+                    <span className="font-bold text-ink font-mono bg-danger/10 px-1 rounded break-all">{transferTarget.user?.email}</span>
+                  </p>
+                  <TextField aria-label={s.team.transferTitle} className="w-full">
+                    <Input
+                      value={transferText}
+                      onChange={(e) => setTransferText(e.target.value)}
+                      placeholder={transferTarget.user?.email || ""}
+                      className="w-full bg-surface-2 border border-line focus:!border-danger rounded-2xl px-3.5 py-2.5 text-sm text-ink"
+                    />
+                  </TextField>
+                </Modal.Body>
+                <Modal.Footer className="pt-4 flex justify-end gap-3 border-t border-line">
+                  <Button
+                    unstyled
+                    variant="ghost"
+                    className="px-4 py-2.5 text-xs font-bold border border-line hover:bg-surface-2 text-ink-muted rounded-xl cursor-pointer transition-colors"
+                    onClick={() => { setTransferTarget(null); setTransferText(""); }}
+                  >
+                    {s.common.cancel}
+                  </Button>
+                  <Button
+                    unstyled
+                    isDisabled={transferPending || transferText.trim().toLowerCase() !== (transferTarget.user?.email || "").toLowerCase()}
+                    onClick={() => void handleTransferOwnership()}
+                    className="px-4 py-2.5 text-xs font-bold rounded-xl bg-danger text-white hover:bg-danger/90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  >
+                    {transferPending ? s.team.saving : s.team.transferAction}
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
       )}
     </div>
   );

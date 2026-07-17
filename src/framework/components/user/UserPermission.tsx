@@ -4,7 +4,7 @@ import React from "react";
 import { Button, Chip, Checkbox, Modal, Label, Spinner, Select, SelectTrigger, SelectValue, SelectPopover, ListBox, ListBoxItem } from "../ui";
 import { listAppModules, getApplicationInfo, type AppIds } from "../../lib/resources.config";
 import { MATRIX_APPS, getPermissionsFromMask, type RbacStructure, type RbacTemplateRole } from "../../lib/rbac-templates";
-import { Shield, Lock, Check, Minus, History } from "lucide-react";
+import { Shield, Lock, Check, Minus, History, Crown } from "lucide-react";
 import type { PermissionAuditItemData } from "../../lib/schemas/api";
 import { useUIStrings, fmtUI } from "../../lib/ui.localization";
 
@@ -63,6 +63,11 @@ export interface UserPermissionProps {
     role: string;
     onRoleChange: (role: string) => void;
     lockedRoles?: readonly string[];
+    /** N11: visibile solo quando il ruolo scelto è un DECLASSAMENTO reale. */
+    downgradeRevoke?: {
+      checked: boolean;
+      onChange: (checked: boolean) => void;
+    };
   };
   /** Assegnazione ai team (solo membri): applicata subito al toggle. */
   teamsEditor?: {
@@ -84,6 +89,8 @@ export interface UserPermissionProps {
   };
   /** Dirty state della matrice (N7): false → Salva disabilitato, true → badge modifiche. */
   dirty?: boolean;
+  /** P4: azione "Trasferisci proprietà" (solo owner su membro attivo non-self). */
+  onTransferOwnership?: () => void;
 }
 
 export function UserPermission({
@@ -102,7 +109,8 @@ export function UserPermission({
   onSave,
   hideSave = false,
   audit,
-  dirty
+  dirty,
+  onTransferOwnership
 }: UserPermissionProps) {
   const s = useUIStrings();
   const isEdit = !!rbac && !!onToggle;
@@ -185,6 +193,18 @@ export function UserPermission({
                       );
                     })}
                   </div>
+                  {roleEditor.downgradeRevoke && (
+                    <Checkbox
+                      isSelected={roleEditor.downgradeRevoke.checked}
+                      onChange={(sel) => roleEditor.downgradeRevoke?.onChange(sel)}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Label className="text-xs text-ink-muted cursor-pointer">{s.team.revokeOnDowngrade}</Label>
+                    </Checkbox>
+                  )}
                 </div>
               )}
 
@@ -350,6 +370,23 @@ export function UserPermission({
                   })()
                 )}
               </div>
+              {onTransferOwnership && (
+                <div className="border border-danger/30 bg-danger/5 rounded-2xl p-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-xs font-extrabold text-ink flex items-center gap-1.5"><Crown className="w-3.5 h-3.5 text-danger" /> {s.team.transferTitle}</p>
+                    <p className="text-[11px] text-ink-muted mt-0.5">{s.team.transferHint}</p>
+                  </div>
+                  <Button
+                    unstyled
+                    variant="ghost"
+                    onClick={onTransferOwnership}
+                    className="shrink-0 px-3 py-2 text-xs font-bold rounded-xl border border-danger/40 text-danger hover:bg-danger/10 cursor-pointer transition-colors"
+                  >
+                    {s.team.transferAction}
+                  </Button>
+                </div>
+              )}
+
               {audit && (
                 <div className="space-y-3 border-t border-line pt-5">
                   <h3 className="text-xs font-extrabold text-ink flex items-center gap-2">
